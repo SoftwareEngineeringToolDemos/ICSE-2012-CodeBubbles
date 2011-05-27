@@ -17,14 +17,12 @@
       <path id='bubbles.classpath'>
 	 <pathelement location='${PRO}/bubbles/java' />
 	 <pathelement location='${IVYBIN}' />
-	 <fileset dir='${PRO}/bubbles/lib/jung/' includes='*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jgraphx.jar' />
       </path>
       <path id='test.classpath'>
 	 <pathelement location='${PRO}/bubbles/java' />
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='bubblesasm.jar' />
-	 <fileset dir='${PRO}/bubbles/lib/jung/' includes='*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jgraphx.jar' />
       </path>
    </target>

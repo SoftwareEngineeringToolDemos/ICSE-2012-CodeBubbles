@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="Console.family">Monospaced</entry>
+<entry key="Console.size">10</entry>
+<entry key="Console.tabsize">8</entry>
+<entry key="StdOut.parent">Console</entry>
+<entry key="StdOut.foreground">#ffffff</entry>
+<entry key="StdErr.parent">Console</entry>
+<entry key="StdErr.foreground">#ff0000</entry>
+<entry key="StdIn.parent">Console</entry>
+<entry key="StdIn.foreground">#0000ff</entry>
+<entry key="Freeze.levels">2</entry>
+<entry key="LaunchControl.float">true</entry>
+<entry key="Console.float">true</entry>
+<entry key="Threads.float">true</entry>
+<entry key="History.float">true</entry>
+<entry key="ExecutionAnnotation.color">#4000ff00</entry>
+<entry key="Bddt.buttons.StepInto">true</entry>
+<entry key="Bddt.buttons.StepUser">true</entry>
+<entry key="Bddt.buttons.DropToFrame">true</entry>
+<entry key="Bddt.buttons.Performance">true</entry>
+<entry key="Bddt.buttons.History">true</entry>
+<entry key="Bddt.buttons.DropToFrame">true</entry>
+</properties>

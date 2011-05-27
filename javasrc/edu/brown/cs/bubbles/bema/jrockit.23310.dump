@@ -1,0 +1,189 @@
+
+===== BEGIN DUMP =============================================================
+JRockit dump produced after 0 days, 00:02:17 on Fri Jan 14 13:30:43 2011
+
+    **************************************************************************
+    *  If you see this dump, please go to                                    *
+    *  http://download.oracle.com/docs/cd/E15289_01/go2troubleshooting.html  *
+    *  for troubleshooting information.                                      *
+    **************************************************************************
+
+Additional information is available in:
+  /pro/bubbles/javasrc/edu/brown/cs/bubbles/bema/jrockit.23310.dump
+  /pro/bubbles/javasrc/edu/brown/cs/bubbles/bema/core or core.23310
+
+Error Message: Illegal memory access. [54]
+Signal info  : si_signo=11, si_code=1 si_addr=0x18
+Version      : Oracle JRockit(R) R28.0.1-21-133393-1.6.0_20-20100512-2126-linux-x86_64
+CPU          : Intel Core 2 SSE SSE2 SSE3 SSSE3 SSE4.1 Core Intel64
+Number CPUs  : 8
+Tot Phys Mem : 33813778432 (32247 MB)
+OS version   : 5.0.7
+Linux version 2.6.26-2-amd64 (Debian 2.6.26-26lenny1) (dannf@debian.org) (gcc version 4.1.3 20080704 (prerelease) (Debian 4.1.2-25)) #1 SMP Thu Nov 25 04:30:55 UTC 2010 (x86_64)
+Thread System: Linux NPTL
+LibC release : 2.7-stable
+Java locking : Normal
+State        : JVM is shutting down
+Command Line : -Xmx1024m -agentpath:/pro/dyvise/lib/x86_64/libdylti.so=LOG=locks.csv -Xmx1024m -Dsun.java.launcher=SUN_STANDARD edu.brown.cs.bubbles.bema.BemaMain -w /home/spr/Eclipse/testing
+Repository   : 
+java.home    : /home/spr/jrmc-4.0.1-1.6.0/jre
+j.class.path : /pro/bubbles/java:/pro/ivy/java:/pro/bubbles/lib/smack.jar:/pro/bubbles/lib/smackx-debug.jar:/pro/bubbles/lib/smackx-jingle.jar:/pro/bubbles/lib/smackx.jar:/pro/bubbles/lib/jsyntaxpane.jar:/pro/bubbles/lib/iText.jar:/pro/bubbles/lib/Lobo/Uninstaller/uninstaller.jar:/pro/bubbles/lib/Lobo/ext/Scenario.jar:/pro/bubbles/lib/Lobo/ext/cobra-no-commons.jar:/pro/bubbles/lib/Lobo/ext/javafx-swing.jar:/pro/bubbles/lib/Lobo/ext/javafxc.jar:/pro/bubbles/lib/Lobo/ext/javafxgui.jar:/pro/bubbles/lib/Lobo/ext/javafxrt.jar:/pro/bubbles/lib/Lobo/ext/jlfgr-1_0.jar:/pro/bubbles/lib/Lobo/ext/jmc.jar:/pro/bubbles/lib/Lobo/ext/js.jar:/pro/bubbles/lib/Lobo/ext/jweb-ext.jar:/pro/bubbles/lib/Lobo/ext/primary.jar:/pro/bubbles/lib/Lobo/ext/websvc.jar:/pro/bubbles/lib/Lobo/ext/xbean.jar:/pro/bubbles/lib/Lobo/lobo-pub.jar:/pro/bubbles/lib/Lobo/lobo.jar:/pro/bubbles/lib/jmf/customizer.jar:/pro/bubbles/lib/jmf/jmf.jar:/pro/bubbles/lib/jmf/mediaplayer.jar:/pro/bubbles/lib/jmf/multiplayer.jar:/pro/bubbles/lib/jung/collections-generic-4.01.jar:/pro/bubbles/lib/jung/jung-algorithms-2.0.1.jar:/pro/bubbles/lib/jung/jung-api-2.0.1.jar:/pro/bubbles/lib/jung/jung-graph-impl-2.0.1.jar:/pro/bubbles/lib/jung/jung-visualization-2.0.1.jar:/pro/bubbles/lib/asm.jar
+j.lib.path   : /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/jrockit:/home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64:/home/spr/jrmc-4.0.1-1.6.0/jre/../lib/amd64:/pro/lib:/pro/s6/lib/x86_64:/pro/lib:/pro/dyvise/lib/x86_64:/pro/lib:/pro/wadi/lib/x86_64:/pro/lib:/pro/veld/lib/x86_64:/pro/lib:/pro/bloom/lib/x86_64:/pro/lib:/pro/ivy/lib/x86_64:/u/spr/jogl/jogl-linux64
+JAVA_HOME    : <not set>
+_JAVA_OPTIONS: <not set>
+LD_LIBRARY_PATH: /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/jrockit:/home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64:/home/spr/jrmc-4.0.1-1.6.0/jre/../lib/amd64:/pro/lib:/pro/s6/lib/x86_64:/pro/lib:/pro/dyvise/lib/x86_64:/pro/lib:/pro/wadi/lib/x86_64:/pro/lib:/pro/veld/lib/x86_64:/pro/lib:/pro/bloom/lib/x86_64:/pro/lib:/pro/ivy/lib/x86_64:/u/spr/jogl/jogl-linux64
+LD_ASSUME_KERNEL: <not set>
+LD_PRELOAD   : <not set>
+StackOverFlow: 0 StackOverFlowErrors have occured
+OutOfMemory  : 0 OutOfMemoryErrors have occured
+C Heap       : Good; no memory allocations have failed
+GC Strategy  : Mode: throughput, with strategy: genparpar (basic strategy: genparpar)
+GC Status    : OC is not running. Last finished OC was OC#11.
+             : YC is not running. Last finished YC was YC#110.
+YC Promotion : Last YC successfully promoted all objects
+YC History   : Ran 0 YCs before OC#7.
+             : Ran 45 YCs before OC#8.
+             : Ran 0 YCs before OC#9.
+             : Ran 0 YCs before OC#10.
+             : Ran 0 YCs before OC#11.
+             : Ran 3 YCs since last OC.
+Heap         : 0xc0000000 - 0xce9df000  (Size: 234 MB)
+Heap History : OC#1       - 0xc4000000  (64 MB -> 87 MB; +23912 KB)
+             : OC#2       - 0xc575a000  (87 MB -> 118 MB; +31684 KB)
+             : OC#3       - 0xc764b000  (118 MB -> 145 MB; +27212 KB)
+             : OC#4       - 0xc90de000  (145 MB -> 164 MB; +19740 KB)
+             : OC#5       - 0xca425000  (164 MB -> 201 MB; +37972 KB)
+             : OC#6       - 0xcc93a000  (201 MB -> 234 MB; +33428 KB)
+Compaction   : (no compaction area)
+NurseryList  : 0xc8b6fc00 - 0xc92742e0
+KeepArea     : 0xc8de9d40 - 0xc8f267e8
+KA Markers   : [ 0xc8de9d40,  0xc8f267e8 , 0xc92742e0 ]
+Forbidden A  : (none)
+Previous KA  : 0xc8f267e8 - 0xc92742e0
+Previous FA  : (none)
+CompRefs     : References are compressed, with heap base 0x0 and shift 0.
+
+Registers (from ThreadContext: 0x40a20e90:
+  rax = 0000000000000000   rcx = 000000000000273d 
+  rdx = 0000000000000120   rbx = 00007f28f0018368 
+  rsp = 0000000040a212d8   rbp = 0000000040a21310 
+  rsi = 0000000000000000   rdi = 0000000000000018 
+   r8 = fefefefefefefeff    r9 = 0000000000000003 
+  r10 = 0000000000000000   r11 = 00007f29390af1a0 
+  r12 = 00000000017b5e20   r13 = 00007f2939b5b28b 
+  r14 = 00007f28f002bc70   r15 = 0000000040a217d0 
+   cs = 0000000000000033    fs = 0000000400000000 
+   gs = 0004000000000000 
+  rip = 00007f29390af1a0 flags = 0000000000000206 
+
+Loaded modules:
+(* denotes the module where the exception occured)
+0000000000400000-0000000000412703  /home/spr/jrmc-4.0.1-1.6.0/jre/bin/java
+00007fff5adff000-00007fff5adff787  /home/spr/jrmc-4.0.1-1.6.0/jre/bin/java
+00007f293b165000-00007f293b166edb  /lib/libdl.so.2
+00007f293af49000-00007f293af5ecc3  /lib/libpthread.so.0
+00007f293abf6000-00007f293ad3f5af  /lib/libc.so.6
+00007f293b369000-00007f293b38496f  /lib64/ld-linux-x86-64.so.2
+00007f293a625000-00007f293a91e0ab  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/jrockit/libjvm.so
+00007f293a404000-00007f293a4221db  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libosal.so
+00007f293a1f7000-00007f293a203313  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libutil.so
+00007f2939f74000-00007f2939ff598f  /lib/libm.so.6
+00007f2939d6b000-00007f2939d72853  /lib/librt.so.1
+00007f2939b44000-00007f2939b688a3  /pro/dyvise/lib/x86_64/libdylti.so
+00007f2939911000-00007f293994102f  /pro/ivy/lib/x86_64/libmince.so
+00007f2939317000-00007f29396cdf6c  /usr/lib/libxerces-c.so.28
+00007f293900b000-00007f29390fb073 */usr/lib/libstdc++.so.6
+00007f2938df4000-00007f2938e09a53  /lib/libgcc_s.so.1
+00007f2938ab3000-00007f2938be27d2  /usr/lib/libicuuc.so.38
+00007f2937ddd000-00007f2937ddcfff  /usr/lib/libicudata.so.38
+00007f2937bce000-00007f2937bd972b  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libjfr.so
+00007f28f573c000-00007f28f5748337  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libverify.so
+00007f28f560d000-00007f28f563510b  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libjava.so
+00007f28f53f5000-00007f28f5409253  /lib/libnsl.so.1
+00007f28f52aa000-00007f28f52b05bf  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/native_threads/libhpi.so
+00007f28f50d6000-00007f28f50e38cb  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libzip.so
+00007f28f4cc7000-00007f28f4d5878b  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libawt.so
+00007f28f4b39000-00007f28f4b7a1b3  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/xawt/libmawt.so
+00007f28f4928000-00007f28f4937e23  /usr/lib/libXext.so.6
+00007f28f461c000-00007f28f4721e1b  /usr/lib/libX11.so.6
+00007f28f4416000-00007f28f441ab8b  /usr/lib/libXtst.so.6
+00007f28f420d000-00007f28f42150fb  /usr/lib/libXi.so.6
+00007f28f400b000-00007f28f400cc2b  /usr/lib/libXau.so.6
+00007f28efdff000-00007f28efdffd2b  /usr/lib/libxcb-xlib.so.0
+00007f28efbe3000-00007f28efbfdbf3  /usr/lib/libxcb.so.1
+00007f28ef9de000-00007f28ef9e2433  /usr/lib/libXdmcp.so.6
+00007f28ef47a000-00007f28ef4f7b97  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libfontmanager.so
+00007f28ef0b0000-00007f28ef0b8b2b  /usr/lib/libXcursor.so.1
+00007f28eeea7000-00007f28eeeaf9bb  /usr/lib/libXrender.so.1
+00007f28eeda2000-00007f28eeda672b  /usr/lib/libXfixes.so.3
+00007f28ee99a000-00007f28ee9a08ab  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libnio.so
+00007f28ee883000-00007f28ee89598f  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libnet.so
+00007f28edfe7000-00007f28edff0e6b  /lib/libnss_files.so.2
+00007f28edde2000-00007f28edde5a1f  /lib/libnss_dns.so.2
+00007f28edbce000-00007f28edbddd53  /lib/libresolv.so.2
+00007f28ed88d000-00007f28ed88d8bb  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/librmi.so
+00007f28ed746000-00007f28ed74b49b  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libmanagement.so
+00007f28ecca7000-00007f28eccbc14f  /home/spr/jrmc-4.0.1-1.6.0/jre/lib/amd64/libdcpr.so
+
+Stack:
+(* marks the word pointed to by the stack pointer)
+0000000040a212d8: 00007f2939b60c89* 0000000000000120  0000000000000018  0000000000000018  
+0000000040a212f8: 0000000040a215f8  0000000000000003  00000000017b1800  0000000040a21340  
+0000000040a21318: 00007f2939b60d1b  0000000040a215f8  0000000000000018  0000000040a21420  
+0000000040a21338: 0000000040a215f8  0000000040a214b0  00007f2939b601b7  00007f2939b48d50  
+0000000040a21358: 00000000017b1800  0000000040a21410  0000000000000018  00007f28f002bc70  
+0000000040a21378: 0000000000226478  00007f2939b47598  00000000017b1800  00007f28f002bc70  
+
+Code:
+(* marks the word pointed to by the instruction pointer)
+00007f29390af140: 8948078948068b48  909090909090c3f8  c3e8408b48078b48  9090909090909090  
+00007f29390af160: c3e8408b48078b48  9090909090909090  fffffffffff9b848  9090909090c33fff  
+00007f29390af180: c3f0408b48078b48  9090909090909090  00e8788348078b48  90909090c3c0940f  
+00007f29390af1a0: 90c3f08948370348* 9090909090909090  45f8428b44178b48  8b068b481c78c085  
+00007f29390af1c0: 40c70779c985f848  07894800000000f8  00401f0fc3168948  eb00000000f842c7  
+00007f29390af1e0: 90909090909090db  9090909090909090  90909090c3078b48  9090909090909090  
+
+
+Last optimized methods:
+No methods optimized.
+
+Thread:
+"AWT-EventQueue-1" id=28 idx=0x80 tid=23438 lastJavaFrame=0x40a21a08
+Stack 0: start=0x409e1000, end=0x40a23000, guards=0x409e6000 (ok), forbidden=0x409e4000
+
+Thread Stack Trace:
+    at _ZNKSsixEm+0()@0x7f29390af1a0
+
+NOTE: Printing Thread Info crashed and was aborted
+
+Memory usage report:
+Total mapped                  2617244KB           (reserved=2188780KB)
+-              Java heap      1048576KB           (reserved=809092KB)
+-              GC tables        35084KB          
+-          Thread stacks        17436KB           (#threads=36)
+-          Compiled code      1048576KB           (used=5156KB)
+-               Internal         1864KB          
+-                     OS       152896KB          
+-                  Other       280556KB          
+-            Classblocks         2304KB           (malloced=2093KB #4247)
+                                                  Not tracing sites.
+
+-        Java class data        28928KB           (malloced=28849KB #19705 in 4247 classes)
+                                                  Not tracing sites.
+
+- Native memory tracking         1024KB           (malloced=128KB #10)
+                                                  Not tracing sites.
+
+
+Set the env variable TRACE_ALLOC_SITES=1 or use the print_memusage switch
+trace_alloc_sites=true to enable alloc site tracing.
+
+    **************************************************************************
+    *  If you see this dump, please go to                                    *
+    *  http://download.oracle.com/docs/cd/E15289_01/go2troubleshooting.html  *
+    *  for troubleshooting information.                                      *
+    **************************************************************************
+
+===== END DUMP ===============================================================
+
+

@@ -1,0 +1,601 @@
+/********************************************************************************/
+/*										*/
+/*		BeamProblemBubble.java						*/
+/*										*/
+/*	Bubble Environment Auxilliary & Missing items problem bubble		*/
+/*										*/
+/********************************************************************************/
+/*	Copyright 2009 Brown University -- Steven P. Reiss		      */
+/*********************************************************************************
+ *  Copyright 2011, Brown University, Providence, RI.                            *
+ *                                                                               *
+ *                        All Rights Reserved                                    *
+ *                                                                               *
+ * This program and the accompanying materials are made available under the      *
+ * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
+ * and is available at                                                           *
+ *      http://www.eclipse.org/legal/epl-v10.html                                *
+ *                                                                               *
+ ********************************************************************************/
+
+
+/* SVN: $Id$ */
+
+
+
+package edu.brown.cs.bubbles.beam;
+
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.bass.BassFactory;
+import edu.brown.cs.bubbles.bass.BassName;
+import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpConstants;
+
+import javax.swing.*;
+import javax.swing.table.*;
+
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.util.*;
+import java.util.List;
+
+
+
+class BeamProblemBubble extends BudaBubble implements BeamConstants, BumpConstants,
+	BumpConstants.BumpProblemHandler
+{
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Private Storage 							*/
+/*										*/
+/********************************************************************************/
+
+private BumpClient		bump_client;
+private List<BumpProblem>	active_problems;
+private ProblemTable		problem_table;
+private Set<BumpErrorType>	allow_types;
+private boolean 		for_tasks;
+private Color			top_color;
+private Color			bottom_color;
+private Color			overview_color;
+
+
+private static BoardProperties	beam_properties = BoardProperties.getProperties("Beam");
+
+
+private static String [] col_names = new String[] {
+   "?","Description","Resource","Line"
+};
+
+private static Class<?> [] col_types = new Class[] {
+   String.class, String.class, String.class, Integer.class
+};
+
+
+private static int [] col_sizes = new int [] {
+   16, 200, 60, 50
+};
+
+
+private static int [] col_max_size = new int [] {
+   20, 0, 0, 50
+};
+
+private static int [] col_min_size = new int [] {
+   12, 20, 20, 20
+};
+
+
+private static final long serialVersionUID = 1;
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Constructors								*/
+/*										*/
+/********************************************************************************/
+
+BeamProblemBubble(String typs,boolean task)
+{
+   bump_client = BumpClient.getBump();
+   active_problems = new ArrayList<BumpProblem>();
+   for_tasks = task;
+
+   if (typs == null) {
+      if (for_tasks) allow_types = EnumSet.of(BumpErrorType.NOTICE);
+      else allow_types = EnumSet.of(BumpErrorType.FATAL,BumpErrorType.ERROR,BumpErrorType.WARNING);
+    }
+   else {
+      allow_types = EnumSet.noneOf(BumpErrorType.class);
+      StringTokenizer tok = new StringTokenizer(typs);
+      while (tok.hasMoreTokens()) {
+	 String s = tok.nextToken();
+	 try {
+	    BumpErrorType bet = BumpErrorType.valueOf(s);
+	    allow_types.add(bet);
+	  }
+	 catch (IllegalArgumentException e) { }
+       }
+    }
+
+   top_color = (for_tasks ? TASK_TOP_COLOR : beam_properties.getColor(PROBLEM_TOP_COLOR));
+   bottom_color = (for_tasks ? TASK_BOTTOM_COLOR : beam_properties.getColor(PROBLEM_BOTTOM_COLOR));
+   overview_color = (for_tasks? TASK_OVERVIEW_COLOR : PROBLEM_OVERVIEW_COLOR);
+
+   for (BumpProblem bp : bump_client.getAllProblems()) {
+      if (allow_types.contains(bp.getErrorType())) active_problems.add(bp);
+    }
+
+   bump_client.addProblemHandler(null,this);
+
+   problem_table = new ProblemTable();
+
+   JScrollPane sp = new JScrollPane(problem_table);
+   sp.setSize(new Dimension(beam_properties.getInt(PROBLEM_WIDTH),beam_properties.getInt(PROBLEM_HEIGHT)));
+
+   setContentPane(sp,null);
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Problem update methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public void handleProblemAdded(BumpProblem bp)
+{
+   if (!allow_types.contains(bp.getErrorType())) return;
+
+   synchronized (active_problems) {
+      active_problems.add(bp);
+    }
+}
+
+
+@Override public void handleProblemRemoved(BumpProblem bp)
+{
+   if (!allow_types.contains(bp.getErrorType())) return;
+
+   synchronized (active_problems) {
+      active_problems.remove(bp);
+    }
+}
+
+
+
+@Override public void handleProblemsDone()
+{
+   problem_table.modelUpdated();
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Popup menu methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public void handlePopupMenu(MouseEvent e)
+{
+   JPopupMenu menu = new JPopupMenu();
+
+   menu.add(getFloatBubbleAction());
+   // TODO: provide rebuild, clean, etc. options
+
+   menu.show(this,e.getX(),e.getY());
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Painting methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override protected void paintContentOverview(Graphics2D g)
+{
+   Dimension sz = getSize();
+
+   g.setColor(overview_color);
+   g.fillRect(0,0,sz.width,sz.height);
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	BumpProblem decoding methods						*/
+/*										*/
+/********************************************************************************/
+
+private String getErrorType(BumpProblem bp)
+{
+   switch (bp.getErrorType()) {
+      case FATAL :
+	 return "F";
+      case ERROR :
+	 return "E";
+      case WARNING :
+	 return "W";
+      case NOTICE :
+	 return "N";
+    }
+
+   return null;
+}
+
+
+
+private String getDescription(BumpProblem bp)
+{
+   return bp.getMessage();
+}
+
+
+
+private String getResource(BumpProblem bp)
+{
+   File f = bp.getFile();
+   if (f == null) return null;
+   return f.getName();
+}
+
+
+
+private Integer getLine(BumpProblem bp)
+{
+   int ln = bp.getLine();
+   if (ln == 0) return null;
+   return Integer.valueOf(ln);
+}
+
+
+
+private String getToolTip(BumpProblem bp)
+{
+   return bp.getErrorType().toString() + ": " + bp.getMessage();
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	New bubble methods							*/
+/*										*/
+/********************************************************************************/
+
+private void showBubble(File f,int line)
+{
+   BaleFactory bf = BaleFactory.getFactory();
+   BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,f);
+   if (bfo == null) return;
+   int loff = bfo.findLineOffset(line);
+   int eoff = bfo.mapOffsetToEclipse(loff);
+
+   BassFactory bsf = BassFactory.getFactory();
+   BassName bn = bsf.findBubbleName(f,eoff);
+   if (bn == null) return;
+
+   BudaBubble bb = bn.createBubble();
+   if (bb == null) return;
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+   bba.addBubble(bb,this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+
+   /************
+   Rectangle r = BudaRoot.findBudaLocation(this);
+   Dimension sz = bb.getSize();
+
+   // TODO: this assumes the error bubble is at the bottom of the display.  If it isn't this
+   // should be changed
+   BudaConstraint bc = new BudaConstraint(r.x,r.y - sz.height - 50);
+   bba.add(bb,bc);
+   *******************/
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Table for problems							*/
+/*										*/
+/********************************************************************************/
+
+private class ProblemTable extends JTable implements MouseListener,
+		BudaConstants.BudaBubbleOutputer
+{
+   private ErrorRenderer [] error_renderer;
+   private WarningRenderer [] warning_renderer;
+   private NoticeRenderer [] notice_renderer;
+
+   private static final long serialVersionUID = 1;
+
+   ProblemTable() {
+      super(new ProblemModel());
+      setAutoCreateRowSorter(true);
+      fixColumnSizes();
+      setIntercellSpacing(new Dimension(2,1));
+      setToolTipText("");
+      addMouseListener(this);
+      setOpaque(false);
+      for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
+	 TableColumn tc = e.nextElement();
+	 tc.setHeaderRenderer(new HeaderRenderer(getTableHeader().getDefaultRenderer()));
+       }
+      error_renderer = new ErrorRenderer[col_names.length];
+      warning_renderer = new WarningRenderer[col_names.length];
+      notice_renderer = new NoticeRenderer[col_names.length];
+    }
+
+   void modelUpdated() {
+      ((ProblemModel) getModel()).fireTableDataChanged();
+    }
+
+   @Override public TableCellRenderer getCellRenderer(int row,int col) {
+      BumpProblem bp = getActualProblem(row);
+      switch (bp.getErrorType()) {
+	 case WARNING :
+	    if (warning_renderer[col] == null) {
+	       warning_renderer[col] = new WarningRenderer(super.getCellRenderer(row,col));
+	     }
+	    return warning_renderer[col];
+	 case ERROR :
+	 case FATAL :
+	    if (error_renderer[col] == null) {
+	       error_renderer[col] = new ErrorRenderer(super.getCellRenderer(row,col));
+	     }
+	    return error_renderer[col];
+	 default :
+	 case NOTICE :
+	    if (notice_renderer[col] == null) {
+	       notice_renderer[col] = new NoticeRenderer(super.getCellRenderer(row,col));
+	     }
+	    return notice_renderer[col];
+       }
+    }
+
+   private void fixColumnSizes() {
+      TableColumnModel tcm = getColumnModel();
+      for (int i = 0; i < col_sizes.length; ++i) {
+	 TableColumn tc = tcm.getColumn(i);
+	 tc.setPreferredWidth(col_sizes[i]);
+	 if (col_max_size[i] != 0) tc.setMaxWidth(col_max_size[i]);
+	 if (col_min_size[i] != 0) tc.setMinWidth(col_min_size[i]);
+       }
+    }
+
+   @Override public void mouseClicked(MouseEvent e) {
+      int cct = beam_properties.getInt("Beam.problem.click.count",1);
+      if (e.getClickCount() != cct) return;
+      int row = rowAtPoint(e.getPoint());
+      BumpProblem bp = getActualProblem(row);
+      if (bp == null) return;
+      File f = bp.getFile();
+      int ln = bp.getLine();
+      showBubble(f,ln);
+    }
+
+   @Override public void mouseEntered(MouseEvent _e)			{ }
+   @Override public void mouseExited(MouseEvent _e)			{ }
+   @Override public void mouseReleased(MouseEvent e)			{ }
+   @Override public void mousePressed(MouseEvent e)			{ }
+
+   @Override public String getToolTipText(MouseEvent e) {
+      int r = rowAtPoint(e.getPoint());
+      if (r < 0) return null;
+      BumpProblem bp = getActualProblem(r);
+      return getToolTip(bp);
+    }
+
+   @Override protected void paintComponent(Graphics g) {
+      synchronized (active_problems) {
+	 if (top_color.getRGB() != bottom_color.getRGB()) {
+	    Graphics2D g2 = (Graphics2D) g.create();
+	    Dimension sz = getSize();
+	    Paint p = new GradientPaint(0f,0f,top_color,0f,sz.height,bottom_color);
+	    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+	    g2.setPaint(p);
+	    g2.fill(r);
+	 }
+	 super.paintComponent(g);
+       }
+    }
+
+   @Override public String getConfigurator()			{ return "BEAM"; }
+   @Override public void outputXml(BudaXmlWriter xw) {
+      xw.field("TYPE","PROBLEMS");
+      StringBuffer buf = new StringBuffer();
+      for (BumpErrorType bet : allow_types) buf.append(bet.toString() + " ");
+      xw.field("ERRORTYPES",buf.toString());
+      xw.field("FORTASKS",for_tasks);
+    }
+
+}	// end of inner class ProblemTable
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Table model for problem table						*/
+/*										*/
+/********************************************************************************/
+
+private class ProblemModel extends AbstractTableModel {
+
+   private static final long serialVersionUID = 1;
+
+   ProblemModel() { }
+
+   @Override public int getColumnCount()		{ return col_names.length; }
+   @Override public String getColumnName(int idx)	{ return col_names[idx]; }
+   @Override public Class<?> getColumnClass(int idx)	{ return col_types[idx]; }
+   @Override public boolean isCellEditable(int r,int c) { return false; }
+   @Override public int getRowCount()			{ return active_problems.size(); }
+
+   @Override public Object getValueAt(int r,int c) {
+      BumpProblem bp;
+      synchronized (active_problems) {
+	 if (r < 0 || r >= active_problems.size()) return null;
+	 bp = active_problems.get(r);
+       }
+      switch (c) {
+	 case 0 :
+	    return getErrorType(bp);
+	 case 1 :
+	    return getDescription(bp);
+	 case 2 :
+	    return getResource(bp);
+	 case 3 :
+	    return getLine(bp);
+       }
+      return null;
+    }
+
+}	// end of inner class ProblemModel
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Sorting methods 							*/
+/*										*/
+/********************************************************************************/
+
+private BumpProblem getActualProblem(int idx)
+{
+   if (idx < 0) return null;
+
+   synchronized (active_problems) {
+      if (problem_table != null) {
+	 RowSorter<?> rs = problem_table.getRowSorter();
+	 if (rs != null) idx = rs.convertRowIndexToModel(idx);
+       }
+
+      return active_problems.get(idx);
+    }
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Renderers								*/
+/*										*/
+/********************************************************************************/
+
+private static class HeaderRenderer implements TableCellRenderer {
+
+   private TableCellRenderer default_renderer;
+   private Font bold_font;
+
+   HeaderRenderer(TableCellRenderer dflt) {
+      default_renderer = dflt;
+      bold_font = null;
+    }
+
+   @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
+							       boolean foc,int r,int c) {
+      JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
+      if (bold_font == null) {
+	 bold_font = cmp.getFont();
+	 bold_font = bold_font.deriveFont(Font.BOLD);
+       }
+      cmp.setFont(bold_font);
+      cmp.setOpaque(false);
+      return cmp;
+    }
+
+}	// end of subclass HeaderRenderer
+
+
+
+
+private static class ErrorRenderer implements TableCellRenderer {
+
+   private TableCellRenderer default_renderer;
+
+   ErrorRenderer(TableCellRenderer dflt) {
+      default_renderer = dflt;
+    }
+
+   @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
+							       boolean foc,int r,int c) {
+      JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
+      cmp.setForeground(PROBLEM_ERROR_COLOR);
+      cmp.setOpaque(false);
+      return cmp;
+    }
+
+}	// end of subclass ErrorRenderer
+
+
+
+
+private static class WarningRenderer implements TableCellRenderer {
+
+   private TableCellRenderer default_renderer;
+
+   WarningRenderer(TableCellRenderer dflt) {
+      default_renderer = dflt;
+    }
+
+   @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
+							       boolean foc,int r,int c) {
+      JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
+      cmp.setForeground(PROBLEM_WARNING_COLOR);
+      cmp.setOpaque(false);
+      return cmp;
+    }
+
+}	// end of subclass HeaderRenderer
+
+
+
+
+private static class NoticeRenderer implements TableCellRenderer {
+
+   private TableCellRenderer default_renderer;
+
+
+   NoticeRenderer(TableCellRenderer dflt) {
+      default_renderer = dflt;
+    }
+
+   @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
+							       boolean foc,int r,int c) {
+      JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
+      cmp.setForeground(PROBLEM_NOTICE_COLOR);
+      cmp.setOpaque(false);
+      return cmp;
+    }
+
+}	// end of subclass HeaderRenderer
+
+
+
+
+}	// end of class BeamProblemBubble
+
+
+
+
+/* end of BeamProblemBubble.java */

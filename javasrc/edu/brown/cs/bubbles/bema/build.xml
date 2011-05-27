@@ -1,0 +1,293 @@
+<project name='bubbles.bema' default='compile'>
+
+   <property file='../../../../../../build.properties' />
+   <property name='PRO' value='/pro' />
+   <available file="${PRO}/ivy" type="dir" property="ivy.present" />
+   <target name="init1" if="ivy.present" >
+      <property name='IVYBIN' value='${PRO}/ivy/java' />
+      <property name='IVYJAR1' value='${PRO}/ivy/java' />
+      <property name='IVYJAR2' value='**/*.class' />
+   </target>
+   <target name="init2" unless="ivy.present" >
+      <property name='IVYBIN' value='${PRO}/bubbles/lib/ivy.jar' />
+      <property name='IVYJAR1' value='${PRO}/bubbles/lib' />
+      <property name='IVYJAR2' value='ivy.jar' />
+   </target>
+   <target name='init' depends='init1,init2' >
+      <path id='bubbles.classpath'>
+	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='Lobo/**/*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jmf/**/*.jar' />
+	 <pathelement location='${PRO}/bubbles/lib/bubblesasm.jar' />
+     </path>
+      <path id='test.classpath'>
+	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='Lobo/**/*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jmf/**/*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='javax.servlet.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/jung/' includes='*.jar' />
+	 <pathelement location='${PRO}/bubbles/lib/bubblesasm.jar' />
+      </path>
+   </target>
+
+   <target name='compile' depends='init'>
+      <javac srcdir='.' destdir='${PRO}/bubbles/java' debug='on' deprecation='on' includeantruntime='false'>
+	 <classpath refid='bubbles.classpath' />
+      </javac>
+   </target>
+
+   <target name='clean'>
+      <delete dir='${PRO}/bubbles/java/edu/brown/cs/bubbles/bema' />
+   </target>
+
+   <target name='test' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/bubblesx' />
+      </java>
+   </target>
+
+   <target name='testclime' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/workspace2' />
+      </java>
+   </target>
+
+   <target name='testmac' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/Users/spr/Documents/workspace' />
+	 <jvmarg value="-Xmx1024m" />
+      </java>
+   </target>
+
+   <target name='testmac1' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/Users/spr/Documents/workspace' />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+	 <arg value="-WEB" />
+	 <jvmarg value="-Xmx1024m" />
+      </java>
+   </target>
+
+   <target name='testmint' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <jvmarg value="-Dedu.brown.cs.bubbles.MINT=BUBBLES_SPR" />
+      </java>
+   </target>
+
+   <target name='testshape' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/testing' />
+	 <jvmarg value="-Xmx1024m" />
+      </java>
+   </target>
+
+   <target name='testdyvise' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/workspace2' />
+	 <jvmarg value="-Xmx2048m" />
+      </java>
+   </target>
+
+   <target name='testfindbugs' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/findbugs' />
+	 <jvmarg value="-Xmx1024m" />
+      </java>
+   </target>
+
+   <target name='testdebug' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/testing' />
+	 <arg value='-Debug' />
+	 <jvmarg value="-Xmx1024m" />
+      </java>
+   </target>
+
+   <target name='testdylti' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/testing' />
+	 <jvmarg value="-Xmx1024m" />
+	 <jvmarg value="-agentpath:/pro/dyvise/lib/x86_64/libdylti.so=LOG=locks.csv" />
+	 <jvmarg value="-Xmx1024m" />
+      </java>
+   </target>
+
+   <target name='testfait' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/fait' />
+	 <jvmarg value="-Xmx8092m" />
+	 <jvmarg value="-d64" />
+      </java>
+   </target>
+
+   <target name='testjoin' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <jvmarg value="-Xmx1024m" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+      </java>
+   </target>
+
+   <target name='jar' depends='compile'>
+      <jar destfile="bubbles.jar" manifest='manifest.mf'>
+	 <fileset dir='${IVYJAR1}' includes= '${IVYJAR2}' />
+	 <fileset dir='${PRO}/bubbles/java' includes= '**/*.class' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='*.props' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bedrock.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='ivy.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='version.xml' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/templates' includes='*.template' />
+	 <fileset dir='${PRO}/bubbles/' includes='lib/preferences.xml' />
+	 <fileset dir='${PRO}/bubbles' includes='images/**/*.png' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='Lobo/**/*.jar' excludes='Lobo/Uninstaller/*' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bubblesasm.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bandaid.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='javax.servlet.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LagHunter*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
+      </jar>
+      <copy file='bubbles.jar' tofile='${PRO}/bubbles/bubbles.jar' />
+   </target>
+
+   <target name='nextversion' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.board.BoardUpdate' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <assertions><enable/></assertions>
+	 <arg value='-version' />
+      </java>
+      <jar destfile="bubbles.jar" manifest='manifest.mf'>
+	 <fileset dir='${IVYJAR1}' includes= '${IVYJAR2}' />
+	 <fileset dir='${PRO}/bubbles/java' includes= '**/*.class' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='*.props' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bedrock.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='ivy.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='version.xml' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/templates' includes='*.template' />
+	 <fileset dir='${PRO}/bubbles/' includes='lib/preferences.xml' />
+	 <fileset dir='${PRO}/bubbles' includes='images/**/*.png' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='Lobo/**/*.jar' excludes='Lobo/Uninstaller/*' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bubblesasm.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bandaid.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='javax.servlet.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LagHunter*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
+      </jar>
+      <copy file='bubbles.jar' tofile='${PRO}/bubbles/bubbles.jar' />
+      <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
+      <copy file='${PRO}/bubbles/lib/version.xml' tofile='/pro/web/web/people/spr/bubbles/version.xml' />
+      <exec dir='/pro/web/web/people/spr/bubbles' executable='webupdate' />
+      <exec executable='sendupdate.csh' />
+   </target>
+
+   <target name='minorversion' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.board.BoardUpdate' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <assertions><enable/></assertions>
+	 <arg value='-version' />
+      </java>
+      <jar destfile="bubbles.jar" manifest='manifest.mf'>
+	 <fileset dir='${IVYJAR1}' includes= '${IVYJAR2}' />
+	 <fileset dir='${PRO}/bubbles/java' includes= '**/*.class' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='*.props' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bedrock.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='ivy.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='version.xml' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='mail.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/templates' includes='*.template' />
+	 <fileset dir='${PRO}/bubbles/' includes='lib/preferences.xml' />
+	 <fileset dir='${PRO}/bubbles' includes='images/**/*.png' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='Lobo/**/*.jar' excludes='Lobo/Uninstaller/*' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jung/*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bubblesasm.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bandaid.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='javax.servlet.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LagHunter*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
+      </jar>
+      <copy file='bubbles.jar' tofile='${PRO}/bubbles/bubbles.jar' />
+      <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
+      <copy file='${PRO}/bubbles/lib/version.xml' tofile='/pro/web/web/people/spr/bubbles/version.xml' />
+      <exec dir='/pro/web/web/people/spr/bubbles' executable='webupdate' />
+   </target>
+
+   <target name='external' depends='compile'>
+      <mkdir dir="external" />
+      <copy file='${PRO}/bubbles/lib/version.xml' tofile='external/version.xml' />
+      <replace file='external/version.xml' token='spr/bubbles' value='spr/bubbles.ext' />
+      <jar destfile="external/bubbles.jar" manifest='manifest.mf'>
+	 <fileset dir='${IVYJAR1}' includes= '${IVYJAR2}' />
+	 <fileset dir='${PRO}/bubbles/java' includes= '**/*.class' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='*.props' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bedrock.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='ivy.jar' />
+	 <fileset dir='external' includes='version.xml' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='mail.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/templates' includes='*.template' />
+	 <fileset dir='${PRO}/bubbles/' includes='lib/preferences.xml' />
+	 <fileset dir='${PRO}/bubbles' includes='images/**/*.png' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='Lobo/**/*.jar' excludes='Lobo/Uninstaller/*' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jung/*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bubblesasm.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='bandaid.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='javax.servlet.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LagHunter*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
+      </jar>
+      <copy file='external/bubbles.jar' tofile='/pro/web/web/people/spr/bubbles.ext/bubbles.jar' />
+      <copy file='external/version.xml' tofile='/pro/web/web/people/spr/bubbles.ext/version.xml' />
+      <exec dir='/pro/web/web/people/spr/bubbles.ext' executable='webupdate' />
+      <exec executable='sendupdateext.csh' />
+      <delete dir='external' />
+   </target>
+
+</project>
+
+
+

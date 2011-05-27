@@ -1,0 +1,65 @@
+<project name='bubbles.buda' default='compile'>
+
+   <property file='../../../../../../build.properties' />
+   <property name='PRO' value='/pro' />
+   <available file="${PRO}/ivy" type="dir" property="ivy.present" />
+   <target name="init1" if="ivy.present" >
+      <property name='IVYBIN' value='${PRO}/ivy/java' />
+   </target>
+   <target name="init2" unless="ivy.present" >
+      <property name='IVYBIN' value='${PRO}/bubbles/lib/ivy.jar' />
+   </target>
+   <target name='init' depends='init1,init2' >
+      <path id='bubbles.classpath'>
+	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='Lobo/**/*.jar' />
+      </path>
+      <path id='test.classpath'>
+	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='Lobo/**/*.jar' />
+      </path>
+   </target>
+
+   <target name='compile' depends='init'>
+      <javac srcdir='.' destdir='${PRO}/bubbles/java' debug='on' deprecation='on'
+		includeantruntime='false'>
+	 <classpath refid='bubbles.classpath' />
+      </javac>
+   </target>
+
+   <target name='clean'>
+      <delete dir='${PRO}/bubbles/java/edu/brown/cs/bubbles/buda' />
+   </target>
+
+   <target name='test' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.buda.BudaTest' fork='true'>
+	 <classpath refid='test.classpath' />
+      </java>
+   </target>
+
+   <target name='test1' >
+      <java classname='edu.brown.cs.bubbles.buda.BudaTest' fork='true'>
+	 <classpath refid='test.classpath' />
+      </java>
+   </target>
+
+   <target name='test2' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.buda.BudaRoundedBorder' fork='true'>
+	 <classpath refid='test.classpath' />
+      </java>
+   </target>
+
+   <target name='jar' depends='compile'>
+      <jar destfile="buda.jar" manifest='manifest.mf'>
+	 <fileset dir='${PRO}/ivy/java' includes= '**/*.class' />
+	 <fileset dir='${PRO}/bubbles/java' includes= '**/*.class' />
+      </jar>
+   </target>
+
+</project>
+
+

@@ -1,0 +1,447 @@
+/********************************************************************************/
+/*										*/
+/*		BattTestCase.java						*/
+/*										*/
+/*	Bubble Automated Testing Tool representation of a test case		*/
+/*										*/
+/********************************************************************************/
+/*	Copyright 2009 Brown University -- Steven P. Reiss		      */
+/*********************************************************************************
+ *  Copyright 2011, Brown University, Providence, RI.                            *
+ *                                                                               *
+ *                        All Rights Reserved                                    *
+ *                                                                               *
+ * This program and the accompanying materials are made available under the      *
+ * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
+ * and is available at                                                           *
+ *      http://www.eclipse.org/legal/epl-v10.html                                *
+ *                                                                               *
+ ********************************************************************************/
+
+
+/* SVN: $Id$ */
+
+
+package edu.brown.cs.bubbles.batt;
+
+import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.file.IvyFormat;
+
+import org.w3c.dom.*;
+import java.util.*;
+
+
+class BattTestCase implements BattConstants, Comparable<BattTestCase>
+{
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Private Storage 							*/
+/*										*/
+/********************************************************************************/
+
+private String		test_name;
+private String		class_name;
+private String		method_name;
+private TestStatus	test_status;
+private TestState	test_state;
+private String		fail_message;
+private String		fail_trace;
+private CountData	count_data;
+
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Constructors								*/
+/*										*/
+/********************************************************************************/
+
+BattTestCase(String name)
+{
+   test_name = name;
+   test_status = TestStatus.UNKNOWN;
+   test_state = TestState.UNKNOWN;
+   fail_message = null;
+   fail_trace = null;
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Access methods								*/
+/*										*/
+/********************************************************************************/
+
+String getName()			{ return test_name; }
+String getClassName()			{ return class_name; }
+String getMethodName()			{ return method_name; }
+TestStatus getStatus()			{ return test_status; }
+TestState getState()			{ return test_state; }
+
+void setStatus(TestStatus sts)		{ test_status = sts; }
+void setState(TestState st)		{ test_state = st; }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Methods to take data from the tester					*/
+/*										*/
+/********************************************************************************/
+
+synchronized boolean handleTestState(Element e)
+{
+   boolean chng = false;
+
+   class_name = IvyXml.getAttrString(e,"CLASS");
+   method_name = IvyXml.getAttrString(e,"METHOD");
+   test_name = IvyXml.getAttrString(e,"NAME");
+
+   TestStatus osts = test_status;
+   TestState ost = test_state;
+
+   String sts = IvyXml.getAttrString(e,"STATUS");
+   if (sts.equals("FAILURE")) {
+      test_status = TestStatus.FAILURE;
+      if (test_state == TestState.RUNNING || test_state == TestState.UNKNOWN)
+	 test_state = TestState.UP_TO_DATE;
+    }
+   else if (sts.equals("SUCCESS")) {
+      test_status = TestStatus.SUCCESS;
+      if (test_state == TestState.RUNNING || test_state == TestState.UNKNOWN)
+	 test_state = TestState.UP_TO_DATE;
+    }
+   else {
+      test_status = TestStatus.UNKNOWN;
+      count_data = null;
+    }
+   if (osts != test_status) chng = true;
+
+   if (test_status == TestStatus.FAILURE) {
+      String omsg = fail_message;
+      fail_message = IvyXml.getTextElement(e,"EXCEPTION");
+      fail_trace = IvyXml.getTextElement(e,"TRACE");
+      if (fail_trace != null && fail_message == null) {
+	 int idx = fail_trace.indexOf("\n");
+	 if (idx < 0) fail_message = fail_trace;
+	 else fail_message = fail_trace.substring(0,idx);
+       }
+      if (omsg == null && fail_message != null) chng = true;
+      else if (omsg != null && fail_message == null) chng = true;
+      else if (omsg != null && !omsg.equals(fail_message)) chng = true;
+    }
+   else {
+      fail_message = null;
+      fail_trace = null;
+    }
+
+   String st = IvyXml.getAttrString(e,"STATE");
+   if (st != null) {
+      try {
+	 test_state = TestState.valueOf(st);
+       }
+      catch (IllegalArgumentException ex) { }
+    }
+
+   if (ost != test_state) chng = true;
+
+   Element xe = IvyXml.getChild(e,"COVERAGE");
+   if (xe != null) count_data = new CountData(e);
+
+   return chng;
+}
+
+
+
+synchronized void handleTestCounts(Element e)
+{
+   if (e == null) count_data = null;
+   else count_data = new CountData(e);
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Check for class change							*/
+/*										*/
+/********************************************************************************/
+
+FileState usesClasses(Map<String,FileState> clsmap)
+{
+   FileState fs = null;
+
+   fs = clsmap.get(class_name);
+
+   if (count_data == null) return fs;
+
+   return count_data.usesClasses(clsmap,fs);
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Output methods								*/
+/*										*/
+/********************************************************************************/
+
+synchronized void shortReport(IvyXmlWriter xw)
+{
+   xw.begin("TEST");
+   xw.field("NAME",test_name);
+   xw.field("STATUS",test_status);
+   xw.field("STATE",test_state);
+   xw.field("CLASS",class_name);
+   xw.field("METHOD",method_name);
+   xw.end("TEST");
+}
+
+
+
+synchronized void longReport(IvyXmlWriter xw)
+{
+   xw.begin("TEST");
+   xw.field("NAME",test_name);
+   xw.field("STATUS",test_status);
+   xw.field("STATE",test_state);
+   xw.field("CLASS",class_name);
+   xw.field("METHOD",method_name);
+
+   if (fail_message != null) {
+      xw.cdataElement("EXCEPTION",fail_message);
+      xw.cdataElement("TRACE",fail_trace);
+    }
+
+   if (count_data != null) count_data.report(xw);
+
+   xw.end("TEST");
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Tool tip methods							 */
+/*										*/
+/********************************************************************************/
+
+String getToolTip()
+{
+   StringBuffer buf = new StringBuffer();
+   buf.append("<html>");
+   buf.append("<c><b>TEST ");
+   buf.append(test_name);
+   buf.append("</b></c><hr>");
+   buf.append("<table>");
+   buf.append("<tr><td>STATUS</td><td>");
+   buf.append(test_status.toString());
+   buf.append("</td></tr>");
+   buf.append("<tr><td>STATE</td><td>");
+   buf.append(test_state.toString());
+   buf.append("</td></tr>");
+   if (fail_message != null) {
+      buf.append("<tr><td>ERROR</td><td>");
+      buf.append(fail_message);
+      buf.append("</td></tr>");
+    }
+   if (fail_trace != null) {
+      buf.append("<tr><td>TRACE</td><td><pre>");
+      buf.append(fail_trace);
+      buf.append("</pre></td></tr");
+    }
+   buf.append("</table>");
+
+   return buf.toString();
+}
+
+
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Comparison methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public int compareTo(BattTestCase btc)
+{
+   return getName().compareTo(btc.getName());
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	CountData -- data representing test coverage information		*/
+/*										*/
+/********************************************************************************/
+
+private static class CountData {
+
+   private Map<String,MethodCountData>	  method_data;
+
+   CountData(Element e) {
+      method_data = new HashMap<String,MethodCountData>();
+
+      for (Element me : IvyXml.children(e,"METHOD")) {
+	 MethodCountData mcd = new MethodCountData(me);
+	 method_data.put(mcd.getName(),mcd);
+       }
+    }
+
+   FileState usesClasses(Map<String,FileState> clsset,FileState st) {
+      for (MethodCountData mcd : method_data.values()) {
+	 st = mcd.usesClasses(clsset,st);
+       }
+      return st;
+    }
+
+   void report(IvyXmlWriter xw) {
+      xw.begin("COVERAGE");
+      for (MethodCountData mcd : method_data.values()) {
+	 mcd.report(xw);
+       }
+      xw.end("COVERAGE");
+    }
+
+}	// end of inner class CountData
+
+
+private static class MethodCountData {
+
+   private String class_name;
+   private String method_name;
+   private int start_line;
+   private int end_line;
+   private int called_count;
+   private Map<String,Integer> calls_counts;
+   private Map<Integer,BlockCountData> block_data;
+
+   MethodCountData(Element e) {
+      class_name = null;
+      method_name = computeMethodName(e);
+      start_line = IvyXml.getAttrInt(e,"START");
+      end_line = IvyXml.getAttrInt(e,"END");
+      called_count = IvyXml.getAttrInt(e,"COUNT");
+      calls_counts = new HashMap<String,Integer>();
+      block_data = new HashMap<Integer,BlockCountData>();
+      for (Element be : IvyXml.children(e,"CALLS")) {
+	 int ct = IvyXml.getAttrInt(be,"CALLCOUNT");
+	 String nm = computeMethodName(be);
+	 calls_counts.put(nm,ct);
+       }
+      for (Element be : IvyXml.children(e,"BLOCK")) {
+	 BlockCountData bcd = new BlockCountData(be);
+	 block_data.put(bcd.getBlockIndex(),bcd);
+       }
+    }
+
+   String getName()			{ return method_name; }
+
+   private String computeMethodName(Element e) {
+      String nm = IvyXml.getAttrString(e,"NAME");
+      String dsc = IvyXml.getAttrString(e,"SIGNATURE");
+      if (dsc != null) {
+	 int idx = dsc.lastIndexOf(")");
+	 if (idx >= 0) dsc = dsc.substring(0,idx+1);
+	 dsc = IvyFormat.formatTypeName(dsc);
+	 nm = nm + dsc;
+       }
+      return nm;
+    }
+
+   FileState usesClasses(Map<String,FileState> clsset,FileState fs) {
+      if (class_name == null) {
+	 if (method_name == null) return fs;
+	 int i1 = method_name.indexOf("(");
+	 int i2 = method_name.lastIndexOf(".",i1);
+	 if (i2 > 0) class_name = method_name.substring(0,i2);
+	 else return fs;
+       }
+      FileState fs1 = clsset.get(class_name);
+      if (fs1 == null) return fs;
+      return fs1.merge(fs);
+    }
+
+   void report(IvyXmlWriter xw) {
+      xw.begin("METHOD");
+      xw.field("NAME",method_name);
+      xw.field("START",start_line);
+      xw.field("END",end_line);
+      xw.field("COUNT",called_count);
+      for (Map.Entry<String,Integer> ent : calls_counts.entrySet()) {
+	 xw.begin("CALLS");
+	 xw.field("NAME",ent.getKey());
+	 xw.field("COUNT",ent.getValue());
+	 xw.end("CALLS");
+       }
+      for (BlockCountData bcd : block_data.values()) {
+	 bcd.report(xw);
+       }
+      xw.end("METHOD");
+    }
+
+}	// end of inner class MethodCountData
+
+
+private static class BlockCountData {
+
+   private int block_index;
+   private int start_line;
+   private int end_line;
+   private int enter_count;
+   private Map<Integer,Integer> branch_counts;
+
+   BlockCountData(Element e) {
+      block_index = IvyXml.getAttrInt(e,"INDEX");
+      start_line = IvyXml.getAttrInt(e,"START");
+      end_line = IvyXml.getAttrInt(e,"END");
+      enter_count = IvyXml.getAttrInt(e,"COUNT");
+      branch_counts = new HashMap<Integer,Integer>();
+      for (Element be : IvyXml.children(e,"BRANCH")) {
+	 int to = IvyXml.getAttrInt(be,"TOBLOCK");
+	 int ct = IvyXml.getAttrInt(be,"COUNT");
+	 branch_counts.put(to,ct);
+       }
+    }
+
+   int getBlockIndex()				{ return block_index; }
+
+   void report(IvyXmlWriter xw) {
+      xw.begin("BLOCK");
+      xw.field("ID",block_index);
+      xw.field("START",start_line);
+      xw.field("END",end_line);
+      xw.field("COUNT",enter_count);
+      for (Map.Entry<Integer,Integer> ent : branch_counts.entrySet()) {
+	 xw.begin("BRANCH");
+	 xw.field("TOBLOCK",ent.getKey());
+	 xw.field("COUNT",ent.getValue());
+	 xw.end("BRANCH");
+       }
+      xw.end("BLOCK");
+    }
+
+}	// end of inner class BlockCountData
+
+
+
+}	// end of class BattTestCase
+
+
+
+
+/* end of BattTestCase.java */

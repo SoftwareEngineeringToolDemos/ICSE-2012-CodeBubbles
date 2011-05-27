@@ -1,0 +1,44 @@
+Manifest-Version: 1.0
+Premain-Class: edu.brown.cs.bubbles.bandaid.BandaidController
+Agent-Class: edu.brown.cs.bubbles.bandaid.BandaidController
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true
+Can-Set_Native-Method-Prefix: false
+Sealed: false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

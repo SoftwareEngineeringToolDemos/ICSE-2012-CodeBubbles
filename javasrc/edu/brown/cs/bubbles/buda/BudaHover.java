@@ -1,0 +1,300 @@
+/********************************************************************************/
+/*										*/
+/*		BudaHover.java							*/
+/*										*/
+/*	BUblles Display Area abstract class for handling hovers 		*/
+/*										*/
+/********************************************************************************/
+/*	Copyright 2009 Brown University -- Steven P. Reiss		      */
+/*********************************************************************************
+ *  Copyright 2011, Brown University, Providence, RI.                            *
+ *                                                                               *
+ *                        All Rights Reserved                                    *
+ *                                                                               *
+ * This program and the accompanying materials are made available under the      *
+ * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
+ * and is available at                                                           *
+ *      http://www.eclipse.org/legal/epl-v10.html                                *
+ *                                                                               *
+ ********************************************************************************/
+
+
+/* RCS: $Header$ */
+
+/*********************************************************************************
+ *
+ * $Log$
+ *
+ ********************************************************************************/
+
+
+package edu.brown.cs.bubbles.buda;
+
+import edu.brown.cs.bubbles.board.BoardLog;
+
+import javax.swing.*;
+
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.*;
+
+/**
+ *	This class provides extended support for hovering.  Whereas tool tips
+ *	restrict you to a JToolTip class being popped up, this class provides
+ *	a more general mechanism.
+ *
+ *	It is used by implementing a subclass and providing the underlying
+ *	component for which hover will occur in the constructor.
+ *
+ **/
+
+public abstract class BudaHover implements ActionListener, BudaConstants
+{
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Private storage 							*/
+/*										*/
+/********************************************************************************/
+
+private MouseEvent	last_mouse;
+private Timer		delay_timer;
+private int		hover_time;
+private JViewport	use_viewport;
+private Point		view_point;
+private boolean 	doing_hover;
+
+
+private static final int HOVER_TIME = 500;
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Constructors								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	Start a hovering mechanism for the given component.
+ **/
+
+protected BudaHover(Component c)
+{
+   last_mouse = null;
+   delay_timer = new Timer(0,this);
+   delay_timer.setRepeats(false);
+   hover_time = HOVER_TIME;
+   use_viewport = null;
+   view_point = null;
+   doing_hover = false;
+
+   Mouser m = new Mouser();
+   c.addMouseMotionListener(m);
+   c.addMouseListener(m);
+   c.addKeyListener(new Keyer());
+
+   Comper cc = new Comper();
+   c.addComponentListener(cc);
+   c.addHierarchyListener(cc);
+
+   boolean havescroll = false;
+   for (Component p = c; p != null; p = p.getParent()) {
+      if (p instanceof JViewport) use_viewport = (JViewport) p;
+      else if (p instanceof JScrollPane) {
+	 havescroll = true;
+	 break;
+       }
+    }
+
+   if (!havescroll) c.addMouseWheelListener(m);
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Access methods								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	Set the time (in ms) before hover should occur.
+ **/
+
+public void setHoverTime(int t) 		{ hover_time = t; }
+
+
+
+/**
+ *	Return the time (in ms) before hover should occur.
+ **/
+
+public int getHoverTime()			{ return hover_time; }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	User callbacks								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	This routine is invoked when the user has hovered for the designated
+ *	amount of time over the given component.  The passed in event is the
+ *	last mouse event that occurred.
+ **/
+
+public abstract void handleHover(MouseEvent e);
+
+
+/**	This routine is invoked when the user moves the mouse again after a hover.
+ *
+ **/
+
+public abstract void endHover();
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle callback from the timer						*/
+/*										*/
+/********************************************************************************/
+
+@Override public void actionPerformed(ActionEvent e)
+{
+
+   if (use_viewport != null && !use_viewport.getViewPosition().equals(view_point)) {
+      last_mouse = null;
+    }
+
+   if (last_mouse == null) return;
+
+   long now = System.currentTimeMillis();
+
+   if (now - last_mouse.getWhen() >= hover_time) {
+      try {
+	 handleHover(last_mouse);
+       }
+      catch (Throwable t) {
+	 BoardLog.logE("BUDA","Problem handling hover",t);
+       }
+      doing_hover = true;
+      last_mouse = null;
+    }
+   else {
+      int delta = hover_time - ((int) (now - last_mouse.getWhen()));
+
+      delay_timer.setInitialDelay(delta);
+      delay_timer.restart();
+    }
+}
+
+
+protected void clearHover()
+{
+   last_mouse = null;
+
+   if (!doing_hover) return;
+
+   try {
+      endHover();
+    }
+   catch (Throwable t) {
+      BoardLog.logE("BUDA","Problem handling hover end",t);
+    }
+   doing_hover = false;
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle mouse events							*/
+/*										*/
+/********************************************************************************/
+
+private class Mouser extends MouseAdapter {
+
+   @Override public void mouseClicked(MouseEvent e) {
+      clearHover();
+    }
+
+   @Override public void mouseDragged(MouseEvent e) {
+      clearHover();
+    }
+
+   @Override public void mouseEntered(MouseEvent e) {
+      clearHover();
+    }
+
+   @Override public void mouseExited(MouseEvent e) {
+      clearHover();
+    }
+
+   @Override public void mouseMoved(MouseEvent e) {
+      clearHover();
+      last_mouse = e;
+      if (!delay_timer.isRunning()) {
+	 delay_timer.setInitialDelay(hover_time);
+	 delay_timer.start();
+       }
+      if (use_viewport != null) {
+	 view_point = use_viewport.getViewPosition();
+       }
+    }
+
+   @Override public void mousePressed(MouseEvent e) {
+      clearHover();
+    }
+
+   @Override public void mouseReleased(MouseEvent e) {
+      clearHover();
+    }
+
+   @Override public void mouseWheelMoved(MouseWheelEvent e) {
+      clearHover();
+    }
+
+}	// end of inner class Mouser
+
+
+
+private class Keyer extends KeyAdapter {
+
+   @Override public void keyPressed(KeyEvent e) {
+      clearHover();
+    }
+
+}	// end of inner class Keyer
+
+
+
+private class Comper extends ComponentAdapter implements HierarchyListener {
+
+   @Override public void componentHidden(ComponentEvent e) {
+      clearHover();
+    }
+
+   @Override public void hierarchyChanged(HierarchyEvent e) {
+      if (!e.getComponent().isShowing() && doing_hover)
+	 clearHover();
+   }
+
+}	// end of inner class Comper
+
+
+
+}	// end of class BudaHover
+
+
+
+
+/* end of BudaHover.java */

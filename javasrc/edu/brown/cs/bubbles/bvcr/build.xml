@@ -1,0 +1,73 @@
+<project name='bubbles.bvcr' default='compile'>
+
+   <property file='../../../../../../build.properties' />
+   <property name='PRO' value='/pro' />
+   <available file="${PRO}/ivy" type="dir" property="ivy.present" />
+   <target name="init1" if="ivy.present" >
+      <property name='IVYBIN' value='${PRO}/ivy/java' />
+      <property name='IVYJAR1' value='${PRO}/ivy/java' />
+      <property name='IVYJAR2' value='**/*.class' />
+   </target>
+   <target name="init2" unless="ivy.present" >
+      <property name='IVYBIN' value='${PRO}/bubbles/lib/ivy.jar' />
+      <property name='IVYJAR1' value='${PRO}/bubbles/lib' />
+      <property name='IVYJAR2' value='ivy.jar' />
+   </target>
+   <target name='init' depends='init1,init2' >
+      <path id='bubbles.classpath'>
+	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <pathelement location='${PRO}/bubbles/lib/junit.jar' />
+	 <pathelement location='${PRO}/bubbles/lib/bubblesasm.jar' />
+      </path>
+      <path id='test.classpath'>
+	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <pathelement location='${PRO}/bubbles/lib/junit.jar' />
+	 <pathelement location='${PRO}/bubbles/lib/bubblesasm.jar' />
+      </path>
+   </target>
+
+   <target name='compile' depends='init'>
+      <javac srcdir='.' destdir='${PRO}/bubbles/java' debug='on' deprecation='on'
+		includeantruntime='false' >
+	 <classpath refid='bubbles.classpath' />
+      </javac>
+   </target>
+
+   <target name='clean'>
+      <delete dir='${PRO}/bubbles/java/edu/brown/cs/bubbles/bvcr' />
+   </target>
+
+   <target name='test00' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bvcr.BvcrMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value="-C" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+      </java>
+   </target>
+
+   <target name='test01' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bvcr.BvcrMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value="-S" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+      </java>
+   </target>
+
+   <target name='test02' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bvcr.BvcrMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value="-U" />
+	 <arg value="bubbles@/pro/bubbles/javasrc/edu/brown/cs/bubbles/bedrock/BedrockEditor.java" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+      </java>
+   </target>
+
+</project>
+
+
+

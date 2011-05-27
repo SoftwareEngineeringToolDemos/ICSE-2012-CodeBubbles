@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<entry key="Buda.group.draw.background.gradient">false</entry>
+<entry key="Buda.overview.stylized.viewport">true</entry>
+<entry key="Buda.mergeforreg">false</entry>
+<entry key="Buda.show.potential.task">true</entry>
+<entry key="Buda.search.multiple">false</entry>
+<entry key="Buda.shelf.by.date">false</entry>
+<entry key="Buda.border.width">1</entry>
+<entry key="Buda.border.focus.width">1</entry>
+<entry key="Buda.close.ask">true</entry>
+<entry key="Buda.close.save">true</entry>
+</properties>
+

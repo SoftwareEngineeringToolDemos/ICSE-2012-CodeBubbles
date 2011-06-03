@@ -91,6 +91,8 @@ BddtLaunchBubble(BumpLaunchConfig cfg)
    bump_client = BumpClient.getBump();
    launch_config = cfg;
    edit_config = null;
+   
+   if (cfg == null) return;
 
    setupPanel();
 }
@@ -261,10 +263,12 @@ private String getNewName()
 	 blc.setVMArguments(edit_config.getVMArguments());
 	 blc.setMainClass(edit_config.getMainClass());
        }
-      BddtLaunchBubble bbl = new BddtLaunchBubble(blc);
-      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-      Rectangle loc = BudaRoot.findBudaLocation(this);
-      bba.addBubble(bbl,loc.x + loc.width + 25,loc.y);
+      if (blc != null) {
+	 BddtLaunchBubble bbl = new BddtLaunchBubble(blc);
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+	 Rectangle loc = BudaRoot.findBudaLocation(this);
+	 bba.addBubble(bbl,loc.x + loc.width + 25,loc.y);
+       }
     }
    else if (cmd.equals("Start Class")) {
       if (edit_config == null) edit_config = launch_config;

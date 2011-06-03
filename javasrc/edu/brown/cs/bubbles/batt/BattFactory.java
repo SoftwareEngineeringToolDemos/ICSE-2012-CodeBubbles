@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -216,10 +216,18 @@ void startBattServer()
       else args.add("-S");
       args.add("-m");
       args.add(bc.getMintName());
+
+      String s1 = bs.getLibraryPath("battjunit.jar");
+      String s2 = bs.getLibraryPath("battagent.jar");
+      if (s1 == null || s2 == null) {
+	 BoardLog.logX("BATT","Missing batt file " + s1 + " " + s2);
+	 server_running = true;
+	 return;
+       }
       args.add("-u");
-      args.add(bs.getLibraryPath("battjunit.jar"));
+      args.add(s1);
       args.add("-a");
-      args.add(bs.getLibraryPath("battagent.jar"));
+      args.add(s2);
 
       for (int i = 0; i < 100; ++i) {
 	 MintDefaultReply rply = new MintDefaultReply();

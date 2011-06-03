@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -65,6 +65,9 @@ class BedrockUtil implements BedrockConstants {
 /*										*/
 /********************************************************************************/
 
+private static Set<String>	sources_sent;
+
+
 private static Map<String,Integer> resource_types;
 private static Map<String,Integer> delta_kinds;
 private static Map<String,Integer> delta_flags;
@@ -74,6 +77,8 @@ private static Map<String,Integer> access_flags;
 
 
 static {
+   sources_sent = new HashSet<String>();
+
    resource_types = new HashMap<String,Integer>();
    resource_types.put("FILE",1);
    resource_types.put("FOLDER",2);
@@ -1348,7 +1353,10 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
    ILaunchConfigurationType typ;
 
    if (cfg == null) return;
-   if (cfg.isWorkingCopy()) cfg = ((ILaunchConfigurationWorkingCopy) cfg).getOriginal();
+   if (cfg.isWorkingCopy()) {
+      ILaunchConfiguration xcfg = ((ILaunchConfigurationWorkingCopy) cfg).getOriginal();
+      if (xcfg != null) cfg = xcfg;
+    }
 
    try {
       id = Integer.toString(cfg.hashCode());
@@ -1362,6 +1370,7 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
 
    xw.begin("CONFIGURATION");
    xw.field("NAME",cfg.getName());
+   if (cfg.isWorkingCopy()) xw.field("WORKING",true);
 
    xw.field("ID",id);
    for (Iterator<?> it = modes.iterator(); it.hasNext(); ) {
@@ -1431,14 +1440,28 @@ static void outputStackFrame(IJavaStackFrame jsf,int lvl,int vdepth,IvyXmlWriter
    if (!jsf.wereLocalsAvailable()) xw.field("NOLOCALS",true);
    xw.field("SIGNATURE",jsf.getSignature());
    if (lvl >= 0) xw.field("LEVEL",lvl);
-   Object resource = jsf.getLaunch().getSourceLocator().getSourceElement(jsf);
+
+   Object resource = null;
+   ISourceLocator loc = jsf.getLaunch().getSourceLocator();
+   resource = loc.getSourceElement(jsf);
    if (resource != null) {
       if (resource instanceof IClassFile) {
 	 IClassFile cf = (IClassFile) resource;
 	 xw.field("FILETYPE","CLASSFILE");
 	 try {
-	    xw.field("FILE",cf.findPrimaryType().getFullyQualifiedParameterizedName());
+	    String fnm = cf.findPrimaryType().getFullyQualifiedParameterizedName();
+	    xw.field("FILE",fnm);
 	    xw.field("FILEPATH",cf.getPath().toOSString());
+	    if (cf.getSource() != null) {
+	       ISourceRange rng = cf.getSourceRange();
+	       byte [] data = cf.getSource().getBytes();
+	       xw.field("SOURCELEN",rng.getLength());
+	       xw.field("SOURCEOFF",rng.getOffset());
+	       if (!sources_sent.contains(fnm)) {
+		  sources_sent.add(fnm);
+		  xw.bytesElement("SOURCE",data);
+		}
+	     }
 	  }
 	 catch (JavaModelException e) { }
        }
@@ -1529,7 +1552,7 @@ static void outputValue(IValue val,IJavaVariable var,String name,int lvls,IvyXml
 	 xw.field("KIND","CLASS");
 	 xw.field("TYPENAME",ctyp.getName());
        }
-      else if (typ.equals("Ljava/lang/String;")) {
+      else if (typ.equals("Ljava/lang/String;") || typ.equals("java.lang.String")) {
 	 xw.field("KIND","STRING");
        }
       else if (val instanceof IJavaObject) {

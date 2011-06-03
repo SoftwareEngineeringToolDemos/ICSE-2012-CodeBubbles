@@ -33,7 +33,6 @@
 	 <fileset dir='${PRO}/bubbles/lib/' includes='Lobo/**/*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jmf/**/*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='javax.servlet.jar' />
-	 <fileset dir='${PRO}/bubbles/lib/jung/' includes='*.jar' />
 	 <pathelement location='${PRO}/bubbles/lib/bubblesasm.jar' />
       </path>
    </target>
@@ -239,7 +238,6 @@
 	 <fileset dir='${PRO}/bubbles/' includes='lib/preferences.xml' />
 	 <fileset dir='${PRO}/bubbles' includes='images/**/*.png' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='Lobo/**/*.jar' excludes='Lobo/Uninstaller/*' />
-	 <fileset dir='${PRO}/bubbles/lib/' includes='jung/*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='bubblesasm.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='bandaid.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />
@@ -272,7 +270,6 @@
 	 <fileset dir='${PRO}/bubbles/' includes='lib/preferences.xml' />
 	 <fileset dir='${PRO}/bubbles' includes='images/**/*.png' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='Lobo/**/*.jar' excludes='Lobo/Uninstaller/*' />
-	 <fileset dir='${PRO}/bubbles/lib/' includes='jung/*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='bubblesasm.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='bandaid.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />

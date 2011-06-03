@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -139,7 +139,7 @@ BumpLocation insertMethod()
 
 private BumpLocation findLocation(BaleDocumentIde doc,int offset,int len)
 {
-   List<BumpLocation> locs = bump_client.findMethod(for_project,method_name);
+   List<BumpLocation> locs = bump_client.findMethod(for_project,method_name,false);
    if (locs == null) return null;
 
    for (BumpLocation loc : locs) {
@@ -150,7 +150,7 @@ private BumpLocation findLocation(BaleDocumentIde doc,int offset,int len)
 
       if (offset < re && offset + len > rs) {
 	 // regions overlap -- use it
-	 
+	
 	 return loc;
        }
     }
@@ -193,7 +193,7 @@ private int findInsertionPoint(BaleDocumentIde doc)
    int offset = -1;
 
    if (insert_after != null) {
-      List<BumpLocation> locs = bump_client.findMethod(for_project,insert_after);
+      List<BumpLocation> locs = bump_client.findMethod(for_project,insert_after,false);
       if (locs == null || locs.size() == 0) return -1;
       BumpLocation loc = locs.get(0);
       BaleRegion rgn = doc.getRegionFromLocation(loc);

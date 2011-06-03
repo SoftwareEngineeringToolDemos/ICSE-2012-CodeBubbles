@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -42,7 +42,7 @@ import org.eclipse.ui.ide.IDE;
 
 import java.io.File;
 import java.util.*;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 class BedrockJava implements BedrockConstants {
 
@@ -726,7 +726,13 @@ void textSearch(String proj,int regexpfgs,String pat,String fp,int max,IvyXmlWri
    pelt = getSearchElements(pelt);
    ICompilationUnit [] units = getCompilationElements(pelt);
 
-   Pattern pp = Pattern.compile(pat,regexpfgs);
+   Pattern pp;
+   try {
+      pp = Pattern.compile(pat,regexpfgs);
+    }
+   catch (PatternSyntaxException e) {
+      pp = Pattern.compile(pat,regexpfgs | Pattern.LITERAL);
+    }
 
    SearchHandler sh = new SearchHandler(xw,units,max);
 

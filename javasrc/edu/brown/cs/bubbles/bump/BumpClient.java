@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss, Hsu-Sheng Ko	*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -640,7 +640,7 @@ public void createProject()
  *	parenthesized argument list, i.e. package.method(int,java.lang.String).
  **/
 
-public List<BumpLocation> findMethod(String proj,String name)
+public List<BumpLocation> findMethod(String proj,String name,boolean system)
 {
    boolean cnstr = false;
    name = name.replace('$','.');
@@ -667,7 +667,7 @@ public List<BumpLocation> findMethod(String proj,String name)
       return null;
     }
 
-   List<BumpLocation> locs = findMethods(proj,name,false,true,cnstr);
+   List<BumpLocation> locs = findMethods(proj,name,false,true,cnstr,system);
 
    if (locs == null || locs.isEmpty()) {
       int x1 = name.indexOf('(');
@@ -681,7 +681,7 @@ public List<BumpLocation> findMethod(String proj,String name)
 	       int ln = pfx.length();
 	       args = "(" + args.substring(ln+2);
 	       name = mthd + args;
-	       locs = findMethods(proj,name,false,true,cnstr);
+	       locs = findMethods(proj,name,false,true,cnstr,system);
 	    }
 	 }
       }
@@ -698,7 +698,8 @@ public List<BumpLocation> findMethod(String proj,String name)
  *	distinguishes normal methods from constructors.
  **/
 
-public List<BumpLocation> findMethods(String proj,String pat,boolean refs,boolean defs,boolean cnstr)
+public List<BumpLocation> findMethods(String proj,String pat,boolean refs,boolean defs,
+					 boolean cnstr,boolean system)
 {
    pat = pat.replace('$','.');
 
@@ -715,12 +716,12 @@ public List<BumpLocation> findMethods(String proj,String pat,boolean refs,boolea
    sw.write("' DEFS='" + defs +"' REFS='" + refs + "'");
    if (cnstr) sw.write(" FOR='CONSTRUCTOR'");
    else sw.write(" FOR='METHOD'");
+   if (system) sw.write(" SYSTEM='T'");
 
    Element xml = getXmlReply("JAVASEARCH",proj,sw.toString(),null,0);
 
    return getSearchResults(proj,xml,false);
 }
-
 
 
 
@@ -1842,21 +1843,23 @@ Element getRunConfigurations()
 }
 
 
-Element getNewRunConfiguration(String name,String clone)
+Element getNewRunConfiguration(String name,String clone,String typ)
 {
    String q = "";
    if (name != null) q = "NAME='" + name + "'";
+   if (typ != null) q += " TYPE='" + typ + "'";
    if (clone != null) { 	// must have a new name
       q = " CLONE='" + clone + "'";
     }
-   Element e = getXmlReply("NEWRUNCONFIG",q,null,null,0);
+
+   Element e = getXmlReply("NEWRUNCONFIG",null,q,null,0);
    return e;
 }
 
 Element editRunConfiguration(String id,String prop,String val)
 {
    String q = "LAUNCH='" + id + "' PROP='" + prop + "' VALUE='" + val + "'";
-   Element e = getXmlReply("EDITRUNCONFIG",q,null,null,0);
+   Element e = getXmlReply("EDITRUNCONFIG",null,q,null,0);
    return e;
 }
 
@@ -1864,7 +1867,7 @@ Element editRunConfiguration(String id,String prop,String val)
 Element saveRunConfiguration(String id)
 {
    String q = "LAUNCH='" + id + "'";
-   Element e = getXmlReply("SAVERUNCONFIG",q,null,null,0);
+   Element e = getXmlReply("SAVERUNCONFIG",null,q,null,0);
    return e;
 }
 
@@ -2060,7 +2063,11 @@ public String getVariableDetail(BumpStackFrame frm,String var)
    Element xml = getXmlReply("VARDETAIL",null,q,data,0);
    if (!IvyXml.isElement(xml,"RESULT")) return null;
 
-   String rslt = IvyXml.getTextElement(xml,"DETAIL");
+   // String rslt = IvyXml.getTextElement(xml,"DETAIL");
+
+   Element val = IvyXml.getChild(xml,"VALUE");
+   if (val == null) return null;
+   String rslt = IvyXml.getTextElement(val,"DESCRIPTION");
 
    return rslt;
 }

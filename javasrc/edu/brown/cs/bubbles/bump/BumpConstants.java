@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -525,10 +525,13 @@ enum BumpThreadState {
 /********************************************************************************/
 
 interface BumpRunModel {
+
    Iterable<BumpLaunchConfig> getLaunchConfigurations();
+   BumpLaunchConfig createLaunchConfiguration(String name,String typ);
    Iterable<BumpProcess> getProcesses();
    void addRunEventHandler(BumpRunEventHandler reh);
    void removeRunEventHandler(BumpRunEventHandler reh);
+
 }	// end of inner interface BumpRunModel
 
 
@@ -619,12 +622,15 @@ interface BumpLaunchConfig {
    String getVMArguments();
    String getConfigName();
    String getId();
+   String getConfigType();
+   String getTestName();
 
    BumpLaunchConfig clone(String name);
    BumpLaunchConfig save();
    BumpLaunchConfig setMainClass(String cnm);
    BumpLaunchConfig setArguments(String args);
    BumpLaunchConfig setVMArguments(String args);
+   BumpLaunchConfig setAttribute(String name,String value);
 
 }	// end of inner interface BumpLaunch
 
@@ -708,6 +714,7 @@ interface BumpStackFrame {
    String getId();
    int getLevel();
    boolean isStatic();
+   boolean isSystem();
 
    Collection<String> getVariables();
    BumpRunValue getValue(String var);

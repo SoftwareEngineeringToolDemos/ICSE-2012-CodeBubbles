@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -78,8 +78,9 @@ private static final Action delete_line_action = new DeleteLineAction();
 private static final Action delete_to_eol_action = new DeleteToEolAction();
 private static final Action insert_line_above_action = new InsertLineAboveAction();
 private static final Action insert_line_below_action = new InsertLineBelowAction();
-private static final Action indent_line_action = new IndentLineAction();
+private static final Action indent_lines_action = new IndentLinesAction();
 private static final Action join_lines_action = new JoinLinesAction();
+private static final Action comment_lines_action = new CommentLinesAction();
 private static final Action smart_paste_action = new SmartPasteAction();
 private static final Action move_lines_down_action = new MoveLinesAction(1);
 private static final Action move_lines_up_action = new MoveLinesAction(-1);
@@ -143,8 +144,9 @@ private static final Action [] local_actions = {
    delete_to_eol_action,
    insert_line_above_action,
    insert_line_below_action,
-   indent_line_action,
+   indent_lines_action,
    join_lines_action,
+   comment_lines_action,
    start_line_action,
    start_line_select_action,
    begin_line_action,
@@ -216,8 +218,9 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu shift DELETE",delete_to_eol_action),
       new KeyItem("menu shift ENTER",insert_line_above_action),
       new KeyItem("shift ENTER",insert_line_below_action),
-      new KeyItem("menu I",indent_line_action),
+      new KeyItem("menu I",indent_lines_action),
       new KeyItem("menu alt J",join_lines_action),
+      new KeyItem("menu SLASH",comment_lines_action),
       new KeyItem("HOME",start_line_action),
       new KeyItem("shift HOME",start_line_select_action),
       new KeyItem("END",end_line_action),
@@ -525,7 +528,7 @@ private static class DefaultKeyAction extends TextAction {
 	       target.replaceSelection(content);
 	       if (content != null && shouldAutoIndent(target,content,sel)) {
 		  // TODO: check that this is the only thing on the line
-		  indent_line_action.actionPerformed(e);
+		  indent_lines_action.actionPerformed(e);
 		}
 	       BaleCompletionContext ctx = target.getCompletionContext();
 	       if (ctx == null && isCompletionTrigger(c) && !target.getOverwriteMode()) {
@@ -747,7 +750,7 @@ private static class NewlineAction extends TextAction {
 		  break;
 	     }
 	  }
-	 
+
 	 boolean grow = true;
 	 boolean rep = true;
 	 boolean ind = true;
@@ -926,13 +929,13 @@ private static class InsertLineBelowAction extends TextAction {
 
 
 
-private static class IndentLineAction extends TextAction {
+private static class IndentLinesAction extends TextAction {
 
    private static final long serialVersionUID = 1;
 
 
-   IndentLineAction() {
-      super("IndentLineAction");
+   IndentLinesAction() {
+      super("IndentLinesAction");
     }
 
    @Override public void actionPerformed(ActionEvent e) {
@@ -954,7 +957,6 @@ private static class IndentLineAction extends TextAction {
 	    slno = x;
 	  }
 
-
 	 for (int i = slno; i <= elno; ++i) {
 	    bd.fixLineIndent(i);
 	  }
@@ -962,7 +964,7 @@ private static class IndentLineAction extends TextAction {
       finally { bd.baleWriteUnlock(); }
     }
 
-}	// end of inner class IndentLineAction
+}	// end of inner class IndentLinesAction
 
 
 
@@ -1101,6 +1103,61 @@ private static class MoveLinesAction extends TextAction {
     }
 
 }	// end of inner class MoveLinesAction
+
+
+
+
+private static class CommentLinesAction extends TextAction {
+
+   private static final long serialVersionUID = 1;
+
+
+   CommentLinesAction() {
+      super("CommentLinesAction");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BaleEditorPane be = getBaleEditor(e);
+      if (!checkEditor(be)) return;
+      BaleDocument bd = be.getBaleDocument();
+
+      bd.baleWriteLock();
+      try {
+	 int soff = be.getSelectionStart();
+	 int eoff = be.getSelectionEnd();
+
+	 int slno = bd.findLineNumber(soff);
+	 int elno = slno;
+	 if (eoff != soff) elno = bd.findLineNumber(eoff);
+	 if (elno < slno) {
+	    int x = elno;
+	    elno = slno;
+	    slno = x;
+	  }
+	 
+	 for (int i = elno; i >= slno; --i) {
+	    int loff = bd.findLineOffset(i);
+	    int nind = bd.getCurrentLineIndent(loff);
+	    if (nind < 0) break;
+	    BaleElement ce = bd.getCharacterElement(loff+nind);
+	    try {
+	       if (ce != null && ce.getName().equals("LineComment")) {
+		  bd.remove(loff+nind,2);
+		  bd.fixLineIndent(i);
+	        }
+	       else {
+		  bd.insertString(loff+nind,"// ",null);
+	        }
+	     }
+	    catch (BadLocationException ex) {
+	       return;
+	     }
+	  }
+       }
+      finally { bd.baleWriteUnlock(); }
+    }
+
+}	// end of inner class CommentLinesAction
 
 
 

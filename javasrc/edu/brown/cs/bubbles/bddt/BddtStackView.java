@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -32,6 +32,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import edu.brown.cs.ivy.swing.SwingTreeTable;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -347,6 +348,11 @@ private class SourceAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BumpStackFrame frm = for_node.getFrame();
       BudaBubble bb = null;
+      // TODO: If frm.isSystem(), create a file bubble using the temp file and without eclipse
+      // Ideally, would like a method bubble here -- can we fake that
+      // need to search for method location in system code, not just project
+      // so add a new Bale method createSystemMethodBubble(proj,mid,file)
+      
       if (frm.getFile() != null && frm.getFile().exists()) {
 	 String proj = frm.getThread().getLaunch().getConfiguration().getProject();
 	 String mid = frm.getMethod() + frm.getSignature();
@@ -467,11 +473,21 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
       ValueTreeNode tn = null;
       if (v0 instanceof ValueTreeNode) tn = (ValueTreeNode) v0;
       if (tn != null) {
+	 StringBuffer buf = new StringBuffer();
+	 buf.append("<html>");
 	 Object vobj = tn.getValue();
 	 String what = tn.getKey();
 	 what = what.replace('?','.');
 	 if (vobj == null) return what;
-	 else return what + " = " + vobj.toString();
+	 buf.append(what);
+	 buf.append(" = ");
+	 buf.append(IvyXml.xmlSanitize(vobj.toString()));
+	 String evl = launch_control.getEvaluationString(tn.getFrame(),tn.getRunValue(),what);
+	 if (evl != null) {
+	    buf.append("<hr>");
+	    buf.append(IvyXml.xmlSanitize(evl));
+	  }
+	 return buf.toString();
        }
       return null;
     }

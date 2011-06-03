@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -480,7 +480,7 @@ protected abstract class AbstractNode implements ValueTreeNode, TreeNode {
    abstract ValueSetType getType();
    abstract BumpThread getThread();
    @Override public BumpStackFrame getFrame()			{ return null; }
-   BumpRunValue getRunValue()					{ return null; }
+   @Override public BumpRunValue getRunValue()			{ return null; }
 
    void fixAfterChange()					{ }
    boolean sameNode(AbstractNode an)				{ return false; }
@@ -663,7 +663,7 @@ private class RootNode extends AbstractNode {
    @Override ValueSetType getType()			{ return base_node.getType(); }
    @Override BumpThread getThread()			{ return base_node.getThread(); }
    @Override public BumpStackFrame getFrame()		{ return base_node.getFrame(); }
-   @Override BumpRunValue getRunValue() 		{ return base_node.getRunValue(); }
+   @Override public BumpRunValue getRunValue()		{ return base_node.getRunValue(); }
 
    @Override public TreeNode getParent()		{ return null; }
 
@@ -992,8 +992,8 @@ private abstract class ValueNode extends AbstractNode {
    @Override ValueSetType getType()		{ return ValueSetType.VALUE; }
 
    @Override BumpThread getThread()		{ return for_value.getThread(); }
-   @Override public BumpStackFrame getFrame()		{ return for_value.getFrame(); }
-   @Override BumpRunValue getRunValue() 	{ return for_value; }
+   @Override public BumpStackFrame getFrame()	{ return for_value.getFrame(); }
+   @Override public BumpRunValue getRunValue()	{ return for_value; }
 
    @Override String getLabel() {
       return getThread().getName() + " :: " + getFrame().getMethod() +

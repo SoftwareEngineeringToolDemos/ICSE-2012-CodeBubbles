@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss, Hsu-Sheng Ko      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -152,7 +152,7 @@ public static void initialize(BudaRoot br)
 
 BaleFragmentEditor createMethodFragmentEditor(String proj,String method)
 {
-   List<BumpLocation> locs = bump_client.findMethod(proj,method);
+   List<BumpLocation> locs = bump_client.findMethod(proj,method,false);
 
    return getEditorFromLocations(locs);
 }
@@ -391,6 +391,33 @@ public BudaBubble createMethodBubble(String proj,String fct)
 
 
 
+
+
+/**
+ *	Return the code bubble for a system code fragment.   The fragment is
+ *	given by its fully qualified name (including parameter types).	The source
+ *	file to be used is passed in.
+ **/
+
+public BudaBubble createSystemMethodBubble(String proj,String fct,File src)
+{
+   // this doesn't do what we want it to
+   List<BumpLocation> locs = bump_client.findMethod(proj,fct,true);
+   
+   if (locs == null || locs.isEmpty()) return null;
+   
+   // need to create a bubble using the given file here
+
+   return null;
+}
+
+
+
+
+
+
+
+
 /**
  *	Return the code bubble for all the fields of the given class.
  **/
@@ -544,7 +571,7 @@ public BudaBubble createNewMethod(String proj,
    if (bl.getInsertionFile() == null) return null;
 
    BaleDocumentIde doc = BaleFactory.getFactory().getDocument(proj,bl.getInsertionFile());
-   List<BumpLocation> blocs = bump_client.findMethod(proj,name);
+   List<BumpLocation> blocs = bump_client.findMethod(proj,name,false);
    if (blocs == null || blocs.size() == 0) return null;
 
    BumpLocation loc = null;
@@ -664,7 +691,11 @@ BaleDocumentIde getDocument(String proj,File f)
 
 @Override public void handleSaveRequest()
 {
-   for (BaleDocumentIde doc : file_documents.values()) {
+   Collection<BaleDocumentIde> docs;
+   synchronized (file_documents) {
+      docs = new ArrayList<BaleDocumentIde>(file_documents.values());
+    }
+   for (BaleDocumentIde doc : docs) {
       if (doc.canSave()) doc.save();
    }
 }
@@ -674,7 +705,11 @@ BaleDocumentIde getDocument(String proj,File f)
 
 @Override public void handleCheckpointRequest()
 {
-   for (BaleDocumentIde doc : file_documents.values()) {
+   Collection<BaleDocumentIde> docs;
+   synchronized (file_documents) {
+      docs = new ArrayList<BaleDocumentIde>(file_documents.values());
+    }
+   for (BaleDocumentIde doc : docs) {
       if (doc.canSave()) doc.checkpoint();
    }
 }
@@ -684,12 +719,6 @@ BaleDocumentIde getDocument(String proj,File f)
 
 @Override public boolean handleQuitRequest()
 {
-   for (BaleDocumentIde doc : file_documents.values()) {
-      if (doc.canSave()) {
-	 //TODO: ask the user if he wants to save/save all/abort/ignore
-       }
-   }
-
    return true;
 }
 
@@ -853,7 +882,7 @@ List<BaleRegion> getFragmentRegions(BaleDocument doc)
 
    switch (doc.getFragmentType()) {
       case METHOD :
-	 locs = bump_client.findMethod(proj,nam);
+	 locs = bump_client.findMethod(proj,nam,false);
 	 break;
       case CLASS :
 	 locs = bump_client.findClassDefinition(proj,nam);

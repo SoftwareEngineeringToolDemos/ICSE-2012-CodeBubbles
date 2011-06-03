@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss, Hsu-Sheng Ko      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -528,7 +528,8 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("NEWRUNCONFIG")) {
       bedrock_runtime.getNewRunConfiguration(proj,
 						IvyXml.getAttrString(xml,"NAME"),
-						IvyXml.getAttrString(xml,"CLONE"),xw);
+						IvyXml.getAttrString(xml,"CLONE"),
+						IvyXml.getAttrString(xml,"TYPE","Java Application"),xw);
     }
    else if (cmd.equals("EDITRUNCONFIG")) {
       bedrock_runtime.editRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),
@@ -603,9 +604,14 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 					  IvyXml.getAttrInt(xml,"DEPTH",1),xw);
     }
    else if(cmd.equals("VARDETAIL")) {
+      bedrock_runtime.getVariableValue(IvyXml.getAttrString(xml,"THREAD"),
+					  IvyXml.getAttrString(xml,"FRAME"),
+					  IvyXml.getTextElement(xml,"VAR"),-1,xw);
+      /********
       bedrock_runtime.getVariableDetails(IvyXml.getAttrString(xml,"THREAD"),
 					    IvyXml.getAttrString(xml,"FRAME"),
 					    IvyXml.getTextElement(xml,"VAR"),xw);
+      **********/
     }
    else if (cmd.equals("EVALUATE")) {
       bedrock_runtime.evaluateExpression(proj,IvyXml.getAttrString(xml,"BID","*"),

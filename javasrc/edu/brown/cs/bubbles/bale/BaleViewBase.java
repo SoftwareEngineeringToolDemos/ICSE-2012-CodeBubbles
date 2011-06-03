@@ -267,8 +267,8 @@ private int findPosition(JTextComponent c, int pos, boolean down) throws BadLoca
 	 back = c.viewToModel(new Point(initview.x, posview.y));
        }
 
-      if (front >= back) return -1;
-   }
+      if (front > back) return -1;
+    }
    else return -1;
 
    int min = front;

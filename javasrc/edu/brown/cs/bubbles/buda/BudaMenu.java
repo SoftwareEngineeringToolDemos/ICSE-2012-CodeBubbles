@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -405,7 +405,7 @@ private class MenuBtn extends JMenuItem implements MenuComponent, ActionListener
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(c);
       ButtonListener bc = for_item.getCallback();
       if (bc != null) {
-	 BoardMetrics.noteCommand("BUDA","menu" + for_item.getName());
+	 BoardMetrics.noteCommand("BUDA","menu_" + for_item.getName());
 	 bc.buttonActivated(bba,for_item.getId(),start_point);
        }
       noteMenuUsed(this);

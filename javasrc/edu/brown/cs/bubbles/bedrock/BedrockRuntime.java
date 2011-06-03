@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -60,6 +60,7 @@ private DebugPlugin debug_plugin;
 
 private ConsoleThread		console_thread;
 private Map<Integer,ConsoleData> console_map;
+private Set<ILaunchConfiguration> working_configs;
 
 
 
@@ -75,6 +76,7 @@ BedrockRuntime(BedrockPlugin bp)
    debug_plugin = DebugPlugin.getDefault();
    console_thread = null;
    console_map = new LinkedHashMap<Integer,ConsoleData>();
+   working_configs = new HashSet<ILaunchConfiguration>();
 }
 
 
@@ -127,119 +129,124 @@ void getRunConfigurations(IvyXmlWriter xw) throws BedrockException
 
 
 
-void getNewRunConfiguration(String proj,String name,String clone,IvyXmlWriter xw) throws BedrockException
+void getNewRunConfiguration(String proj,String name,String clone,String typ,IvyXmlWriter xw)
+	throws BedrockException
 {
-   ILaunchConfiguration cln = null;
-   if (clone != null) {
-      try {
-         ILaunchManager lm = debug_plugin.getLaunchManager();
-         ILaunchConfiguration [] cnfg = lm.getLaunchConfigurations();
-         for (int i = 0; i < cnfg.length; ++i) {
-            if (matchLaunchConfiguration(clone,cnfg[i])) {
-               cln = cnfg[i];
-               break;
-             }
-          }
-       }
-      catch (CoreException e) { }
-      if (cln == null) 
-         throw new BedrockException("Unknown launch configuration to clone " + clone);
-    }
-   
+   ILaunchConfiguration cln = findLaunchConfig(clone);
    ILaunchConfigurationWorkingCopy config = null;
-   
+
+   if (typ == null) typ = "Java Application";
+
    try {
       if (cln != null) {
-         if (name == null) {
-            if (cln.isWorkingCopy()) config = (ILaunchConfigurationWorkingCopy) cln;
-            else config = cln.getWorkingCopy();
-          }
-         else config = cln.copy(name);
+	 if (name == null) {
+	    if (cln.isWorkingCopy()) config = (ILaunchConfigurationWorkingCopy) cln;
+	    else config = cln.getWorkingCopy();
+	  }
+	 else config = cln.copy(name);
        }
       else {
-         String ltid = null;
-         ILaunchManager lm = debug_plugin.getLaunchManager();
-         ILaunchConfigurationType [] typs = lm.getLaunchConfigurationTypes();
-         for (ILaunchConfigurationType lct : typs) {
-            if (lct.getName().equals("Java Application")) {
-               ltid = lct.getIdentifier();
-               break;
-             }
-          }
-         ILaunchConfigurationType lct = lm.getLaunchConfigurationType(ltid);
-         IProject ip = our_plugin.getProjectManager().findProject(proj);
-         config = lct.newInstance(ip,name);
+	 String ltid = null;
+	 ILaunchManager lm = debug_plugin.getLaunchManager();
+	 ILaunchConfigurationType [] typs = lm.getLaunchConfigurationTypes();
+	 for (ILaunchConfigurationType lct : typs) {
+	    if (lct.getName().equals(typ)) {
+	       ltid = lct.getIdentifier();
+	       break;
+	     }
+	  }
+	 ILaunchConfigurationType lct = lm.getLaunchConfigurationType(ltid);
+	 IProject ip = our_plugin.getProjectManager().findProject(proj);
+	 config = lct.newInstance(ip,name);
        }
     }
    catch (CoreException e) {
       throw new BedrockException("Problem creating launch config working copy",e);
     }
-      
-   BedrockUtil.outputLaunch(config,xw);   
+
+   if (config != null) working_configs.add(config);
+
+   BedrockUtil.outputLaunch(config,xw);
 }
 
 
 
 
 void editRunConfiguration(String lnch,String prop,String val,IvyXmlWriter xw)
-        throws BedrockException
+	throws BedrockException
 {
-   ILaunchConfiguration cln = null;
-   ILaunchConfigurationWorkingCopy wc = null;
-   try {
-      ILaunchManager lm = debug_plugin.getLaunchManager();
-      ILaunchConfiguration [] cnfg = lm.getLaunchConfigurations();
-      for (int i = 0; i < cnfg.length; ++i) {
-         if (matchLaunchConfiguration(lnch,cnfg[i])) {
-            cln = cnfg[i];
-            break;
-          }
-       }
-      if (cln != null) {
-         if (cln.isWorkingCopy()) wc = (ILaunchConfigurationWorkingCopy) cln;
-         else wc = cln.getWorkingCopy();
-       }
-    }
-   catch (CoreException e) { }
-   if (wc == null) 
-      throw new BedrockException("Unknown launch configuration to edit " + lnch);
-   
+   if (lnch == null) return;
+   ILaunchConfigurationWorkingCopy wc = findWorkingLaunchConfig(lnch);
+
    wc.setAttribute(prop,val);
-   
+
    BedrockUtil.outputLaunch(wc,xw);
 }
 
 
 void saveRunConfiguration(String lnch,IvyXmlWriter xw) throws BedrockException
 {
+   if (lnch == null) return;
+   ILaunchConfigurationWorkingCopy wc = findWorkingLaunchConfig(lnch);
+
    ILaunchConfiguration cln = null;
-   ILaunchConfigurationWorkingCopy wc = null;
-   try {
-      ILaunchManager lm = debug_plugin.getLaunchManager();
-      ILaunchConfiguration [] cnfg = lm.getLaunchConfigurations();
-      for (int i = 0; i < cnfg.length; ++i) {
-         if (matchLaunchConfiguration(lnch,cnfg[i])) {
-            cln = cnfg[i];
-            break;
-          }
-       }
-      if (cln != null) {
-         if (cln.isWorkingCopy()) wc = (ILaunchConfigurationWorkingCopy) cln;
-       }
-    }
-   catch (CoreException e) { }
-   if (wc == null) 
-      throw new BedrockException("Unknown launch configuration to save " + lnch);
-   
    try {
       cln = wc.doSave();
+      working_configs.remove(wc);
     }
    catch (CoreException e) {
       throw new BedrockException("Problem saving launch configuration",e);
     }
-   
+
    BedrockUtil.outputLaunch(cln,xw);
 }
+
+
+
+private ILaunchConfigurationWorkingCopy findWorkingLaunchConfig(String id) throws BedrockException
+{
+   ILaunchConfiguration cln = findLaunchConfig(id);
+
+   ILaunchConfigurationWorkingCopy wc = null;
+   if (cln.isWorkingCopy()) wc = (ILaunchConfigurationWorkingCopy) cln;
+   else {
+      try {
+	 wc = cln.getWorkingCopy();
+       }
+      catch (CoreException e) {
+	 throw new BedrockException("Problem creating working copy",e);
+       }
+      working_configs.add(wc);
+    }
+
+   return wc;
+}
+
+
+
+private ILaunchConfiguration findLaunchConfig(String id) throws BedrockException
+{
+   if (id == null) return null;
+
+   try {
+      ILaunchManager lm = debug_plugin.getLaunchManager();
+      for (ILaunchConfiguration cfg : lm.getLaunchConfigurations()) {
+	 if (matchLaunchConfiguration(id,cfg)) return cfg;
+       }
+    }
+   catch (CoreException e) {
+      throw new BedrockException("Problem looking up launch configuration " + id,e);
+    }
+
+   for (ILaunchConfiguration cfg : working_configs) {
+      if (matchLaunchConfiguration(id,cfg)) return cfg;
+    }
+
+   throw new BedrockException("Unknown launch configuration " + id);
+}
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -442,7 +449,8 @@ private boolean doAction(IThread thrd,String fname,BedrockDebugAction act) throw
        }
     }
    catch (DebugException e) {
-      throw new BedrockException("Problem setting thread status",e);
+      BedrockPlugin.log(BedrockLogLevel.INFO,"Problem with debug action",e);
+      throw new BedrockException("Problem setting thread status: + e",e);
     }
 
    return true;
@@ -602,6 +610,24 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 
 	 if (val == null || tok.hasMoreTokens()) throw new BedrockException("Variable doesn't exists");
 
+	 if (lvls < 0 && thrd instanceof IJavaThread) {
+	    IJavaThread jthrd = (IJavaThread) thrd;
+	    if (val instanceof IJavaArray) {
+	       IJavaArray avl = (IJavaArray) val;
+	       IJavaType typ = avl.getJavaType();
+	       String tsg = typ.getSignature();
+	       if (tsg.startsWith("[[") || tsg.contains(";")) tsg = "[Ljava/lang/Object;";
+	       tsg = "(" + tsg + ")Ljava/lang/String;";
+	       IJavaValue [] args = new IJavaValue[1];
+	       args[0] = avl;
+	       val = avl.sendMessage("toString",tsg,args,jthrd,"Ljava/util/Arrays;");
+	     }		
+	    else if (val instanceof IJavaObject) {
+	       IJavaObject ovl = (IJavaObject) val;
+	       val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
+	     }
+	  }
+
 	 BedrockUtil.outputValue(val,(IJavaVariable) var,vname,lvls,xw);
        }
       catch (DebugException e) {
@@ -647,7 +673,10 @@ void evaluateExpression(String proj,String bid,String expr,String tname,String f
 	  }
 	 if (thrd == null) continue;		// not in this launch
 	 for (IStackFrame frame: thrd.getStackFrames()) {
-	    if (matchFrame(frid,frame)) sfrm = frame;	// chooses first if none specified
+	    if (matchFrame(frid,frame)) {
+	       sfrm = frame;
+	       break;
+	     }
 	  }
 	 if (sfrm == null) throw new BedrockException("Stack frame " + frid + " doesn't exist");
 	 if (!(sfrm instanceof IJavaStackFrame))
@@ -704,7 +733,7 @@ void getVariableDetails(String tname,String frid,String vname,IvyXmlWriter xw)
    throw new BedrockException("Not implemented yet");
 }
 
-/***************8
+/****************
 	// IValueDetailListener requires org.eclipse.debug.ui
 	//    which in turn requires that the workbench be
 	//    running before this is initialized

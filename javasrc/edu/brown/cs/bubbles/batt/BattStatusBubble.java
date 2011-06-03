@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -28,6 +28,8 @@ package edu.brown.cs.bubbles.batt;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.bale.*;
+import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bddt.*;
 
 import edu.brown.cs.ivy.swing.*;
 
@@ -41,7 +43,7 @@ import java.util.List;
 
 
 class BattStatusBubble extends BudaBubble implements BattConstants, ActionListener,
-	BattConstants.BattModelListener, BudaConstants.BudaBubbleOutputer
+	BattConstants.BattModelListener, BudaConstants.BudaBubbleOutputer, BumpConstants
 {
 
 
@@ -174,6 +176,7 @@ private void setupPanel()
 
    if (btc != null) {
       menu.add(new SourceAction(btc));
+      menu.add(new DebugAction(btc));
     }
 
    if (current_mode == null) {
@@ -182,10 +185,64 @@ private void setupPanel()
    if (current_mode != null) menu.add(new ModeAction());
 
    menu.add(getFloatBubbleAction());
+
    // TODO: provide rerun, debug, ... options
 
    menu.show(this,e.getX(),e.getY());
 }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Launch configuration methods						*/
+/*										*/
+/********************************************************************************/
+
+private BumpLaunchConfig getLaunchConfigurationForTest(BattTestCase btc)
+{
+   BumpRunModel brm = BumpClient.getBump().getRunModel();
+
+   for (BumpLaunchConfig blc : brm.getLaunchConfigurations()) {
+      if (blc.getConfigType().equals("JUnit")) {
+	 if (blc.getTestName() != null && blc.getTestName().equals(btc.getMethodName()) &&
+		  btc.getClassName().equals(blc.getMainClass())) 
+	    return blc;
+       }
+    }
+
+   BumpLaunchConfig blc = brm.createLaunchConfiguration(btc.getName(),"JUnit");
+   if (blc == null) return null;
+
+   BumpLaunchConfig blc1 = blc;
+   blc1 = blc1.setMainClass(btc.getClassName());
+   blc1 = blc1.setAttribute("TESTNAME",btc.getMethodName());
+   blc1 = blc1.setAttribute("TEST_KIND","org.eclipse.jdt.junit.loader.junit4");
+   if (blc1 != blc) blc = blc1.save();
+
+   return blc;
+}
+
+
+
+private class DebugAction extends AbstractAction {
+
+   private BattTestCase test_case;
+
+   DebugAction(BattTestCase tc) {
+      super("Debug " + tc.getName());
+      test_case = tc;
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BumpLaunchConfig blc = getLaunchConfigurationForTest(test_case);
+      if (blc == null) return;
+
+      BddtFactory.getFactory().newDebugger(blc);
+    }
+
+}	// end of inner class DebugAction
 
 
 

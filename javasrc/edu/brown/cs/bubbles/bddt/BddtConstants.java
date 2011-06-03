@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -315,6 +315,7 @@ interface ValueTreeNode extends TreeNode {
    String getKey();
    BumpStackFrame getFrame();
    Object getValue();
+   BumpRunValue getRunValue();
 
 }	// end of inner interface ValueTreeNode
 
@@ -424,7 +425,6 @@ enum BubbleType {
    HISTORY,
    EXEC,		// bubble for current execution point
    FRAME,		// bubble for user selection up the call stack
-   LIBRARY,		// library bubble for current execution point
    VALUES,		// stack frame values bubble
    STOP_TRACE,		// trace of stacks just before debugger stop
    USER 		// bubble created by the user

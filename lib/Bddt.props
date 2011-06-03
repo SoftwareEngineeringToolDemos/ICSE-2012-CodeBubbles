@@ -22,4 +22,5 @@
 <entry key="Bddt.buttons.Performance">true</entry>
 <entry key="Bddt.buttons.History">true</entry>
 <entry key="Bddt.buttons.DropToFrame">true</entry>
+<entry key="Bddt.show.values">true</entry>
 </properties>

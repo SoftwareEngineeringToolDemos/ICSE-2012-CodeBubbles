@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -180,7 +180,6 @@ void handleStartFile(String proj,String bid,String file,String id,boolean cnts,I
     }
    else xw.emptyElement("SUCCESS");
 }
-
 
 
 
@@ -1331,6 +1330,8 @@ private class FileData implements IBufferChangedListener {
       int len = evt.getLength();
       int off = evt.getOffset();
       String txt = evt.getText();
+      BedrockPlugin.logD("Buffer change " + len + " " + off + " " + (txt == null) + " " +
+			    (buf == default_buffer));
       if (len == 0 && off == 0 && txt == null && buf == default_buffer) {
 	 BedrockPlugin.logD("Buffer switch occurred for " + file_name);
 	 try {
@@ -1348,13 +1349,13 @@ private class FileData implements IBufferChangedListener {
 	  }
        }
 
-
+      int ctr = 0;
       for (Map.Entry<String,BufferData> ent : buffer_map.entrySet()) {
 	 BufferData bd = ent.getValue();
 	 IBuffer bdb = bd.getBuffer();
 	 if (bdb == null || bdb == buf) continue;
 	 IvyXmlWriter xw = our_plugin.beginMessage("EDIT",ent.getKey());
-	 BedrockPlugin.logD("START EDIT " + len + " " + off + " " + txt.length());
+	 BedrockPlugin.logD("START EDIT " + len + " " + off + " " + txt.length() + " " + (ctr++));
 	 xw.field("FILE",file_name);
 	 xw.field("LENGTH",len);
 	 xw.field("OFFSET",off);
@@ -1565,7 +1566,10 @@ private class BufferData {
 	 else if (refresh) {
 	    BedrockProgressMonitor bpm = new BedrockProgressMonitor(our_plugin,"Refreshing");
 	    comp_unit.restore();
+	    comp_unit = comp_unit.getPrimary();
+	    comp_unit.restore();
 	    comp_unit.makeConsistent(bpm);
+	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
 	  }
        }
     }

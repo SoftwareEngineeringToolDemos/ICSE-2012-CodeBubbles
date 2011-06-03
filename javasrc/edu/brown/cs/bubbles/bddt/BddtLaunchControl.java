@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -33,6 +33,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import edu.brown.cs.ivy.swing.SwingGridPanel;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -739,11 +740,14 @@ private class RunEventHandler implements BumpRunEventHandler {
       if (evt.getProcess() != cur_process) return;
       BumpThread bt = evt.getThread();
       BumpThreadState ost = thread_states.get(bt);
+      BumpThreadState nst = bt.getThreadState();
 
       switch (evt.getEventType()) {
 	 case THREAD_ADD :
+	    nst = BumpThreadState.RUNNING;
+	    //$FALL-THROUGH$
 	 case THREAD_CHANGE :
-	    thread_states.put(bt,bt.getThreadState());
+	    thread_states.put(bt,nst);
 	    if (bt.getThreadState() != ost) {
 	       handleThreadStateChange(bt,ost);
 	       if (bt.getThreadState().isStopped()) last_stopped = bt;
@@ -907,6 +911,76 @@ private class ExecutionAnnot implements BaleAnnotation {
 
 /********************************************************************************/
 /*										*/
+/*	Evaluation string methods						*/
+/*										*/
+/********************************************************************************/
+
+String getEvaluationString(BumpStackFrame frm,BumpRunValue rv,String id)
+{
+   if (rv == null && frm != null) {
+      rv = frm.getValue(id);
+      if (rv == null) {
+	 BumpRunValue rv1 = frm.getValue("this");
+	 if (rv1 != null) {
+	    rv = rv1.getValue("this?" + id);
+	  }
+       }
+    }
+
+   if (rv != null) {
+      switch (rv.getKind()) {
+	 default :
+	 case CLASS :
+	 case UNKNOWN :
+	    break;
+	 case OBJECT :
+	    String s = rv.getDetail();
+	    if (s != null) return s;
+	    break;
+	 case ARRAY :
+	    if (rv.getLength() <= 100) {
+	       s = rv.getDetail();
+	       if (s != null) return s;
+	     }
+	    break;
+	 case PRIMITIVE :
+	 case STRING :
+	    return IvyXml.xmlSanitize(rv.getValue());
+       }
+    }
+
+   if (frm == null) {
+      if (rv == null) return null;
+      return rv.getDetail();
+    }
+
+   String expr = "(" + id + ").toString()";
+   if (rv != null && rv.getKind() == BumpValueKind.ARRAY) {
+      if (rv.getLength() <= 100) {
+	 expr = "java.util.Arrays.toString(" + id + ")";
+       }
+    }
+   else if (rv != null && rv.getKind() == BumpValueKind.OBJECT && rv.getValue().equals("null")) {
+      return "null";
+    }
+
+   BumpThreadState ts = frm.getThread().getThreadState();
+   if (!ts.isStopped()) return null;
+
+   EvaluationListener el = new EvaluationListener();
+   if (frm.evaluateInternal(expr,el)) {
+      //TODO: format the result a bit if it is too long
+      return IvyXml.xmlSanitize(el.getResult());
+    }
+
+   return null;
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Handle contextual operations on debugger editors			*/
 /*										*/
 /********************************************************************************/
@@ -937,39 +1011,7 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 		  break;
 	     }
 	    if (rv == null) rv = frm.getValue(id);
-
-	    if (rv != null) {
-	       switch (rv.getKind()) {
-		  default :
-		  case ARRAY :
-		  case CLASS :
-		  case OBJECT :
-		  case UNKNOWN :
-		     // return rv.getDetail();
-		     break;
-		  case PRIMITIVE :
-		  case STRING :
-		     return rv.getValue();
-		}
-	     }
-	    String expr = "(" + id + ").toString()";
-	    if (rv != null && rv.getKind() == BumpValueKind.ARRAY) {
-	       if (rv.getLength() <= 100) {
-		  expr = "java.util.Arrays.toString(" + id + ")";
-		}
-	     }
-	    else if (rv != null && rv.getKind() == BumpValueKind.OBJECT && rv.getValue().equals("null")) {
-	       return "null";
-	     }
-
-	    BumpThreadState ts = frm.getThread().getThreadState();
-	    if (!ts.isStopped()) return null;
-
-	    EvaluationListener el = new EvaluationListener();
-	    if (frm.evaluateInternal(expr,el)) {
-	       //TODO: format the result a bit if it is too long
-	       return el.getResult();
-	     }
+	    return getEvaluationString(frm,rv,id);
 	  }
        }
       return null;

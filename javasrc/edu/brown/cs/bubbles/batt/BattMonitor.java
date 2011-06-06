@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -92,7 +92,7 @@ void server()
       while (!is_done) {
 	 checkEclipse();
 	 try {
-	    wait(300000l);
+	    wait(60000l);
 	  }
 	 catch (InterruptedException e) { }
        }
@@ -403,7 +403,8 @@ private class CommandHandler implements MintHandler {
 	 if (cmd == null) return;
 	 else if (cmd.equals("SETMODE")) {
 	    String v = IvyXml.getAttrString(e,"VALUE");
-	    if (v.equals("DEMAND")) for_batt.setMode(TestMode.DEMAND);
+	    if (v.equals("DEMAND")) for_batt.setMode(TestMode.ON_DEMAND);
+	    else if (v.equals("ON_DEMAND")) for_batt.setMode(TestMode.ON_DEMAND);
 	    else if (v.equals("CONTINUOUS")) for_batt.setMode(TestMode.CONTINUOUS);
 	  }
 	 else if (cmd.equals("RUNTESTS")) {
@@ -433,6 +434,9 @@ private class CommandHandler implements MintHandler {
 	       for_batt.runSelectedTests(lst);
 	     }
 	    for_batt.doTests();
+	  }
+	 else if (cmd.equals("STOPTEST")) {
+	    for_batt.stopTests();
 	  }
 	 else if (cmd.equals("SHOWALL")) {
 	    rply = for_batt.showAllTests();

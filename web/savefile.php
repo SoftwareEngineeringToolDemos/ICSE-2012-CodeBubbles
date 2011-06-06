@@ -72,13 +72,13 @@ else
 
 
 			mkdir($temppath);
-			chmod($temppath,0744);
+			chmod($temppath,0755);
 	}
 	$temppath = $temppath . mt_rand() . mt_rand();
 	if (!file_exists($temppath))
 	{
 			mkdir($temppath);
-			chmod($temppath,0744);
+			chmod($temppath,0755);
 	}
 
 	$filename = $temppath . "/" . $_FILES["file"]["name"];

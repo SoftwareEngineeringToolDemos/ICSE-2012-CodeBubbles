@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -993,13 +993,25 @@ private class Hoverer extends BudaHover {
 
 	 int xpos = e.getX() - scroll_pane.getViewport().getViewPosition().x;
 	 int ypos = e.getY() - scroll_pane.getViewport().getViewPosition().y;
+	 
+	 String fn = null;
 
-	 if (bn != null) preview_bubble = createPreviewBubble(bn,xpos,ypos);
+	 if (bn != null) {
+	    preview_bubble = createPreviewBubble(bn,xpos,ypos);
+	    if (preview_bubble == null) fn = bn.createPreviewString();
+	  }
+	 else {
+	    for (int i = 1; i < tp.getPathCount(); ++i) {
+	       Object o1 = tp.getPathComponent(i);
+	       if (o1 instanceof BassTreeNode) {
+		  BassTreeNode btn = (BassTreeNode) o1;
+		  if (fn == null) fn = btn.getLocalName();
+		  else fn = fn + "." + btn.getLocalName();
+	        }
+	     }
+	  }
 
-	 if (preview_bubble == null) {
-	    if (bn == null) return;
-	    String fn = bn.createPreviewString();
-	    if (fn == null) return;
+	 if (preview_bubble == null && fn != null) {
 	    JLabel tt = new JLabel(fn);
 	    tt.setOpaque(true);
 	    tt.setBackground(default_label_color);

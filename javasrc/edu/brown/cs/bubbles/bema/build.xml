@@ -205,7 +205,7 @@
 	 <fileset dir='${PRO}/bubbles/lib' includes='Lobo/**/*.jar' excludes='Lobo/Uninstaller/*' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='bubblesasm.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='bandaid.jar' />
-	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />
+a	 <fileset dir='${PRO}/bubbles/lib' includes='batt*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='javax.servlet.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='LagHunter*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />

@@ -1014,6 +1014,15 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 	    return getEvaluationString(frm,rv,id);
 	  }
        }
+      else if (isRelevantFrame(cfg)) {
+	 BumpStackFrame frm = bubble_manager.getFrameForBubble(cfg.getEditor());
+	 if (frm != null) {
+	    StringBuffer buf = new StringBuffer();
+	    buf.append("Thread: " + frm.getThread().getName());
+	    buf.append("<br>Line: " + frm.getLineNumber());
+	    return buf.toString();
+	  }
+       }
       return null;
     }
 
@@ -1036,6 +1045,16 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 	 default :
 	    return false;
        }
+      return true;
+    }
+
+   private boolean isRelevantFrame(BaleContextConfig cfg) {
+      BudaBubble bb = cfg.getEditor();
+      if (bb == null) return false;
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
+      BudaBubbleArea bba1 = BudaRoot.findBudaBubbleArea(BddtLaunchControl.this);
+      if (bba == null || bba != bba1) return false;
+      if (cur_process == null || !cur_process.isRunning()) return false;
       return true;
     }
 

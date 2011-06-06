@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Adam M. Cook 			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -55,19 +55,21 @@ class BtedBubble extends BudaBubble implements BtedConstants, BudaBubbleOutputer
 /*										*/
 /********************************************************************************/
 
-private BtedEditorPane	   text_editor;
-private BtedFactory	      the_factory;
-private File		     current_file;
-private RedoAction	       redo_action;
-private UndoAction	       undo_action;
-private JLabel		   name_label;
-private BtedFindBar	      search_bar;
-private JScrollPane	      scroll_pane;
-private JPanel		   main_panel;
-private BurpHistory	      burp_history;
+private BtedEditorPane		 text_editor;
+private BtedFactory		 the_factory;
+private File			 current_file;
+private RedoAction		 redo_action;
+private UndoAction		 undo_action;
+private JLabel			 name_label;
+private BtedFindBar		 search_bar;
+private JScrollPane		 scroll_pane;
+private JPanel			 main_panel;
+private BurpHistory		 burp_history;
 private BtedUndoableEditListener edit_listener;
 
 private static BoardProperties	 bted_props	  = BoardProperties.getProperties("Bted");
+
+private static File		last_directory = null;
 
 private static final long	serialVersionUID = 1;
 
@@ -270,10 +272,11 @@ public File getFile()
 
 private boolean openFileFromStart()
 {
-   JFileChooser chooser = new JFileChooser();
+   JFileChooser chooser = new JFileChooser(last_directory);
    int returnVal = chooser.showOpenDialog(this);
    if (returnVal == JFileChooser.APPROVE_OPTION) {
       current_file = chooser.getSelectedFile();
+      last_directory = current_file;
       the_factory.loadFileIntoEditor(current_file, text_editor, edit_listener);
       name_label.setText(current_file.getName());
       return true;
@@ -288,11 +291,12 @@ private boolean openFileFromStart()
  */
 private void openFileFromMenu()
 {
-   JFileChooser chooser = new JFileChooser();
+   JFileChooser chooser = new JFileChooser(last_directory);
    int returnVal = chooser.showOpenDialog(this);
    if (returnVal == JFileChooser.APPROVE_OPTION) {
       this.onClose();
       current_file = chooser.getSelectedFile();
+      last_directory = current_file;
       the_factory.reopenBubble(current_file.getPath(), this);
       name_label.setText(current_file.getName());
     }
@@ -334,12 +338,13 @@ private void saveFile()
  */
 private void saveAsFile()
 {
-   JFileChooser chooser = new JFileChooser();
+   JFileChooser chooser = new JFileChooser(last_directory);
    int returnVal = chooser.showSaveDialog(this);
    if (returnVal == JFileChooser.APPROVE_OPTION
 	  && !the_factory.isFileOpen(chooser.getSelectedFile())) {
       this.onClose();
       current_file = chooser.getSelectedFile();
+      last_directory = current_file;
       this.saveFile();
       the_factory.reopenBubble(current_file.getPath(), this);
     }

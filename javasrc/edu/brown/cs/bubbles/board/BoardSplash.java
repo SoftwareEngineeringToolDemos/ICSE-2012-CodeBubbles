@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 // animation author: Rachel Gollub, 1995
@@ -183,6 +183,8 @@ private void drawSplash(Graphics g,JPanel obs)
 {
    if (construct_image) {
       String vname = "version " + BoardSetup.getVersionData();
+      int idx = vname.indexOf(" @ ");
+      if (idx > 0) vname = vname.substring(0,idx);
       String copyr = "Copyright 2010 by Brown University.  All Rights Reserved";
       Graphics2D g2 = (Graphics2D) g;
       Paint p = new GradientPaint(0,0,Color.WHITE,0,SPLASH_HEIGHT,new Color(211,232,248));

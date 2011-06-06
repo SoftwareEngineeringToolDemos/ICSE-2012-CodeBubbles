@@ -168,6 +168,14 @@ void runTests(RunType rt)
 }
 
 
+void stopTest()
+{
+   BumpClient bc = BumpClient.getBump();
+   MintControl mc = bc.getMintControl();
+   mc.send("<BATT DO='STOPTEST' />");
+}
+
+
 TestMode getTestMode()
 {
    BumpClient bc = BumpClient.getBump();
@@ -178,7 +186,8 @@ TestMode getTestMode()
    if (IvyXml.isElement(e,"RESULT")) {
       String md = IvyXml.getText(e);
       if (md.equals("CONTINUOUS")) return TestMode.CONTINUOUS;
-      else if (md.equals("DEMAND")) return TestMode.DEMAND;
+      else if (md.equals("DEMAND")) return TestMode.ON_DEMAND;
+      else if (md.equals("ON_DEMAND")) return TestMode.ON_DEMAND;
     }
    return null;
 }
@@ -220,7 +229,9 @@ void startBattServer()
       String s1 = bs.getLibraryPath("battjunit.jar");
       String s2 = bs.getLibraryPath("battagent.jar");
       if (s1 == null || s2 == null) {
-	 BoardLog.logX("BATT","Missing batt file " + s1 + " " + s2);
+	 BoardProperties sp = BoardProperties.getProperties("System");
+	 String s3 = sp.getProperty("edu.brown.cs.bubbles.jar");
+	 BoardLog.logX("BATT","Missing batt file " + s1 + " " + s2 + " " + s3);
 	 server_running = true;
 	 return;
        }

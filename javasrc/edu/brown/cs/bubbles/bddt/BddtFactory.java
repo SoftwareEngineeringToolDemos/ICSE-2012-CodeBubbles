@@ -64,7 +64,6 @@ public class BddtFactory implements BddtConstants, BudaConstants.ButtonListener,
 private BudaChannelSet		debug_channels;
 private BumpLaunchConfig	current_configuration;
 private JLabel			launch_label;
-private JPanel			debug_panel;
 
 private static BddtConsoleController console_controller;
 private static BddtHistoryController history_controller;
@@ -230,7 +229,7 @@ void setCurrentLaunchConfig(BumpLaunchConfig blc)
     }
 
    current_configuration = blc;
-   if (launch_label != null) {
+   if (launch_label != null && blc != null) {
       launch_label.setText(blc.getConfigName());
    }
 }
@@ -265,8 +264,6 @@ private void setupDebugging(BudaRoot br)
    pnl.addGBComponent(launch_label,0,3,0,0,1,1);
 
    br.addPanel(pnl);
-
-   debug_panel = pnl;
 }
 
 
@@ -643,10 +640,14 @@ private class CreateConfigAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      JOptionPane.showMessageDialog(debug_panel,"Create a new launch configuration here");
+      BumpClient bc = BumpClient.getBump();
+      BumpRunModel brm = bc.getRunModel();
+      BumpLaunchConfig blc = brm.createLaunchConfiguration(null,null);
+      if (blc != null) blc.save();
     }
 
 }	// end of inner class CreateConfigAction
+
 
 
 private class ConfigComparator implements Comparator<BumpLaunchConfig> {

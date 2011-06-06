@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -77,6 +77,7 @@ private boolean 	test_request;
 private boolean 	test_busy;
 private BattThread	server_thread;
 private Set<String>	error_classes;
+private IvyExec 	current_test;
 
 
 
@@ -98,7 +99,7 @@ private BattMain(String [] args)
 {
    mint_handle = BumpConstants.BUMP_MINT_NAME;
    process_mode = ProcessMode.SERVER;
-   start_mode = TestMode.DEMAND;
+   start_mode = TestMode.ON_DEMAND;
    test_mode = null;
    batt_monitor = null;
    bubbles_junitjar = null;
@@ -110,6 +111,7 @@ private BattMain(String [] args)
    test_request = false;
    test_busy = false;
    error_classes = new HashSet<String>();
+   current_test = null;
 
    junit_jar = null;
    String s = System.getProperty("java.class.path");
@@ -240,7 +242,7 @@ void setMode(TestMode tm)
    test_mode = tm;
 
    synchronized (run_tests) {
-      if (test_mode == TestMode.DEMAND) {
+      if (test_mode == TestMode.ON_DEMAND) {
 	 if (server_thread != null) server_thread.interrupt();
        }
       else {
@@ -308,6 +310,17 @@ synchronized void removeErrors(Set<String> clss)
       run_tests.notifyAll();
     }
 }
+
+
+void stopTests()
+{
+   // if (test_mode != TestMode.ON_DEMAND) setMode(TestMode.ON_DEMAND);
+
+   if (current_test != null) current_test.destroy();
+
+   // stop current test here
+}
+
 
 
 
@@ -548,8 +561,10 @@ private void processRun(boolean listonly,Set<String> testclss)
 	 String [] argv = new String[args.size()];
 	 argv = args.toArray(argv);
 	 IvyExec ex = new IvyExec(argv,null,0);
+	 current_test = ex;
 	 // should handle input and output here
 	 ex.waitFor();
+	 current_test = null;
        }
       catch (IOException e) {
 	 System.err.println("BATT: Problem running junit java: " + e);

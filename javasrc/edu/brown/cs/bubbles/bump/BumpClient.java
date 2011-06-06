@@ -249,7 +249,17 @@ private void ensureRunning()
    String eclipsedir = board_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    String ws = board_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
 
-   String cmd = "'" + eclipsedir + File.separator + "eclipse'";
+   File ef = new File(eclipsedir);
+   File ef1 = null;
+   for (String s : BOARD_ECLIPSE_START) {
+      ef1 = new File(ef,s);
+      if (ef1.exists() && ef1.canExecute()) break;
+    }
+   if (!ef1.exists() || !ef1.canExecute()) ef1 = new File(ef,"eclipse");
+   String efp = ef1.getPath();
+   if (efp.endsWith(".app") || efp.endsWith(".exe")) efp = efp.substring(0,efp.length()-4);
+
+   String cmd = "'" + efp + "'";
    if (!board_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,false)) {
       cmd += " -application edu.brown.cs.bubbles.bedrock.application -nosplash";
     }

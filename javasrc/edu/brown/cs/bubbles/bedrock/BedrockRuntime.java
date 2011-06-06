@@ -146,6 +146,10 @@ void getNewRunConfiguration(String proj,String name,String clone,String typ,IvyX
 	 else config = cln.copy(name);
        }
       else {
+	 if (name == null) {
+	    Random r = new Random();
+	    name = "NewLaunch_" + r.nextInt(1024);
+	  }
 	 String ltid = null;
 	 ILaunchManager lm = debug_plugin.getLaunchManager();
 	 ILaunchConfigurationType [] typs = lm.getLaunchConfigurationTypes();
@@ -274,6 +278,7 @@ void runProject(String cfg,String mode,boolean build,boolean reg,String vmarg,St
 	       cnf = ccnf;
 	     }
 	    ILaunch lnch = cnf.launch(mode,null,build,reg);
+	    if (lnch == null) return;
 	    xw.begin("LAUNCH");
 	    xw.field("MODE",lnch.getLaunchMode());
 	    xw.field("TAG",lnch.toString());
@@ -283,10 +288,12 @@ void runProject(String cfg,String mode,boolean build,boolean reg,String vmarg,St
 	       xw.field("TARGET",tgt.hashCode());
 	       xw.field("TARGETTAG",tgt.toString());
 	       xw.field("NAME",tgt.getName());
-	       xw.field("PROCESSTAG",tgt.getProcess().getLabel());
-	       xw.field("PROCESS",tgt.getProcess().hashCode());
 	       IProcess ip = tgt.getProcess();
-	       setupConsole(ip);
+	       if (ip != null) {
+		  xw.field("PROCESSTAG",ip.getLabel());
+		  xw.field("PROCESS",ip.hashCode());
+		  setupConsole(ip);
+		}
 	     }
 	    xw.end("LAUNCH");
 	    return;
@@ -621,7 +628,7 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	       IJavaValue [] args = new IJavaValue[1];
 	       args[0] = avl;
 	       val = avl.sendMessage("toString",tsg,args,jthrd,"Ljava/util/Arrays;");
-	     }		
+	     }
 	    else if (val instanceof IJavaObject) {
 	       IJavaObject ovl = (IJavaObject) val;
 	       val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);

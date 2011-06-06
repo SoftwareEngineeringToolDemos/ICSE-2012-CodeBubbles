@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -32,9 +32,10 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
 import java.awt.Point;
+import java.awt.event.*;
 import java.util.*;
 
 
@@ -130,7 +131,7 @@ private class ConfigName extends BassNameBase {
       return new BddtLaunchBubble(for_config);
     }
 
-   @Override public BudaBubble createPreviewBubble()	{ return createBubble(); }
+   @Override public BudaBubble createPreviewBubble()	{ return null; }
 
    @Override protected String getKey() {
       return "LAUNCH@" + for_config.getProject() + "@" + for_config.getConfigName();
@@ -139,7 +140,7 @@ private class ConfigName extends BassNameBase {
    @Override public String getProject() 		{ return null; }
 
    @Override protected String getSymbolName() {
-      return BDDT_LAUNCH_CONFIG_PREFIX + for_config.getConfigName();
+      return BDDT_LAUNCH_CONFIG_PREFIX + for_config.getConfigName().replace(".","_");
     }
 
    @Override protected String getParameters()		{ return null; }
@@ -266,12 +267,32 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
    if (forname instanceof ConfigName) {
       ConfigName cn = (ConfigName) forname;
       BumpLaunchConfig cfg = cn.getConfiguration();
-      m.add("Create copy of " + cfg.getConfigName());
+      if (cfg != null) m.add(new CloneLaunchAction(cfg));
     }
    else if (forname == null && fullname.contains("@Launch Configurations")) {
+      // TODO: Make this work
       m.add("Create new launch configuration");
     }
 }
+
+
+
+private class CloneLaunchAction extends AbstractAction {
+
+   private BumpLaunchConfig for_config;
+
+   CloneLaunchAction(BumpLaunchConfig blc) {
+      super("Create copy of " + blc.getConfigName());
+      for_config = blc;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BumpLaunchConfig nblc = for_config.clone(null);
+      if (nblc != null) nblc.save();
+    }
+
+}	// end of inner class CloneLaunchAction
+
 
 
 }	// end of class BddtRepository

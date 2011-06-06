@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -81,7 +81,7 @@ private long	monitor_length;
 private long	start_time;
 private List<String> command_data;
 
-private long   last_options;
+private long	last_options;
 private long	last_active;
 private long	last_screen;
 private long	total_active;
@@ -513,7 +513,8 @@ private class MetricsDialog extends JDialog implements ActionListener, CaretList
 	 collect_eclipse = eclps_checkbox.isSelected();
 	 collect_dumps = dumps_checkbox.isSelected();
 	 collect_monitorlog = mnlog_checkbox.isSelected();
-	 user_id = userid_textfield.getText().trim();
+
+	 if (userid_textfield != null) user_id = userid_textfield.getText().trim();
 	 if (user_id == null || user_id.equals("")) user_id = getUserId();
 	 else user_id = user_id.replace(" ","_");
 

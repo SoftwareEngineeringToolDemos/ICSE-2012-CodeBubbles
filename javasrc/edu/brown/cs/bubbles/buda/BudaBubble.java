@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -573,7 +573,7 @@ private void setRealPane(Component c,Component f)
    content_pane = c;
    focus_pane = f;
    if (focus_pane == null) focus_pane = content_pane;
-   
+
    setSizeFromContent();
 
    if (c != null) {
@@ -649,7 +649,7 @@ String getContentKey()
 
 
 
-void setCreationTime(long t)	
+void setCreationTime(long t)
 {
    if (t > 0) creation_time = t;
 }
@@ -1376,6 +1376,26 @@ private class FloatAction extends AbstractAction {
 
 
 
+protected Action getRemoveBubbleAction()
+{
+   return new RemoveAction();
+}
+
+
+private class RemoveAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   RemoveAction() {
+      super("Remove This Bubble");
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BudaBubble.this);
+      bba.userRemoveBubble(BudaBubble.this);
+    }
+
+}	// end of FloatAction
 
 
 /********************************************************************************/

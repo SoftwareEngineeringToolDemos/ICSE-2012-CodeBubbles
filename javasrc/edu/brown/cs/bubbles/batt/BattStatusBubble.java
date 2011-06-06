@@ -58,6 +58,7 @@ private SwingGridPanel	display_panel;
 private DisplayTable	display_table;
 private JPanel		display_bar;
 private TestMode	current_mode;
+private RunType 	current_runtype;
 
 private Set<DisplayMode> ALL_MODE = EnumSet.of(DisplayMode.ALL);
 private Set<DisplayMode> FAIL_MODE = EnumSet.of(DisplayMode.FAIL);
@@ -76,6 +77,7 @@ BattStatusBubble(BattModeler bm)
    batt_model = bm;
    setupPanel();
    current_mode = null;
+   current_runtype = RunType.ALL;
 
    setContentPane(display_panel);
    bm.addBattModelListener(this);
@@ -139,7 +141,10 @@ private void setupPanel()
       batt_model.setDisplayMode(FAIL_MODE);
     }
    else if (cmd.equals("RUN")) {
-      BattFactory.getFactory().runTests(RunType.ALL);
+      BattFactory.getFactory().runTests(current_runtype);
+    }
+   else if (cmd.equals("STOP")) {
+      BattFactory.getFactory().stopTest();
     }
    else {
       BoardLog.logE("BATT","Unknown action " + cmd);
@@ -182,7 +187,18 @@ private void setupPanel()
    if (current_mode == null) {
       current_mode = BattFactory.getFactory().getTestMode();
     }
-   if (current_mode != null) menu.add(new ModeAction());
+   JMenu m2 = new JMenu("Test Running Mode");
+   m2.add(new ModeAction(TestMode.ON_DEMAND));
+   m2.add(new ModeAction(TestMode.CONTINUOUS));
+   menu.add(m2);
+
+   JMenu m1 = new JMenu("Run Option");
+   m1.add(new RunAction(RunType.ALL));
+   m1.add(new RunAction(RunType.FAIL));
+   m1.add(new RunAction(RunType.PENDING));
+   menu.add(m1);
+
+   menu.add(new StopAction());
 
    menu.add(getFloatBubbleAction());
 
@@ -207,7 +223,7 @@ private BumpLaunchConfig getLaunchConfigurationForTest(BattTestCase btc)
    for (BumpLaunchConfig blc : brm.getLaunchConfigurations()) {
       if (blc.getConfigType().equals("JUnit")) {
 	 if (blc.getTestName() != null && blc.getTestName().equals(btc.getMethodName()) &&
-		  btc.getClassName().equals(blc.getMainClass())) 
+		  btc.getClassName().equals(blc.getMainClass()))
 	    return blc;
        }
     }
@@ -464,20 +480,51 @@ private class SourceAction extends AbstractAction {
 }	// end of inner class SourceAction
 
 
-private class ModeAction extends AbstractAction {
+private class ModeAction extends JRadioButtonMenuItem implements ActionListener {
 
-   ModeAction() {
-      super(current_mode == TestMode.DEMAND ? "Update Automatically" : "Update On Demand");
+   private TestMode test_mode;
+
+   ModeAction(TestMode md) {
+      super(md.toString(),(md == current_mode));
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      TestMode nmd = TestMode.DEMAND;
-      if (nmd == current_mode) nmd = TestMode.CONTINUOUS;
-      BattFactory.getFactory().setTestMode(nmd);
-      current_mode = nmd;
+      BattFactory.getFactory().setTestMode(test_mode);
+      current_mode = test_mode;
     }
 
 }	// end of inner class ModeAction
+
+
+
+private class RunAction extends JRadioButtonMenuItem implements ActionListener {
+
+   private RunType run_type;
+
+   RunAction(RunType typ) {
+      super(typ.toString(),(typ == current_runtype));
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      current_runtype = run_type;
+    }
+
+}	// end of inner class RunAction
+
+
+
+
+private class StopAction extends AbstractAction {
+
+   StopAction() {
+      super("Stop current test");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BattFactory.getFactory().stopTest();
+    }
+
+}	// end of inner class RunAction
 
 
 

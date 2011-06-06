@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -316,11 +316,18 @@ String HELP_HOME_BUTTON = "Bubble.Help.Show Code Bubbles Home Page";
 String HELP_VIDEO_BUTTON = "Bubble.Help.Show Help Video";
 
 /**
+ *	Button name for wiki page
+ **/
+String HELP_WIKI_BUTTON = "Bubble.Help.Show Code Bubbles Wiki Page";
+
+
+
+/**
  *	URL of the help video
  **/
 String HELP_VIDEO_URL = "http://www.cs.brown.edu/people/spr/codebubbles/demovideo.mov";
 String HELP_HOME_URL = "http://www.cs.brown.edu/people/spr/codebubbles/";
-
+String HELP_WIKI_URL = "http://conifer.cs.brown.edu:8000/bubbles/wiki/OverView";
 
 
 

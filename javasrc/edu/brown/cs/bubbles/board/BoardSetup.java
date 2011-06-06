@@ -952,6 +952,18 @@ private static boolean checkInstallDirectory(File ind)
       inf = new File(libb,s);
       if (!inf.exists() || !inf.canRead()) return false;
     }
+   for (String s : BOARD_LIBRARY_FILES) {
+      inf = new File(libb,s);
+      if (!inf.exists() || !inf.canRead()) {
+	 BoardLog.logX("BOARD","Missing library file " + s);
+       }
+    }
+   for (String s : BOARD_LIBRARY_EXTRAS) {
+      inf = new File(libb,s);
+      if (!inf.exists() || !inf.canRead()) {
+	 BoardLog.logX("BOARD","Missing library file " + s);
+       }
+    }
 
    return true;
 }
@@ -1026,7 +1038,7 @@ private boolean extractLibraryResource(String s,File libd,boolean force)
        }
     }
    catch (IOException e) {
-      BoardLog.logE("BOARD","Problem setting up jar lib resource " + s + ": " + e);
+      BoardLog.logE("BOARD","Problem setting up jar lib resource " + s + ": " + e,e);
       reportError("Problem setting up jar lib resource " + s + ": " + e);
       System.exit(1);
     }

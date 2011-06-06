@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -87,7 +87,7 @@ void process()
       if (!user_visitor.checkUseClass(bcd.getName())) continue;
       processClass(bcd);
     }
-											
+										
    user_visitor.finish();
 }
 
@@ -210,9 +210,9 @@ private class AsmClassVisitor implements ClassVisitor {
 
    @Override public void visitInnerClass(String n,String o,String i,int acc) {
       String nm = asm_data.getJavaName();
-      o = o.replace('/','.');
-      if (nm.equals(o)) {
-         user_visitor.visitInnerClass(asm_data,findInternalClass(n,false),acc);
+      if (o != null) o = o.replace('/','.');
+      if (o == null || nm.equals(o)) {
+	 user_visitor.visitInnerClass(asm_data,findInternalClass(n,false),acc);
        }
     }
 

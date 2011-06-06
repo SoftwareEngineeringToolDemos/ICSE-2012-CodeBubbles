@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -89,6 +89,7 @@ static {
    BudaRoot.registerMenuButton(TASK_BUTTON,the_factory);
    BudaRoot.registerMenuButton(HELP_HOME_BUTTON,the_factory);
    BudaRoot.registerMenuButton(HELP_VIDEO_BUTTON,the_factory);
+   BudaRoot.registerMenuButton(HELP_WIKI_BUTTON,the_factory);
 }
 
 
@@ -237,6 +238,15 @@ private static Icon imageToFlagIcon(String path)
        }
       catch (Throwable t) {
 	 BoardLog.logE("BEAM","Problem showing home page",t);
+       }
+    }
+   else if (id.equals(HELP_WIKI_BUTTON)) {
+      try {
+	 URI u = new URI(HELP_WIKI_URL);
+	 Desktop.getDesktop().browse(u);
+       }
+      catch (Throwable t) {
+	 BoardLog.logE("BEAM","Problem showing wiki page",t);
        }
     }
 

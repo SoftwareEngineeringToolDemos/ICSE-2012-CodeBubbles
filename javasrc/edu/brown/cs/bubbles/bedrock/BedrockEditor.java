@@ -1456,7 +1456,9 @@ private class BufferData {
       if (is_changed) return comp_unit;
       try {
 	 // comp_unit.becomeWorkingCopy(null);
-	 comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+	 // comp_unit.getSource() being null causes NullPointerException
+	 if (comp_unit.getSource() != null)
+	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
 	 comp_unit.getBuffer().addBufferChangedListener(file_data);
 	 is_changed = true;
        }
@@ -1464,11 +1466,6 @@ private class BufferData {
 	 BedrockPlugin.logE("Problem creating working copy: " + e);
        }
       catch (Throwable t) {
-	 try {
-	    BedrockPlugin.logE("Problem creating working copy: " + t + " :: " +
-				  comp_unit.getSource(),t);
-	  }
-	 catch (JavaModelException e) { }
 	 throw new Error("Problem getting editable unit: " + t,t);
        }
 

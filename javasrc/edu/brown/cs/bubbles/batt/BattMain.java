@@ -299,12 +299,15 @@ void doTests()
 
 synchronized void addErrors(Set<String> clss)
 {
+   for (String s : clss) System.err.println("BATT: Note error in " + s);
    error_classes.addAll(clss);
 }
 
 
 synchronized void removeErrors(Set<String> clss)
 {
+   for (String s : clss) System.err.println("BATT: Remove error in " + s);
+
    error_classes.removeAll(clss);
    synchronized (run_tests) {
       run_tests.notifyAll();
@@ -390,8 +393,10 @@ void processTests() throws InterruptedException
    while (rpt) {
       synchronized (run_tests) {
 	 if (run_tests.size() == 0 && server_thread == null) return;
+	 int ct = 0;
 	 while (!canRunAny(run_tests)) {
 	    run_tests.wait(10000);
+	    if (++ct > 5) return;
 	  }
 	 tests = new HashSet<String>();
 	 for (BattTestCase btc : run_tests) {

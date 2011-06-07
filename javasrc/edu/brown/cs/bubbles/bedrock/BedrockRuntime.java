@@ -124,6 +124,9 @@ void getRunConfigurations(IvyXmlWriter xw) throws BedrockException
    catch (CoreException e) {
       throw new BedrockException("Problem getting configurations",e);
     }
+   catch (Throwable t) {
+      // eclispe sometimes fails for no reason here
+    }
 }
 
 
@@ -627,7 +630,13 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	       tsg = "(" + tsg + ")Ljava/lang/String;";
 	       IJavaValue [] args = new IJavaValue[1];
 	       args[0] = avl;
-	       val = avl.sendMessage("toString",tsg,args,jthrd,"Ljava/util/Arrays;");
+	       try {
+		  val = avl.sendMessage("toString",tsg,args,jthrd,"Ljava/util/Arrays;");
+		}
+	       catch (Throwable t) {
+		  BedrockPlugin.logE("Problem getting array value: " + tsg,t);
+		  val = avl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
+		}
 	     }
 	    else if (val instanceof IJavaObject) {
 	       IJavaObject ovl = (IJavaObject) val;

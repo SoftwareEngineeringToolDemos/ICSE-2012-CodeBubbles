@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Adam M. Cook, Steven P. Reiss	*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -91,7 +91,7 @@ BddtLaunchBubble(BumpLaunchConfig cfg)
    bump_client = BumpClient.getBump();
    launch_config = cfg;
    edit_config = null;
-   
+
    if (cfg == null) return;
 
    setupPanel();
@@ -120,7 +120,7 @@ private void setupPanel()
 	 String pnm = IvyXml.getAttrString(pe,"NAME");
 	 pnms.add(pnm);
        }
-      if (pnms.size() > 1) {
+      if (pnms.size() > 1 || lp == null) {
 	 pnl.addChoice("Project",pnms,lp,this);
        }
     }
@@ -136,6 +136,7 @@ private void setupPanel()
 	 starts.add(cn);
       }
    }
+   // TODO: need to handle junit configurations
    start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
 
    arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);

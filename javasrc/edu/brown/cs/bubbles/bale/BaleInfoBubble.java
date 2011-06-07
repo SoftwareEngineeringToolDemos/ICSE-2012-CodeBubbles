@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Yu Li				*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -98,8 +98,8 @@ static void createInfoBubble(BaleEditorPane target,String elmtype,
 	 break;
       case IMPLDOC:
 	 if (elmtype.equals("FieldId")) bib = new BaleInfoBubble(target,new String[] {},
-		  "No implementation found!",BaleInfoBubbleIconType.WARNING,sp);
-	 else bib = new BaleInfoBubble(target,new String[] {},"No implementation found!",
+		  "Source for implementation not found!",BaleInfoBubbleIconType.WARNING,sp);
+	 else bib = new BaleInfoBubble(target,new String[] {},"Source for implementation not found!",
 		  BaleInfoBubbleIconType.WARNING,sp);
 	 break;
       case NOIDENTIFIER:

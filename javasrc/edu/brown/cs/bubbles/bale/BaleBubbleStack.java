@@ -408,7 +408,7 @@ private class TypeStackEntry extends GenericStackEntry {
 
 /********************************************************************************/
 /*										*/
-/*	Classes for maintaing bubble windows as part of the bubble stack	*/
+/*	Classes for maintaining bubble windows as part of the bubble stack	*/
 /*										*/
 /********************************************************************************/
 

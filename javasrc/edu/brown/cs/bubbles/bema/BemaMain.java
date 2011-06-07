@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -282,7 +282,8 @@ private void start()
    for (String s : bp.stringPropertyNames()) {
       if (s.startsWith("Bema.plugin.")) {
 	 String nm = bp.getProperty(s);
-	 if (nm != null) setupPackage(nm);
+	 String ld = bp.getProperty(s + ".load");
+	 if (nm != null) setupPackage(nm,ld);
        }
     }
    String pinf = bp.getProperty("Bema.pluginfolder");
@@ -337,8 +338,14 @@ private void start()
 /*										*/
 /********************************************************************************/
 
-private void setupPackage(String nm)
+private void setupPackage(String nm,String load)
 {
+   if (load != null) {
+      // setup class loader for load jar file
+      // use this instead of Class.forName();
+      // see taiga.core.CoreClassLoader
+    }
+
    try {
       Class<?> c = Class.forName(nm);
       Method m = c.getMethod("setup");

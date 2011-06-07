@@ -1072,6 +1072,9 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
       catch (JavaModelException e) {
 	 BedrockPlugin.logE("Problem outputing type hierarchy: " + e);
        }
+      catch (NullPointerException e) {
+	 // this is a bug in Eclipse that should be fixed
+       }
     }
 }
 

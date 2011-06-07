@@ -195,8 +195,10 @@ private class Transferer extends TransferHandler {
       if (t instanceof TransferBubble) {
 	 TransferBubble tb = (TransferBubble) t;
 	 for (BussEntry be : tb.getEntries()) {
-	    if (be.getBubble() != null && be.getBubble().getParent() != buss_bubble.getLayeredPane())
+	    if (be.getBubble() != null && be.getBubble().getParent() != buss_bubble.getLayeredPane()) {
+	       be.getBubble().setFixed(false);
 	       tree_model.removeEntry(be);
+	     }
 	  }
        }
     }
@@ -239,7 +241,9 @@ private class TransferBubble implements Transferable, BudaConstants.BudaDragBubb
       BudaBubble [] rslt = new BudaBubble[tree_entries.size()];
       int i = 0;
       for (BussEntry ent : tree_entries) {
-	 rslt[i++] = ent.getBubble();
+	 BudaBubble bb = ent.getBubble();
+	 bb.setFixed(false);
+	 rslt[i++] = bb;
        }
       return rslt;
     }

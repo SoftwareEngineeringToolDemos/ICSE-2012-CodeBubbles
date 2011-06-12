@@ -1,5 +1,4 @@
-/********************************************************************************/
-/*										*/
+/********************************************************************************/ /*										   */
 /*		BddtFactory.java						*/
 /*										*/
 /*	Bubbles Environment dyanmic debugger tool factory and setup class	*/
@@ -31,8 +30,6 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.buda.BudaConstants.BudaBubblePosition;
-import edu.brown.cs.bubbles.buda.BudaConstants.BudaPortPosition;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
@@ -51,7 +48,7 @@ import java.util.*;
  **/
 
 public class BddtFactory implements BddtConstants, BudaConstants.ButtonListener,
-					BumpConstants, BaleConstants
+					BumpConstants, BaleConstants, BudaConstants
 {
 
 
@@ -223,7 +220,7 @@ void setCurrentLaunchConfig(BumpLaunchConfig blc)
    if (blc == null) {
       BumpRunModel brm = BumpClient.getBump().getRunModel();
       for (BumpLaunchConfig xlc : brm.getLaunchConfigurations()) {
-	 blc = xlc;
+	 if (!xlc.isWorkingCopy()) blc = xlc;
 	 break;
        }
     }
@@ -465,7 +462,8 @@ BudaBubble makePerformanceBubble(BudaBubble src,BddtLaunchControl ctrl)
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
    BudaBubble bb = null;
-   bb = new BddtPerfView(ctrl);
+   // bb = new BddtPerfView(ctrl);
+   bb = new BddtPerfViewTable(ctrl);
 
    Rectangle r = src.getBounds();
    int x = r.x + BDDT_HISTORY_WIDTH + 20;
@@ -591,6 +589,14 @@ private class RefreshButton implements ActionListener, Runnable
 /*										*/
 /********************************************************************************/
 
+void addNewConfigurationActions(JPopupMenu menu)
+{
+   menu.add(new CreateConfigAction(BumpLaunchConfigType.JAVA_APP));
+   menu.add(new CreateConfigAction(BumpLaunchConfigType.REMOTE_JAVA));
+}
+
+
+
 private class ConfigSelector extends MouseAdapter {
 
    @Override public void mouseClicked(MouseEvent e) {
@@ -599,11 +605,13 @@ private class ConfigSelector extends MouseAdapter {
 	 BumpClient bc = BumpClient.getBump();
 	 BumpRunModel bm = bc.getRunModel();
 	 Collection<BumpLaunchConfig> blcs = new TreeSet<BumpLaunchConfig>(new ConfigComparator());
-	 for (BumpLaunchConfig blc : bm.getLaunchConfigurations()) blcs.add(blc);
+	 for (BumpLaunchConfig blc : bm.getLaunchConfigurations()) {
+	    if (!blc.isWorkingCopy()) blcs.add(blc);
+	  }
 	 for (BumpLaunchConfig blc : blcs) {
 	    menu.add(new ConfigAction(blc));
 	  }
-	 menu.add(new CreateConfigAction());
+	 addNewConfigurationActions(menu);
 	 menu.show((Component) e.getSource(),e.getX(),e.getY());
        }
     }
@@ -633,16 +641,19 @@ private class ConfigAction extends AbstractAction {
 
 
 
-private class CreateConfigAction extends AbstractAction {
+private static class CreateConfigAction extends AbstractAction {
 
-   CreateConfigAction() {
-      super("Create New Configuration");
+   private BumpLaunchConfigType config_type;
+
+   CreateConfigAction(BumpLaunchConfigType typ) {
+      super("Create New " + typ.getEclipseName() + " Configuration");
+      config_type = typ;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       BumpClient bc = BumpClient.getBump();
       BumpRunModel brm = bc.getRunModel();
-      BumpLaunchConfig blc = brm.createLaunchConfiguration(null,null);
+      BumpLaunchConfig blc = brm.createLaunchConfiguration(null,config_type);
       if (blc != null) blc.save();
     }
 
@@ -650,7 +661,7 @@ private class CreateConfigAction extends AbstractAction {
 
 
 
-private class ConfigComparator implements Comparator<BumpLaunchConfig> {
+private static class ConfigComparator implements Comparator<BumpLaunchConfig> {
 
    @Override public int compare(BumpLaunchConfig l1,BumpLaunchConfig l2) {
       return l1.getConfigName().compareTo(l2.getConfigName());

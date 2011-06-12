@@ -40,6 +40,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.regex.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -78,6 +79,10 @@ enum RunEventDetail { NONE, STEP_INTO, STEP_OVER, STEP_RETURN, TERMINATE, BREAKP
 enum RunEventType { NONE, PROCESS, THREAD, TARGET, CONSOLE };
 
 private static Map<String,BumpThreadType> known_threads;
+
+
+private static final Pattern PORT_PATTERN = Pattern.compile("port=(\\d+)[,}]");
+private static final Pattern HOST_PATTERN = Pattern.compile("host=((\\w|.)+)[,}]");
 
 
 static {
@@ -220,7 +225,7 @@ void removeThreadFilter(BumpThread bt,BumpThreadFilter btf)
 
 
 
-@Override public BumpLaunchConfig createLaunchConfiguration(String name,String typ)
+@Override public BumpLaunchConfig createLaunchConfiguration(String name,BumpLaunchConfigType typ)
 {
    Element e = bump_client.getNewRunConfiguration(name,null,typ);
 
@@ -903,8 +908,11 @@ private class LaunchConfig implements BumpLaunchConfig {
    private String program_args;
    private String java_args;
    private String launch_id;
-   private String config_type;
+   private BumpLaunchConfigType config_type;
    private String test_case;
+   private String remote_host;
+   private int	  remote_port;
+   private boolean is_working;
 
    LaunchConfig(Element xml) {
       launch_id = IvyXml.getAttrString(xml,"ID");
@@ -913,16 +921,33 @@ private class LaunchConfig implements BumpLaunchConfig {
 
    void update(Element xml) {
       Element type = IvyXml.getChild(xml,"TYPE");
-      if (type != null) config_type = IvyXml.getAttrString(type,"NAME");
+      if (type != null) {
+	 String ctyp = IvyXml.getAttrString(type,"NAME");
+	 config_type = BumpLaunchConfigType.UNKNOWN;
+	 for (BumpLaunchConfigType bclt : BumpLaunchConfigType.values()) {
+	    if (ctyp.equals(bclt.getEclipseName())) config_type = bclt;
+	  }
+       }
       config_name = IvyXml.getAttrString(xml,"NAME");
+      is_working = IvyXml.getAttrBool(xml,"WORKING");
       project_name = getAttribute(xml,"org.eclipse.jdt.launching.PROJECT_ATTR");
       main_class = getAttribute(xml,"org.eclipse.jdt.launching.MAIN_TYPE");
       program_args = getAttribute(xml,"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS");
       java_args = getAttribute(xml,"org.eclipse.jdt.launching.VM_ARGUMENTS");
-      test_case = null;
-      if (config_type != null && config_type.equals("JUnit")) {
-	 test_case = getAttribute(xml,"TESTNAME");
+      test_case = getAttribute(xml,"TESTNAME");
+      remote_host = "localhost";
+      remote_port = 8000;
+      String hmap = IvyXml.getAttrString(xml,"org.eclipse.jdt.launching.CONNECT_MAP");
+      if (hmap != null) {
+	 Matcher m1 = HOST_PATTERN.matcher(hmap);
+	 Matcher m2 = PORT_PATTERN.matcher(hmap);
+	 if (m1.find() && m2.find()) {
+	    remote_host = m1.group(1);
+	    remote_port = Integer.parseInt(m2.group(1));
+	  }
        }
+
+      // TODO: Handle remote configuration type as well
     }
 
    @Override public String getConfigName()		{ return config_name; }
@@ -931,8 +956,11 @@ private class LaunchConfig implements BumpLaunchConfig {
    @Override public String getArguments()		{ return program_args; }
    @Override public String getVMArguments()		{ return java_args; }
    @Override public String getId()			{ return launch_id; }
-   @Override public String getConfigType()		{ return config_type; }
+   @Override public BumpLaunchConfigType getConfigType() { return config_type; }
    @Override public String getTestName()		{ return test_case; }
+   @Override public String getRemoteHost()		{ return remote_host; }
+   @Override public int getRemotePort() 		{ return remote_port; }
+   @Override public boolean isWorkingCopy()		{ return is_working; }
 
    @Override public BumpLaunchConfig clone(String name) {
       Element x = bump_client.getNewRunConfiguration(name,getId(),getConfigType());
@@ -944,6 +972,16 @@ private class LaunchConfig implements BumpLaunchConfig {
       LaunchConfig lc = getLaunchResult(x);
       if (lc != null) known_configs.put(lc.getId(),lc);
       return lc;
+    }
+
+   @Override public BumpLaunchConfig setConfigName(String nm) {
+      Element x = bump_client.editRunConfiguration(getId(),"NAME",nm);
+      return getLaunchResult(x);
+    }
+
+   @Override public BumpLaunchConfig setProject(String pnm) {
+      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.PROJECT_ATTR",pnm);
+      return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setMainClass(String cnm) {
@@ -958,6 +996,22 @@ private class LaunchConfig implements BumpLaunchConfig {
 
    @Override public BumpLaunchConfig setVMArguments(String arg) {
       Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.VM_ARGUMENTS",arg);
+      return getLaunchResult(x);
+    }
+
+   @Override public BumpLaunchConfig setTestName(String name) {
+      Element x = bump_client.editRunConfiguration(getId(),"TESTNAME",name);
+      return getLaunchResult(x);
+    }
+
+   @Override public BumpLaunchConfig setJunitKind(String name) {
+      Element x = bump_client.editRunConfiguration(getId(),"TEST_KIND","org.eclipse.jdt.junit.loader." + name);
+      return getLaunchResult(x);
+    }
+
+   @Override public BumpLaunchConfig setRemoteHostPort(String host,int port) {
+      String val = "{port=" + port + ", hostname=" + host + "}";
+      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.CONNECT_MAP",val);
       return getLaunchResult(x);
     }
 

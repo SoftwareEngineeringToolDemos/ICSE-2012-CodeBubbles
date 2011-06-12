@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -190,7 +190,6 @@ private class PerfEventHandler implements BumpRunEventHandler {
 	    base_samples = IvyXml.getAttrDouble(xml,"ACTIVE");
 	    total_samples = IvyXml.getAttrDouble(xml,"SAMPLES");
 	    base_time = IvyXml.getAttrDouble(xml,"TIME");
-	    System.err.println("PERF: " + base_samples + " " + total_samples + " " + base_time);
 	    for (Element itm : IvyXml.children(xml,"ITEM")) {
 	       PerfNode pn = findNode(IvyXml.getAttrString(itm,"NAME"));
 	       pn.update(itm);
@@ -223,8 +222,8 @@ private class PerfTable extends SwingTreeTable implements BudaConstants.BudaBubb
       setOpaque(false);
       setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-	 TableColumn tc = e.nextElement();
-	 tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
+         TableColumn tc = e.nextElement();
+         tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
        }
       cell_drawer = new CellDrawer[getColumnModel().getColumnCount()];
       JTree tr = getTree();

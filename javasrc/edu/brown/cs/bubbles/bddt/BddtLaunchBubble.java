@@ -32,7 +32,7 @@ import edu.brown.cs.bubbles.buda.BudaConstants.BudaBubbleOutputer;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.swing.SwingGridPanel;
+import edu.brown.cs.ivy.swing.*;
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
@@ -41,7 +41,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -65,13 +65,20 @@ class BddtLaunchBubble extends BudaBubble implements BddtConstants, BudaConstant
 private BumpClient		bump_client;
 private BumpLaunchConfig	launch_config;
 private BumpLaunchConfig	edit_config;
+private JTextComponent		launch_name;
 private JTextComponent		arg_area;
 private JTextComponent		vmarg_area;
 private JButton 		debug_button;
 private JButton 		save_button;
 private JButton 		revert_button;
 private JButton 		clone_button;
+private JComboBox		project_name;
 private JComboBox		start_class;
+private JTextComponent		test_class;
+private JTextComponent		test_name;
+private JTextComponent		host_name;
+private SwingNumericField	port_number;
+private boolean			doing_load;
 
 
 
@@ -91,6 +98,7 @@ BddtLaunchBubble(BumpLaunchConfig cfg)
    bump_client = BumpClient.getBump();
    launch_config = cfg;
    edit_config = null;
+   doing_load = false;
 
    if (cfg == null) return;
 
@@ -108,12 +116,15 @@ BddtLaunchBubble(BumpLaunchConfig cfg)
 
 private void setupPanel()
 {
+   doing_load = true;
+   
    SwingGridPanel pnl = new SwingGridPanel();
    pnl.beginLayout();
-   pnl.addTextField("Launch Name",launch_config.getConfigName(),this,null);
+   launch_name = pnl.addTextField("Launch Name",launch_config.getConfigName(),null,this);
 
    String lp = launch_config.getProject();
    Element pxml = bump_client.getAllProjects();
+   project_name = null;
    if (pxml != null) {
       List<String> pnms = new ArrayList<String>();
       for (Element pe : IvyXml.children(pxml,"PROJECT")) {
@@ -121,7 +132,7 @@ private void setupPanel()
 	 pnms.add(pnm);
        }
       if (pnms.size() > 1 || lp == null) {
-	 pnl.addChoice("Project",pnms,lp,this);
+	 project_name = pnl.addChoice("Project",pnms,lp,this);
        }
     }
 
@@ -135,12 +146,29 @@ private void setupPanel()
 	 String cn = bn.getPackageName() + "." + bn.getClassName();
 	 starts.add(cn);
       }
-   }
-   // TODO: need to handle junit configurations
-   start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
+    }
+   start_class = null;
+   arg_area = null;
+   vmarg_area = null;
 
-   arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
-   vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
+   switch (launch_config.getConfigType()) {
+      case JAVA_APP :
+	 start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
+	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
+	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
+	 break;
+      case JUNIT_TEST :
+	 test_class = pnl.addTextField("Test Class",launch_config.getMainClass(),null,this);
+	 test_name = pnl.addTextField("Test Name",launch_config.getTestName(),null,this);
+	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
+	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);         
+	 break;
+      case REMOTE_JAVA :
+	 host_name = pnl.addTextField("Remote Host",launch_config.getRemoteHost(),null,this);
+	 port_number = pnl.addNumericField("Remote Port",
+	       1000,65536,launch_config.getRemotePort(),this);
+	 break;
+    }
    pnl.addSeparator();
    debug_button = pnl.addBottomButton("Debug","DEBUG",this);
    save_button = pnl.addBottomButton("Save","SAVE",this);
@@ -148,6 +176,8 @@ private void setupPanel()
    clone_button = pnl.addBottomButton("Clone","CLONE",this);
    pnl.addBottomButtons();
    fixButtons();
+   
+   doing_load = false;
 
    setContentPane(pnl,arg_area);
 }
@@ -169,9 +199,18 @@ private void fixButtons()
 
 private void reload()
 {
-   arg_area.setText(launch_config.getArguments());
-   vmarg_area.setText(launch_config.getVMArguments());
-   start_class.setSelectedItem(launch_config.getMainClass());
+   doing_load = true;
+   
+   if (launch_name != null) launch_name.setText(launch_config.getConfigName());
+   if (arg_area != null) arg_area.setText(launch_config.getArguments());
+   if (vmarg_area != null) vmarg_area.setText(launch_config.getVMArguments());
+   if (start_class != null) start_class.setSelectedItem(launch_config.getMainClass());
+   if (test_class != null) test_class.setText(launch_config.getMainClass());
+   if (test_name != null) test_name.setText(launch_config.getTestName());
+   if (host_name != null) host_name.setText(launch_config.getRemoteHost());
+   if (port_number != null) port_number.setValue(launch_config.getRemotePort());
+   
+   doing_load = false;
 }
 
 
@@ -271,6 +310,7 @@ private String getNewName()
 	 bba.addBubble(bbl,loc.x + loc.width + 25,loc.y);
        }
     }
+   else if (doing_load) return;
    else if (cmd.equals("Start Class")) {
       if (edit_config == null) edit_config = launch_config;
       if (edit_config != null && start_class != null) {
@@ -279,9 +319,10 @@ private String getNewName()
     }
    else if (cmd.equals("Project")) {
       if (edit_config == null) edit_config = launch_config;
-      // set project accordingly
-      // update selection of start classes
-      // set main class to default value
+      if (edit_config != null && project_name != null) {
+	 edit_config = edit_config.setProject((String) project_name.getSelectedItem());
+	 // update selection of main classes
+       }
     }
    else System.err.println("ACTION: " + cmd);
 
@@ -291,18 +332,47 @@ private String getNewName()
 
 @Override public void undoableEditHappened(UndoableEditEvent e)
 {
-   JTextComponent ted = (JTextComponent) e.getSource();
-   if (ted == arg_area) {
+   Document doc = (Document) e.getSource();
+   
+   if (doing_load) return;
+
+   if (isArea(arg_area,doc)) {
       if (edit_config == null) edit_config = launch_config;
-      edit_config = edit_config.setArguments(ted.getText());
+      edit_config = edit_config.setArguments(arg_area.getText());
     }
-   else if (ted == vmarg_area) {
+   else if (isArea(vmarg_area,doc)) {
       if (edit_config == null) edit_config = launch_config;
-      edit_config = edit_config.setVMArguments(ted.getText());	  }
+      edit_config = edit_config.setVMArguments(vmarg_area.getText());	
+    }
+   else if (isArea(test_name,doc)) {
+      if (edit_config == null) edit_config = launch_config;
+      edit_config = edit_config.setTestName(test_name.getText());
+    }
+   else if (isArea(test_class,doc)) {
+      if (edit_config == null) edit_config = launch_config;
+      edit_config = edit_config.setMainClass(test_class.getText());
+    }
+   else if (isArea(host_name,doc) || isArea(port_number,doc)) {
+      if (edit_config == null) edit_config = launch_config;
+      if (host_name != null && port_number != null) {
+	 edit_config = edit_config.setRemoteHostPort(host_name.getText(),(int) port_number.getValue());
+       }
+    }
+   else if (isArea(launch_name,doc)) {
+      if (edit_config == null) edit_config = launch_config;
+      edit_config = edit_config.setConfigName(launch_name.getText().trim());
+    }
 
    fixButtons();
 }
 
+
+private boolean isArea(JTextComponent tc,Document d)
+{
+   if (tc == null) return false;
+   if (tc.getDocument() == d) return true;
+   return false;
+}
 
 
 

@@ -71,8 +71,10 @@ BddtRepository()
 
    config_map = new HashMap<BumpLaunchConfig,ConfigName>();
    for (BumpLaunchConfig blc : run_model.getLaunchConfigurations()) {
-      ConfigName cn = new ConfigName(blc);
-      config_map.put(blc,cn);
+      if (!blc.isWorkingCopy()) {
+	 ConfigName cn = new ConfigName(blc);
+	 config_map.put(blc,cn);
+       }
     }
 
    process_map = new HashMap<BumpProcess,ProcessName>();
@@ -215,15 +217,23 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
 
       switch (evt.getEventType()) {
 	 case LAUNCH_ADD :
-	    ConfigName cn = new ConfigName(blc);
-	    config_map.put(blc,cn);
-	    BassFactory.reloadRepository(BddtRepository.this);
+	    if (!blc.isWorkingCopy()) {
+	       ConfigName cn = new ConfigName(blc);
+	       config_map.put(blc,cn);
+	       BassFactory.reloadRepository(BddtRepository.this);
+	     }
 	    break;
 	 case LAUNCH_REMOVE :
-	    config_map.remove(blc);
-	    BassFactory.reloadRepository(BddtRepository.this);
+	    if (config_map.remove(blc) != null) {
+	       BassFactory.reloadRepository(BddtRepository.this);
+	     }
 	    break;
 	 case LAUNCH_CHANGE :
+	    if (!blc.isWorkingCopy() && !config_map.containsKey(blc)) {
+	       ConfigName cn = new ConfigName(blc);
+	       config_map.put(blc,cn);
+	       BassFactory.reloadRepository(BddtRepository.this);
+	    }
 	    break;
        }
     }
@@ -267,11 +277,14 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
    if (forname instanceof ConfigName) {
       ConfigName cn = (ConfigName) forname;
       BumpLaunchConfig cfg = cn.getConfiguration();
-      if (cfg != null) m.add(new CloneLaunchAction(cfg));
+      if (cfg != null) {
+         m.add(new CloneLaunchAction(cfg));
+         m.add(new DebugLaunchAction(cfg));
+         m.add(new RunLaunchAction(cfg));
+       }
     }
    else if (forname == null && fullname.contains("@Launch Configurations")) {
-      // TODO: Make this work
-      m.add("Create new launch configuration");
+      BddtFactory.getFactory().addNewConfigurationActions(m);
     }
 }
 
@@ -292,6 +305,41 @@ private class CloneLaunchAction extends AbstractAction {
     }
 
 }	// end of inner class CloneLaunchAction
+
+
+
+private class RunLaunchAction extends AbstractAction {
+   
+   private BumpLaunchConfig for_config;
+   
+   RunLaunchAction(BumpLaunchConfig blc) {
+      super("Run " + blc.getConfigName());
+      for_config = blc;
+    }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      bump_client.startRun(for_config);
+    }
+
+}       // end of inner class RunLaunchAction
+
+
+private class DebugLaunchAction extends AbstractAction {
+   
+   private BumpLaunchConfig for_config;
+   
+   DebugLaunchAction(BumpLaunchConfig blc) {
+      super("Debug " + blc.getConfigName());
+      for_config = blc;
+    }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      bump_client.startDebug(for_config,null);
+    }
+   
+}       // end of inner class RunLaunchAction
+
+
 
 
 

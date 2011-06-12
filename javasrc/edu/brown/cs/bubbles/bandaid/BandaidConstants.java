@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -45,7 +45,7 @@ public interface BandaidConstants {
 int		BANDAID_PORT = 37777;
 
 String		BANDAID_TRAILER = "EBANDAIDMSG";
-String          BANDAID_THREAD = "BandaidMonitorThread";
+String		BANDAID_THREAD = "BandaidMonitorThread";
 
 
 
@@ -56,7 +56,7 @@ String          BANDAID_THREAD = "BandaidMonitorThread";
 /*										*/
 /********************************************************************************/
 
-long		BANDAID_CHECK_TIME = 100;
+long		BANDAID_CHECK_TIME = 33;
 long		BANDAID_DISABLE_TIME = 1000;
 long		BANDAID_REPORT_TIME = 1000;
 
@@ -100,7 +100,7 @@ enum ClassType {
 /*										*/
 /********************************************************************************/
 
-int BANDAID_MAX_THREADS = 32768;	  // max thread ID is one less than || this == SYSTEM_COLLECTION this
+int BANDAID_MAX_THREADS = 32768;	  // max thread ID is one less than this
 
 int BANDAID_MAX_DEPTH = 128;
 

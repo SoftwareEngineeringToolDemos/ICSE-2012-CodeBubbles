@@ -97,6 +97,29 @@ void createExecBubble(BumpThread bt)
 }
 
 
+void createUserStackBubble(BubbleData bd)
+{
+   if (bd == null) return;
+   BudaBubble bb = bd.getBubble();
+   if (bb == null || bd.getBubbleType() != BubbleType.USER) return;
+   BumpThread bt = bd.getThread();
+   if (bt == null) return;
+   BumpThreadStack stk = bt.getStack();
+   if (stk == null) return;
+   if (bd.getAssocBubble() != null) return;
+   if (bddt_properties.getBoolean("Bddt.show.values")) {
+      BddtStackView sv = new BddtStackView(launch_control,bt);
+      Rectangle r = BudaRoot.findBudaLocation(bb);
+      BudaRoot br = BudaRoot.findBudaRoot(bb);
+      BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
+      bubble_map.put(sv,nbd);
+      br.add(sv,new BudaConstraint(r.x,r.y+r.height+20));
+      bd.setAssocBubble(sv);
+   }
+}  
+
+
+
 private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ)
 {
    // TODO: handle system and class files here
@@ -117,6 +140,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 
    BubbleData bd = findClosestBubble(bt,stk,frame);
    if (bd != null && bd.match(bt,stk,frame)) {
+      if (bd.getBubbleType() == BubbleType.USER) createUserStackBubble(bd);
       BoardLog.logD("BDDT","Existing bubbles found for " + bd.getBubble().getContentName());
       bd.update(stk,frame);
       showBubble(bd.getBubble());
@@ -645,7 +669,7 @@ private static class BubbleData {
 
    boolean match(BumpThread bt,BumpThreadStack stk,BumpStackFrame frm) {
       if (bt != base_thread) return false;
-      if (bubble_type != BubbleType.EXEC) return false;
+      if (bubble_type != BubbleType.EXEC && bubble_type != BubbleType.USER) return false;
       int lvl = -1;
       for (int i = 0; i < stk.getNumFrames(); ++i) {
 	 if (stk.getFrame(i) == frm) {

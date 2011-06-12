@@ -185,7 +185,25 @@ void editRunConfiguration(String lnch,String prop,String val,IvyXmlWriter xw)
    if (lnch == null) return;
    ILaunchConfigurationWorkingCopy wc = findWorkingLaunchConfig(lnch);
 
-   wc.setAttribute(prop,val);
+   if (prop.endsWith("_MAP") && val != null) {
+      StringTokenizer tok = new StringTokenizer(val," {},");
+      HashMap<String,String> map = new HashMap<String,String>();
+      while (tok.hasMoreTokens()) {
+	 String s = tok.nextToken();
+	 int idx = s.indexOf("=");
+	 if (idx < 0) continue;
+	 String nm = s.substring(0,idx);
+	 String vl = s.substring(idx+1);
+	 map.put(nm,vl);
+       }
+      wc.setAttribute(prop,map);
+    }
+   else if (prop.equals("NAME")) {
+      wc.rename(val);
+    }
+   else {
+      wc.setAttribute(prop,val);
+    }
 
    BedrockUtil.outputLaunch(wc,xw);
 }

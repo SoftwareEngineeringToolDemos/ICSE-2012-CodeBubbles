@@ -259,8 +259,10 @@ private class BubblePanel extends JPanel implements Runnable {
     }
 
    void stop() {
-      drawing_thread.interrupt();
-      drawing_thread = null;
+      if (drawing_thread != null) {
+	 drawing_thread.interrupt();
+	 drawing_thread = null;
+       }
     }
 
    public void run() {

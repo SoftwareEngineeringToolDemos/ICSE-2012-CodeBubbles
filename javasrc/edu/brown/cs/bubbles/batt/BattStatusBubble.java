@@ -221,20 +221,20 @@ private BumpLaunchConfig getLaunchConfigurationForTest(BattTestCase btc)
    BumpRunModel brm = BumpClient.getBump().getRunModel();
 
    for (BumpLaunchConfig blc : brm.getLaunchConfigurations()) {
-      if (blc.getConfigType().equals("JUnit")) {
+      if (!blc.isWorkingCopy() && blc.getConfigType() == BumpLaunchConfigType.JUNIT_TEST) {
 	 if (blc.getTestName() != null && blc.getTestName().equals(btc.getMethodName()) &&
 		  btc.getClassName().equals(blc.getMainClass()))
 	    return blc;
        }
     }
 
-   BumpLaunchConfig blc = brm.createLaunchConfiguration(btc.getName(),"JUnit");
+   BumpLaunchConfig blc = brm.createLaunchConfiguration(btc.getName(),BumpLaunchConfigType.JUNIT_TEST);
    if (blc == null) return null;
 
    BumpLaunchConfig blc1 = blc;
    blc1 = blc1.setMainClass(btc.getClassName());
-   blc1 = blc1.setAttribute("TESTNAME",btc.getMethodName());
-   blc1 = blc1.setAttribute("TEST_KIND","org.eclipse.jdt.junit.loader.junit4");
+   blc1 = blc1.setTestName(btc.getMethodName());
+   blc1 = blc1.setJunitKind("junit4");
    if (blc1 != blc) blc = blc1.save();
 
    return blc;

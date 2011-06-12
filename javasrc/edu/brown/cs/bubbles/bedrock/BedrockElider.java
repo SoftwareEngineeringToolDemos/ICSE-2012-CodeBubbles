@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -273,7 +273,7 @@ private String getFormatType(ASTNode n)
 	 case ASTNode.ENUM_DECLARATION :
 	 case ASTNode.TYPE_DECLARATION :
 	 case ASTNode.ANNOTATION_TYPE_DECLARATION :
-	    typ = "CLASSDECL";
+	    typ = "CLASSDECL" + getClassType((Name) n);
 	    break;
 	 case ASTNode.MARKER_ANNOTATION :
 	 case ASTNode.NORMAL_ANNOTATION :
@@ -344,6 +344,22 @@ private String getVariableType(Name n)
       if (Modifier.isFinal(vb.getModifiers())) typ = "C";
       else typ = "S";
     }
+
+   return typ;
+}
+
+
+
+private String getClassType(Name n)
+{
+   ITypeBinding vb = (ITypeBinding) n.resolveBinding();
+
+   if (vb == null) return "";
+
+   String typ = "";
+
+   if (vb.isMember()) typ = "M";
+   else if (vb.isLocal()) typ = "L";
 
    return typ;
 }
@@ -644,6 +660,8 @@ private class ElidePass2 extends ASTVisitor {
 	 case IBinding.TYPE :
 	    ITypeBinding itb = (ITypeBinding) bnd;
 	    xml_writer.field("FULLNAME",itb.getQualifiedName());
+	    xml_writer.field("LOCAL",itb.isLocal());
+	    xml_writer.field("MEMBER",itb.isMember());
 	    break;
        }
     }

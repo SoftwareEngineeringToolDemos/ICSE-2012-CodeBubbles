@@ -177,7 +177,7 @@ int BDDT_CONSOLE_MAX_LINES = 1000;
 /********************************************************************************/
 
 Font BDDT_PERF_FONT = BoardFont.getFont(Font.SERIF, Font.PLAIN, 11);
-int BDDT_PERF_WIDTH = 300;
+int BDDT_PERF_WIDTH = 500;
 int BDDT_PERF_HEIGHT = 200;
 
 Color BDDT_PERF_TOP_COLOR = new Color(234,135,250);

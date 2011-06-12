@@ -100,4 +100,6 @@
 <entry key="Bale.initial.height">400</entry>
 <entry key="Bale.editor.no.eliison">false</entry>
 <entry key="Bale.editor.no.reflow">false</entry>
+<entry key="Bale.indent.rbrace">0</entry>
+<entry key="Bale.indent.innerclass">false</entry>
 </properties>

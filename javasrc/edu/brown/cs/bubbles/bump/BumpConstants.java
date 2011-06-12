@@ -527,7 +527,7 @@ enum BumpThreadState {
 interface BumpRunModel {
 
    Iterable<BumpLaunchConfig> getLaunchConfigurations();
-   BumpLaunchConfig createLaunchConfiguration(String name,String typ);
+   BumpLaunchConfig createLaunchConfiguration(String name,BumpLaunchConfigType typ);
    Iterable<BumpProcess> getProcesses();
    void addRunEventHandler(BumpRunEventHandler reh);
    void removeRunEventHandler(BumpRunEventHandler reh);
@@ -600,6 +600,24 @@ enum BumpValueKind {
 }
 
 
+enum BumpLaunchConfigType {
+   UNKNOWN(null),
+   JAVA_APP("Java Application"),
+   JUNIT_TEST("JUnit"),
+   REMOTE_JAVA("Remote Java Application");
+
+   private String eclipse_name;
+
+   BumpLaunchConfigType(String nm) {
+      eclipse_name = nm;
+    }
+
+   public String getEclipseName() {
+      return eclipse_name;
+    }
+}
+
+
 interface BumpRunEventHandler {
 
    void handleLaunchEvent(BumpRunEvent evt);
@@ -622,14 +640,26 @@ interface BumpLaunchConfig {
    String getVMArguments();
    String getConfigName();
    String getId();
-   String getConfigType();
+   BumpLaunchConfigType getConfigType();
    String getTestName();
+   String getRemoteHost();
+   int getRemotePort();
+   boolean isWorkingCopy();
 
    BumpLaunchConfig clone(String name);
    BumpLaunchConfig save();
+
+   BumpLaunchConfig setConfigName(String name);
+   BumpLaunchConfig setProject(String pnm);
    BumpLaunchConfig setMainClass(String cnm);
    BumpLaunchConfig setArguments(String args);
    BumpLaunchConfig setVMArguments(String args);
+
+   BumpLaunchConfig setTestName(String name);
+   BumpLaunchConfig setJunitKind(String kind);
+
+   BumpLaunchConfig setRemoteHostPort(String host,int port);
+
    BumpLaunchConfig setAttribute(String name,String value);
 
 }	// end of inner interface BumpLaunch

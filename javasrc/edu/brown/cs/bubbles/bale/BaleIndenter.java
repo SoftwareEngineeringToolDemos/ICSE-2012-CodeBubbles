@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -102,6 +102,7 @@ private boolean 	pref_indent_braces_for_methods;
 private boolean 	pref_indent_braces_for_types;
 private boolean 	pref_has_generics;
 private int		pref_rbrace_indent;
+private boolean 	pref_indent_inner_class;
 
 private int		cur_indent;
 private int		cur_align;
@@ -181,6 +182,7 @@ private void setupPreferences()
    pref_parenthesis_indent = pref_continuation_indent;
    pref_has_generics = true;
    pref_rbrace_indent = getOptionInt("rbrace",0);
+   pref_indent_inner_class = getOptionBool("innerclass",false);
 }
 
 
@@ -509,10 +511,13 @@ private int findReferencePosition(boolean danglingelse,boolean matchbrace,
 /*										*/
 /********************************************************************************/
 
-private int getBlockIndent(boolean ismethodbody,boolean istypebody)
+private int getBlockIndent(boolean ismethodbody,boolean istypebody,boolean isinnerclass)
 {
-   if (istypebody)
-      return pref_type_indent + (pref_indent_braces_for_types ? 1 : 0);
+   if (istypebody) {
+      int v = pref_type_indent + (pref_indent_braces_for_types ? 1 : 0);
+      if (v == 0 && pref_indent_inner_class && isinnerclass) v = 1;
+      return v;
+    }
    else if (ismethodbody)
       return pref_method_body_indent + (pref_indent_braces_for_methods ? 1 : 0);
 
@@ -827,6 +832,7 @@ int skipToStatementStart(boolean danglingelse,boolean isinblock)
    final int READ_IDENT = 2;
    int maybemethodbody = NOTHING;
    boolean istypebody = false;
+   boolean innerclass = false;
 
    while (true) {
       previousToken();
@@ -871,10 +877,9 @@ int skipToStatementStart(boolean danglingelse,boolean isinblock)
 	 case SEMICOLON:
 	 case EOF:
 	 case NONE :
-	    if (isinblock)
-	       cur_indent = getBlockIndent(maybemethodbody == READ_IDENT, istypebody);
+	    if (isinblock) cur_indent = getBlockIndent(maybemethodbody == READ_IDENT, istypebody, innerclass);
 	    else if (cur_indent == 0 && cur_token == BaleTokenType.LPAREN) cur_indent = 1;		// handle for
-	    // else: fIndent set by previous calls
+	    // else: cur_indent set by previous calls
 	    return previous_offset;
 	 case COLON:
 	    int pos = previous_offset;
@@ -887,7 +892,7 @@ int skipToStatementStart(boolean danglingelse,boolean isinblock)
 	    if (skipScope() && looksLikeArrayInitializerIntro())  continue;
 	    else {
 	       if (isinblock)
-		  cur_indent = getBlockIndent(maybemethodbody == READ_IDENT, istypebody);
+		  cur_indent = getBlockIndent(maybemethodbody == READ_IDENT, istypebody, innerclass);
 	       return pos; // it's not - do as with all the above
 	     }
 	    // scopes: skip them
@@ -932,6 +937,8 @@ int skipToStatementStart(boolean danglingelse,boolean isinblock)
 	 case KEYWORD :
 	 case TYPEKEY :
 	    if (maybemethodbody == READ_PARENS) maybemethodbody= READ_IDENT;
+	    if (cur_element != null && cur_element.getName().equals("ClassDeclMemberId"))
+	       innerclass = true;
 	    break;
 
 	 default:
@@ -1054,12 +1061,14 @@ private boolean looksLikeAnonymousTypeDecl()
 
 
 
-private boolean looksLikeMethodCall() {
+private boolean looksLikeMethodCall()
+{
    // TODO [5.0] add awareness for constructor calls with generic types: new ArrayList<String>()
    previousToken();
    return cur_token == BaleTokenType.IDENTIFIER; // method name
 }
-
+	
+	
 
 
 /********************************************************************************/

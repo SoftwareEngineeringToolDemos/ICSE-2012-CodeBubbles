@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Arman Uguray 		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -143,7 +143,7 @@ BaleFindBar(BaleEditorPane edt)
    b3.addActionListener(this);
    b3.setBorder(null);
    //b3.setMaximumSize(bdim);
-  // b3.setPreferredSize(bdim);
+   // b3.setPreferredSize(bdim);
    //b3.setSize(bdim);
    b3.setFocusPainted(false);
    b3.setContentAreaFilled(false);
@@ -192,7 +192,7 @@ BaleFindBar(BaleEditorPane edt)
 
    add(bottombox, BorderLayout.CENTER);
 
-  // topbox.add(Box.createHorizontalStrut(2));
+   // topbox.add(Box.createHorizontalStrut(2));
    //topbox.add(is_case_sensitive);
    //topbox.add(Box.createHorizontalStrut(2));
    //topbox.add(number_label);
@@ -235,6 +235,8 @@ BaleFindBar(BaleEditorPane edt)
     }
 }
 
+
+
 /********************************************************************************/
 /*										*/
 /*	Search routines 							*/
@@ -247,7 +249,7 @@ void find(int dir,boolean next)
       BudaBubble my_bub = BudaRoot.findBudaBubble(this);
       if (my_bub != null) my_bub.setVisible(false);
       return;
-   }
+    }
    BaleElement currentelement = null;
    for_document.baleWriteLock();
    try{
@@ -258,22 +260,22 @@ void find(int dir,boolean next)
 	 clearHighlights();
 	 searched_for = null;
 	 return;
-      }
+       }
       // if the user changed the text then run a new search
       if (searched_for == null || (is_case_sensitive.isSelected() && !search_for.equals(searched_for))
-	    || (!is_case_sensitive.isSelected() && !search_for.equalsIgnoreCase(searched_for))
-	    || current_caret_position != editor_pane.getCaretPosition()) {
+	     || (!is_case_sensitive.isSelected() && !search_for.equalsIgnoreCase(searched_for))
+	     || current_caret_position != editor_pane.getCaretPosition()) {
 	 clearHighlights();
 	 searched_for = search_for;
 	 // find and store the indices of all the occurrences so that going back and forth doesn't require a new search
 	 findAllOccurences(search_for, dir);
 	 number_label.setText("Matches: "+_occurrences.size());
 	 //current_index = -1;
-      }
+       }
       if (_occurrences == null || _occurrences.size() == 0) {
 	 clearHighlights();
 	 return;
-      }
+       }
 
       // depending on the find direction, either navigate to the next or previous occurrence.
       // wrap around if necessary
@@ -281,14 +283,14 @@ void find(int dir,boolean next)
       if (dir > 0) {
 	 current_index++;
 	 if (current_index >= _occurrences.size()) current_index = 0;
-      }
+       }
       else if (dir < 0) {
 	 current_index--;
 	 if (current_index < 0) current_index = _occurrences.size() - 1;
-      }
+       }
       else if (dir == 0) {
 	 current_index = 0;
-      }
+       }
       found = _occurrences.get(current_index).getOffset();
       int len = search_for.length();
 
@@ -308,19 +310,20 @@ void find(int dir,boolean next)
 	    editor_pane.increaseSizeForElidedElement(currentelement);
 	    BoardMetrics.noteCommand("BALE","FindUnElision");
 	    BaleEditorBubble.noteElision(editor_pane);
-	 }
-      }
+	  }
+       }
       catch (BadLocationException e) { }
-   }
+    }
    finally {
       for_document.baleWriteUnlock();
       BowiFactory.stopTask(BowiTaskType.CTRL_F_SEARCH);
-   }
+    }
 }
 
 
 
-private void findAllOccurences(String text, int dir) {
+private void findAllOccurences(String text, int dir)
+{
    try {
       int carpos = editor_pane.getCaretPosition();
       int soff = 0;
@@ -348,7 +351,7 @@ private void findAllOccurences(String text, int dir) {
 		     x = Character.toLowerCase(x);
 		     y = Character.toLowerCase(y);
 		     fnd = x == y;
-		  }
+		   }
 		}
 	       if (fnd) {
 		  found = for_document.createPosition(i+soff);
@@ -357,16 +360,16 @@ private void findAllOccurences(String text, int dir) {
 		  if (found.getOffset() - carpos < bestdist && found.getOffset() - carpos > 0 && dir > 0) {
 		     bestfound = found;
 		     bestdist = found.getOffset() - carpos;
-		  }
+		   }
 		  else if (carpos - soff < bestdist && carpos - soff > 0 && dir < 0) {
 		     bestfound = found;
 		     bestdist = carpos - soff;
-		  }
+		   }
 		  tlen = eoff - soff;
 		  break;
 		}
 	       else if (i >= tlen-len) {
-		   search = false;
+		  search = false;
 		}
 	     }
 	  }
@@ -382,7 +385,10 @@ private void findAllOccurences(String text, int dir) {
    finally {}
 }
 
-public void clearHighlights() {
+
+
+private void clearHighlights()
+{
    try {
       _highlighter.changeHighlight(my_highlight_tag, 0, 0);
     }
@@ -404,7 +410,7 @@ public void clearHighlights() {
       try {
 	 _highlighter.changeHighlight(my_highlight_tag, 0, 0);
        } catch (BadLocationException ble) {}
-      setVisible(false);
+	 setVisible(false);
     }
    else if (cmd.equals("NEXT")) {
       find(1,true);
@@ -436,7 +442,7 @@ public void clearHighlights() {
    Object source = e.getItemSelectable();
    if (source == is_case_sensitive) {
       searched_for = null;
-   }
+    }
 }
 
 
@@ -466,39 +472,42 @@ private class SearchAction extends AbstractAction {
 
 }	// end of inner class SearchAction
 
+
+
+
 private class CloseListener extends KeyAdapter {
 
    private int modifier;
 
-   CloseListener()
-   {
+   CloseListener() {
       modifier = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-   }
+    }
 
-   @Override public void keyPressed(KeyEvent e)
-   {
+   @Override public void keyPressed(KeyEvent e) {
       if (KeyEvent.getKeyText(e.getKeyCode()).equals("F") && e.getModifiers() == modifier){
 	 clearHighlights();
 	 setVisible(false);
 	 if (editor_pane.isVisible()) editor_pane.grabFocus();
-      }
-   }
+       }
+    }
 
-   @Override public void keyReleased(KeyEvent e)
-   {
+   @Override public void keyReleased(KeyEvent e) {
       if (!KeyEvent.getKeyText(e.getKeyCode()).equals("Enter")) find(0, true);
-   }
+    }
 
-}//end of class CloseListener
+}	// end of inner class CloseListener
+
+
+
 
 private class HighlightCanceler implements CaretListener {
 
-   @Override public void caretUpdate(CaretEvent e)
-   {
+   @Override public void caretUpdate(CaretEvent e) {
       if (current_caret_position != editor_pane.getCaretPosition()) clearHighlights();
-   }
+    }
 
-}
+}	// end of inner class HighlightCanceler
+
 
 
 }	// end of class BaleFindBar

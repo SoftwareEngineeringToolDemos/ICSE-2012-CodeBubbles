@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -298,16 +298,6 @@ private void showBubble(File f,int line)
    if (bb == null) return;
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
    bba.addBubble(bb,this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-
-   /************
-   Rectangle r = BudaRoot.findBudaLocation(this);
-   Dimension sz = bb.getSize();
-
-   // TODO: this assumes the error bubble is at the bottom of the display.  If it isn't this
-   // should be changed
-   BudaConstraint bc = new BudaConstraint(r.x,r.y - sz.height - 50);
-   bba.add(bb,bc);
-   *******************/
 }
 
 

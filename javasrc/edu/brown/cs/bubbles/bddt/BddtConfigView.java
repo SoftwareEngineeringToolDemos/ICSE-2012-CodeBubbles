@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -102,7 +102,7 @@ BddtConfigView()
 
    active_configs = new ArrayList<BumpLaunchConfig>();
    for (BumpLaunchConfig blc : run_model.getLaunchConfigurations()) {
-      active_configs.add(blc);
+      if (!blc.isWorkingCopy()) active_configs.add(blc);
     }
 
    config_model = new ConfigModel();
@@ -220,7 +220,7 @@ private class RunAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BumpClient c =  BumpClient.getBump();
       c.startRun(the_launch);
-      BoardMetrics.noteCommand("BDDT","StartRun");
+      BoardMetrics.noteCommand("BDDT","StartDebug");
     }
 
    @Override public boolean isEnabled() 		{ return true; }
@@ -281,12 +281,13 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
    @Override public void handleLaunchEvent(BumpRunEvent evt) {
       switch (evt.getEventType()) {
 	 case LAUNCH_ADD :
-	    active_configs.add(evt.getLaunchConfiguration());
+	 case LAUNCH_CHANGE :
+	    if (!evt.getLaunchConfiguration().isWorkingCopy()) {
+	       active_configs.add(evt.getLaunchConfiguration());
+	     }
 	    break;
 	 case LAUNCH_REMOVE :
 	    active_configs.remove(evt.getLaunchConfiguration());
-	    break;
-	 case LAUNCH_CHANGE :
 	    break;
        }
       config_model.fireTableDataChanged();

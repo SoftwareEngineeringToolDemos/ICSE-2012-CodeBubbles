@@ -467,6 +467,9 @@ static void outputBreakpoint(IBreakpoint xbp,IvyXmlWriter xw)
    catch (CoreException e) {
       BedrockPlugin.logE("Breakpoint reporting problem: " + e);
     }
+   catch (Throwable e) {
+      BedrockPlugin.logE("Breakpoint reporting problem: " + e);
+    }
    finally {
       xw.end("BREAKPOINT");
     }
@@ -1351,28 +1354,33 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
    Set<?> modes;
    Map<?,?> attrs;
    ILaunchConfigurationType typ;
+   ILaunchConfiguration orig = null;
 
    if (cfg == null) return;
    if (cfg.isWorkingCopy()) {
-      ILaunchConfiguration xcfg = ((ILaunchConfigurationWorkingCopy) cfg).getOriginal();
-      if (xcfg != null) cfg = xcfg;
+      orig = ((ILaunchConfigurationWorkingCopy) cfg).getOriginal();
     }
 
+   id = Integer.toString(cfg.hashCode());
+
+   xw.begin("CONFIGURATION");
+   xw.field("ID",id);
+
    try {
-      id = Integer.toString(cfg.hashCode());
       modes = cfg.getModes();
       attrs = cfg.getAttributes();
       typ = cfg.getType();
     }
-   catch (CoreException e) {
+   catch (CoreException e) {		// if deleted, these fail
+      xw.end("CONFIGURATION");
       return;
     }
 
-   xw.begin("CONFIGURATION");
    xw.field("NAME",cfg.getName());
-   if (cfg.isWorkingCopy()) xw.field("WORKING",true);
 
-   xw.field("ID",id);
+   if (cfg.isWorkingCopy()) xw.field("WORKING",true);
+   if (orig != null) xw.field("ORIGID",orig.hashCode());
+
    for (Iterator<?> it = modes.iterator(); it.hasNext(); ) {
       String md = it.next().toString();
       xw.field(md,true);
@@ -1747,7 +1755,7 @@ static File getFileForPath(File f,IProject proj)
       pars.pop();		// /
       pars.pop();		// /project
       IFolder lnk = proj.getFolder(pars.pop().getName());
-      if (lnk != null) {
+      if (lnk != null && lnk.getLocation() != null) {
 	 File f0 = lnk.getLocation().toFile();
 	 while (!pars.empty()) {
 	    f0 = new File(f0,pars.pop().getName());

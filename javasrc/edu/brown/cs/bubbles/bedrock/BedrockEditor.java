@@ -1558,7 +1558,12 @@ private class BufferData {
 	    if (comp_unit.isWorkingCopy()) comp_unit.commitWorkingCopy(true,bpm);
 	    comp_unit.save(bpm,false);
 	    // try this for now
-	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+	    try {
+	       comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+	     }
+	    catch (Throwable t) {
+	       BedrockPlugin.logE("Problem get working copy after a save",t);
+	     }
 	  }
 	 else if (refresh) {
 	    BedrockProgressMonitor bpm = new BedrockProgressMonitor(our_plugin,"Refreshing");

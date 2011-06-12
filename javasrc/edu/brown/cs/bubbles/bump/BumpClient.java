@@ -1853,13 +1853,13 @@ Element getRunConfigurations()
 }
 
 
-Element getNewRunConfiguration(String name,String clone,String typ)
+Element getNewRunConfiguration(String name,String clone,BumpLaunchConfigType typ)
 {
    String q = "";
    if (name != null) q = "NAME='" + name + "'";
-   if (typ != null) q += " TYPE='" + typ + "'";
+   if (typ != null) q += " TYPE='" + typ.getEclipseName() + "'";
    if (clone != null) { 	// must have a new name
-      q = " CLONE='" + clone + "'";
+      q += " CLONE='" + clone + "'";
     }
 
    Element e = getXmlReply("NEWRUNCONFIG",null,q,null,0);
@@ -2595,7 +2595,7 @@ private class EclipseHandler implements MintHandler {
 	    break_set.handleUpdate(IvyXml.getChild(e,"BREAKPOINTS"));
 	  }
 	 else if (cmd.equals("LAUNCHCONFIGEVENT")) {
-	    // BoardLog.logD("BUMP","LAUNCH EVENT: " + IvyXml.convertXmlToString(e));
+	    BoardLog.logD("BUMP","LAUNCH EVENT: " + IvyXml.convertXmlToString(e));
 	    run_manager.handleLaunchEvent(IvyXml.getChild(e,"LAUNCH"));
 	  }
 	 else if (cmd.equals("RUNEVENT")) {

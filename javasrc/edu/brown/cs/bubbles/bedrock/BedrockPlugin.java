@@ -44,8 +44,9 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.ui.IStartup;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.*;
 import org.w3c.dom.Element;
+import org.eclipse.core.net.proxy.*;
 
 import java.io.*;
 import java.util.*;
@@ -539,6 +540,9 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("SAVERUNCONFIG")) {
       bedrock_runtime.saveRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
     }
+   else if (cmd.equals("DELETERUNCONFIG")) {
+      bedrock_runtime.deleteRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
+    }
    else if (cmd.equals("START") || cmd.equals("RUNPROJECT") || cmd.equals("STARTDEBUG")) {
       bedrock_runtime.runProject(IvyXml.getAttrString(xml,"NAME"),
 				    IvyXml.getAttrString(xml,"MODE",ILaunchManager.DEBUG_MODE),
@@ -736,6 +740,10 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       if (h2 != null) xw.field("NAME",h2);
       if (h3 != null) xw.field("CNAME",h3);
     }
+   else if (cmd.equals("GETPROXY")) {
+      String h1 = IvyXml.getAttrString(xml,"HOST");
+      getProxyForHost(h1,xw);
+    }
    else if (cmd.equals("ENTER")) {
       BedrockApplication.enterApplication();
       ++num_clients;
@@ -834,6 +842,45 @@ private static class EditDataImpl implements EditData {
    public String getText()			{ return edit_text; }
 
 }	// end of innerclass EditDataImpl
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Methods for handling proxy requests					*/
+/*										*/
+/********************************************************************************/
+
+private void getProxyForHost(String host,IvyXmlWriter xw)
+{
+   try {
+      Bundle bdl = getBundle();
+      if (bdl == null) return;
+      BundleContext ctx = bdl.getBundleContext();
+      ServiceReference svr = ctx.getServiceReference("org.eclipse.core.net.proxy.IProxyService");
+      if (svr == null) return;
+      IProxyService ips = (IProxyService) ctx.getService(svr);
+      if (ips == null) return;
+
+      URI uri = new URI(host);
+      IProxyData [] pds = ips.select(uri);
+      for (IProxyData pd : pds) {
+	 xw.begin("PROXY");
+	 xw.field("TYPE",pd.getType());
+	 xw.field("PORT",pd.getPort());
+	 xw.field("HOST",pd.getHost());
+	 if (pd.isRequiresAuthentication()) {
+	    xw.field("USER",pd.getUserId());
+	    xw.field("PWD",pd.getPassword());
+	  }
+	 xw.end("PROXY");
+       }
+    }
+   catch (Throwable t) {
+      logD("Problem getting proxy information for " + host + ": " + t);
+    }
+}
 
 
 

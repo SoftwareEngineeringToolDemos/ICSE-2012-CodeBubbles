@@ -299,7 +299,7 @@ int	BASS_DEFAULT_INTERIOR_PRIORITY = 200;
 /********************************************************************************/
 
 /**
- * This interface defines a routine for poping up a menu to create a new method or class
+ * This interface defines a routine for popping up a menu to create a new method or class
  */
 
 public interface BassNewItemCreator {

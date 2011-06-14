@@ -416,6 +416,7 @@ private class ContextMenuHandler implements ActionListener {
    if (tips.size() == 0) buf.append("Line " + lno);
    else if (tips.size() == 1) {
       String tt = tips.get(0);
+      buf.append("<html>");
       buf.append("Line " + lno + ": " + tt);
     }
    else {

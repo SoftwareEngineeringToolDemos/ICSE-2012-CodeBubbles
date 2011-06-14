@@ -1102,7 +1102,7 @@ interface BudaHintActions {
    void clickAction();
    void finalAction();
 
-}	// end of innter interface BudaHintActions
+}	// end of inner interface BudaHintActions
 
 
 

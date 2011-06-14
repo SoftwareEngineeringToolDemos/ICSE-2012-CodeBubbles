@@ -18,6 +18,8 @@
 	 <pathelement location='${PRO}/bubbles/java' />
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='joscar*.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='jsocks-klea.jar' />
       </path>
       <path id='test.classpath'>
 	 <pathelement location='${PRO}/bubbles/java' />

@@ -259,9 +259,6 @@ private void start()
        }
     }
 
-   // start java doc loading (before starting eclipse)
-   BdocFactory.setup();
-
    // next start Messaging
    bs.setSplashTask("Setting up messaging");
    BumpClient bc = BumpClient.getBump();
@@ -269,10 +266,12 @@ private void start()
    // next start Eclipse
    bs.setSplashTask("Starting IDE (" + bc.getName() + ") and Updating Projects");
    bc.waitForIDE();
+   
 
    // ensure various components are setup
 
    bs.setSplashTask("Initializing components");
+   BdocFactory.setup();
    BaleFactory.setup();
    BassFactory.setup();
 
@@ -334,7 +333,7 @@ private void start()
 
 /********************************************************************************/
 /*										*/
-/*	Initilization by name							*/
+/*	Initialization by name							*/
 /*										*/
 /********************************************************************************/
 

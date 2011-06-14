@@ -36,8 +36,7 @@ import javax.swing.filechooser.FileFilter;
 
 import java.awt.event.*;
 import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
@@ -108,6 +107,7 @@ private boolean 	use_lila;
 private List<String>	java_args;
 private BoardSplash	splash_screen;
 private long		run_size;
+private String		update_proxy;
 
 
 private static String	       prop_base;
@@ -177,6 +177,10 @@ private BoardSetup()
    default_workspace = system_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
    ask_workspace = system_properties.getBoolean(BOARD_PROP_ECLIPSE_ASK_WS,true);
    run_foreground = system_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,true);
+
+   BoardProperties bp = BoardProperties.getProperties("Board");
+   update_proxy = bp.getProperty("Board.update.proxy");
+   if (update_proxy != null && update_proxy.length() < 2) update_proxy = null;
 
    if (!checkWorkspace()) default_workspace = null;
 
@@ -610,6 +614,7 @@ public boolean doSetup()
 
    if (install_jar && !update_setup) {
       setSplashTask("Checking for newer version");
+      if (update_proxy != null) BoardUpdate.setupProxy(update_proxy);
       BoardUpdate.checkUpdate(jar_file,java_args);
     }
    else if (install_jar || jar_directory != null) {
@@ -657,6 +662,8 @@ public boolean doSetup()
    if (must_restart) {
       restartBubbles();
     }
+
+   setupProxy();
 
    return must_restart;
 }
@@ -1679,6 +1686,101 @@ private static class WorkspaceDirectoryFilter extends FileFilter {
    public String getDescription()	{ return "Eclipse Workspace Directory"; }
 
 }	// end of inner class WorkspaceDirectoryFilter
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Proxy management							*/
+/*										*/
+/********************************************************************************/
+
+private void setupProxy()
+{
+   BoardProperties bp = BoardProperties.getProperties("Board");
+   String plst = bp.getProperty("Board.proxy");
+   if (plst == null || plst.length() < 1) return;
+
+   List<Proxy> proxies = new ArrayList<Proxy>();
+   for (StringTokenizer tok = new StringTokenizer(plst," \t,"); tok.hasMoreTokens(); ) {
+      String prx = tok.nextToken();
+      Proxy px = getProxy(prx);
+      if (px != null) proxies.add(px);
+    }
+
+   if (proxies.size() == 0) return;
+   proxies.add(Proxy.NO_PROXY);
+   ProxyManager pm = new ProxyManager(proxies);
+   ProxySelector.setDefault(pm);
+}
+
+
+
+private Proxy getProxy(String d)
+{
+   String [] args = d.split(":");
+   Proxy.Type typ;
+   if (args.length < 3) {
+      if (args[0].startsWith("N") || args[0].equals("*")) return Proxy.NO_PROXY;
+      return null;
+    }
+
+   InetSocketAddress addr;
+   try {
+      typ = Proxy.Type.valueOf(args[0]);
+      int port = Integer.parseInt(args[2]);
+      addr = new InetSocketAddress(args[1],port);
+      return new Proxy(typ,addr);
+    }
+   catch (Throwable t) { }
+
+   return null;
+}
+
+
+
+private class ProxyManager extends ProxySelector {
+
+   List<Proxy> proxy_list;
+   List<Proxy> null_list;
+   Set<String> local_hosts;
+
+   ProxyManager(List<Proxy> pl) {
+      proxy_list = pl;
+      null_list = new ArrayList<Proxy>();
+      null_list.add(Proxy.NO_PROXY);
+      local_hosts = new HashSet<String>();
+      local_hosts.add("localhost");
+      local_hosts.add("0.0.0.0");
+      local_hosts.add("127.0.0.1");
+      try {
+	 InetAddress lh = InetAddress.getLocalHost();
+	 local_hosts.add(lh.getHostAddress());
+	 local_hosts.add(lh.getHostName());
+	 local_hosts.add(lh.getCanonicalHostName());
+       }
+      catch (IOException e) { }
+    }
+
+   @Override public void connectFailed(URI uri,SocketAddress sa,IOException e) {
+//      Proxy p = null;
+//      for (Proxy px : proxy_list) {
+//	 if (px.address().equals(sa)) p = px;
+//       }
+    }
+
+   @Override public List<Proxy> select(URI uri) {
+      if (uri.getScheme().equals("http") || uri.getScheme().equals("https")) {
+	 String h = uri.getHost();
+	 if (local_hosts.contains(h)) return null_list;
+	 return proxy_list;
+       }
+
+      return null_list;
+    }
+
+}	// end of inner class ProxyManager
 
 
 

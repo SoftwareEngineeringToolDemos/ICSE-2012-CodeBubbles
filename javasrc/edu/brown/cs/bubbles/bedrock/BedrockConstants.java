@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -69,6 +69,14 @@ String BEDROCK_UNMANAGED_HANDLE = "*UNMANAGED*";
 int	MAX_TEXT_SEARCH_RESULTS = 128;
 
 
+
+
+/********************************************************************************/
+/*										*/
+/*	Mint constants								*/
+/*										*/
+/********************************************************************************/
+
 // Must Match BumpConstants.BUMP_MINT_NAME
 String	BEDROCK_MESSAGE_ID = "BUBBLES_" + System.getProperty("user.name").replace(" ","_");
 // String BEDROCK_MESSAGE_ID = "BUBBLES";
@@ -92,6 +100,10 @@ enum BedrockDebugAction {
    SUSPEND,
    DROP_TO_FRAME
 }
+
+String	BEDROCK_LAUNCH_ID_PROP = "edu.brown.cs.bubbles.bedrock.ID";
+String	BEDROCK_LAUNCH_ORIGID_PROP = "edu.brown.cs.bubbles.bedrock.ORIGID";
+
 
 
 

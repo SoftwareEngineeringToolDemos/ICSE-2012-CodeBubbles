@@ -39,7 +39,7 @@ import javax.swing.Icon;
 
 /**
  *	This class provides a default implementation of BassConstants.BassName that
- *	should simplify implemenations.  In particular, it provides methods for
+ *	should simplify implementations.  In particular, it provides methods for
  *	putting together the various strings that are needed by BassName from
  *	simpler components.
  **/
@@ -145,7 +145,7 @@ protected String getUserSymbolName()
 
 
 /**
- *	Return the local name, i.e. the tail part of the name without any qualificaions.
+ *	Return the local name, i.e. the tail part of the name without any qualifications.
  **/
 
 protected String getLocalName()

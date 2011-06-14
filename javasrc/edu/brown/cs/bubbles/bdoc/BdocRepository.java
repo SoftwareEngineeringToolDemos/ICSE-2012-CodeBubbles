@@ -69,6 +69,7 @@ private Map<String,BdocReference> all_items;
 private Collection<BdocInheritedReference> inherited_items;
 private int			ready_count;
 private boolean 		cache_repository;
+private List<String>		bdoc_props;
 
 private static ParserDelegator	parser_delegator = new ParserDelegator();
 
@@ -86,6 +87,33 @@ BdocRepository()
    inherited_items = new ArrayList<BdocInheritedReference>();
    cache_repository = true;
 
+   bdoc_props = new ArrayList<String>();
+   List<String> plist = new ArrayList<String>();
+   plist.add("Bdoc.javadoc.");
+   BumpClient bc = BumpClient.getBump();
+   Element e = bc.getAllProjects();
+   for (Element pe : IvyXml.children(e,"PROJECT")) {
+      String nm = IvyXml.getAttrString(pe,"NAME");
+      if (nm != null) {
+	 nm = nm.replace(" ","_");
+	 plist.add("Bdoc." + nm + ".javadoc.");
+       }
+    }
+   BoardProperties bp = BoardProperties.getProperties("Bdoc");
+   for (String s : bp.stringPropertyNames()) {
+      boolean use = false;
+      for (String ns : plist) {
+	 if (s.startsWith(ns)) {
+	    use = true;
+	    break;
+	  }
+       }
+      if (use) {
+	 String nm = bp.getProperty(s);
+	 if (nm != null) bdoc_props.add(s);
+       }
+    }		
+   
    File f = BoardSetup.getDocumentationFile();
 
    if (loadXml(f)) {
@@ -95,12 +123,10 @@ BdocRepository()
 
    ready_count = 1;
 
-   BoardProperties bp = BoardProperties.getProperties("Bdoc");
-   for (int i = 0; ; ++i) {
-      String nm = bp.getProperty("Bdoc.javadoc." + i);
+   for (String s : bdoc_props) {
+      String nm = bp.getProperty(s);
       if (nm != null) addJavadoc(nm);
-      else if (i >= 10) break;
-    }
+    }		
 
    noteSearcherDone();
 }
@@ -533,10 +559,9 @@ private void outputXml(File f)
       xw.field("WHEN",System.currentTimeMillis());
 
       BoardProperties bp = BoardProperties.getProperties("Bdoc");
-      for (int i = 0; ; ++i) {
-	 String nm = bp.getProperty("Bdoc.javadoc." + i);
+      for (String s : bdoc_props) {
+	 String nm = bp.getProperty(s);
 	 if (nm != null) xw.textElement("SOURCE",nm);
-	 else if (i >= 10) break;
        }
 
       for (BdocReference br : all_items.values()) {
@@ -569,8 +594,8 @@ private boolean loadXml(File f)
    Set<String> sources = new HashSet<String>();
    BoardProperties bp = BoardProperties.getProperties("Bdoc");
    long dlm = f.lastModified();
-   for (int i = 0; ; ++i) {
-      String nm = bp.getProperty("Bdoc.javadoc." + i);
+   for (String pnm : bdoc_props) {
+      String nm = bp.getProperty(pnm);
       if (nm != null) {
 	 sources.add(nm);
 	 try {
@@ -590,18 +615,17 @@ private boolean loadXml(File f)
 		     if (ndlm > dlm) return false;
 		   }
 		  else if (cd >= 400) return false;
-		}
+	        }
 	       catch (IOException e) {
 		  // ignore bad connection -- use cached value
-		}
+	        }
 	     }
 	  }
 	 catch (URISyntaxException e) {
 	    return false;
 	  }
        }
-      else if (i >= 10) break;
-    }
+     }
 
    SAXParserFactory spf = SAXParserFactory.newInstance();
    spf.setValidating(false);

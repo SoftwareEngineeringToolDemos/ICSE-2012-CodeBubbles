@@ -429,7 +429,7 @@ public boolean isTransient()			{ return is_transient; }
 
 
 /**
- *	Inidicate that this bubble is transient.
+ *	Indicate that this bubble is transient.
  **/
 
 public void setTransient(boolean fg)		{ is_transient = fg; }

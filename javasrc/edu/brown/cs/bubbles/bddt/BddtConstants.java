@@ -188,7 +188,7 @@ Color BDDT_PERF_BOTTOM_COLOR = Color.WHITE;
 
 /********************************************************************************/
 /*										*/
-/*	Breakponit display constants						*/
+/*	Breakpoint display constants						*/
 /*										*/
 /********************************************************************************/
 //amc6
@@ -199,7 +199,7 @@ Color BDDT_PERF_BOTTOM_COLOR = Color.WHITE;
 Dimension BDDT_BREAKPOINT_INITIAL_SIZE = new Dimension(320,130);
 
 /**
- * Minumum width of columns
+ * Minimum width of columns
  **/
 int[] BDDT_BREAKPOINT_COLUMN_WIDTHS = {40,130,80,45};
 

@@ -1882,6 +1882,14 @@ Element saveRunConfiguration(String id)
 }
 
 
+Element deleteRunConfiguration(String id)
+{
+   String q = "LAUNCH='" + id + "'";
+   Element e = getXmlReply("DELETERUNCONFIG",null,q,null,0);
+   return e;
+}
+
+
 Element getThreadStack(BumpThread bt)
 {
    if (bt == null) return null;
@@ -2459,6 +2467,11 @@ private void grabPreferences()
 	 option_map.put(nm,vl);
        }
     }
+
+   pe = getXmlReply("GETPROXY",null,"HOST='http://conifer.cs.brown.edu'",null,0);
+   BoardLog.logD("BUMP","CONIFER PROXY INFO: " + IvyXml.convertXmlToString(pe));
+   pe = getXmlReply("GETPROXY",null,"HOST='http://www.cs.brown.edu/people/spr/bubbles",null,0);
+   BoardLog.logD("BUMP","BUBBLES PROXY INFO: " + IvyXml.convertXmlToString(pe));
 }
 
 

@@ -22,12 +22,11 @@
 package edu.brown.cs.bubbles.bgta;
 
 
+import edu.brown.cs.bubbles.bgta.BgtaManager.*;
 import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
 
-import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -35,6 +34,7 @@ import javax.swing.text.Document;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
 
 
 
@@ -53,14 +53,20 @@ private String		  chat_username;
 private BoardProperties   my_props;
 private BgtaLoggingArea   logging_area;
 private BgtaDraftingArea  draft_area;
-private Chat		  chat_panel;
+private BgtaChat		  the_chat;
 private boolean 	  is_saved;
 private boolean 	  alt_color;
 private boolean 	  alt_color_is_on;
 private int		  username_id;
 private boolean 	  is_preview;
+private boolean		  is_listener;
 
 private static final long serialVersionUID = 1L;
+private static HashMap<String, Integer> current_id;
+
+static {
+	current_id = new HashMap<String, Integer>();
+}
 
 
 
@@ -82,6 +88,7 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
    the_manager = man;
    is_saved = the_manager.isBeingSaved();
    is_preview = preview;
+   is_listener = false;
    chat_username = username;
    my_props = BgtaFactory.getBgtaProperties();
    alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
@@ -92,8 +99,20 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 
    logging_area = new BgtaLoggingArea(this);
    if (!the_manager.hasBubble(chat_username)) {
-      chat_panel = the_manager.startChat(chat_username, logging_area, this);
-      username_id = 1;
+	  if (!the_manager.hasChat(chat_username)) {
+	 the_chat = the_manager.startChat(chat_username, logging_area, this);
+	 current_id.put(chat_username, 1);
+     username_id = 1;
+     is_listener = true;
+	   }
+	  else {
+	 the_chat = the_manager.getExistingChat(chat_username);
+	 the_chat.increaseUseCount();
+	 Integer id = current_id.remove(chat_username);
+	 current_id.put(chat_username, id.intValue() + 1);
+	 username_id = id.intValue() + 1;
+	 the_manager.addDuplicateBubble(this);
+	   }
     }
    else {
       BgtaBubble existingBubble = the_manager.getExistingBubble(chat_username);
@@ -103,18 +122,21 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 	 existingLog = existingBubble.getLog();
 	 if (existingLog != null) {
 	    doc = existingLog.getDocument();
-	    chat_panel = existingLog.getChat();
-	    if (doc != null && chat_panel != null) {
+	    the_chat = existingLog.getChat();
+	    the_chat.increaseUseCount();
+	    if (doc != null && the_chat != null) {
 	       logging_area.setDocument(doc);
-	       username_id = existingBubble.getUsernameID() + 1;
+	       Integer id = current_id.remove(chat_username);
+		   current_id.put(chat_username, id.intValue() + 1);
+		   username_id = id.intValue() + 1;
 	       the_manager.addDuplicateBubble(this);
 	     }
 	  }
        }
     }
-   logging_area.setChat(chat_panel);
+   logging_area.setChat(the_chat);
 
-   draft_area = new BgtaDraftingArea(chat_panel,logging_area,this);
+   draft_area = new BgtaDraftingArea(the_chat,logging_area,this);
    JScrollPane log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 					     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -160,9 +182,32 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 
 
 
+@Override public void setVisible(boolean vis)
+{
+   super.setVisible(vis);
+   if (!vis)
+	  the_manager.removeBubble(this);
+   else
+	  the_manager.updateBubble(this);
+}
+
+
+
 @Override protected void localDispose()
 {
-   the_manager.removeBubble(this);
+   the_manager.removeChat(the_chat,logging_area);
+   if (!the_manager.hasChat(chat_username))
+	  current_id.remove(chat_username);
+   the_chat = null;
+}
+
+
+
+void makeActive()
+{
+   BgtaChat chat = logging_area.getChat();
+   if (chat.isListener(logging_area))
+	  is_listener = true;
 }
 
 
@@ -181,15 +226,9 @@ BgtaLoggingArea getLog()			{ return logging_area; }
 
 boolean isPreview()				{ return is_preview; }
 
+boolean isListener()			{ return is_listener; }
 
-
-/********************************************************************************/
-/*										*/
-/*	Manager methods 							*/
-/*										*/
-/********************************************************************************/
-
-String getBuddy()				{ return chat_username; }
+BgtaManager getManager()			{ return the_manager; }
 
 
 
@@ -199,9 +238,12 @@ String getBuddy()				{ return chat_username; }
 /*										*/
 /********************************************************************************/
 
-void recieveMessage(Message mess)
+void recieveMessage(BgtaMessage mess)
 {
-   logging_area.processMessage(chat_panel, mess);
+   if (mess instanceof BgtaXMPPMessage)
+	  logging_area.processMessage(((BgtaXMPPChat) the_chat).getChat(), ((BgtaXMPPMessage) mess).getMessage());
+   else
+	  logging_area.logMessage(mess.getBody());
 }
 
 
@@ -216,7 +258,7 @@ void sendMessage(String mess)
 void sendMetadata(String metadata)
 {
    try {
-      chat_panel.sendMessage(metadata);
+      the_chat.sendMessage(metadata);
     }
    catch (XMPPException e) {}
 
@@ -239,12 +281,14 @@ void setAltColorIsOn(boolean ison)
 }
 
 
+
 boolean reloadAltColor()
 {
    alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
    if (!alt_color) alt_color_is_on = false;
    return alt_color;
 }
+
 
 
 boolean getAltColorIsOn()
@@ -273,6 +317,13 @@ boolean getAltColorIsOn()
 @Override public int hashCode()
 {
    return chat_username.hashCode() + username_id;
+}
+
+
+
+@Override public String toString()
+{
+   return "BgtaBubble Username: " + chat_username + ", UsernameID: " + username_id;
 }
 
 

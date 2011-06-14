@@ -21,7 +21,13 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import edu.brown.cs.bubbles.bgta.BgtaManager.BgtaXMPPChat;
 import edu.brown.cs.ivy.xml.IvyXml;
+
+import net.kano.joustsim.oscar.oscar.service.icbm.Conversation;
+import net.kano.joustsim.oscar.oscar.service.icbm.ConversationEventInfo;
+import net.kano.joustsim.oscar.oscar.service.icbm.ConversationListener;
+import net.kano.joustsim.oscar.oscar.service.icbm.MessageInfo;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
@@ -38,7 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
-class BgtaLoggingArea extends JTextPane implements MessageListener, BgtaConstants {
+class BgtaLoggingArea extends JTextPane implements MessageListener, ConversationListener, BgtaConstants {
 
 
 
@@ -48,7 +54,7 @@ class BgtaLoggingArea extends JTextPane implements MessageListener, BgtaConstant
 /*										*/
 /********************************************************************************/
 
-private Chat		my_chat;
+private BgtaChat		my_chat;
 private String		buddy_name;
 private Document	my_doc;
 private AttributeSet	is_bolded;
@@ -112,11 +118,14 @@ BgtaLoggingArea(BgtaBubble bub)
    return true;
 }
 
-void setChat(Chat ch)
+void setChat(BgtaChat ch)
 {
    my_chat = ch;
-   buddy_name = my_chat.getParticipant();
-   buddy_name = buddy_name.substring(0, buddy_name.lastIndexOf("@")) + ": ";
+   buddy_name = my_chat.getUser();
+   if (my_bubble.getManager().getRoster().getEntry(buddy_name).getName() != null)
+	  buddy_name = my_bubble.getManager().getRoster().getEntry(buddy_name).getName() + ": ";
+   else
+      buddy_name = buddy_name.substring(0, buddy_name.lastIndexOf("@")) + ": ";
 }
 
 
@@ -127,7 +136,7 @@ void setChat(Chat ch)
    my_doc = doc;
 }
 
-Chat getChat()
+BgtaChat getChat()
 {
    return my_chat;
 }
@@ -158,10 +167,14 @@ void logMessage(String recieved,String from)
    setEditable(true);
    setCaretPosition(getDocument().getLength());
    try {
+//	  if (!from.equals("Me: ")) {
+//	if (my_bubble.getManager().getRoster().getEntry(from).getName() != null) 
+//	   from = my_bubble.getManager().getRoster().getEntry(from).getName();
+//	   }
       getDocument().insertString(my_doc.getLength(), from + recieved + "\n", null);
     }
    catch (BadLocationException e) {
-      System.out.println("bad loc");
+      //System.out.println("bad loc");
     }
    if (my_bubble.reloadAltColor() && in_use == is_bolded) {
       my_bubble.setAltColorIsOn(true);
@@ -208,7 +221,7 @@ void unbold()
 
 @Override public void processMessage(Chat ch,Message recieved)
 {
-   if (ch != my_chat) return;
+   if (ch != ((BgtaXMPPChat) my_chat).getChat()) return;
    if (recieved.getType() == Message.Type.chat) {
       String tolog = recieved.getBody();
       if (tolog.startsWith(BGTA_METADATA_START) && tolog.endsWith(BGTA_METADATA_FINISH)) {
@@ -225,7 +238,8 @@ void unbold()
 	 setCaretPosition(my_doc.getLength());
 	 insertComponent(accept);
        }
-      else logMessage(tolog);
+      else 
+    	logMessage(tolog);
     }
 }
 
@@ -233,7 +247,7 @@ void unbold()
 
 /********************************************************************************/
 /*										*/
-/*	Button press metohds							*/
+/*	Button press methods							*/
 /*										*/
 /********************************************************************************/
 
@@ -261,6 +275,42 @@ private class XMLListener implements ActionListener {
     }
 
 }	// end of private class XMLListener
+
+
+
+/********************************************************************************/
+/*										*/
+/*	ConversationListener							*/
+/*										*/
+/********************************************************************************/
+
+@Override public void canSendMessageChanged(Conversation conv, boolean cansend) { }
+
+
+
+@Override public void conversationClosed(Conversation conv) { }
+
+
+
+@Override public void conversationOpened(Conversation conv) { }
+
+
+
+@Override public void gotMessage(Conversation conv, MessageInfo minfo) {
+	logMessage(minfo.getMessage().getMessageBody().replaceAll("<.*?>",""));
+}
+
+
+
+@Override public void gotOtherEvent(Conversation conv, ConversationEventInfo cinfo) { }
+
+
+
+@Override public void sentMessage(Conversation conv, MessageInfo minfo) { }
+
+
+
+@Override public void sentOtherEvent(Conversation conv, ConversationEventInfo cinfo) { }
 
 
 

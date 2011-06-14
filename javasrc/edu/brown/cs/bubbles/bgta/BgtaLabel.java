@@ -21,8 +21,9 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
+
 import org.jivesoftware.smack.PacketListener;
-import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
@@ -59,9 +60,9 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaLabel(String username,Roster rost)
+BgtaLabel(String username,BgtaRoster rost)
 {
-   super(username,BgtaManager.iconFor(rost.getPresence(username)),JLabel.LEFT);
+   super(rost.getEntry(username).getName(),BgtaManager.iconFor(rost.getPresence(username)),JLabel.LEFT);
    my_presence = rost.getPresence(username);
    my_icon = (ImageIcon) getIcon();
    if (my_presence.getType() == Presence.Type.available && my_presence.getMode() != null) {

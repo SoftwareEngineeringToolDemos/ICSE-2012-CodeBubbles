@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -1145,7 +1145,7 @@ public Point getViewPosition()
 
 
 /**
- * get the current viewport		
+ * get the current viewport	
  **/
 
 public Rectangle getViewport()
@@ -2154,10 +2154,8 @@ private class GroupMoveContext extends MouseContext {
    void finish() {
       super.finish();
       for (BudaBubble b : move_bubbles) {
-	 if (!b.isValid()) {
-	    b.unfreeze();
-	  }
-      }
+	 b.unfreeze();
+       }
       fixupBubbleGroup(move_bubbles.get(0));
 
       BudaCursorManager.resetDefaults(BudaBubbleArea.this);

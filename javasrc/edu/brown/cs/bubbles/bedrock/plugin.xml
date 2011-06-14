@@ -17,6 +17,7 @@
       <import plugin="org.eclipse.debug.core" />
       <import plugin="org.eclipse.debug.ui" />
       <import plugin="org.eclipse.core.resources" />
+      <import plugin="org.eclipse.core.net" />
       <import plugin="org.eclipse.search" />
       <import plugin="org.eclipse.text" />
       <import plugin="org.eclipse.ltk.core.refactoring" />

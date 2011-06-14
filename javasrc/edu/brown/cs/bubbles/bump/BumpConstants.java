@@ -648,6 +648,7 @@ interface BumpLaunchConfig {
 
    BumpLaunchConfig clone(String name);
    BumpLaunchConfig save();
+   void delete();
 
    BumpLaunchConfig setConfigName(String name);
    BumpLaunchConfig setProject(String pnm);

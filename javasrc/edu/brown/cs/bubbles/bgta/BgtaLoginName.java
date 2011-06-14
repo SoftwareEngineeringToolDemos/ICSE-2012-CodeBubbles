@@ -61,7 +61,6 @@ BgtaLoginName(String txt,Vector<BgtaManager> mans,BgtaRepository rep,int prior)
    my_text = BGTA_BUDDY_PREFIX + txt;
    my_repository = rep;
    sort_prior = prior;
-
    has_bubble = false;
 }
 

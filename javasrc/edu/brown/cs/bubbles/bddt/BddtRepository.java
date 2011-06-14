@@ -278,9 +278,10 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
       ConfigName cn = (ConfigName) forname;
       BumpLaunchConfig cfg = cn.getConfiguration();
       if (cfg != null) {
-         m.add(new CloneLaunchAction(cfg));
-         m.add(new DebugLaunchAction(cfg));
-         m.add(new RunLaunchAction(cfg));
+	 m.add(new CloneLaunchAction(cfg));
+	 m.add(new DebugLaunchAction(cfg));
+	 m.add(new RunLaunchAction(cfg));
+	 m.add(new DeleteLaunchAction(cfg));
        }
     }
    else if (forname == null && fullname.contains("@Launch Configurations")) {
@@ -308,36 +309,53 @@ private class CloneLaunchAction extends AbstractAction {
 
 
 
-private class RunLaunchAction extends AbstractAction {
-   
+private class DeleteLaunchAction extends AbstractAction {
+
    private BumpLaunchConfig for_config;
-   
+
+   DeleteLaunchAction(BumpLaunchConfig blc) {
+      super("Delete " + blc.getConfigName());
+      for_config = blc;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      for_config.delete();
+    }
+
+}	// end of inner class DeleteLaunchAction
+
+
+
+private class RunLaunchAction extends AbstractAction {
+
+   private BumpLaunchConfig for_config;
+
    RunLaunchAction(BumpLaunchConfig blc) {
       super("Run " + blc.getConfigName());
       for_config = blc;
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       bump_client.startRun(for_config);
     }
 
-}       // end of inner class RunLaunchAction
+}	// end of inner class RunLaunchAction
 
 
 private class DebugLaunchAction extends AbstractAction {
-   
+
    private BumpLaunchConfig for_config;
-   
+
    DebugLaunchAction(BumpLaunchConfig blc) {
       super("Debug " + blc.getConfigName());
       for_config = blc;
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       bump_client.startDebug(for_config,null);
     }
-   
-}       // end of inner class RunLaunchAction
+
+}	// end of inner class RunLaunchAction
 
 
 

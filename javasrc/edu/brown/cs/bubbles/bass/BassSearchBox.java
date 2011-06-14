@@ -1009,6 +1009,10 @@ private class Hoverer extends BudaHover {
 		  else fn = fn + "." + btn.getLocalName();
 	        }
 	     }
+	    if (fn != null) {
+	       int idx = fn.indexOf("#");
+	       if (idx > 0) fn = fn.substring(idx+1);
+	     }
 	  }
 
 	 if (preview_bubble == null && fn != null) {

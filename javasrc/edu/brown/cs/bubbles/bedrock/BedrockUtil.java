@@ -1342,7 +1342,7 @@ static void outputLaunch(ILaunch ln,IvyXmlWriter xw)
    ILaunchConfiguration cfg = ln.getLaunchConfiguration();
    if (cfg != null && cfg.isWorkingCopy())
       cfg = ((ILaunchConfigurationWorkingCopy) cfg).getOriginal();
-   if (cfg != null) xw.field("CID",Integer.toString(cfg.hashCode()));
+   if (cfg != null) xw.field("CID",getId(cfg));
    xw.end("LAUNCH");
 }
 
@@ -1361,7 +1361,7 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
       orig = ((ILaunchConfigurationWorkingCopy) cfg).getOriginal();
     }
 
-   id = Integer.toString(cfg.hashCode());
+   id = getId(cfg);
 
    xw.begin("CONFIGURATION");
    xw.field("ID",id);
@@ -1379,7 +1379,7 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
    xw.field("NAME",cfg.getName());
 
    if (cfg.isWorkingCopy()) xw.field("WORKING",true);
-   if (orig != null) xw.field("ORIGID",orig.hashCode());
+   if (orig != null) xw.field("ORIGID",getId(orig));
 
    for (Iterator<?> it = modes.iterator(); it.hasNext(); ) {
       String md = it.next().toString();
@@ -1420,6 +1420,17 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
    xw.end("CONFIGURATION");
 }
 
+
+
+static String getId(ILaunchConfiguration li)
+{
+   String atr = Integer.toString(System.identityHashCode(li));
+   try {
+      atr = li.getAttribute(BEDROCK_LAUNCH_ID_PROP,atr);
+    }
+   catch (CoreException e) { }
+   return atr;
+}
 
 
 

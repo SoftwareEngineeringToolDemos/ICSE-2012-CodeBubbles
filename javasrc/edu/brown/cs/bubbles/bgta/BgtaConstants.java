@@ -24,6 +24,10 @@ package edu.brown.cs.bubbles.bgta;
 import edu.brown.cs.bubbles.bass.BassConstants;
 
 import java.awt.Color;
+import java.util.Collection;
+
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Presence;
 
 
 
@@ -149,7 +153,54 @@ String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar
 
 
 
-}	// end of interface BgtaConstants
+/********************************************************************************/
+/*										*/
+/*	Interfaces for XMPP and OSCAR compatibility						*/
+/*										*/
+/********************************************************************************/
+
+interface BgtaRoster {
+	
+   BgtaRosterEntry getEntry(String username);
+   Collection<? extends BgtaRosterEntry> getEntries();
+   Presence getPresence(String username);
+   
+}   // end of inner interface BgtaRoster
+
+
+
+interface BgtaRosterEntry {
+	
+   String getName();
+   String getUser();
+   
+}   // end of inner interface BgtaRosterEntry
+
+
+
+interface BgtaChat {
+	
+	String getUser();
+	void sendMessage(String message) throws XMPPException;
+	boolean close();
+	void increaseUseCount();
+	boolean isListener(Object list);
+	void exchangeListeners(Object list);
+	
+}   // end of inner interface BgtaChat
+
+
+
+interface BgtaMessage {
+	
+	String getBody();
+	String getFrom();
+	String getTo();
+}
+
+
+
+}	// end of inner interface BgtaConstants
 
 
 

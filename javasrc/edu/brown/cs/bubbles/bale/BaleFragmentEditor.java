@@ -38,6 +38,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import edu.brown.cs.ivy.swing.SwingGridPanel;
+import edu.brown.cs.ivy.xml.*;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -592,7 +593,7 @@ private static class ProblemAnnot implements BaleAnnotation {
     }
 
    @Override public String getToolTip() {
-      return for_problem.getMessage();
+      return IvyXml.xmlSanitize(for_problem.getMessage());
     }
 
    @Override public Color getLineColor()			{ return null; }

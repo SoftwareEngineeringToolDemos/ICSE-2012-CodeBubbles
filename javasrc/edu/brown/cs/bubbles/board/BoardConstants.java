@@ -368,6 +368,10 @@ String [] BOARD_LIBRARY_FILES = new String [] {
    "smackx-debug.jar",
    "smackx-jingle.jar",
    "smackx.jar",
+   "joscar-client.jar",
+   "joscar-common.jar",
+   "joscar-protocol.jar",
+   "jsocks-klea.jar",
    "bubblesasm.jar"
 };
 

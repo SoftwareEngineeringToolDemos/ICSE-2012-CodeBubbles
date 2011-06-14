@@ -192,6 +192,7 @@ void removeBubble()
 private class LogoutListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
+	  // attempt to log out of the chosen server
       String username = user_field.getText();
       String server = server_field.getText();
       if (server.equals("@gmail.com")) {
@@ -205,11 +206,8 @@ private class LogoutListener implements ActionListener {
       else if (server.equals("@jabber.org")) {
 	 server = "jabber.org";
        }
-      else if (server.equals("AIM")) {
-	 BgtaFactory.unregisterUserViaGateway(username, server);
-	 removeBubble();
-       }
       if (BgtaFactory.logoutAccount(username, new String(pass_field.getPassword()), server)) removeBubble();
+      // if not logged in in the first place, display a message saying so
       else {
 	 user_field.setText("weren't logged in to begin with");
 	 pass_field.setText("");
@@ -236,56 +234,55 @@ private class LoginListener implements ActionListener {
    @Override public void actionPerformed(ActionEvent e) {
       BowiFactory.startTask(BowiTaskType.LOGIN_TO_CHAT);
       if (user_field.getText().equals("") || pass_field.getPassword().equals("")) {
-	 BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
-	 return;
+     BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
+     return;
        }
       BgtaManager newman = null;
       try {
-	 boolean putin = true;
-	 for (BgtaManager man : manager_list) {
-	    if (man.isEquivalent(user_field.getText(), new String(pass_field.getPassword()),
-				    server_field.getText())) putin = false;
-	  }
-	 if (putin) {
-	    String username = user_field.getText();
-	    String server = server_field.getText();
-	    String password = new String(pass_field.getPassword());
-	    if (server.equals("@gmail.com")) {
-	       if (!username.contains("@gmail.com")) username += "@gmail.com";
-	       server = "gmail.com";
-	     }
-	    else if (server.equals("@brown.edu")) {
-	       if (!username.contains("@brown.edu")) username += "@brown.edu";
-	       server = "gmail.com";
-	     }
-	    else if (server.equals("chat.facebook.com")) {
-	       server = "chat.facebook.com";
-	     }
-	    else if (server.equals("@jabber.org")) {
-	       server = "jabber.org";
-	     }
-	    else if (server.equals("AIM")) {
-	       BgtaFactory.registerUserViaGateway(username, password, server);
-	       removeBubble();
-	       BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
-	       return;
-	     }
-	    newman = new BgtaManager(username,password,server,my_repository);
-	    newman.setBeingSaved(rem_user);
-	    manager_list.add(newman);
-	    my_repository.addNewRep(new BgtaBuddyRepository(newman));
-	    if (rem_user) BgtaFactory.addManagerProperties(username, password, server);
-	    removeBubble();
-	  }
-	 else {
-	    user_field.setText("already logged in");
-	    pass_field.setText("");
-	  }
+     boolean putin = true;
+     for (BgtaManager man : manager_list) {
+        if (man.isEquivalent(user_field.getText(), new String(pass_field.getPassword()),
+    			    server_field.getText())) putin = false;
+      }
+     if (putin) {
+        String username = user_field.getText();
+        String server = server_field.getText();
+        String password = new String(pass_field.getPassword());
+        if (server.equals("@gmail.com")) {
+           if (!username.contains("@gmail.com")) username += "@gmail.com";
+           server = "gmail.com";
+         }
+        else if (server.equals("@brown.edu")) {
+           if (!username.contains("@brown.edu")) username += "@brown.edu";
+           server = "gmail.com";
+         }
+        else if (server.equals("chat.facebook.com")) {
+           server = "chat.facebook.com";
+         }
+        else if (server.equals("@jabber.org")) {
+           server = "jabber.org";
+         }
+        if (server.equals("AIM")) {
+           newman = new BgtaAimManager(username,password,server);
+         }
+        else {
+           newman = new BgtaManager(username,password,server,my_repository);
+         }
+        newman.setBeingSaved(rem_user);
+        manager_list.add(newman);
+        my_repository.addNewRep(new BgtaBuddyRepository(newman));
+        if (rem_user) BgtaFactory.addManagerProperties(username, password, server);
+        removeBubble();
+      }
+     else {
+        user_field.setText("already logged in");
+        pass_field.setText("");
+      }
        }
       catch (XMPPException xmppe) {
-	 user_field.setText("invalid login");
-	 pass_field.setText("");
-	 pass_field.setToolTipText(xmppe.getMessage());
+     user_field.setText("invalid login");
+     pass_field.setText("");
+     pass_field.setToolTipText(xmppe.getMessage());
        }
       BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
     }

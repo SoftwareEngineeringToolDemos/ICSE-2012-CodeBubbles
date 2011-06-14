@@ -186,6 +186,7 @@ static boolean logoutAccount(String username,String password,String server)
 }
 
 
+@SuppressWarnings("deprecation") 
 static void registerUserViaGateway(String username,String password,String server)
 {
    for (BgtaManager man : chat_managers) {
@@ -203,6 +204,7 @@ static void registerUserViaGateway(String username,String password,String server
 }
 
 
+@SuppressWarnings("deprecation") 
 static void unregisterUserViaGateway(String username,String server)
 {
    for (BgtaManager man : chat_managers) {

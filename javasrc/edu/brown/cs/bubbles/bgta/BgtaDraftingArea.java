@@ -26,8 +26,9 @@ package edu.brown.cs.bubbles.bgta;
 
 
 
-import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.XMPPException;
+
+import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
 
 import javax.swing.JTextArea;
 
@@ -45,7 +46,7 @@ class BgtaDraftingArea extends JTextArea {
 /*										*/
 /********************************************************************************/
 
-private Chat		my_chat;
+private BgtaChat		my_chat;
 private BgtaLoggingArea my_log;
 private BgtaBubble	my_bubble;
 
@@ -59,7 +60,7 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaDraftingArea(Chat ch,BgtaLoggingArea bla,BgtaBubble mybub)
+BgtaDraftingArea(BgtaChat ch,BgtaLoggingArea bla,BgtaBubble mybub)
 {
    super(1,25);
    my_chat = ch;
@@ -87,9 +88,9 @@ void send()
    try {
       my_chat.sendMessage(getText());
       my_log.logMessage(getText(), "Me: ");
-      my_log.setCaretPosition(my_log.getDocument().getLength());
    }
    catch (Exception e) {
+	  //System.out.println(e.getMessage());
       sent = false;
    }
    if (sent) setText("");

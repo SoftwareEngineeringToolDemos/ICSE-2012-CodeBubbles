@@ -138,14 +138,16 @@ private void setupPanel()
 
    List<String> starts = new ArrayList<String>();
    BassRepository br = BassFactory.getRepository(BassConstants.SearchType.SEARCH_CODE);
-   for (BassName bn : br.getAllNames()) {
-      if (bn.getProject().equals(lp) && bn.getName().endsWith(".main") &&
-	       bn.getNameType() == BassNameType.METHOD &&
-	       Modifier.isPublic(bn.getModifiers()) &&
-	       Modifier.isStatic(bn.getModifiers())) {
-	 String cn = bn.getPackageName() + "." + bn.getClassName();
-	 starts.add(cn);
-      }
+   for (BassName bn : br.getAllNames()) { 
+      if (lp == null || bn.getProject().equals(lp)) {
+	 if (bn.getName().endsWith(".main") &&
+		  bn.getNameType() == BassNameType.METHOD &&
+		  Modifier.isPublic(bn.getModifiers()) &&
+		  Modifier.isStatic(bn.getModifiers())) {
+	    String cn = bn.getPackageName() + "." + bn.getClassName();
+	    starts.add(cn);
+	  }
+       }
     }
    start_class = null;
    arg_area = null;
@@ -154,6 +156,7 @@ private void setupPanel()
    switch (launch_config.getConfigType()) {
       case JAVA_APP :
 	 start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
+	 start_class.setEditable(true);
 	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
 	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
 	 break;
@@ -190,8 +193,10 @@ private void fixButtons()
 
    if (debug_button == null) return;
 
-   debug_button.setEnabled(edit_config == null);
-   save_button.setEnabled(edit_config != null);
+   boolean working = (edit_config != null || launch_config.isWorkingCopy());
+   
+   debug_button.setEnabled(!working);
+   save_button.setEnabled(working);
    revert_button.setEnabled(edit_config != null);
    clone_button.setEnabled(true);
 }
@@ -281,14 +286,14 @@ private String getNewName()
       bf.newDebugger(launch_config);
     }
    else if (cmd.equals("SAVE")) {
-      if (edit_config != null) {
-	 BumpLaunchConfig blc = edit_config.save();
-	 if (blc != null) {
-	    launch_config = blc;
-	    edit_config = null;
-	  }
-	 reload();
+      BumpLaunchConfig blc = null;
+      if (edit_config != null) blc = edit_config.save();
+      else if (launch_config.isWorkingCopy()) blc = launch_config.save();
+      if (blc != null) {
+	 launch_config = blc;
+	 edit_config = null;
        }
+      reload();
     }
    else if (cmd.equals("REVERT")) {
       if (edit_config != null) {

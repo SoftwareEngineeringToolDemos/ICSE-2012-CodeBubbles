@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -33,7 +33,7 @@ import javax.xml.parsers.*;
 
 import java.awt.*;
 import java.io.*;
-import java.net.URL;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,6 +136,8 @@ private String		jar_file;
 private List<String>	java_args;
 private long		max_memory;
 
+private static Proxy	update_proxy = Proxy.NO_PROXY;
+
 private static String	version_data = "Build_" + System.getProperty("user.name");
 
 
@@ -180,7 +182,7 @@ static void checkUpdate(String jarfile,List<String> javaargs)
       bubbles_dir = getBubblesDir(ve);
 
       URL u = new URL(bubbles_dir + VERSION_URL);
-      InputStream uins = u.openStream();
+      InputStream uins = u.openConnection(update_proxy).getInputStream();
       Element ue = getVersionXml(uins);
       uins.close();
 
@@ -310,6 +312,9 @@ private BoardUpdate(String [] args)
 	       max_memory = 0;
 	     }
 	  }
+	 else if (args[i].startsWith("-p") && i+1 < args.length) {
+	    setupProxy(args[++i]);
+	  }
 	 else {
 	    System.err.println("BOARDUPDATE: Illegal argument: " + args[i]);
 	  }
@@ -353,7 +358,7 @@ private void startUpdate() throws IOException
    File f = File.createTempFile(UPDATER_PREFIX,UPDATER_SUFFIX);
    OutputStream ots = new BufferedOutputStream(new FileOutputStream(f));
    URL u = new URL(bubbles_dir + UPDATER_URL);
-   InputStream ins = u.openStream();
+   InputStream ins = u.openConnection(update_proxy).getInputStream();
    copyFile(ins,ots);
 
    System.err.println("BUBBLES: Starting update");
@@ -364,6 +369,19 @@ private void startUpdate() throws IOException
    java_args.add(2,f.getPath());
    java_args.add(3,jar_file);
    java_args.add(4,"-m" + Runtime.getRuntime().maxMemory());
+   try {
+      if (update_proxy != null && update_proxy != Proxy.NO_PROXY) {
+	 String pstr = update_proxy.type().toString();
+	 InetSocketAddress sa = (InetSocketAddress) update_proxy.address();
+	 pstr += ":" + sa.getHostName() + ":" + sa.getPort();
+	 java_args.add(5,"-p");
+	 java_args.add(6,pstr);
+       }
+    }
+   catch (Throwable t) {
+      BoardLog.logE("BOARD","Problem getting proxy info for updater",t);
+    }
+
    ProcessBuilder pb = new ProcessBuilder(java_args);
    pb.start();
 
@@ -436,7 +454,7 @@ private void setupUpdate()
 
       prog.setText("Downloading new version of bubbles");
       URL u = new URL(bubbles_dir + BUBBLES_URL);
-      ins = u.openStream();
+      ins = u.openConnection(update_proxy).getInputStream();
       ots = new FileOutputStream(jf0);
       copyFile(ins,ots);
     }
@@ -564,6 +582,29 @@ private static boolean sameVersion(Element e1,Element e2)
 
    return true;
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Proxy methods								*/
+/*										*/
+/********************************************************************************/
+
+static void setupProxy(String s)
+{
+   String [] args = s.split(":");
+   Proxy.Type typ;
+   InetSocketAddress addr;
+   try {
+      typ = Proxy.Type.valueOf(args[0]);
+      int port = Integer.parseInt(args[2]);
+      addr = new InetSocketAddress(args[1],port);
+      update_proxy = new Proxy(typ,addr);
+    }
+   catch (Throwable t) { }
+}
+
 
 
 

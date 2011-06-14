@@ -171,9 +171,12 @@ void getNewRunConfiguration(String proj,String name,String clone,String typ,IvyX
       throw new BedrockException("Problem creating launch config working copy",e);
     }
 
-   if (config != null) working_configs.add(config);
-
-   BedrockUtil.outputLaunch(config,xw);
+   if (config != null) {
+      config.setAttribute(BEDROCK_LAUNCH_ID_PROP,"L_" + System.identityHashCode(config));
+      config.removeAttribute(BEDROCK_LAUNCH_ORIGID_PROP);
+      working_configs.add(config);
+      BedrockUtil.outputLaunch(config,xw);
+    }
 }
 
 
@@ -209,13 +212,20 @@ void editRunConfiguration(String lnch,String prop,String val,IvyXmlWriter xw)
 }
 
 
+
+
+
 void saveRunConfiguration(String lnch,IvyXmlWriter xw) throws BedrockException
 {
    if (lnch == null) return;
    ILaunchConfigurationWorkingCopy wc = findWorkingLaunchConfig(lnch);
+   if (wc == null) return;
 
    ILaunchConfiguration cln = null;
    try {
+      String xid = BedrockUtil.getId(wc) + "X";
+      xid = wc.getAttribute(BEDROCK_LAUNCH_ORIGID_PROP,xid);
+      wc.setAttribute(BEDROCK_LAUNCH_ID_PROP,xid);
       cln = wc.doSave();
       working_configs.remove(wc);
     }
@@ -228,15 +238,38 @@ void saveRunConfiguration(String lnch,IvyXmlWriter xw) throws BedrockException
 
 
 
+void deleteRunConfiguration(String lnch,IvyXmlWriter xw) throws BedrockException
+{
+   if (lnch == null) return;
+   ILaunchConfiguration lc = findLaunchConfig(lnch);
+   if (lc == null) return;
+   try {
+      lc.delete();
+    }
+   catch (CoreException e) {
+      throw new BedrockException("Problem deleting launch configuration",e);
+    }
+}
+
+
+
+
 private ILaunchConfigurationWorkingCopy findWorkingLaunchConfig(String id) throws BedrockException
 {
    ILaunchConfiguration cln = findLaunchConfig(id);
+   if (cln == null) return null;
 
    ILaunchConfigurationWorkingCopy wc = null;
    if (cln.isWorkingCopy()) wc = (ILaunchConfigurationWorkingCopy) cln;
    else {
       try {
 	 wc = cln.getWorkingCopy();
+	 if (!wc.hasAttribute(BEDROCK_LAUNCH_ORIGID_PROP)) {
+	    String xid = BedrockUtil.getId(cln);
+	    wc.setAttribute(BEDROCK_LAUNCH_ORIGID_PROP,xid);
+	  }
+	 String nid = "L_" + System.identityHashCode(wc);
+	 wc.setAttribute(BEDROCK_LAUNCH_ID_PROP,nid);
        }
       catch (CoreException e) {
 	 throw new BedrockException("Problem creating working copy",e);
@@ -1316,8 +1349,10 @@ private boolean matchLaunchConfiguration(String id,ILaunchConfiguration il)
    if (id == null) return true;
    if (id.equals("*")) return true;
    if (id.equals(il.toString())) return true;
-   if (id.equals(Integer.toString(il.hashCode()))) return true;
+   if (id.equals(Integer.toString(System.identityHashCode(il)))) return true;
    try {
+      String atr = il.getAttribute(BEDROCK_LAUNCH_ID_PROP,(String) null);
+      if (atr != null && id.equals(atr)) return true;
       if (id.equals(il.getMemento())) return true;
     }
    catch (CoreException e) { }

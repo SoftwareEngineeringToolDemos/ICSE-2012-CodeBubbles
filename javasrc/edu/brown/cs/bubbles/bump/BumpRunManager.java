@@ -974,6 +974,10 @@ private class LaunchConfig implements BumpLaunchConfig {
       return lc;
     }
 
+   @Override public void delete() {
+      bump_client.deleteRunConfiguration(getId());
+    }
+
    @Override public BumpLaunchConfig setConfigName(String nm) {
       Element x = bump_client.editRunConfiguration(getId(),"NAME",nm);
       return getLaunchResult(x);

@@ -49,7 +49,7 @@ private BgtaManager the_manager;
 private Icon	    avail_icon;
 private Presence    is_available;
 private int	    sort_prior;
-private boolean     has_bubble;
+// private boolean     has_bubble;
 
 
 
@@ -66,21 +66,19 @@ BgtaBuddy(String username,BgtaManager man,boolean hasbub)
    name_type = BassNameType.CHAT_BUDDY;
 
    connection_name = username;
-   int idx = connection_name.indexOf("@");
-   if (idx > 0) user_name = connection_name.substring(0, idx);
-   else user_name = connection_name;
-   user_name = user_name.replace('.', ' ');
+   BgtaRosterEntry entry = man.getRoster().getEntry(username);
+   user_name = entry.getName();
    user_name = BGTA_BUDDY_PREFIX + user_name;
+
 
    the_manager = man;
    the_manager.addPresenceListener(this);
 
-   is_available = BgtaManager.getPresence(connection_name);
+   is_available = man.getRoster().getPresence(connection_name);
    avail_icon = BgtaManager.iconFor(is_available);
    changeSortPriority();
 
-   has_bubble = hasbub;
-
+   // has_bubble = hasbub;
 }
 
 
@@ -92,12 +90,7 @@ BgtaBuddy(String username,BgtaManager man,boolean hasbub)
 
 @Override public BudaBubble createBubble()
 {
-   has_bubble = the_manager.hasBubble(connection_name);
-   if (!has_bubble) {
-      has_bubble = true;
-      return new BgtaBubble(connection_name,the_manager);
-    }
-   else return null;
+   return new BgtaBubble(connection_name,the_manager);
 }
 
 

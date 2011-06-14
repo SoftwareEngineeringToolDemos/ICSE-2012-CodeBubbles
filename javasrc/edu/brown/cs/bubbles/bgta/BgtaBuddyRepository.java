@@ -23,11 +23,9 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
 import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
-
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.RosterEntry;
 
 import java.util.*;
 
@@ -97,13 +95,10 @@ BgtaManager getManager()
     }
 }
 
-
 @Override public boolean includesRepository(BassRepository br)
 {
    return br == this;
 }
-
-
 
 /********************************************************************************/
 /*										*/
@@ -142,12 +137,11 @@ private boolean isEquivalent(BgtaBuddyRepository bbr)
 
 private void loadNames()
 {
-   Roster buddylist = the_manager.getRoster();
-   Collection<RosterEntry> entries = buddylist.getEntries();
-   for (RosterEntry r : entries) {
+   BgtaRoster buddylist = the_manager.getRoster();
+   Collection<? extends BgtaRosterEntry> entries = buddylist.getEntries();
+   for (BgtaRosterEntry r : entries) {
       BgtaBuddy bud = new BgtaBuddy(r.getUser(),the_manager,the_manager.hasBubble(r.getUser()));
       all_names.add(bud);
-
     }
 
    synchronized (this) {
@@ -193,7 +187,6 @@ private class Searcher extends Thread {
 
 
 }	// end of class BgtaBuddyRepository
-
 
 
 

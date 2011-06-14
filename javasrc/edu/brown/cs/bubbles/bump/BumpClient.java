@@ -2468,10 +2468,8 @@ private void grabPreferences()
        }
     }
 
-   pe = getXmlReply("GETPROXY",null,"HOST='http://conifer.cs.brown.edu'",null,0);
-   BoardLog.logD("BUMP","CONIFER PROXY INFO: " + IvyXml.convertXmlToString(pe));
-   pe = getXmlReply("GETPROXY",null,"HOST='http://www.cs.brown.edu/people/spr/bubbles",null,0);
-   BoardLog.logD("BUMP","BUBBLES PROXY INFO: " + IvyXml.convertXmlToString(pe));
+   // pe = getXmlReply("GETPROXY",null,"HOST='http://conifer.cs.brown.edu'",null,0);
+   // pe = getXmlReply("GETPROXY",null,"HOST='http://www.cs.brown.edu/people/spr/bubbles'",null,0);
 }
 
 

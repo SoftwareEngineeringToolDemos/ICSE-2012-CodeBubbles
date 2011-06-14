@@ -238,7 +238,6 @@
 	 <fileset dir='${PRO}/bubbles/lib' includes='bedrock.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='ivy.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='version.xml' />
-	 <fileset dir='${PRO}/bubbles/lib' includes='mail.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />
@@ -272,7 +271,6 @@
 	 <fileset dir='${PRO}/bubbles/lib' includes='bedrock.jar' />
 	 <fileset dir='${PRO}/bubbles/lib' includes='ivy.jar' />
 	 <fileset dir='external' includes='version.xml' />
-	 <fileset dir='${PRO}/bubbles/lib' includes='mail.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='smack*.jar' />

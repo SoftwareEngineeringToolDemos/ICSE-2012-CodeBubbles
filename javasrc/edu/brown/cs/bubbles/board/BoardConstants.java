@@ -360,7 +360,6 @@ String [] BOARD_RESOURCE_PROPS =  new String [] {
 
 String [] BOARD_LIBRARY_FILES = new String [] {
    "ivy.jar",
-   "mail.jar",
    "iText.jar",
    "jsyntaxpane.jar",
    "copyright.txt",

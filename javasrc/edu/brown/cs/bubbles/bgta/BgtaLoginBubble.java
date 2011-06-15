@@ -231,8 +231,8 @@ private class LogoutListener implements ActionListener {
 	  // attempt to log out of the chosen server
       String username = user_field.getText();
       String servername = selected_server.server();
-      if (!username.contains(selected_server.display()))
-      	username += selected_server.display();
+      if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
+      	username += selected_server.ending();
       if (BgtaFactory.logoutAccount(username, new String(pass_field.getPassword()), servername)) removeBubble();
       // if not logged in in the first place, display a message saying so
       else {
@@ -268,15 +268,15 @@ private class LoginListener implements ActionListener {
      boolean putin = true;
      for (BgtaManager man : manager_list) {
         if (man.isEquivalent(user_field.getText(),server_field.getText())
-      		  && man.getPassword() == new String(pass_field.getPassword()))
+      		  && man.getPassword().equals(new String(pass_field.getPassword())))
       	  putin = false;
       }
      if (putin) {
         String username = user_field.getText();
         String password = new String(pass_field.getPassword());
         String servername = selected_server.server();
-        if (!username.contains(selected_server.display()))
-      	  username += selected_server.display();
+        if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
+      	  username += selected_server.ending();
         if (selected_server == ChatServer.AIM) {
            newman = new BgtaAimManager(username,password,servername);
          }

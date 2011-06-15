@@ -66,13 +66,13 @@ private IcbmListener		   conversation_listener;
 
 BgtaAimManager(String username,String password,String server) throws XMPPException
 {
-   login(username, password);
    user_name = username;
    user_password = password;
    user_server = server;
    existing_bubbles = new Vector<BgtaBubble>();
    existing_chats = new Vector<BgtaChat>();
    being_saved = false;
+   login(username, password);
 }
 
 

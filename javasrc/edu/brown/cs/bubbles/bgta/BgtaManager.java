@@ -233,10 +233,11 @@ void login(String username,String password,String server) throws XMPPException
    try {
    	the_connection.connect();
    	the_connection.login(username, password);
-   } catch (XMPPException e) {
+    } catch (Exception e) {
    	the_connection.disconnect();
-   	throw e;
-   }
+   	System.out.println(e.getClass() + e.getMessage());
+//   	throw e;
+    }
    if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to server.");
 
    Message m = new Message();

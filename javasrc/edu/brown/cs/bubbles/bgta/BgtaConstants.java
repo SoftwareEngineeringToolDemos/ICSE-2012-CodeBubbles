@@ -159,18 +159,19 @@ String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar
 /*										*/
 /********************************************************************************/
 enum ChatServer {
-	GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com"),
-	BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com"),
-	FACEBOOK("Facebook", "chat.facebook.com", "", ""),
-	JABBER("Jabber", "jabber.org", "@jabber.org", ""),
-	AIM("AIM", "aim", "", "");
+	GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com", true),
+	BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com", true),
+	FACEBOOK("Facebook", "chat.facebook.com", "chat.facebook.com", "", false),
+	JABBER("Jabber", "jabber.org", "@jabber.org", "", false),
+	AIM("AIM", "aim", "", "", false);
 	
 	private String selector;
 	private String server;
 	private String display;
 	private String host;
+	private boolean ending;
 	
-	private ChatServer(String selector,String server,String display,String host) {
+	private ChatServer(String selector,String server,String display,String host, boolean ending) {
 		this.selector = selector;
 		this.server = server;
 		if (display.equals(""))
@@ -181,6 +182,7 @@ enum ChatServer {
 			this.host = server;
 		else
 			this.host = host;
+		this.ending = ending;
 	}
 	
 	public String selector() { return selector; }
@@ -190,6 +192,16 @@ enum ChatServer {
 	public String display() { return display; }
 	
 	public String host() { return host; }
+	
+	public boolean hasEnding() {
+		return ending;
+	}
+	
+	public String ending() {
+		if (ending)
+			return display;
+		return "";
+	}
 	
 	@Override public String toString() { return selector + " - " + display; }
 }

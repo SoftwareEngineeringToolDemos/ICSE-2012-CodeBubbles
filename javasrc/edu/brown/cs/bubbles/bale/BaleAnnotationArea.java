@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -378,7 +378,7 @@ private class ContextMenuHandler implements ActionListener {
 	 break_model.toggleBreakpoint(for_document.getProjectName(),
 	       for_document.getFile(),for_line,BumpBreakMode.TRACE);
        }
-	
+
       BoardMetrics.noteCommand("BALE","ANNOT_" + cmd);
    }
 
@@ -416,12 +416,11 @@ private class ContextMenuHandler implements ActionListener {
    if (tips.size() == 0) buf.append("Line " + lno);
    else if (tips.size() == 1) {
       String tt = tips.get(0);
-      buf.append("<html>");
+      buf.append("<html><body>");
       buf.append("Line " + lno + ": " + tt);
     }
    else {
-      // TODO: probably should make this html
-      buf.append("<html>");
+      buf.append("<html><body>");
       buf.append("Line " + lno + " multiple annotations:");
       for (String tt : tips) {
 	 buf.append("<br>&nbsp;&nbsp;");

@@ -848,7 +848,7 @@ String getContextToolTip(BaleContextConfig cfg)
       if (t != null) {
 	 if (buf == null) {
 	    buf = new StringBuffer();
-	    buf.append("<html>");
+	    buf.append("<html><body>");
 	  }
 	 else buf.append("<br>");
 	 buf.append(t);

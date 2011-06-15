@@ -22,19 +22,41 @@
 package edu.brown.cs.bubbles.bgta;
 
 
-import edu.brown.cs.bubbles.board.BoardFont;
-import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
-import edu.brown.cs.bubbles.bowi.BowiFactory;
-import edu.brown.cs.bubbles.buda.BudaBubble;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.geom.Rectangle2D;
+import java.util.Vector;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import org.jivesoftware.smack.XMPPException;
 
-import javax.swing.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.Rectangle2D;
-import java.util.Vector;
+import edu.brown.cs.bubbles.board.BoardFont;
+import edu.brown.cs.bubbles.bowi.BowiFactory;
+import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 
 
 
@@ -56,6 +78,7 @@ private JPasswordField	    pass_field;
 private JLabel		    server_field;
 private BgtaRepository	    my_repository;
 private BgtaLoginName	    my_name;
+private ChatServer			selected_server;
 private boolean 	    rem_user;
 
 private static final long   serialVersionUID = 1L;
@@ -74,6 +97,7 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    manager_list = mans;
    my_repository = repo;
    my_name = name;
+   selected_server = ChatServer.GMAIL;
 
    LoginPanel lpan = new LoginPanel();
    JLabel userlabel = new JLabel("Username: ");
@@ -88,20 +112,27 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    serverlabel.setHorizontalAlignment(SwingConstants.LEFT);
    serverlabel.setVerticalAlignment(SwingConstants.BOTTOM);
    serverlabel.setFont(BoardFont.getFont(serverlabel.getFont().getFontName(),Font.PLAIN,10));
-   server_field = new JLabel("@gmail.com");
+   server_field = new JLabel(selected_server.display());
    server_field.setHorizontalAlignment(SwingConstants.RIGHT);
    server_field.setVerticalAlignment(SwingConstants.TOP);
    server_field.setFont(BoardFont.getFont(server_field.getFont().getFontName(),Font.PLAIN,10));
 
    user_field = new JTextField(15);
    pass_field = new JPasswordField(15);
-   String[] serverStrings = { "Gmail", "Brown Gmail", "Facebook", "AIM", "Jabber" };
+   int servers = ChatServer.values().length;
+   String[] serverStrings = new String[servers];
+   servers = 0;
+   for (ChatServer server : ChatServer.values()) {
+   	serverStrings[servers++] = server.selector();
+   }
    JComboBox serverchoice = new JComboBox(serverStrings);
    serverchoice.setFont(BoardFont.getFont(serverchoice.getFont().getFontName(),Font.PLAIN,10));
 
    user_field.addActionListener(new EnterListener(pass_field));
+   user_field.addFocusListener(new FocusSelectionListener());
    pass_field.addActionListener(new EnterListener(null));
-   serverchoice.addActionListener(new ServerListener(server_field));
+   pass_field.addFocusListener(new FocusSelectionListener());
+   serverchoice.addActionListener(new ServerListener());
 
    JCheckBox rembox = new JCheckBox("Keep me signed in");
    rembox.setOpaque(false);
@@ -189,24 +220,20 @@ void removeBubble()
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Interaction Listeners									*/
+/*										*/
+/********************************************************************************/
 private class LogoutListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
 	  // attempt to log out of the chosen server
       String username = user_field.getText();
-      String server = server_field.getText();
-      if (server.equals("@gmail.com")) {
-	 if (!username.contains("@gmail.com")) username += "@gmail.com";
-	 server = "gmail.com";
-       }
-      else if (server.equals("@brown.edu")) {
-	 if (!username.contains("@brown.edu")) username += "@brown.edu";
-	 server = "gmail.com";
-       }
-      else if (server.equals("@jabber.org")) {
-	 server = "jabber.org";
-       }
-      if (BgtaFactory.logoutAccount(username, new String(pass_field.getPassword()), server)) removeBubble();
+      String servername = selected_server.server();
+      if (!username.contains(selected_server.display()))
+      	username += selected_server.display();
+      if (BgtaFactory.logoutAccount(username, new String(pass_field.getPassword()), servername)) removeBubble();
       // if not logged in in the first place, display a message saying so
       else {
 	 user_field.setText("weren't logged in to begin with");
@@ -228,7 +255,6 @@ private class RememberListener implements ItemListener {
 
 
 
-
 private class LoginListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
@@ -241,37 +267,26 @@ private class LoginListener implements ActionListener {
       try {
      boolean putin = true;
      for (BgtaManager man : manager_list) {
-        if (man.isEquivalent(user_field.getText(), new String(pass_field.getPassword()),
-    			    server_field.getText())) putin = false;
+        if (man.isEquivalent(user_field.getText(),server_field.getText())
+      		  && man.getPassword() == new String(pass_field.getPassword()))
+      	  putin = false;
       }
      if (putin) {
         String username = user_field.getText();
-        String server = server_field.getText();
         String password = new String(pass_field.getPassword());
-        if (server.equals("@gmail.com")) {
-           if (!username.contains("@gmail.com")) username += "@gmail.com";
-           server = "gmail.com";
-         }
-        else if (server.equals("@brown.edu")) {
-           if (!username.contains("@brown.edu")) username += "@brown.edu";
-           server = "gmail.com";
-         }
-        else if (server.equals("chat.facebook.com")) {
-           server = "chat.facebook.com";
-         }
-        else if (server.equals("@jabber.org")) {
-           server = "jabber.org";
-         }
-        if (server.equals("AIM")) {
-           newman = new BgtaAimManager(username,password,server);
+        String servername = selected_server.server();
+        if (!username.contains(selected_server.display()))
+      	  username += selected_server.display();
+        if (selected_server == ChatServer.AIM) {
+           newman = new BgtaAimManager(username,password,servername);
          }
         else {
-           newman = new BgtaManager(username,password,server,my_repository);
+           newman = new BgtaManager(username,password,servername,my_repository);
          }
         newman.setBeingSaved(rem_user);
         manager_list.add(newman);
         my_repository.addNewRep(new BgtaBuddyRepository(newman));
-        if (rem_user) BgtaFactory.addManagerProperties(username, password, server);
+        if (rem_user) BgtaFactory.addManagerProperties(username, password, servername);
         removeBubble();
       }
      else {
@@ -280,9 +295,10 @@ private class LoginListener implements ActionListener {
       }
        }
       catch (XMPPException xmppe) {
-     user_field.setText("invalid login");
+     user_field.setText("incorrect login information");
      pass_field.setText("");
      pass_field.setToolTipText(xmppe.getMessage());
+//     user_field.setText(xmppe.getClass() + xmppe.getMessage());
        }
       BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
     }
@@ -310,6 +326,20 @@ private class EnterListener implements ActionListener {
 
 }	// end of inner class EnterListener
 
+
+
+private class FocusSelectionListener extends FocusAdapter {
+	
+	@Override public void focusGained(FocusEvent e) {
+		((JTextField) e.getSource()).selectAll();
+	}
+	
+	@Override public void focusLost(FocusEvent e) {
+		((JTextField) e.getSource()).setCaretPosition(0);
+		((JTextField) e.getSource()).moveCaretPosition(0);
+	}
+	
+} // end of inner class FocusSelectionListener
 
 
 
@@ -354,35 +384,27 @@ private class LoginPanel extends JPanel implements BgtaConstants {
 
 private class ServerListener implements ActionListener {
 
-   private JLabel serverlabel;
-
-   private ServerListener(JLabel example) {
-      serverlabel = example;
-    }
-
    @Override public void actionPerformed(ActionEvent e) {
       JComboBox cb = (JComboBox) e.getSource();
-      String server = (String) cb.getSelectedItem();
-      if (server.equals("Gmail")) {
-	 serverlabel.setText("@gmail.com");
-	 serverlabel.setVisible(true);
+      String selection = (String) cb.getSelectedItem();
+      selected_server = ChatServer.GMAIL;
+      if (selection.equals(ChatServer.BROWN.selector())) {
+      	selected_server = ChatServer.BROWN;
        }
-      else if (server.equals("Brown Gmail")) {
-	 serverlabel.setText("@brown.edu");
-	 serverlabel.setVisible(true);
+      else if (selection.equals(ChatServer.FACEBOOK.selector())) {
+      	selected_server = ChatServer.FACEBOOK;
        }
-      else if (server.equals("Facebook")) {
-	 serverlabel.setText("chat.facebook.com");
-	 serverlabel.setVisible(false);
+      else if (selection.equals(ChatServer.AIM.selector())) {
+      	selected_server = ChatServer.AIM;
        }
-      else if (server.equals("AIM")) {
-	 serverlabel.setText("AIM");
-	 serverlabel.setVisible(false);
+      else if (selection.equals(ChatServer.JABBER.selector())) {
+      	selected_server = ChatServer.JABBER;
        }
-      else if (server.equals("Jabber")) {
-	 serverlabel.setText("@jabber.org");
-	 serverlabel.setVisible(true);
-       }
+      server_field.setText(selected_server.display());
+      if (selected_server == ChatServer.FACEBOOK || selected_server == ChatServer.AIM)
+      	server_field.setVisible(false);
+      else
+      	server_field.setVisible(true);
     }
 
 }	// end of inner class ServerListener

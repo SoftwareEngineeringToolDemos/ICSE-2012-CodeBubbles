@@ -86,7 +86,6 @@ BgtaManager(String username,String password,String server,BgtaRepository repo)
 
 BgtaManager(String username,String password,String server) throws XMPPException
 {
-   login(username, password, server);
    user_name = username;
    user_password = password;
    user_server = server;
@@ -94,13 +93,13 @@ BgtaManager(String username,String password,String server) throws XMPPException
    existing_chats = new Vector<BgtaChat>();
    being_saved = false;
    roster_listener = null;
+   login(username, password, server);
 }
 
 
 
 BgtaManager(String username,String password) throws XMPPException
 {
-   login(username, password);
    user_name = username;
    user_password = password;
    user_server = "";
@@ -108,6 +107,7 @@ BgtaManager(String username,String password) throws XMPPException
    existing_chats = new Vector<BgtaChat>();
    being_saved = false;
    roster_listener = null;
+   login(username, password);
 }
 
 BgtaManager() { }
@@ -133,12 +133,38 @@ boolean isBeingSaved()				{ return being_saved; }
 
 void setBeingSaved(boolean bs)			{ being_saved = bs; }
 
+/********************************************************************************/
+/*										*/
+/*	Comparison methods							*/
+/*										*/
+/********************************************************************************/
 
-
-boolean isEquivalent(String un,String pa,String se)
+boolean isEquivalent(String un,String se)
 {
-   return un.equals(user_name) && pa.equals(user_password) && se.equals(user_server);
+   return un.equals(user_name) && se.equals(user_server);
 }
+
+
+
+@Override public boolean equals(Object o) {
+	if (!(o instanceof BgtaManager)) return false;
+	BgtaManager man = (BgtaManager) o;
+	
+	return user_name.equals(man.getUsername()) && user_password.equals(man.getPassword()) && user_server.equals(man.getServer());
+}
+
+
+
+@Override public int hashCode() {
+	return user_name.hashCode() + user_password.hashCode() + user_server.hashCode();
+}
+
+
+
+@Override public String toString() {
+	return user_name + " " + user_server;
+}
+
 
 
 /********************************************************************************/
@@ -176,24 +202,22 @@ void login() throws XMPPException
 void login(String username,String password,String server) throws XMPPException
 {
    String serv, host;
-   if (server.equals("gmail.com")) {
-      serv = server;
-      host = "talk.google.com";
+   serv = server;
+   if (server.equals(ChatServer.GMAIL.server())) {
+      host = ChatServer.GMAIL.host();
     }
-   else if (server.equals("chat.facebook.com")) {
-      serv = server;
-      host = server;
+   else if (server.equals(ChatServer.FACEBOOK.server())) {
+      host = ChatServer.FACEBOOK.host();
     }
-   else if (server.equals("jabber.org")) {
-      serv = server;
-      host = server;
+   else if (server.equals(ChatServer.JABBER.server())) {
+      host = ChatServer.JABBER.host();
     }
    else {
-      serv = "gmail.com";
-      host = "talk.google.com";
+      serv = ChatServer.GMAIL.server();
+      host = ChatServer.GMAIL.host();
     }
    ConnectionConfiguration config = null;
-   if (serv.equals("chat.facebook.com")) {
+   if (serv.equals(ChatServer.FACEBOOK.server())) {
       SASLAuthentication.registerSASLMechanism("DIGEST-MD5",
 						  BgtaSASLDigestMD5Mechanism.class);
       config = new ConnectionConfiguration(serv,5222);
@@ -206,8 +230,13 @@ void login(String username,String password,String server) throws XMPPException
    the_connection = new XMPPConnection(config);
    stat_con = the_connection;
 
-   the_connection.connect();
-   the_connection.login(username, password);
+   try {
+   	the_connection.connect();
+   	the_connection.login(username, password);
+   } catch (XMPPException e) {
+   	the_connection.disconnect();
+   	throw e;
+   }
    if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to server.");
 
    Message m = new Message();

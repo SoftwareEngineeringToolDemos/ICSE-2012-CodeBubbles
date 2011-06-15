@@ -155,6 +155,49 @@ String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar
 
 /********************************************************************************/
 /*										*/
+/*	Enum for server values									*/
+/*										*/
+/********************************************************************************/
+enum ChatServer {
+	GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com"),
+	BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com"),
+	FACEBOOK("Facebook", "chat.facebook.com", "", ""),
+	JABBER("Jabber", "jabber.org", "@jabber.org", ""),
+	AIM("AIM", "aim", "", "");
+	
+	private String selector;
+	private String server;
+	private String display;
+	private String host;
+	
+	private ChatServer(String selector,String server,String display,String host) {
+		this.selector = selector;
+		this.server = server;
+		if (display.equals(""))
+			this.display = server;
+		else
+			this.display = display;
+		if (host.equals(""))
+			this.host = server;
+		else
+			this.host = host;
+	}
+	
+	public String selector() { return selector; }
+	
+	public String server() { return server; }
+	
+	public String display() { return display; }
+	
+	public String host() { return host; }
+	
+	@Override public String toString() { return selector + " - " + display; }
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Interfaces for XMPP and OSCAR compatibility						*/
 /*										*/
 /********************************************************************************/

@@ -935,7 +935,7 @@ String getEvaluationString(BumpStackFrame frm,BumpRunValue rv,String id)
 	    break;
 	 case OBJECT :
 	    String s = rv.getDetail();
-	    if (s != null) return s;
+	    if (s != null) return IvyXml.xmlSanitize(s);
 	    break;
 	 case ARRAY :
 	    if (rv.getLength() <= 100) {

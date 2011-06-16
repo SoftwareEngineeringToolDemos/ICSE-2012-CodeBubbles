@@ -1135,24 +1135,31 @@ private static class CommentLinesAction extends TextAction {
 	    slno = x;
 	  }
 	 
+	 LinkedList<Integer> fixups = new LinkedList<Integer>();
 	 for (int i = elno; i >= slno; --i) {
 	    int loff = bd.findLineOffset(i);
-	    int nind = bd.getCurrentLineIndent(loff);
-	    if (nind < 0) break;
-	    BaleElement ce = bd.getCharacterElement(loff+nind);
+	    BaleElement ce = bd.getCharacterElement(loff);
+	    while (ce.isEmpty() && !ce.isComment() && !ce.isEndOfLine()) {
+	       ce = ce.getNextCharacterElement();
+	     }
+	    int noff = ce.getStartOffset();
+	    
 	    try {
 	       if (ce != null && ce.getName().equals("LineComment")) {
-		  bd.remove(loff+nind,2);
-		  bd.fixLineIndent(i);
+		  bd.remove(noff,2);
+		  fixups.addFirst(i);
 	        }
 	       else {
-		  bd.insertString(loff+nind,"// ",null);
+		  bd.insertString(noff,"// ",null);
 	        }
 	     }
 	    catch (BadLocationException ex) {
 	       return;
 	     }
 	  }
+	 for (Integer iv : fixups) {
+	    bd.fixLineIndent(iv);
+	 }
        }
       finally { bd.baleWriteUnlock(); }
     }

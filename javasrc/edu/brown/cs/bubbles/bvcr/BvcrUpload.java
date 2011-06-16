@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -127,7 +127,7 @@ private void processUpload(String data,String uid,String rid,SecretKey key) thro
    output_stream = url_connection.getOutputStream();
    byte [] bdata;
 
-   if (KEY_COMPRESS) {	
+   if (KEY_COMPRESS) {
       // have to use DeflatorOutput to match InflatorInput
       // DeflatorInput and InflatorInput don't seem to be compatible
       ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -201,13 +201,12 @@ private InputStream processDownload(String uid,String rid,long dlm) throws IOExc
 /*										*/
 /********************************************************************************/
 
-private static String getRepoUrl()
+static String getRepoUrl()
 {
    BoardProperties bp = BoardProperties.getProperties("Bvcr");
-   String rslt = bp.getProperty("bvcr.repo.url");
+   String rslt = bp.getProperty("Bvcr.repo.url");
 
-   // for debugging
-   if (rslt == null) rslt = "http://conifer.cs.brown.edu/bubbles/";
+   if (rslt == null || rslt.length() == 0 || rslt.startsWith("*")) return null;
 
    if (!rslt.endsWith("/")) rslt += "/";
 
@@ -225,8 +224,6 @@ private static String getRepoUrl()
 
 private void setupConnection(String url) throws IOException
 {
-   System.err.println("URL = " + url);
-
    try {
       url_connection = new URL(url).openConnection();
     }

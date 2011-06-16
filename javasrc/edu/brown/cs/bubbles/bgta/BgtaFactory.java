@@ -72,7 +72,7 @@ static {
 			BgtaManager man = new BgtaManager(login_properties
 					.getProperty(BGTA_USERNAME_PREFIX + i),login_properties
 					.getProperty(BGTA_PASSWORD_PREFIX + i),login_properties
-					.getProperty(BGTA_PASSWORD_PREFIX + i));
+					.getProperty(BGTA_SERVER_PREFIX + i));
 			man.setBeingSaved(true);
 			chat_managers.add(man);
 		} catch (XMPPException e) {
@@ -156,16 +156,21 @@ static void logoutAllAccounts()
 {
 }
 
-static boolean logoutAccount(String username,String password,String server)
+static boolean logoutAccount(String username,String server)
 {
+   BgtaManager logout = null;
 	for (BgtaManager man : chat_managers) {
 		if (man.isEquivalent(username,server)) {
 			buddy_list.removeManager(man);
 			man.disconnect();
-			chat_managers.remove(man);
+			logout = man;
 			BassFactory.reloadRepository(buddy_list);
-			return true;
+			break;
 		}
+	}
+	if (logout != null) {
+	   chat_managers.remove(logout);
+	   return true;
 	}
 	return false;
 }

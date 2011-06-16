@@ -40,6 +40,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -70,20 +71,23 @@ class BgtaLoginBubble extends BudaBubble implements BgtaConstants {
 /*										*/
 /********************************************************************************/
 
-private Vector<BgtaManager> manager_list;
-private JButton 	    sub_button;
-private JButton 	    logout_button;
-private JTextField	    user_field;
-private JPasswordField	    pass_field;
-private JLabel		    server_field;
-private BgtaRepository	    my_repository;
-private BgtaLoginName	    my_name;
-private ChatServer			selected_server;
-private boolean 	    rem_user;
+private Vector<BgtaManager>            manager_list;
+private JButton                        sub_button;
+private JButton                        logout_button;
+private JTextField                     user_field;
+private JPasswordField                 pass_field;
+private JLabel                         server_field;
+private BgtaRepository                 my_repository;
+private BgtaLoginName                  my_name;
+private ChatServer                     selected_server;
+private boolean                        rem_user;
+private static Collection<BgtaManager> all_managers;
 
 private static final long   serialVersionUID = 1L;
 
-
+static {
+   all_managers = new Vector<BgtaManager>();
+}
 
 /********************************************************************************/
 /*										*/
@@ -233,7 +237,7 @@ private class LogoutListener implements ActionListener {
       String servername = selected_server.server();
       if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
       	username += selected_server.ending();
-      if (BgtaFactory.logoutAccount(username, new String(pass_field.getPassword()), servername)) removeBubble();
+      if (BgtaFactory.logoutAccount(username,servername)) removeBubble();
       // if not logged in in the first place, display a message saying so
       else {
 	 user_field.setText("weren't logged in to begin with");
@@ -271,10 +275,12 @@ private class LoginListener implements ActionListener {
      String servername = selected_server.server();
      if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
         username += selected_server.ending();
-     for (BgtaManager man : manager_list) {
+     for (BgtaManager man : all_managers) {
         if (man.isEquivalent(username,servername)
-      		  && man.getPassword().equals(new String(password)))
+      		  && man.getPassword().equals(new String(password))) {
+           newman = man;
       	  putin = false;
+         }
       }
      if (putin) {
         if (selected_server == ChatServer.AIM) {
@@ -285,13 +291,26 @@ private class LoginListener implements ActionListener {
          }
         newman.setBeingSaved(rem_user);
         manager_list.add(newman);
+        all_managers.add(newman);
         my_repository.addNewRep(new BgtaBuddyRepository(newman));
-        if (rem_user) BgtaFactory.addManagerProperties(username, password, servername);
+        if (rem_user)
+           BgtaFactory.addManagerProperties(username, password, servername);
         removeBubble();
       }
      else {
-        user_field.setText("already logged in");
-        pass_field.setText("");
+        if (newman.isLoggedIn()) {
+           user_field.setText("already logged in");
+           pass_field.setText("");
+         }
+        else {
+           newman.login();
+           newman.setBeingSaved(rem_user);
+           manager_list.add(newman);
+           my_repository.addNewRep(new BgtaBuddyRepository(newman));
+           if (rem_user)
+              BgtaFactory.addManagerProperties(username, password, servername);
+           removeBubble();
+         }
       }
        }
       catch (XMPPException xmppe) {

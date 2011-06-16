@@ -117,6 +117,8 @@ BgtaManager(String username,String password) throws XMPPException
    login(username, password);
 }
 
+
+
 BgtaManager() { }
 
 
@@ -138,6 +140,13 @@ String getServer()				   { return user_server; }
 boolean isBeingSaved()           { return being_saved; }
 
 void setBeingSaved(boolean bs)   { being_saved = bs; }
+
+boolean isLoggedIn()
+{
+   return the_connection.isConnected() && the_connection.isAuthenticated();
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -204,7 +213,8 @@ void login(String username,String password) throws XMPPException
 
 void login() throws XMPPException
 {
-   login("codebubbles4tester@gmail.com", "bubbles4");
+   login(user_name, user_password, user_server);
+//   login("codebubbles4tester@gmail.com", "bubbles4");
 }
 
 
@@ -318,15 +328,15 @@ void updateBubble(BgtaBubble up)
 //       }
 //      up.getLog().setDocument(doc);
 //    }
-   if (hasBubble(up.getUsername())) {
-	  if (!up.isListener())
-	 up.getLog().setDocument(getExistingBubble(up.getUsername()).getLog().getDocument());
-	  else {
-	 for (BgtaBubble bub : existing_bubbles) {
-		bub.getLog().setDocument(up.getLog().getDocument()); 
-	  }
-	   }
-    }
+//   if (hasBubble(up.getUsername())) {
+//	  if (!up.isListener())
+////	 up.getLog().setDocument(getExistingBubble(up.getUsername()).getLog().getDocument());
+//	  else {
+//	 for (BgtaBubble bub : existing_bubbles) {
+//		bub.getLog().setDocument(up.getLog().getDocument()); 
+//	  }
+//	   }
+//    }
    existing_bubbles.add(up);
 }
 
@@ -509,38 +519,6 @@ static Icon iconFor(Presence pres)
       if (receive) bb.recieveMessage(new BgtaXMPPMessage((Message) pack));
     }
 }
-
-
-
-//private class ChatListener implements MessageListener {
-//  
-//   @Override public void processMessage(Chat ch,Message msg) {
-//      if (msg.getType() == Message.Type.chat) {
-////         String tolog = msg.getBody();
-////         if (tolog.startsWith(BGTA_METADATA_START) && tolog.endsWith(BGTA_METADATA_FINISH)) {
-////       tolog = tolog.substring(BGTA_METADATA_START.length(), tolog.length()
-////                   - BGTA_METADATA_FINISH.length());
-////       logMessage("Click the button below to load the data", "");
-////       JButton accept = new JButton("Load Task to Task Shelf");
-////       Dimension d = new Dimension(BGTA_DATA_BUTTON_WIDTH,BGTA_DATA_BUTTON_HEIGHT);
-////       accept.setPreferredSize(d);
-////       accept.setSize(d);
-////       accept.setMinimumSize(d);
-////       Element xml = IvyXml.loadXmlFromURL(tolog);
-////       accept.addActionListener(new XMLListener(xml));
-////       setCaretPosition(my_doc.getLength());
-////       insertComponent(accept);
-////          }
-////         else 
-//         String from = msg.getFrom();
-//         from = from.substring(0, from.indexOf('/'));
-//         BgtaChat chat = existing_chats.get(from);
-//         if (!ch.equals(chat.getChat()))
-//            return;
-//         chat.messageReceived(msg);
-//       }
-//    }
-//}
 
 
 

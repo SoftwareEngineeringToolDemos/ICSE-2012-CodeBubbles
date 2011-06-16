@@ -249,7 +249,7 @@ private String wrapHTML(String text) {
    temp = replace(temp,"\"","&qout;");
    temp = replace(temp,"\n","<br>");
    return "<html><body>" + temp + "</body></html>";
- }
+}
 
 
 
@@ -260,7 +260,7 @@ private String replace(String input,String toreplace,String replacewith) {
       current = current.substring(0,pos) + replacewith + replace(current.substring(pos + toreplace.length()),toreplace,replacewith);
     }
    return current;
- }
+}
 
 
 

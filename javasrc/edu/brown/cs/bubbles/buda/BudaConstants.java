@@ -906,9 +906,15 @@ interface BudaBubbleOutputer {
  *	A JComponent implementing this interface will not be encased in a bubble.
  **/
 
-interface NoBubble {
+interface NoBubble { }
 
-}	// end of interface NoBubble
+
+
+/**
+ * 	A Bubble implementing this will not use a freeze pane
+ **/
+
+interface NoFreeze { }
 
 
 

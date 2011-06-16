@@ -11,7 +11,7 @@ $uploadpath = "uploads/";
 if (!file_exists($uploadpath))
 {
 	mkdir($uploadpath);
-	chmod($uploadpath,0744);
+	chmod($uploadpath,0755);
 }
 
 $tdir = "BVCR/";
@@ -24,7 +24,7 @@ if (($ext == "bvcr")) {
       if (file_exists($uploadpath.$tdir)) { }
       else {
 	 mkdir($uploadpath.$tdir);
-	 chmod($uploadpath.$tdir,0744);
+	 chmod($uploadpath.$tdir,0755);
        }
 
       $user = $_POST["U"];
@@ -32,7 +32,7 @@ if (($ext == "bvcr")) {
 
       if (!file_exists($uploadpath.$tdir.$repo)) {
 	 mkdir($uploadpath.$tdir.$repo);
-	 chmod($uploadpath.$tdir.$repo,0744);
+	 chmod($uploadpath.$tdir.$repo,0755);
        }
 
       $dirpath = $uploadpath.$tdir.$repo;

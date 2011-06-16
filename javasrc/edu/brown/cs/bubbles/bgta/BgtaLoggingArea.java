@@ -6,6 +6,7 @@
 /*										*/
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
+/* Copyright 2011 Brown University -- Sumner Warren            */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -166,16 +167,16 @@ void logMessage(String recieved,String from)
 {
    setEditable(true);
    setCaretPosition(getDocument().getLength());
-   try {
+//   try {
 //	  if (!from.equals("Me: ")) {
 //	if (my_bubble.getManager().getRoster().getEntry(from).getName() != null) 
 //	   from = my_bubble.getManager().getRoster().getEntry(from).getName();
 //	   }
-      getDocument().insertString(my_doc.getLength(), from + recieved + "\n", null);
-    }
-   catch (BadLocationException e) {
+//      getDocument().insertString(my_doc.getLength(), from + recieved + "\n", null);
+//    }
+//   catch (BadLocationException e) {
       //System.out.println("bad loc");
-    }
+//    }
    if (my_bubble.reloadAltColor() && in_use == is_bolded) {
       my_bubble.setAltColorIsOn(true);
     }
@@ -219,28 +220,28 @@ void unbold()
 /*										*/
 /********************************************************************************/
 
-@Override public void processMessage(Chat ch,Message recieved)
+@Override public void processMessage(Chat ch,Message received)
 {
-   if (ch != ((BgtaXMPPConversation) my_chat).getChat()) return;
-   if (recieved.getType() == Message.Type.chat) {
-      String tolog = recieved.getBody();
-      if (tolog.startsWith(BGTA_METADATA_START) && tolog.endsWith(BGTA_METADATA_FINISH)) {
-	 tolog = tolog.substring(BGTA_METADATA_START.length(), tolog.length()
-				    - BGTA_METADATA_FINISH.length());
-	 logMessage("Click the button below to load the data", "");
-	 JButton accept = new JButton("Load Task to Task Shelf");
-	 Dimension d = new Dimension(BGTA_DATA_BUTTON_WIDTH,BGTA_DATA_BUTTON_HEIGHT);
-	 accept.setPreferredSize(d);
-	 accept.setSize(d);
-	 accept.setMinimumSize(d);
-	 Element xml = IvyXml.loadXmlFromURL(tolog);
-	 accept.addActionListener(new XMLListener(xml));
-	 setCaretPosition(my_doc.getLength());
-	 insertComponent(accept);
-       }
-      else 
-    	logMessage(tolog);
-    }
+//   if (ch != ((BgtaXMPPConversation) my_chat).getChat()) return;
+//   if (received.getType() == Message.Type.chat) {
+//      String tolog = received.getBody();
+//      if (tolog.startsWith(BGTA_METADATA_START) && tolog.endsWith(BGTA_METADATA_FINISH)) {
+//	 tolog = tolog.substring(BGTA_METADATA_START.length(), tolog.length()
+//				    - BGTA_METADATA_FINISH.length());
+//	 logMessage("Click the button below to load the data", "");
+//	 JButton accept = new JButton("Load Task to Task Shelf");
+//	 Dimension d = new Dimension(BGTA_DATA_BUTTON_WIDTH,BGTA_DATA_BUTTON_HEIGHT);
+//	 accept.setPreferredSize(d);
+//	 accept.setSize(d);
+//	 accept.setMinimumSize(d);
+//	 Element xml = IvyXml.loadXmlFromURL(tolog);
+//	 accept.addActionListener(new XMLListener(xml));
+//	 setCaretPosition(my_doc.getLength());
+//	 insertComponent(accept);
+//       }
+//      else 
+//    	logMessage(tolog);
+//    }
 }
 
 

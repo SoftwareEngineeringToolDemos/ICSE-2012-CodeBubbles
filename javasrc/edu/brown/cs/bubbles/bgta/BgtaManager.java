@@ -68,7 +68,7 @@ protected BgtaRoster			the_roster;
 private RosterListener		roster_listener;
 private BgtaRepository		the_repository;
 private Map<String, BgtaChat> existing_chats;
-private Map<String, Document> chat_docs;
+private Map<String, Document> existing_docs;
 
 
 
@@ -94,6 +94,8 @@ BgtaManager(String username,String password,String server) throws XMPPException
    user_server = server;
    existing_bubbles = new Vector<BgtaBubble>();
    existing_conversations = new Vector<BgtaConversation>();
+   existing_chats = new HashMap<String, BgtaChat>();
+   existing_docs = new HashMap<String, Document>();
    being_saved = false;
    roster_listener = null;
    login(username, password, server);
@@ -108,6 +110,8 @@ BgtaManager(String username,String password) throws XMPPException
    user_server = "";
    existing_bubbles = new Vector<BgtaBubble>();
    existing_conversations = new Vector<BgtaConversation>();
+   existing_chats = new HashMap<String, BgtaChat>();
+   existing_docs = new HashMap<String, Document>();
    being_saved = false;
    roster_listener = null;
    login(username, password);
@@ -123,17 +127,17 @@ BgtaManager() { }
 /*										*/
 /********************************************************************************/
 
-BgtaRoster getRoster()				{ return the_roster; }
+BgtaRoster getRoster()			   { return the_roster; }
 
-String getUsername()				{ return user_name; }
+String getUsername()				   { return user_name; }
 
-String getPassword()				{ return user_password; }
+String getPassword()				   { return user_password; }
 
-String getServer()				{ return user_server; }
+String getServer()				   { return user_server; }
 
-boolean isBeingSaved()				{ return being_saved; }
+boolean isBeingSaved()           { return being_saved; }
 
-void setBeingSaved(boolean bs)			{ being_saved = bs; }
+void setBeingSaved(boolean bs)   { being_saved = bs; }
 
 /********************************************************************************/
 /*										*/
@@ -148,7 +152,8 @@ boolean isEquivalent(String un,String se)
 
 
 
-@Override public boolean equals(Object o) {
+@Override public boolean equals(Object o)
+{
 	if (!(o instanceof BgtaManager)) return false;
 	BgtaManager man = (BgtaManager) o;
 	
@@ -157,14 +162,16 @@ boolean isEquivalent(String un,String se)
 
 
 
-@Override public int hashCode() {
+@Override public int hashCode()
+{
 	return user_name.hashCode() + user_password.hashCode() + user_server.hashCode();
 }
 
 
 
-@Override public String toString() {
-	return user_name + " " + user_server;
+@Override public String toString()
+{
+	return user_name + ", " + user_server;
 }
 
 
@@ -237,8 +244,7 @@ void login(String username,String password,String server) throws XMPPException
    	the_connection.login(username, password);
     } catch (Exception e) {
    	the_connection.disconnect();
-   	System.out.println(e.getClass() + e.getMessage());
-//   	throw e;
+   	throw new XMPPException("Could not login to XMPP server. Please try again.");
     }
    if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to server.");
 
@@ -256,9 +262,10 @@ void login(String username,String password,String server) throws XMPPException
 /*										*/
 /********************************************************************************/
 
+@Deprecated
 BgtaConversation startChat(String username,MessageListener list,BgtaBubble using)
 {
-   if (!hasChat(username)) {
+   if (!hasConversation(username)) {
 	  Chat ch = the_connection.getChatManager().createChat(username, list);
 	  existing_bubbles.add(using);
 	  BgtaXMPPConversation chat = new BgtaXMPPConversation(ch,list);
@@ -266,7 +273,21 @@ BgtaConversation startChat(String username,MessageListener list,BgtaBubble using
 	  return chat;
     }
    else
-	  return getExistingChat(username);
+	  return getExistingConversation(username);
+}
+
+
+
+Document startChat(String username,BgtaBubble using)
+{
+   if (!hasChat(username)) {
+      Chat ch = the_connection.getChatManager().createChat(username,null);
+      BgtaChat chat = new BgtaChat(username,user_server,ch,getExistingDoc(username));
+      existing_bubbles.add(using);
+      existing_chats.put(username,chat);
+      existing_docs.put(username,chat.getDocument());
+    }
+   return getExistingDoc(username);
 }
 
 
@@ -341,7 +362,8 @@ void removeBubble(BgtaBubble bub)
 
 
 
-boolean hasChat(String username)
+@Deprecated
+boolean hasConversation(String username)
 {
    for (BgtaConversation chat : existing_conversations) {
 	  if (chat.getUser().equals(username))
@@ -352,7 +374,23 @@ boolean hasChat(String username)
 
 
 
-BgtaConversation getExistingChat(String username)
+boolean hasChat(String username)
+{
+   if (existing_chats.get(username) == null)
+      return false;
+   return true;
+}
+
+
+
+BgtaChat getChat(String username)
+{
+   return existing_chats.get(username);
+}
+
+
+@Deprecated
+BgtaConversation getExistingConversation(String username)
 {
    for (BgtaConversation chat : existing_conversations) {
 	  if (chat.getUser().equals(username))
@@ -362,8 +400,8 @@ BgtaConversation getExistingChat(String username)
 }
 
 
-
-void removeChat(BgtaConversation chat,MessageListener list)
+@Deprecated
+void removeConversation(BgtaConversation chat,MessageListener list)
 {
    if (((BgtaXMPPConversation) chat).isListener(list) && hasBubble(chat.getUser())) {
 	  BgtaBubble bub = getExistingBubble(chat.getUser());
@@ -376,13 +414,32 @@ void removeChat(BgtaConversation chat,MessageListener list)
 
 
 
+void removeChat(String username)
+{
+   getChat(username).close();
+}
+
+
+
+boolean hasExistingDoc(String username)
+{
+   if (existing_docs.get(username) == null)
+      return false;
+   return true;
+}
+
+
+
+Document getExistingDoc(String username)
+{
+   return existing_docs.get(username);
+}
+
+
+
 void disconnect()
 {
    the_connection.disconnect();
-//   for (BgtaBubble bub : existing_bubbles) {
-//	  bub.disposeBubble();
-//    }
-//   existing_bubbles.clear();
    existing_conversations.clear();
    roster_listener = null;
 }
@@ -452,6 +509,38 @@ static Icon iconFor(Presence pres)
       if (receive) bb.recieveMessage(new BgtaXMPPMessage((Message) pack));
     }
 }
+
+
+
+//private class ChatListener implements MessageListener {
+//  
+//   @Override public void processMessage(Chat ch,Message msg) {
+//      if (msg.getType() == Message.Type.chat) {
+////         String tolog = msg.getBody();
+////         if (tolog.startsWith(BGTA_METADATA_START) && tolog.endsWith(BGTA_METADATA_FINISH)) {
+////       tolog = tolog.substring(BGTA_METADATA_START.length(), tolog.length()
+////                   - BGTA_METADATA_FINISH.length());
+////       logMessage("Click the button below to load the data", "");
+////       JButton accept = new JButton("Load Task to Task Shelf");
+////       Dimension d = new Dimension(BGTA_DATA_BUTTON_WIDTH,BGTA_DATA_BUTTON_HEIGHT);
+////       accept.setPreferredSize(d);
+////       accept.setSize(d);
+////       accept.setMinimumSize(d);
+////       Element xml = IvyXml.loadXmlFromURL(tolog);
+////       accept.addActionListener(new XMLListener(xml));
+////       setCaretPosition(my_doc.getLength());
+////       insertComponent(accept);
+////          }
+////         else 
+//         String from = msg.getFrom();
+//         from = from.substring(0, from.indexOf('/'));
+//         BgtaChat chat = existing_chats.get(from);
+//         if (!ch.equals(chat.getChat()))
+//            return;
+//         chat.messageReceived(msg);
+//       }
+//    }
+//}
 
 
 
@@ -696,7 +785,7 @@ class BgtaXMPPConversation implements BgtaConversation {
 	
    @Override public String getUser() {
 	  return the_chat.getParticipant();
-	}
+	 }
    
    @Override public void sendMessage(String message) throws XMPPException {
 	  the_chat.sendMessage(message);
@@ -707,7 +796,7 @@ class BgtaXMPPConversation implements BgtaConversation {
 		  current_uses = 0;
 		  the_chat.removeMessageListener(the_listener);
 		  return true;
-	   }
+	    }
 	   return false;
     }
    

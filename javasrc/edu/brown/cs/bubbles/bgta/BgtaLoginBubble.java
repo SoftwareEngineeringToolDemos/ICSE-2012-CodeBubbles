@@ -266,17 +266,17 @@ private class LoginListener implements ActionListener {
       BgtaManager newman = null;
       try {
      boolean putin = true;
+     String username = user_field.getText();
+     String password = new String(pass_field.getPassword());
+     String servername = selected_server.server();
+     if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
+        username += selected_server.ending();
      for (BgtaManager man : manager_list) {
-        if (man.isEquivalent(user_field.getText(),server_field.getText())
-      		  && man.getPassword().equals(new String(pass_field.getPassword())))
+        if (man.isEquivalent(username,servername)
+      		  && man.getPassword().equals(new String(password)))
       	  putin = false;
       }
      if (putin) {
-        String username = user_field.getText();
-        String password = new String(pass_field.getPassword());
-        String servername = selected_server.server();
-        if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
-      	  username += selected_server.ending();
         if (selected_server == ChatServer.AIM) {
            newman = new BgtaAimManager(username,password,servername);
          }

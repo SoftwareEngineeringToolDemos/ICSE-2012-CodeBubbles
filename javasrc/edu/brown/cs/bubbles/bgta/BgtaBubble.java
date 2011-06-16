@@ -30,6 +30,8 @@ import org.jivesoftware.smack.XMPPException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 import java.awt.*;
@@ -38,7 +40,7 @@ import java.util.HashMap;
 
 
 
-class BgtaBubble extends BudaBubble implements BgtaConstants {
+class BgtaBubble extends BudaBubble implements BgtaConstants, DocumentListener {
 
 
 
@@ -100,14 +102,18 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
    logging_area = new BgtaLoggingArea(this);
    if (!the_manager.hasBubble(chat_username)) {
 	  if (!the_manager.hasChat(chat_username)) {
-	 the_chat = the_manager.startChat(chat_username, logging_area, this);
+//	 the_chat = the_manager.startChat(chat_username, logging_area, this);
+	     Document doc = the_manager.startChat(chat_username,this);
+	     logging_area.setDocument(doc);
 	 current_id.put(chat_username, 1);
      username_id = 1;
      is_listener = true;
 	   }
 	  else {
-	 the_chat = the_manager.getExistingChat(chat_username);
-	 the_chat.increaseUseCount();
+//	 the_chat = the_manager.getExistingChat(chat_username);
+//	 the_chat.increaseUseCount();
+	     Document doc = the_manager.getExistingDoc(chat_username);
+	     logging_area.setDocument(doc);
 	 Integer id = current_id.remove(chat_username);
 	 current_id.put(chat_username, id.intValue() + 1);
 	 username_id = id.intValue() + 1;
@@ -121,10 +127,11 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
       if (existingBubble != null) {
 	 existingLog = existingBubble.getLog();
 	 if (existingLog != null) {
-	    doc = existingLog.getDocument();
-	    the_chat = existingLog.getChat();
-	    the_chat.increaseUseCount();
-	    if (doc != null && the_chat != null) {
+//	    doc = existingLog.getDocument();
+	    doc = the_manager.getExistingDoc(chat_username);
+//	    the_chat = existingLog.getChat();
+//	    the_chat.increaseUseCount();
+	    if (doc != null/* && the_chat != null*/) {
 	       logging_area.setDocument(doc);
 	       Integer id = current_id.remove(chat_username);
 		   current_id.put(chat_username, id.intValue() + 1);
@@ -134,9 +141,9 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 	  }
        }
     }
-   logging_area.setChat(the_chat);
+//   logging_area.setChat(the_chat);
 
-   draft_area = new BgtaDraftingArea(the_chat,logging_area,this);
+   draft_area = new BgtaDraftingArea(/*the_chat*/the_manager.getChat(chat_username),logging_area,this);
    JScrollPane log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 					     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -195,7 +202,13 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 
 @Override protected void localDispose()
 {
-   the_manager.removeChat(the_chat,logging_area);
+   // Remove the chat.
+//   the_manager.removeChat(the_chat,logging_area);
+   the_manager.removeChat(chat_username);
+   
+   // TODO: there should only be one, right?
+   // If that was the last one, clear the id for the user.
+//   if (!the_manager.hasConversation(chat_username))
    if (!the_manager.hasChat(chat_username))
 	  current_id.remove(chat_username);
    the_chat = null;
@@ -294,6 +307,38 @@ boolean reloadAltColor()
 boolean getAltColorIsOn()
 {
    return alt_color_is_on;
+}
+
+
+
+/********************************************************************************/
+/*                            */
+/* Document listener methods                           */
+/*                            */
+/********************************************************************************/
+@Override
+public void changedUpdate(DocumentEvent e)
+{
+   if (isVisible())
+      repaint();
+}
+
+
+
+@Override
+public void insertUpdate(DocumentEvent e)
+{
+   if (isVisible())
+      repaint();
+}
+
+
+
+@Override
+public void removeUpdate(DocumentEvent e)
+{
+   if (isVisible())
+      repaint();
 }
 
 

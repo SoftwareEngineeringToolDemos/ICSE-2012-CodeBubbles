@@ -62,7 +62,7 @@ class BgtaAimManager extends BgtaManager {
 /*										*/
 /********************************************************************************/
 
-private AimConnection	       the_connection;
+private AimConnection	   the_connection;
 private IcbmListener		   conversation_listener;
 
 
@@ -175,7 +175,7 @@ BgtaAimManager(String username,String password,String server) throws XMPPExcepti
 
 
 
-@Override void removeChat(BgtaConversation chat,MessageListener list) {
+@Override void removeConversation(BgtaConversation chat,MessageListener list) {
    if (chat.close())
       existing_conversations.removeElement(chat);
 }
@@ -192,7 +192,7 @@ BgtaAimManager(String username,String password,String server) throws XMPPExcepti
 
 @Override BgtaConversation startChat(String username,MessageListener list,BgtaBubble using)
 {
-   if (!hasChat(username)) {
+   if (!hasConversation(username)) {
       Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
       AIMConversationListener listener = new AIMConversationListener();
       con.addConversationListener(listener);
@@ -202,7 +202,7 @@ BgtaAimManager(String username,String password,String server) throws XMPPExcepti
       return chat;
     }
    else
-      return getExistingChat(username);
+      return super.getExistingConversation(username);
 }
 
 
@@ -219,7 +219,7 @@ class AIMServiceListener implements IcbmListener {
 					     IcbmBuddyInfo arg2) { }
 
    @Override public void newConversation(IcbmService service, Conversation conv) {
-      if (!hasChat(conv.getBuddy().getFormatted())) {
+      if (!hasConversation(conv.getBuddy().getFormatted())) {
 	 conv.addConversationListener(new AIMConversationListener());
 	 BgtaFactory.createRecievedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
        }
@@ -403,7 +403,7 @@ class BgtaAIMConversation implements BgtaConversation {
       String current = input;
       int pos = current.indexOf(toreplace);
       if (pos != -1) {
-	 current = current.substring(0,pos) + replacewith + replace(current.substring(pos + toreplace.length()),toreplace,replacewith);
+    current = current.substring(0,pos) + replacewith + replace(current.substring(pos + toreplace.length()),toreplace,replacewith);
        }
       return current;
     }

@@ -6,6 +6,7 @@
 /*										*/
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
+/* Copyright 2011 Brown University -- Sumner Warren            */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -46,7 +47,7 @@ class BgtaDraftingArea extends JTextArea {
 /*										*/
 /********************************************************************************/
 
-private BgtaConversation		my_chat;
+private BgtaChat/*Conversation*/		my_chat;
 private BgtaLoggingArea my_log;
 private BgtaBubble	my_bubble;
 
@@ -60,7 +61,7 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaDraftingArea(BgtaConversation ch,BgtaLoggingArea bla,BgtaBubble mybub)
+BgtaDraftingArea(/*BgtaConversation ch*/BgtaChat ch,BgtaLoggingArea bla,BgtaBubble mybub)
 {
    super(1,25);
    my_chat = ch;
@@ -84,29 +85,33 @@ BgtaDraftingArea(BgtaConversation ch,BgtaLoggingArea bla,BgtaBubble mybub)
 
 void send()
 {
-   boolean sent = true;
-   try {
-      my_chat.sendMessage(getText());
-      my_log.logMessage(getText(), "Me: ");
-   }
-   catch (Exception e) {
+//   boolean sent = true;
+//   try {
+//      boolean sent = my_chat.sendMessage(getText());
+//      my_log.logMessage(getText(), "Me: ");
+//   }
+//   catch (Exception e) {
 	  //System.out.println(e.getMessage());
-      sent = false;
-   }
+//      sent = false;
+//   }
+   boolean sent = my_chat.sendMessage(getText());
    if (sent) setText("");
-   else setText("Message was not sent");
+   else {
+//      setText("Message was not sent. Please try again.");
+//      selectAll();
+//      setCaretPosition(getText().length());
+      grabFocus();
+    }
+   
 }
 
 
 
 void send(String message)
 {
-   try {
-      my_chat.sendMessage(message);
-      my_log.logMessage(message, "Me: ");
-      my_log.setCaretPosition(my_log.getDocument().getLength());
-   }
-   catch (XMPPException e) {}
+   my_chat.sendMessage(message);
+//   my_log.logMessage(message, "Me: ");
+//   my_log.setCaretPosition(my_log.getDocument().getLength());
 }
 
 

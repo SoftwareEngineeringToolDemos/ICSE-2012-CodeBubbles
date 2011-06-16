@@ -741,35 +741,35 @@ private class RunEventHandler implements BumpRunEventHandler {
       BumpThread bt = evt.getThread();
       BumpThreadState ost = thread_states.get(bt);
       BumpThreadState nst = bt.getThreadState();
-
+   
       switch (evt.getEventType()) {
-	 case THREAD_ADD :
-	    nst = BumpThreadState.RUNNING;
-	    //$FALL-THROUGH$
-	 case THREAD_CHANGE :
-	    thread_states.put(bt,nst);
-	    if (bt.getThreadState() != ost) {
-	       handleThreadStateChange(bt,ost);
-	       if (bt.getThreadState().isStopped()) last_stopped = bt;
-	       else if (last_stopped == bt) last_stopped = null;
-	     }
-	    break;
-	 case THREAD_REMOVE :
-	    removeExecutionAnnot(bt);
-	    if (bt == last_stopped) last_stopped = null;
-	    thread_states.remove(bt);
-	    break;
-	 case THREAD_TRACE :
-	 case THREAD_HISTORY :
-	    return;
+         case THREAD_ADD :
+            nst = BumpThreadState.RUNNING;
+            //$FALL-THROUGH$
+         case THREAD_CHANGE :
+            thread_states.put(bt,nst);
+            if (bt.getThreadState() != ost) {
+               handleThreadStateChange(bt,ost);
+               if (bt.getThreadState().isStopped()) last_stopped = bt;
+               else if (last_stopped == bt) last_stopped = null;
+             }
+            break;
+         case THREAD_REMOVE :
+            removeExecutionAnnot(bt);
+            if (bt == last_stopped) last_stopped = null;
+            thread_states.remove(bt);
+            break;
+         case THREAD_TRACE :
+         case THREAD_HISTORY :
+            return;
        }
-
+   
       int tct = thread_states.size();
       int rct = 0;
       for (Map.Entry<BumpThread,BumpThreadState> ent : thread_states.entrySet()) {
-	 BumpThreadState bts = ent.getValue();
-	 if (bts.isStopped() && last_stopped == null) last_stopped = ent.getKey();
-	 else if (bts.isRunning()) ++rct;
+         BumpThreadState bts = ent.getValue();
+         if (bts.isStopped() && last_stopped == null) last_stopped = ent.getKey();
+         else if (bts.isRunning()) ++rct;
        }
       if (tct == 0) setLaunchState(LaunchState.TERMINATED);
       else if (rct == 0) setLaunchState(LaunchState.PAUSED);
@@ -791,7 +791,7 @@ private class RunEventHandler implements BumpRunEventHandler {
 
 private void handleThreadStateChange(BumpThread bt,BumpThreadState ost)
 {
-   BoardLog.logD("BDDT","Thread state change " + bt.getThreadState() + " " + ost);
+   // BoardLog.logD("BDDT","Thread state change " + bt.getThreadState() + " " + ost);
    if (bt.getThreadState().isStopped() && (ost != null && !ost.isStopped())) {
       addExecutionAnnot(bt);
       BumpThreadStack stk = bt.getStack();

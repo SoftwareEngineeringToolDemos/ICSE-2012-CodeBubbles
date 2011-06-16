@@ -204,6 +204,10 @@ void editRunConfiguration(String lnch,String prop,String val,IvyXmlWriter xw)
    else if (prop.equals("NAME")) {
       wc.rename(val);
     }
+   else if (prop.contains("STOP_IN_MAIN")) {
+      Boolean b = Boolean.valueOf(val);
+      wc.setAttribute(prop,b);
+    }
    else {
       wc.setAttribute(prop,val);
     }
@@ -511,7 +515,7 @@ private boolean doAction(IThread thrd,String fname,BedrockDebugAction act) throw
     }
    catch (DebugException e) {
       BedrockPlugin.log(BedrockLogLevel.INFO,"Problem with debug action",e);
-      throw new BedrockException("Problem setting thread status: + e",e);
+      throw new BedrockException("Problem setting thread status: " + e,e);
     }
 
    return true;
@@ -599,8 +603,9 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
    IVariable var = null;
 
    for (ILaunch launch : debug_plugin.getLaunchManager().getLaunches()) {
+      IJavaDebugTarget tgt = (IJavaDebugTarget) launch.getDebugTarget();
       try {
-	 for (IThread thread : launch.getDebugTarget().getThreads()) {
+	 for (IThread thread : tgt.getThreads()) {
 	    if (matchThread(tname,thread)) {
 	       if (thread.isSuspended()) {
 		  thrd = thread;
@@ -674,6 +679,10 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	 if (lvls < 0 && thrd instanceof IJavaThread) {
 	    IJavaThread jthrd = (IJavaThread) thrd;
 	    if (val instanceof IJavaArray) {
+	       IJavaType [] typs = tgt.getJavaTypes("java.util.Arrays");
+	       IJavaClassType arrays = null;
+	       if (typs != null && typs.length > 0) arrays = (IJavaClassType) typs[0];
+	       if (arrays == null) throw new BedrockException("Type java.util.Arrays not found");
 	       IJavaArray avl = (IJavaArray) val;
 	       IJavaType typ = avl.getJavaType();
 	       String tsg = typ.getSignature();
@@ -682,7 +691,7 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	       IJavaValue [] args = new IJavaValue[1];
 	       args[0] = avl;
 	       try {
-		  val = avl.sendMessage("toString",tsg,args,jthrd,"Ljava/util/Arrays;");
+		  val = arrays.sendMessage("toString",tsg,args,jthrd);
 		}
 	       catch (Throwable t) {
 		  BedrockPlugin.logE("Problem getting array value: " + tsg,t);

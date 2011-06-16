@@ -213,11 +213,11 @@ private class Deadlock {
    void outputXml(BandaidXmlWriter xw) {
       xw.begin("DEADLOCK");
       for (Map.Entry<ThreadInfo,String> ent : lock_set.entrySet()) {
-	 xw.begin("THREAD");
-	 xw.field("NAME",ent.getKey().getThreadName());
-	 xw.field("ID",ent.getKey().getThreadId());
-	 xw.field("LOCK",ent.getValue());
-	 xw.end();
+         xw.begin("THREAD");
+         xw.field("NAME",ent.getKey().getThreadName());
+         xw.field("ID",ent.getKey().getThreadId());
+         xw.field("LOCK",ent.getValue());
+         xw.end();
        }
       xw.end();
     }

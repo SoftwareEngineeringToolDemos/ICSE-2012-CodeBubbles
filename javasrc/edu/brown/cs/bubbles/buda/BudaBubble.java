@@ -526,8 +526,8 @@ protected void setContentPane(Component c)
 
 protected void setContentPane(Component c,Component f)
 {
-   if (c != null) setRealPane(new SwingFreezePane(c),f);
-   else setRealPane(null,f);
+   if (c != null && !(c instanceof NoFreeze)) setRealPane(new SwingFreezePane(c),f);
+   else setRealPane(c,f);
 }
 
 

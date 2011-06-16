@@ -37,8 +37,7 @@ import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
@@ -74,6 +73,7 @@ private JButton 		revert_button;
 private JButton 		clone_button;
 private JComboBox		project_name;
 private JComboBox		start_class;
+private JCheckBox               stop_in_main;
 private JTextComponent		test_class;
 private JTextComponent		test_name;
 private JTextComponent		host_name;
@@ -152,11 +152,18 @@ private void setupPanel()
    start_class = null;
    arg_area = null;
    vmarg_area = null;
+   stop_in_main = null;
+   test_class = null;
+   test_name = null;
+   host_name = null;
+   port_number = null;
+   
 
    switch (launch_config.getConfigType()) {
       case JAVA_APP :
 	 start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
 	 start_class.setEditable(true);
+         stop_in_main = pnl.addBoolean("Stop in Main",launch_config.getStopInMain(),this);
 	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
 	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
 	 break;
@@ -322,11 +329,17 @@ private String getNewName()
 	 edit_config = edit_config.setMainClass((String) start_class.getSelectedItem());
        }
     }
+   else if (cmd.equals("Stop in Main")) {
+      if (edit_config == null) edit_config = launch_config;
+      if (edit_config != null && stop_in_main != null) {
+         edit_config = edit_config.setStopInMain(stop_in_main.isSelected());
+       }
+    }
    else if (cmd.equals("Project")) {
       if (edit_config == null) edit_config = launch_config;
       if (edit_config != null && project_name != null) {
 	 edit_config = edit_config.setProject((String) project_name.getSelectedItem());
-	 // update selection of main classes
+	 // TODO: update selection of main classes
        }
     }
    else System.err.println("ACTION: " + cmd);

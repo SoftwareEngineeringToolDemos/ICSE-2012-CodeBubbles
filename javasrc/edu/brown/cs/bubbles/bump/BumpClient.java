@@ -225,6 +225,14 @@ public void startIDE()
    grabPreferences();
 
    Element pxml = getXmlReply("PROJECTS",null,null,null,0);
+   if (!IvyXml.isElement(pxml,"RESULT")) {
+      JOptionPane.showMessageDialog(null,
+				       "<html><p>Eclipse was not started correctly.<p>Perhaps it hadn't terminated yet." +
+				       "<p>Please try starting again.",
+				       "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
+      System.exit(1);
+    }
+
    if (IvyXml.getChild(pxml,"PROJECT") == null) {
       sendMessage("CREATEPROJECT",null,null,null);
     }
@@ -2560,126 +2568,126 @@ private class EclipseHandler implements MintHandler {
    @Override public void receive(MintMessage msg,MintArguments args) {
       String cmd = args.getArgument(0);
       Element e = msg.getXml();
-
+   
       BoardLog.logD("BUMP","Eclipse command " + cmd);
-
+   
       try {
-	 if (cmd == null) {
-	    BoardLog.logE("BUMP","Bad eclipse message:" + msg.getText());
-	  }
-	 else if (doing_exit) {
-	    msg.replyTo();
-	  }
-	 else if (cmd.equals("ELISION")) {
-	    handleElision(IvyXml.getAttrString(e,"BID"),
-			     IvyXml.getAttrString(e,"FILE"),
-			     IvyXml.getAttrInt(e,"ID"),
-			     IvyXml.getChild(e,"ELISION"));
-	  }
-	 else if (cmd.equals("EDITERROR")) {
-	    problem_set.handleErrors(new File(IvyXml.getAttrString(e,"FILE")),
-					IvyXml.getAttrInt(e,"ID"),
-					IvyXml.getChild(e,"MESSAGES"));
-	  }
-	 else if (cmd.equals("FILEERROR")) {
-	    problem_set.handleErrors(new File(IvyXml.getAttrString(e,"FILE")),
-					-1,
-					IvyXml.getChild(e,"MESSAGES"));
-	  }
-	 else if (cmd.equals("EDIT")) {
-	    BoardLog.logD("BUMP","REMOTE EDIT: " + IvyXml.convertXmlToString(e));
-	    String txt = IvyXml.getText(e);
-	    boolean complete = IvyXml.getAttrBool(e,"COMPLETE");
-	    if (complete) {
-	       byte [] data = IvyXml.getBytesElement(e,"CONTENTS");
-	       if (data != null) txt = new String(data);
-	     }
-	    handleEdit(IvyXml.getAttrString(e,"BID"),
-			  IvyXml.getAttrString(e,"FILE"),
-			  IvyXml.getAttrInt(e,"LENGTH"),
-			  IvyXml.getAttrInt(e,"OFFSET"),
-			  complete,
-			  txt);
-	  }
-	 else if (cmd.equals("BREAKEVENT")) {
-	    BoardLog.logD("BUMP","BREAK EVENT: " + IvyXml.convertXmlToString(e));
-	    break_set.handleUpdate(IvyXml.getChild(e,"BREAKPOINTS"));
-	  }
-	 else if (cmd.equals("LAUNCHCONFIGEVENT")) {
-	    BoardLog.logD("BUMP","LAUNCH EVENT: " + IvyXml.convertXmlToString(e));
-	    run_manager.handleLaunchEvent(IvyXml.getChild(e,"LAUNCH"));
-	  }
-	 else if (cmd.equals("RUNEVENT")) {
-	    long when = IvyXml.getAttrLong(e,"TIME");
-	    for (Element re : IvyXml.children(e,"RUNEVENT")) {
-	       run_manager.handleRunEvent(re,when);
-	     }
-	    msg.replyTo();
-	  }
-	 else if (cmd.equals("NAMES") && name_collects != null) {
-	    // BoardLog.logD("BUMP","NAMES: " + IvyXml.convertXmlToString(e));
-	    String nid = IvyXml.getAttrString(e,"NID");
-	    NameCollector nc = name_collects.get(nid);
-	    if (nc != null) {
-	       nc.addNames(e);
-	       BoardLog.logD("BUMP","NAMES: " + nc.getSize());
-	    }
-	    msg.replyTo();	// wait until add to ensure end doesn't come before we are all processed
-	  }
-	 else if (cmd.equals("ENDNAMES")) {
-	    msg.replyTo();
-	    // BoardLog.logD("BUMP","ENDNAMES: " + IvyXml.convertXmlToString(e));
-	    String nid = IvyXml.getAttrString(e,"NID");
-	    NameCollector nc = name_collects.remove(nid);
-	    if (nc != null) nc.noteDone();
-	  }
-	 else if (cmd.equals("PING")) {
-	    msg.replyTo("<PONG/>");
-	  }
-	 else if (cmd.equals("PROGRESS")) {
-	    BoardLog.logD("BUMP","Progress " + IvyXml.getAttrString(e,"KIND") + " " +
-			     IvyXml.getAttrString(e,"TASK") + " " +
-			     IvyXml.getAttrString(e,"SUBTASK","") + " " +
-			     IvyXml.getAttrDouble(e,"WORK",0));
-	  }
-	 else if (cmd.equals("RESOURCE")) {
-	    BoardLog.logD("BUMP","RESOURCE: " + IvyXml.convertXmlToString(e));
-	    for (Element re : IvyXml.children(e,"DELTA")) {
-	       handleResourceChange(re);
-	     }
-	  }
-	 else if (cmd.equals("CONSOLE"))   {
-	    // BoardLog.logD("BUMP","CONSOLE: " + IvyXml.convertXmlToString(e));
-	    run_manager.handleConsoleEvent(e);
-	    msg.replyTo();
-	  }
-	 else if (cmd.equals("OPENEDITOR")) {
-	    String projname = IvyXml.getAttrString(e,"PROJECT");
-	    String filepath = IvyXml.getAttrString(e,"RESOURCEPATH");
-	    String type = IvyXml.getAttrString(e,"RESOURCETYPE");
-
-	    for(BumpOpenEditorBubbleHandler handler : open_editor_bubble_handlers)
-	       handler.handleOpenEditorBubble(projname, filepath, type);
-	  }
-	 else if (cmd.equals("EVALUATION")) {
-	    BoardLog.logD("BUMP","EVALUATION RESULT: " + IvyXml.convertXmlToString(e));
-	    String bid = IvyXml.getAttrString(e,"BID");
-	    String id = IvyXml.getAttrString(e,"ID");
-	    if ((bid == null || bid.equals(source_id)) && id != null) {
-	       EvalData ed = eval_handlers.remove(id);
-	       if (ed != null) {
-		  ed.handleResult(e);
-		}
-	     }
-	    msg.replyTo();
-	  }
-	 else {
-	    BoardLog.logD("BUMP","Received " + cmd + " FROM ECLIPSE");
-	    BoardLog.logD("BUMP","Message: " + IvyXml.convertXmlToString(e));
-	  }
+         if (cmd == null) {
+            BoardLog.logE("BUMP","Bad eclipse message:" + msg.getText());
+          }
+         else if (doing_exit) {
+            msg.replyTo();
+          }
+         else if (cmd.equals("ELISION")) {
+            handleElision(IvyXml.getAttrString(e,"BID"),
+        		     IvyXml.getAttrString(e,"FILE"),
+        		     IvyXml.getAttrInt(e,"ID"),
+        		     IvyXml.getChild(e,"ELISION"));
+          }
+         else if (cmd.equals("EDITERROR")) {
+            problem_set.handleErrors(new File(IvyXml.getAttrString(e,"FILE")),
+        				IvyXml.getAttrInt(e,"ID"),
+        				IvyXml.getChild(e,"MESSAGES"));
+          }
+         else if (cmd.equals("FILEERROR")) {
+            problem_set.handleErrors(new File(IvyXml.getAttrString(e,"FILE")),
+        				-1,
+        				IvyXml.getChild(e,"MESSAGES"));
+          }
+         else if (cmd.equals("EDIT")) {
+            BoardLog.logD("BUMP","REMOTE EDIT: " + IvyXml.convertXmlToString(e));
+            String txt = IvyXml.getText(e);
+            boolean complete = IvyXml.getAttrBool(e,"COMPLETE");
+            if (complete) {
+               byte [] data = IvyXml.getBytesElement(e,"CONTENTS");
+               if (data != null) txt = new String(data);
+             }
+            handleEdit(IvyXml.getAttrString(e,"BID"),
+        		  IvyXml.getAttrString(e,"FILE"),
+        		  IvyXml.getAttrInt(e,"LENGTH"),
+        		  IvyXml.getAttrInt(e,"OFFSET"),
+        		  complete,
+        		  txt);
+          }
+         else if (cmd.equals("BREAKEVENT")) {
+            BoardLog.logD("BUMP","BREAK EVENT: " + IvyXml.convertXmlToString(e));
+            break_set.handleUpdate(IvyXml.getChild(e,"BREAKPOINTS"));
+          }
+         else if (cmd.equals("LAUNCHCONFIGEVENT")) {
+            BoardLog.logD("BUMP","LAUNCH EVENT: " + IvyXml.convertXmlToString(e));
+            run_manager.handleLaunchEvent(IvyXml.getChild(e,"LAUNCH"));
+          }
+         else if (cmd.equals("RUNEVENT")) {
+            long when = IvyXml.getAttrLong(e,"TIME");
+            for (Element re : IvyXml.children(e,"RUNEVENT")) {
+               run_manager.handleRunEvent(re,when);
+             }
+            msg.replyTo();
+          }
+         else if (cmd.equals("NAMES") && name_collects != null) {
+            // BoardLog.logD("BUMP","NAMES: " + IvyXml.convertXmlToString(e));
+            String nid = IvyXml.getAttrString(e,"NID");
+            NameCollector nc = name_collects.get(nid);
+            if (nc != null) {
+               nc.addNames(e);
+               BoardLog.logD("BUMP","NAMES: " + nc.getSize());
+            }
+            msg.replyTo();	// wait until add to ensure end doesn't come before we are all processed
+          }
+         else if (cmd.equals("ENDNAMES")) {
+            msg.replyTo();
+            // BoardLog.logD("BUMP","ENDNAMES: " + IvyXml.convertXmlToString(e));
+            String nid = IvyXml.getAttrString(e,"NID");
+            NameCollector nc = name_collects.remove(nid);
+            if (nc != null) nc.noteDone();
+          }
+         else if (cmd.equals("PING")) {
+            msg.replyTo("<PONG/>");
+          }
+         else if (cmd.equals("PROGRESS")) {
+            BoardLog.logD("BUMP","Progress " + IvyXml.getAttrString(e,"KIND") + " " +
+        		     IvyXml.getAttrString(e,"TASK") + " " +
+        		     IvyXml.getAttrString(e,"SUBTASK","") + " " +
+        		     IvyXml.getAttrDouble(e,"WORK",0));
+          }
+         else if (cmd.equals("RESOURCE")) {
+            BoardLog.logD("BUMP","RESOURCE: " + IvyXml.convertXmlToString(e));
+            for (Element re : IvyXml.children(e,"DELTA")) {
+               handleResourceChange(re);
+             }
+          }
+         else if (cmd.equals("CONSOLE"))   {
+            // BoardLog.logD("BUMP","CONSOLE: " + IvyXml.convertXmlToString(e));
+            run_manager.handleConsoleEvent(e);
+            msg.replyTo();
+          }
+         else if (cmd.equals("OPENEDITOR")) {
+            String projname = IvyXml.getAttrString(e,"PROJECT");
+            String filepath = IvyXml.getAttrString(e,"RESOURCEPATH");
+            String type = IvyXml.getAttrString(e,"RESOURCETYPE");
+   
+            for(BumpOpenEditorBubbleHandler handler : open_editor_bubble_handlers)
+               handler.handleOpenEditorBubble(projname, filepath, type);
+          }
+         else if (cmd.equals("EVALUATION")) {
+            BoardLog.logD("BUMP","EVALUATION RESULT: " + IvyXml.convertXmlToString(e));
+            String bid = IvyXml.getAttrString(e,"BID");
+            String id = IvyXml.getAttrString(e,"ID");
+            if ((bid == null || bid.equals(source_id)) && id != null) {
+               EvalData ed = eval_handlers.remove(id);
+               if (ed != null) {
+        	  ed.handleResult(e);
+        	}
+             }
+            msg.replyTo();
+          }
+         else {
+            BoardLog.logD("BUMP","Received " + cmd + " FROM ECLIPSE");
+            BoardLog.logD("BUMP","Message: " + IvyXml.convertXmlToString(e));
+          }
        }
       catch (Throwable t) {
-	 BoardLog.logE("BUMP","Problem processing eclipse message " + cmd,t);
+         BoardLog.logE("BUMP","Problem processing eclipse message " + cmd,t);
        }
     }
 

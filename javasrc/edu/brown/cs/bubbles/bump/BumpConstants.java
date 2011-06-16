@@ -406,6 +406,7 @@ enum BumpThreadState {
    RUNNING_IO,
    RUNNING_SYSTEM,
    BLOCKED,
+   DEADLOCKED,
    WAITING,
    TIMED_WAITING,
    STOPPED,
@@ -415,67 +416,72 @@ enum BumpThreadState {
    STOPPED_TIMED,
    STOPPED_SYSTEM,
    STOPPED_BLOCKED,
+   STOPPED_DEADLOCK,
    EXCEPTION,
    DEAD;
 
    public BumpThreadState getStopState() {
       switch (this) {
-	 case DEAD :
-	 default :
-	    return this;
-	 case NONE :
-	 case NEW :
-	 case RUNNING :
-	    return STOPPED;
-	 case RUNNING_SYNC :
-	    return STOPPED_SYNC;
-	 case RUNNING_IO :
-	    return STOPPED_IO;
-	 case RUNNING_SYSTEM :
-	    return STOPPED_SYSTEM;
-	 case BLOCKED :
-	    return STOPPED_BLOCKED;
-	 case WAITING :
-	    return STOPPED_WAITING;
-	 case TIMED_WAITING :
-	    return STOPPED_TIMED;
+         case DEAD :
+         default :
+            return this;
+         case NONE :
+         case NEW :
+         case RUNNING :
+            return STOPPED;
+         case RUNNING_SYNC :
+            return STOPPED_SYNC;
+         case RUNNING_IO :
+            return STOPPED_IO;
+         case RUNNING_SYSTEM :
+            return STOPPED_SYSTEM;
+         case BLOCKED :
+            return STOPPED_BLOCKED;
+         case DEADLOCKED :
+            return STOPPED_DEADLOCK;
+         case WAITING :
+            return STOPPED_WAITING;
+         case TIMED_WAITING :
+            return STOPPED_TIMED;
        }
     }
 
    public BumpThreadState getExceptionState() {
       switch (this) {
-	 case DEAD :
-	    return this;
-	 default :
-	    return EXCEPTION;
+         case DEAD :
+            return this;
+         default :
+            return EXCEPTION;
        }
     }
-
+   
    public BumpThreadState getRunState() {
       switch (this) {
-	 case DEAD :
-	 default :
-	    return this;
-	 case NONE :
-	 case NEW :
-	 case STOPPED :
-	 case EXCEPTION :
-	    return RUNNING;
-	 case STOPPED_SYNC :
-	    return RUNNING_SYNC;
-	 case STOPPED_IO :
-	    return RUNNING_IO;
-	 case STOPPED_SYSTEM :
-	    return RUNNING_SYSTEM;
-	 case STOPPED_BLOCKED :
-	    return BLOCKED;
-	 case STOPPED_WAITING :
-	    return WAITING;
-	 case STOPPED_TIMED :
-	    return TIMED_WAITING;
+         case DEAD :
+         default :
+            return this;
+         case NONE :
+         case NEW :
+         case STOPPED :
+         case EXCEPTION :
+            return RUNNING;
+         case STOPPED_SYNC :
+            return RUNNING_SYNC;
+         case STOPPED_IO :
+            return RUNNING_IO;
+         case STOPPED_SYSTEM :
+            return RUNNING_SYSTEM;
+         case STOPPED_BLOCKED :
+            return BLOCKED;
+         case STOPPED_WAITING :
+            return WAITING;
+         case STOPPED_TIMED :
+            return TIMED_WAITING;
+         case STOPPED_DEADLOCK :
+            return DEADLOCKED;
        }
     }
-
+   
    public boolean isRunning() {
       switch (this) {
 	 case NEW :
@@ -486,6 +492,7 @@ enum BumpThreadState {
 	 case WAITING :
 	 case TIMED_WAITING :
 	 case BLOCKED :
+         case DEADLOCKED :
 	    return true;
        }
       return false;
@@ -493,15 +500,15 @@ enum BumpThreadState {
 
    public boolean isStopped() {
       switch (this) {
-	 case STOPPED :
-	 case STOPPED_SYNC :
-	 case STOPPED_IO :
-	 case STOPPED_WAITING :
-	 case STOPPED_SYSTEM :
-	 case STOPPED_BLOCKED :
-	 case STOPPED_TIMED :
-	 case EXCEPTION :
-	    return true;
+         case STOPPED :
+         case STOPPED_SYNC :
+         case STOPPED_IO :
+         case STOPPED_WAITING :
+         case STOPPED_SYSTEM :
+         case STOPPED_BLOCKED :
+         case STOPPED_TIMED :
+         case EXCEPTION :
+            return true;
        }
       return false;
     }
@@ -638,6 +645,7 @@ interface BumpLaunchConfig {
    String getMainClass();
    String getArguments();
    String getVMArguments();
+   boolean getStopInMain();
    String getConfigName();
    String getId();
    BumpLaunchConfigType getConfigType();
@@ -655,6 +663,7 @@ interface BumpLaunchConfig {
    BumpLaunchConfig setMainClass(String cnm);
    BumpLaunchConfig setArguments(String args);
    BumpLaunchConfig setVMArguments(String args);
+   BumpLaunchConfig setStopInMain(boolean fg);
 
    BumpLaunchConfig setTestName(String name);
    BumpLaunchConfig setJunitKind(String kind);

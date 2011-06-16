@@ -106,7 +106,7 @@ private static Toolbar getToolbar(BudaBubbleArea bba)
 /*										*/
 /********************************************************************************/
 
-private class Toolbar extends BudaBubble
+private class Toolbar extends BudaBubble implements NoFreeze
 {
    private List<MenuPanel> menu_panels;
    private JPanel main_panel;
@@ -256,7 +256,8 @@ private static class MenuListener extends AbstractAction implements ActionListen
 
       Rectangle pnlrect = new Rectangle(r.x, r.y, pnl.getPreferredSize().width, pnl.getPreferredSize().height);
       Collection<BudaBubble> bubbles = bba.getBubblesInRegion(pnlrect);
-      if (bubbles.contains(for_root.getPackageExplorer(bba))) bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,
+      if (bubbles.contains(for_root.getPackageExplorer(bba))) 
+	 bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,
 		  r.x + r.width - pnl.getPreferredSize().width, r.y);
 
 

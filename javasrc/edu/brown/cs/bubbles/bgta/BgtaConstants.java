@@ -233,7 +233,7 @@ interface BgtaRosterEntry {
 
 
 
-interface BgtaChat {
+interface BgtaConversation {
 	
 	String getUser();
 	void sendMessage(String message) throws XMPPException;

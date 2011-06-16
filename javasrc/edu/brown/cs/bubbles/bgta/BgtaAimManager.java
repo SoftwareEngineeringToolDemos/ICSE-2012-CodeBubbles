@@ -1,12 +1,23 @@
 /********************************************************************************/
-/*										*/
-/*		BgtaAimManager .java							*/
-/*										*/
-/*	description of class							*/
-/*										*/
-/*	Written by								*/
-/*										*/
+/*                            */
+/*    BgtaAimManager.java                 */
+/*                            */
+/* Bubbles attribute and property management main setup routine      */
+/*                            */
 /********************************************************************************/
+/* Copyright 2011 Brown University -- Sumner Warren            */
+/*********************************************************************************
+ *  Copyright 2011, Brown University, Providence, RI.                            *
+ *                                                                               *
+ *                        All Rights Reserved                                    *
+ *                                                                               *
+ * This program and the accompanying materials are made available under the      *
+ * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
+ * and is available at                                                           *
+ *      http://www.eclipse.org/legal/epl-v10.html                                *
+ *                                                                               *
+ ********************************************************************************/
+
 
 
 
@@ -41,8 +52,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-class BgtaAimManager extends BgtaManager
-{
+class BgtaAimManager extends BgtaManager {
 
 
 
@@ -70,7 +80,7 @@ BgtaAimManager(String username,String password,String server) throws XMPPExcepti
    user_password = password;
    user_server = server;
    existing_bubbles = new Vector<BgtaBubble>();
-   existing_chats = new Vector<BgtaChat>();
+   existing_conversations = new Vector<BgtaConversation>();
    being_saved = false;
    login(username, password);
 }
@@ -160,14 +170,14 @@ BgtaAimManager(String username,String password,String server) throws XMPPExcepti
       bub.disposeBubble();
     }
    existing_bubbles.clear();
-   existing_chats.clear();
+   existing_conversations.clear();
 }
 
 
 
-@Override void removeChat(BgtaChat chat,MessageListener list) {
+@Override void removeChat(BgtaConversation chat,MessageListener list) {
    if (chat.close())
-      existing_chats.removeElement(chat);
+      existing_conversations.removeElement(chat);
 }
 
 
@@ -180,15 +190,15 @@ BgtaAimManager(String username,String password,String server) throws XMPPExcepti
 
 
 
-@Override BgtaChat startChat(String username,MessageListener list,BgtaBubble using)
+@Override BgtaConversation startChat(String username,MessageListener list,BgtaBubble using)
 {
    if (!hasChat(username)) {
       Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
       AIMConversationListener listener = new AIMConversationListener();
       con.addConversationListener(listener);
       existing_bubbles.add(using);
-      BgtaAIMChat chat = new BgtaAIMChat(con, listener);
-      existing_chats.add(chat);
+      BgtaAIMConversation chat = new BgtaAIMConversation(con, listener);
+      existing_conversations.add(chat);
       return chat;
     }
    else
@@ -197,6 +207,12 @@ BgtaAimManager(String username,String password,String server) throws XMPPExcepti
 
 
 
+/**
+ * A listener class for AIM Services. Only used to listen for new conversations.
+ * 
+ * @author Sumner Warren
+ *
+ */
 class AIMServiceListener implements IcbmListener {
 
    @Override public void buddyInfoUpdated(IcbmService service, Screenname sn,
@@ -216,6 +232,13 @@ class AIMServiceListener implements IcbmListener {
 
 
 
+/**
+ * A listener class for an AIMConversation. Only used for sending and receiving
+ * messages.
+ * 
+ * @author Sumner Warren
+ *
+ */
 class AIMConversationListener implements ConversationListener {
 
    @Override public void gotMessage(Conversation conv, MessageInfo minfo) {
@@ -331,13 +354,13 @@ class BgtaAIMRosterEntry implements BgtaRosterEntry {
 
 
 
-class BgtaAIMChat implements BgtaChat {
+class BgtaAIMConversation implements BgtaConversation {
 
    private Conversation 		the_chat;
    private ConversationListener the_listener;
    private int					current_uses;
 
-   BgtaAIMChat(Conversation con,ConversationListener list) {
+   BgtaAIMConversation(Conversation con,ConversationListener list) {
       the_chat = con;
       the_listener = list;
       current_uses = 1;

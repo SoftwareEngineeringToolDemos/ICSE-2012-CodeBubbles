@@ -35,6 +35,7 @@ import org.jivesoftware.smackx.packet.DiscoverItems;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 
 import java.util.*;
 
@@ -62,10 +63,12 @@ protected String		user_server;
 protected boolean 		being_saved;
 
 protected Vector<BgtaBubble>	existing_bubbles;
-protected Vector<BgtaChat>		existing_chats;
+protected Vector<BgtaConversation>		existing_conversations;
 protected BgtaRoster			the_roster;
 private RosterListener		roster_listener;
 private BgtaRepository		the_repository;
+private Map<String, BgtaChat> existing_chats;
+private Map<String, Document> chat_docs;
 
 
 
@@ -90,7 +93,7 @@ BgtaManager(String username,String password,String server) throws XMPPException
    user_password = password;
    user_server = server;
    existing_bubbles = new Vector<BgtaBubble>();
-   existing_chats = new Vector<BgtaChat>();
+   existing_conversations = new Vector<BgtaConversation>();
    being_saved = false;
    roster_listener = null;
    login(username, password, server);
@@ -104,7 +107,7 @@ BgtaManager(String username,String password) throws XMPPException
    user_password = password;
    user_server = "";
    existing_bubbles = new Vector<BgtaBubble>();
-   existing_chats = new Vector<BgtaChat>();
+   existing_conversations = new Vector<BgtaConversation>();
    being_saved = false;
    roster_listener = null;
    login(username, password);
@@ -129,7 +132,6 @@ String getPassword()				{ return user_password; }
 String getServer()				{ return user_server; }
 
 boolean isBeingSaved()				{ return being_saved; }
-
 
 void setBeingSaved(boolean bs)			{ being_saved = bs; }
 
@@ -254,13 +256,13 @@ void login(String username,String password,String server) throws XMPPException
 /*										*/
 /********************************************************************************/
 
-BgtaChat startChat(String username,MessageListener list,BgtaBubble using)
+BgtaConversation startChat(String username,MessageListener list,BgtaBubble using)
 {
    if (!hasChat(username)) {
 	  Chat ch = the_connection.getChatManager().createChat(username, list);
 	  existing_bubbles.add(using);
-	  BgtaXMPPChat chat = new BgtaXMPPChat(ch,list);
-	  existing_chats.add(chat);
+	  BgtaXMPPConversation chat = new BgtaXMPPConversation(ch,list);
+	  existing_conversations.add(chat);
 	  return chat;
     }
    else
@@ -341,7 +343,7 @@ void removeBubble(BgtaBubble bub)
 
 boolean hasChat(String username)
 {
-   for (BgtaChat chat : existing_chats) {
+   for (BgtaConversation chat : existing_conversations) {
 	  if (chat.getUser().equals(username))
 		 return true;
     }
@@ -350,9 +352,9 @@ boolean hasChat(String username)
 
 
 
-BgtaChat getExistingChat(String username)
+BgtaConversation getExistingChat(String username)
 {
-   for (BgtaChat chat : existing_chats) {
+   for (BgtaConversation chat : existing_conversations) {
 	  if (chat.getUser().equals(username))
 		 return chat;
     }
@@ -361,15 +363,15 @@ BgtaChat getExistingChat(String username)
 
 
 
-void removeChat(BgtaChat chat,MessageListener list)
+void removeChat(BgtaConversation chat,MessageListener list)
 {
-   if (((BgtaXMPPChat) chat).isListener(list) && hasBubble(chat.getUser())) {
+   if (((BgtaXMPPConversation) chat).isListener(list) && hasBubble(chat.getUser())) {
 	  BgtaBubble bub = getExistingBubble(chat.getUser());
-      ((BgtaXMPPChat) chat).exchangeListeners(bub.getLog());
+      ((BgtaXMPPConversation) chat).exchangeListeners(bub.getLog());
       bub.makeActive();
     }
    if (chat.close())
-      existing_chats.removeElement(chat);
+      existing_conversations.removeElement(chat);
 }
 
 
@@ -381,7 +383,7 @@ void disconnect()
 //	  bub.disposeBubble();
 //    }
 //   existing_bubbles.clear();
-   existing_chats.clear();
+   existing_conversations.clear();
    roster_listener = null;
 }
 
@@ -680,13 +682,13 @@ class BgtaXMPPRosterEntry implements BgtaRosterEntry {
 
 
 
-class BgtaXMPPChat implements BgtaChat {
+class BgtaXMPPConversation implements BgtaConversation {
 	
    private Chat				the_chat;
    private MessageListener  the_listener;
    private int				current_uses;
    
-   BgtaXMPPChat(Chat ch,MessageListener list) {
+   BgtaXMPPConversation(Chat ch,MessageListener list) {
 	  the_chat = ch;
 	  the_listener = list;
 	  current_uses = 1;

@@ -46,7 +46,7 @@ class BgtaDraftingArea extends JTextArea {
 /*										*/
 /********************************************************************************/
 
-private BgtaChat		my_chat;
+private BgtaConversation		my_chat;
 private BgtaLoggingArea my_log;
 private BgtaBubble	my_bubble;
 
@@ -60,7 +60,7 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaDraftingArea(BgtaChat ch,BgtaLoggingArea bla,BgtaBubble mybub)
+BgtaDraftingArea(BgtaConversation ch,BgtaLoggingArea bla,BgtaBubble mybub)
 {
    super(1,25);
    my_chat = ch;

@@ -53,7 +53,7 @@ private String		  chat_username;
 private BoardProperties   my_props;
 private BgtaLoggingArea   logging_area;
 private BgtaDraftingArea  draft_area;
-private BgtaChat		  the_chat;
+private BgtaConversation		  the_chat;
 private boolean 	  is_saved;
 private boolean 	  alt_color;
 private boolean 	  alt_color_is_on;
@@ -205,7 +205,7 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 
 void makeActive()
 {
-   BgtaChat chat = logging_area.getChat();
+   BgtaConversation chat = logging_area.getChat();
    if (chat.isListener(logging_area))
 	  is_listener = true;
 }
@@ -241,7 +241,7 @@ BgtaManager getManager()			{ return the_manager; }
 void recieveMessage(BgtaMessage mess)
 {
    if (mess instanceof BgtaXMPPMessage)
-	  logging_area.processMessage(((BgtaXMPPChat) the_chat).getChat(), ((BgtaXMPPMessage) mess).getMessage());
+	  logging_area.processMessage(((BgtaXMPPConversation) the_chat).getChat(), ((BgtaXMPPMessage) mess).getMessage());
    else
 	  logging_area.logMessage(mess.getBody());
 }

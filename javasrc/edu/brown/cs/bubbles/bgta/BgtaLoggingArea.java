@@ -21,7 +21,7 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.bgta.BgtaManager.BgtaXMPPChat;
+import edu.brown.cs.bubbles.bgta.BgtaManager.BgtaXMPPConversation;
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import net.kano.joustsim.oscar.oscar.service.icbm.Conversation;
@@ -54,7 +54,7 @@ class BgtaLoggingArea extends JTextPane implements MessageListener, Conversation
 /*										*/
 /********************************************************************************/
 
-private BgtaChat		my_chat;
+private BgtaConversation		my_chat;
 private String		buddy_name;
 private Document	my_doc;
 private AttributeSet	is_bolded;
@@ -118,7 +118,7 @@ BgtaLoggingArea(BgtaBubble bub)
    return true;
 }
 
-void setChat(BgtaChat ch)
+void setChat(BgtaConversation ch)
 {
    my_chat = ch;
    buddy_name = my_chat.getUser();
@@ -136,7 +136,7 @@ void setChat(BgtaChat ch)
    my_doc = doc;
 }
 
-BgtaChat getChat()
+BgtaConversation getChat()
 {
    return my_chat;
 }
@@ -221,7 +221,7 @@ void unbold()
 
 @Override public void processMessage(Chat ch,Message recieved)
 {
-   if (ch != ((BgtaXMPPChat) my_chat).getChat()) return;
+   if (ch != ((BgtaXMPPConversation) my_chat).getChat()) return;
    if (recieved.getType() == Message.Type.chat) {
       String tolog = recieved.getBody();
       if (tolog.startsWith(BGTA_METADATA_START) && tolog.endsWith(BGTA_METADATA_FINISH)) {

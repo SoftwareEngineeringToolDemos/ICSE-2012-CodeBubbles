@@ -67,19 +67,15 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-/**
- * Convenience constructor for BgtaChat(username,server,chat,null).
- */
-BgtaChat(String username,String server,Object chat)
-{
-   this(username,server,chat,null);
-}
-
-BgtaChat(String username,String server,Object chat,Document doc)
+BgtaChat(String username,String displayName,String server,Object chat,Document doc)
 {
    user_name = username;
-   user_display = username;
-   // TODO: fix display name to not have server endings
+   user_display = displayName;
+   if (user_display == null) {
+      user_display = getName(user_name);
+   }
+   // Fix display name to not have the server ending.
+   
    
    user_server = server;
    the_chat = null;
@@ -241,7 +237,62 @@ boolean sendMessage(String message)
 
 
 
-private String wrapHTML(String text) {
+/********************************************************************************/
+/*                            */
+/* Helper methods                           */
+/*                            */
+/********************************************************************************/
+
+/**
+ * A method which creates a more display-able version of a username. This
+ * is accomplished by tearing off anything after an @, and replacing periods
+ * and underscores with whitespace.
+ */
+private String getName(String username)
+{
+   String name = username;
+   int idx = name.indexOf("@");
+   if (idx > 0)
+       name = name.substring(0, idx);
+   while (name.indexOf(".") != -1) {
+      if (name.charAt(name.indexOf(".") + 1) != ' ') {
+         String back = name.substring(name.indexOf(".") + 1);
+         String front = name.substring(0, name.indexOf("."));
+         name = front + " " + back;
+       }
+      else {
+         String back = name.substring(name.indexOf(".") + 1);
+         String front = name.substring(0, name.indexOf("."));
+         name = front + back;
+       }   
+    }
+   return name;
+}
+
+
+
+private String whiteSpaceAwareReplace(String input,String toreplace,String replacewith)
+{
+   String current = new String(input);
+   while (current.indexOf(".") != -1) {
+      if (current.charAt(current.indexOf(".") + 1) != ' ') {
+         String back = current.substring(current.indexOf(".") + 1);
+         String front = current.substring(0, current.indexOf("."));
+         current = front + " " + back;
+       }
+      else {
+         String back = current.substring(current.indexOf(".") + 1);
+         String front = current.substring(0, current.indexOf("."));
+         current = front + back;
+       }   
+    }
+   return current;
+}
+
+
+
+private String wrapHTML(String text)
+{
    String temp = text;
    temp = replace(temp,"&","&amp;");
    temp = replace(temp,"<","&lt;");
@@ -253,8 +304,9 @@ private String wrapHTML(String text) {
 
 
 
-private String replace(String input,String toreplace,String replacewith) {
-   String current = input;
+private String replace(String input,String toreplace,String replacewith)
+{
+   String current = new String(input);
    int pos = current.indexOf(toreplace);
    if (pos != -1) {
       current = current.substring(0,pos) + replacewith + replace(current.substring(pos + toreplace.length()),toreplace,replacewith);
@@ -283,7 +335,13 @@ void close()
 }
 
 
-
+/**
+ * A class for processing received XMPP messages.
+ * TODO: handle metadata messages.
+ * 
+ * @author Sumner Warren
+ *
+ */
 private class ChatListener implements MessageListener {
 
 @Override public void processMessage(Chat ch,Message msg) {
@@ -311,7 +369,8 @@ private class ChatListener implements MessageListener {
       messageReceived(msg);
     }
  }
-}
+
+}  // end of inner class ChatListener
 
 
 

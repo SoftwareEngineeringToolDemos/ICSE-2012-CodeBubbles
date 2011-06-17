@@ -292,7 +292,8 @@ Document startChat(String username,BgtaBubble using)
 {
    if (!hasChat(username)) {
       Chat ch = the_connection.getChatManager().createChat(username,null);
-      BgtaChat chat = new BgtaChat(username,user_server,ch,getExistingDoc(username));
+      String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
+      BgtaChat chat = new BgtaChat(username,name,user_server,ch,getExistingDoc(username));
       existing_bubbles.add(using);
       existing_chats.put(username,chat);
       existing_docs.put(username,chat.getDocument());

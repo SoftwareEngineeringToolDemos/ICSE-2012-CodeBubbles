@@ -426,7 +426,7 @@ private class ServerListener implements ActionListener {
       	server_field.setVisible(true);
     }
 
-}	// end of inner class ServerListener
+}  // end of inner class ServerListener
 
 
 

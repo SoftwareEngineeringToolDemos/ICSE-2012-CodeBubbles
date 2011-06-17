@@ -63,8 +63,8 @@ public class BdocFactory implements BdocConstants, BudaConstants.DocBoxCreator
 /*										*/
 /********************************************************************************/
 
-private static BdocFactory	the_factory;
-private static BdocRepository	bdoc_repository;
+private static BdocFactory	the_factory = null;
+private static BdocRepository	bdoc_repository = null;
 
 
 
@@ -81,11 +81,12 @@ private static BdocRepository	bdoc_repository;
 
 public static void setup()
 {
-   the_factory = new BdocFactory();
+   if (bdoc_repository != null) return;
+
    bdoc_repository = new BdocRepository();
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_DOC,bdoc_repository);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,bdoc_repository);
-   BudaRoot.registerDocumentationCreator(the_factory);
+   BudaRoot.registerDocumentationCreator(getFactory());
    BudaRoot.addBubbleConfigurator("BDOC",new BdocConfigurator());
 }
 
@@ -95,7 +96,11 @@ public static void setup()
  *	Return the singleton factory object for documentation bubbles.
  **/
 
-public static BdocFactory getFactory()		{ return the_factory; }
+public static synchronized BdocFactory getFactory()
+{
+   if (the_factory == null) the_factory = new BdocFactory();
+   return the_factory;
+}	
 
 
 

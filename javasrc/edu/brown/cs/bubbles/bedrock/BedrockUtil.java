@@ -1388,6 +1388,13 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
 
    for (Iterator<?> it = attrs.entrySet().iterator(); it.hasNext(); ) {
       Map.Entry<?,?> ent =  (Map.Entry<?,?>) it.next();
+      if (ent.getKey().toString().equals(BEDROCK_LAUNCH_IGNORE_PROP)) {
+	 xw.field("IGNORE",true);
+       }
+    }
+
+   for (Iterator<?> it = attrs.entrySet().iterator(); it.hasNext(); ) {
+      Map.Entry<?,?> ent =  (Map.Entry<?,?>) it.next();
       Object val = ent.getValue();
       if (val == null) continue;
       if (val instanceof ArrayList<?>) {

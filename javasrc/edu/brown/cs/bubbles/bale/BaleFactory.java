@@ -76,6 +76,8 @@ private static BaleFactory	the_factory;
 
 private static BumpClient      bump_client = null;
 
+private static boolean		is_setup = false;
+
 
 
 
@@ -119,6 +121,9 @@ public synchronized static BaleFactory getFactory()
 
 public static void setup()
 {
+   if (is_setup) return;
+   is_setup = true;
+
    BaleConfigurator bc = new BaleConfigurator();
    BudaRoot.addBubbleConfigurator("BALE",bc);
    BudaRoot.addPortConfigurator("BALE",bc);

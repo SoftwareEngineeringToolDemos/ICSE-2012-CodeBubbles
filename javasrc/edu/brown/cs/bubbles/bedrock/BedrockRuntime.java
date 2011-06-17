@@ -332,6 +332,7 @@ void runProject(String cfg,String mode,boolean build,boolean reg,String vmarg,St
 	       String ja = ccnf.getAttribute(vmatt,(String) null);
 	       if (ja == null || ja.length() == 0) ja = vmarg;
 	       else ja = ja + " " + vmarg;
+	       ccnf.setAttribute(BEDROCK_LAUNCH_IGNORE_PROP,"true");
 	       ccnf.setAttribute(vmatt,ja);
 	       cnf = ccnf;
 	     }

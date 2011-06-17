@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Adam M. Cook 			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -60,15 +60,6 @@ private static HashMap<String, String> file_extensions;
 private static BtedFactory	     the_factory;
 private static BoardProperties	 bted_props = BoardProperties.getProperties("Bted");
 
-static {
-   BumpClient.getBump();
-   the_factory = new BtedFactory();
-   BudaRoot.addBubbleConfigurator("BTED", new BtedConfigurator());
-   BudaRoot.registerMenuButton(NEW_FILE_BUTTON, the_factory);
-   BudaRoot.registerMenuButton(LOAD_FILE_BUTTON, the_factory);
-
-}
-
 
 
 /********************************************************************************/
@@ -84,6 +75,7 @@ public static BtedFactory getFactory()
 {
    return the_factory;
 }
+
 
 private BtedFactory()
 {
@@ -108,7 +100,11 @@ private BtedFactory()
 
 public static void setup()
 {
-   // work is done by the static initilizer
+   BumpClient.getBump();
+   the_factory = new BtedFactory();
+   BudaRoot.addBubbleConfigurator("BTED", new BtedConfigurator());
+   BudaRoot.registerMenuButton(NEW_FILE_BUTTON, the_factory);
+   BudaRoot.registerMenuButton(LOAD_FILE_BUTTON, the_factory);
 }
 
 

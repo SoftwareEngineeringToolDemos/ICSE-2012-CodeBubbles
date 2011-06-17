@@ -69,7 +69,18 @@ private static BoardProperties	bddt_properties;
 
 
 
-static {
+/********************************************************************************/
+/*										*/
+/*	Setup methods								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	This routine is called automatically at startup to initialize the module.
+ **/
+
+public static void setup()
+{
    the_factory = new BddtFactory();
    console_controller = new BddtConsoleController();
    history_controller = new BddtHistoryController();
@@ -93,23 +104,6 @@ static {
    BddtRepository rep = new BddtRepository();
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_LAUNCH_CONFIG,rep);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,rep);
-}
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Setup methods								*/
-/*										*/
-/********************************************************************************/
-
-/**
- *	This routine is called automatically at startup to initialize the module.
- **/
-
-public static void setup()
-{
-   // work is done by the static initializer
 }
 
 

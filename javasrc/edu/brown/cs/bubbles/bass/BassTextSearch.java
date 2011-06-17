@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -69,8 +69,6 @@ private JTextField	input_field;
 private JRadioButton	literal_button;
 private JRadioButton	regex_button;
 private JCheckBox	usecase_button;
-
-private static BumpClient bump_client = BumpClient.getBump();
 
 private static String	search_text = "";
 private static boolean	search_literal = false;
@@ -193,14 +191,15 @@ private class Searcher implements Runnable {
       searcher_text = txt;
       in_place = inp;
       search_result = null;
-      search_location = BudaRoot.findBudaLocation(BassTextSearch.this); 
+      search_location = BudaRoot.findBudaLocation(BassTextSearch.this);
   }
 
    @Override public void run() {
       if (search_result == null) {
 	 BowiFactory.startTask(BowiConstants.BowiTaskType.TEXT_SEARCH);
 	 try {
-	    Collection<BumpLocation> locs = bump_client.textSearch(null,searcher_text,
+	    BumpClient bc = BumpClient.getBump();
+	    Collection<BumpLocation> locs = bc.textSearch(null,searcher_text,
 		     search_literal,
 		     !search_case,
 		     false);

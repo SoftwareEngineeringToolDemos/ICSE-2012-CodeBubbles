@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -79,10 +79,6 @@ private static Map<BassRepository,BassTreeModelBase> repository_map;
 static {
    use_repositories = new HashMap<SearchType,Set<BassRepository>>();
    use_repositories.put(SearchType.SEARCH_ALL,new HashSet<BassRepository>());
-
-   bass_repository = new BassRepositoryLocation();
-   registerRepository(SearchType.SEARCH_CODE,bass_repository);
-   registerRepository(SearchType.SEARCH_EXPLORER,bass_repository);
 
    the_factory = new BassFactory();
    BudaRoot.registerSearcher(the_factory);
@@ -148,6 +144,10 @@ public static void setup()
 public static void initialize(BudaRoot br)
 {
    BoardLog.logD("BASS","Initialize");
+
+   bass_repository = new BassRepositoryLocation();
+   registerRepository(SearchType.SEARCH_CODE,bass_repository);
+   registerRepository(SearchType.SEARCH_EXPLORER,bass_repository);
 
    if (bass_properties.getBoolean(BASS_PACK_ON_START_NAME) &&
 	  !BoardSetup.getConfigurationFile().exists()) {

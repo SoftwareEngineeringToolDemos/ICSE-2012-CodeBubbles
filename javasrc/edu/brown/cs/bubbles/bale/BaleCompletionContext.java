@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -88,8 +88,6 @@ private static final int	SHOW_ITEMS = 8;
 private static final int	X_DELTA = 0;
 private static final int	Y_DELTA = 0;
 private static final Pattern	ID_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z_0-9]*");
-
-private static BumpClient      bump_client = BumpClient.getBump();
 
 static {
    completion_delay = BALE_PROPERTIES.getLong(BALE_AUTOCOMPLETE_DELAY,0);
@@ -502,9 +500,10 @@ private class CompletionGetter implements Runnable {
       Collection<BumpCompletion> completions = null;
 
       int ctr = for_document.getEditCounter();
-      completions = bump_client.getCompletions(for_document.getProjectName(),
-						  for_document.getFile(),
-						  ctr,spos);
+      BumpClient bcc = BumpClient.getBump();
+      completions = bcc.getCompletions(for_document.getProjectName(),
+					  for_document.getFile(),
+					  ctr,spos);
       if (completions == null) {
 	 removeContext();
 	 return;

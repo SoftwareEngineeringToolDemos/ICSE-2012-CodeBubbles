@@ -90,16 +90,7 @@ private Queue<RemoteEdit>	remote_edits;
 private static final long serialVersionUID = 1;
 
 
-private static BumpClient      bump_client;
-
-static {
-   bump_client = BumpClient.getBump();
-   bump_client.startIDE();
-   bump_client.setEditParameter("AUTOELIDE","TRUE");
-   int edelay = BALE_PROPERTIES.getInt(BALE_TYPEIN_DELAY,250);
-   bump_client.setEditParameter("ELIDEDELAY",Integer.toString(edelay));
-}
-
+private static BumpClient      bump_client = null;
 
 
 
@@ -111,6 +102,16 @@ static {
 
 BaleDocumentIde()
 {
+   synchronized (BaleDocumentIde.class) {
+      if (bump_client == null) {
+	 bump_client = BumpClient.getBump();
+	 bump_client.startIDE();
+	 bump_client.setEditParameter("AUTOELIDE","TRUE");
+	 int edelay = BALE_PROPERTIES.getInt(BALE_TYPEIN_DELAY,250);
+	 bump_client.setEditParameter("ELIDEDELAY",Integer.toString(edelay));
+       }
+    }
+
    project_name = null;
    file_name = null;
    fragment_map = new HashMap<BaleFragment,FragmentData>();

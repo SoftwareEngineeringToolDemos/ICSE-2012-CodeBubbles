@@ -62,12 +62,12 @@ private String	method_params;
 private String	method_returns;
 private int	method_mods;
 private boolean add_comment;
+private BumpClient bump_client;
 
 private String	insert_after;
 private BumpLocation class_loc;
 
 
-private static BumpClient	bump_client = BumpClient.getBump();
 private static BaleFactory	bale_factory = BaleFactory.getFactory();
 
 
@@ -90,6 +90,7 @@ BaleMethodCreator(String proj,String name,String params,String returns,
    add_comment = comment;
    insert_after = after;
    class_loc = null;
+   bump_client = BumpClient.getBump();
 
    int idx = name.lastIndexOf(".");
    if (idx < 0) {
@@ -150,7 +151,7 @@ private BumpLocation findLocation(BaleDocumentIde doc,int offset,int len)
 
       if (offset < re && offset + len > rs) {
 	 // regions overlap -- use it
-	
+
 	 return loc;
        }
     }

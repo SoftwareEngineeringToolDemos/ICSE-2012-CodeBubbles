@@ -5,7 +5,7 @@
 /*	Bubbles attribute and property management main setup routine		*/
 /*										*/
 /********************************************************************************/
-/*	Copyright 2009 Brown University -- Sumner Warren		      */
+/*	Copyright 2011 Brown University -- Sumner Warren		      */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -71,6 +71,7 @@ public BgtaSASLDigestMD5Mechanism(SASLAuthentication saslAuthentication)
 }
 
 
+
 @Override public void authenticate(String username,String host,String pwd) throws IOException,
 	 XMPPException
 {
@@ -85,6 +86,7 @@ public BgtaSASLDigestMD5Mechanism(SASLAuthentication saslAuthentication)
 }
 
 
+
 @Override public void authenticate(String username,String host,CallbackHandler cbh)
 	throws IOException, XMPPException
 {
@@ -95,10 +97,12 @@ public BgtaSASLDigestMD5Mechanism(SASLAuthentication saslAuthentication)
 }
 
 
+
 @Override protected String getName()
 {
    return "DIGEST-MD5";
 }
+
 
 
 @Override public void challengeReceived(String challenge) throws IOException
@@ -130,6 +134,7 @@ public BgtaSASLDigestMD5Mechanism(SASLAuthentication saslAuthentication)
    // Send the authentication to the server
    getSASLAuthentication().send(stanza.toString());
 }
+
 
 
 }	// end of class BgtaSASLDigestMD5Mechansim

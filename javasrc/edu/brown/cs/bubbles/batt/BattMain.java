@@ -322,7 +322,16 @@ void stopTests()
 {
    // if (test_mode != TestMode.ON_DEMAND) setMode(TestMode.ON_DEMAND);
 
-   if (current_test != null) current_test.destroy();
+   if (current_test != null) {
+      for (BattTestCase btc : test_cases.values()) {
+	 if (btc.getState() == TestState.RUNNING) {
+	    btc.setStatus(TestStatus.UNKNOWN);
+	    btc.setState(TestState.STOPPED);
+	    btc.handleTestCounts(null);
+	  }
+       }
+      current_test.destroy();
+    }
 
    // stop current test here
 }
@@ -571,7 +580,8 @@ private void processRun(boolean listonly,Set<String> testclss)
 	 IvyExec ex = new IvyExec(argv,null,0);
 	 current_test = ex;
 	 // should handle input and output here
-	 ex.waitFor();
+	 int sts = ex.waitFor();
+	 System.err.println("BATT: Test status " + sts);
 	 current_test = null;
        }
       catch (IOException e) {
@@ -628,6 +638,7 @@ synchronized Collection<BattTestCase> findPendingTests()
       switch (btc.getState()) {
 	 case NEEDS_CHECK :
 	 case PENDING :
+	 case STOPPED :
 	    use = true;
 	    break;
        }
@@ -664,6 +675,7 @@ void updateTestsForClasses(Map<String,FileState> chng)
 		  break;
 	       case EDITED :
 		  if (btc.getState() == TestState.UP_TO_DATE ||
+			 btc.getState() == TestState.STOPPED ||
 			 btc.getState() == TestState.RUNNING) {
 		     btc.setState(TestState.EDITED);
 		     upd = true;
@@ -672,6 +684,7 @@ void updateTestsForClasses(Map<String,FileState> chng)
 	       case CHANGED :
 		  if (btc.getState() == TestState.UP_TO_DATE ||
 			 btc.getState() == TestState.EDITED ||
+			 btc.getState() == TestState.STOPPED ||
 			 btc.getState() == TestState.RUNNING) {
 		     btc.setState(TestState.NEEDS_CHECK);
 		     upd = true;

@@ -82,28 +82,16 @@ private BassSearchBox self;
 private String		old_text;
 
 private static String	search_text = "";
-private static Set<String> expanded_nodes;
+private static Set<String> expanded_nodes = new HashSet<String>();
 
-private static Icon people_expand_image;
-private static Icon people_collapse_image;
-private static Icon docs_expand_image;
-private static Icon docs_collapse_image;
-private static Icon config_expand_image;
-private static Icon config_collapse_image;
-private static Icon process_expand_image;
-private static Icon process_collapse_image;
-
-static {
-   people_expand_image = BoardImage.getIcon("add_user");
-   people_collapse_image = BoardImage.getIcon("sub_user");
-   docs_expand_image = BoardImage.getIcon("docexpand");
-   docs_collapse_image = BoardImage.getIcon("doccollapse");
-   config_expand_image = BoardImage.getIcon("docexpand");
-   config_collapse_image = BoardImage.getIcon("doccollapse");
-   process_expand_image = BoardImage.getIcon("docexpand");
-   process_collapse_image = BoardImage.getIcon("doccollapse");
-   expanded_nodes = new HashSet<String>();
-}
+private static Icon people_expand_image = null;
+private static Icon people_collapse_image = null;
+private static Icon docs_expand_image = null;
+private static Icon docs_collapse_image = null;
+private static Icon config_expand_image = null;
+private static Icon config_collapse_image = null;
+private static Icon process_expand_image = null;
+private static Icon process_collapse_image = null;
 
 
 private static final Color default_label_color = new Color(0xc0ffff80);
@@ -135,6 +123,8 @@ BassSearchBox(BassTreeModel mdl,boolean common)
 
    Font ft = bass_properties.getFontOption(BASS_TEXT_FONT_PROP,BASS_TEXT_FONT);
    Font ftb = ft.deriveFont(Font.BOLD);
+
+   loadImages();
 
    input_field = new JTextField(36);
    input_field.setFont(ft);
@@ -209,6 +199,21 @@ BassSearchBox(BassTreeModel mdl,boolean common)
    tree_model.addTreeModelListener(new UpdateHandler());
 }
 
+
+
+private static synchronized void loadImages()
+{
+   if (people_expand_image != null) return;
+
+   people_expand_image = BoardImage.getIcon("add_user");
+   people_collapse_image = BoardImage.getIcon("sub_user");
+   docs_expand_image = BoardImage.getIcon("docexpand");
+   docs_collapse_image = BoardImage.getIcon("doccollapse");
+   config_expand_image = BoardImage.getIcon("docexpand");
+   config_collapse_image = BoardImage.getIcon("doccollapse");
+   process_expand_image = BoardImage.getIcon("docexpand");
+   process_collapse_image = BoardImage.getIcon("doccollapse");
+}
 
 
 
@@ -993,7 +998,7 @@ private class Hoverer extends BudaHover {
 
 	 int xpos = e.getX() - scroll_pane.getViewport().getViewPosition().x;
 	 int ypos = e.getY() - scroll_pane.getViewport().getViewPosition().y;
-	 
+
 	 String fn = null;
 
 	 if (bn != null) {
@@ -1007,7 +1012,7 @@ private class Hoverer extends BudaHover {
 		  BassTreeNode btn = (BassTreeNode) o1;
 		  if (fn == null) fn = btn.getLocalName();
 		  else fn = fn + "." + btn.getLocalName();
-	        }
+		}
 	     }
 	    if (fn != null) {
 	       int idx = fn.indexOf("#");

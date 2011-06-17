@@ -72,6 +72,10 @@ BattMonitor(BattMain bm,String mint)
    file_states = new HashMap<String,FileState>();
    changed_classes = new HashMap<String,FileState>();
    is_done = false;
+
+   mint_control.register("<BEDROCK SOURCE='ECLIPSE' TYPE='_VAR_0' />",new EclipseHandler());
+   mint_control.register("<BUBBLES DO='EXIT' />",new ExitHandler());
+   mint_control.register("<BATT DO='_VAR_0' />",new CommandHandler());
 }
 
 
@@ -84,10 +88,6 @@ BattMonitor(BattMain bm,String mint)
 
 void server()
 {
-   mint_control.register("<BEDROCK SOURCE='ECLIPSE' TYPE='_VAR_0' />",new EclipseHandler());
-   mint_control.register("<BUBBLES DO='EXIT' />",new ExitHandler());
-   mint_control.register("<BATT DO='_VAR_0' />",new CommandHandler());
-
    synchronized (this) {
       while (!is_done) {
 	 checkEclipse();

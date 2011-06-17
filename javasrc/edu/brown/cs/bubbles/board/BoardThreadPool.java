@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -45,14 +45,9 @@ public class BoardThreadPool extends ThreadPoolExecutor
 /*										*/
 /********************************************************************************/
 
-private static BoardThreadPool	the_pool;
-private static int		thread_counter;
+private static BoardThreadPool	the_pool = null;
+private static int		thread_counter = 0;
 
-
-static {
-   thread_counter = 0;
-   the_pool = new BoardThreadPool();
-}
 
 
 
@@ -68,7 +63,7 @@ static {
 
 public static void start(Runnable r)
 {
-   the_pool.execute(r);
+   if (r != null) getPool().execute(r);
 }
 
 
@@ -80,9 +75,17 @@ public static void start(Runnable r)
 
 public static void finish(Runnable r)
 {
-   if (r != null) the_pool.remove(r);
+   if (r != null) getPool().remove(r);
 }
 
+
+private static synchronized BoardThreadPool getPool()
+{
+   if (the_pool == null) {
+      the_pool = new BoardThreadPool();
+    }
+   return the_pool;
+}
 
 
 

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -86,7 +86,7 @@ private static SwingEventListenerList<BudaFileHandler> file_handlers;
 
 
 private static SearchBoxCreator search_creator = null;
-private static BudaMenu 	bubble_menu;
+private static BudaMenu 	bubble_menu = null;
 
 private static Map<String,BubbleConfigurator>	bubble_config;
 private static Map<String,PortConfigurator>	port_config;
@@ -138,8 +138,6 @@ static {
    bubble_config = new HashMap<String,BubbleConfigurator>();
    port_config = new HashMap<String,PortConfigurator>();
    bubble_flavor = new DataFlavor(BudaDragBubble.class,"Bubble");
-
-   bubble_menu = new BudaMenu();
 
    port_config.put("BUDA",new DefaultPortConfigurator());
 
@@ -641,7 +639,7 @@ public void createSearchBubble(Point pt,String proj,String pfx,boolean showmenu)
 
    if (!buda_properties.getBoolean(SEARCH_ALLOW_MULTIPLE)) search_bubble = bb;
 
-   if (showmenu) bubble_menu.createMenuAndSearch(this,pt,bb);
+   if (showmenu) getBubbleMenu().createMenuAndSearch(this,pt,bb);
    else {
       BudaConstraint scnst = new BudaConstraint(BudaBubblePosition.STATIC,pt);
       this.add(bb,scnst);
@@ -690,7 +688,7 @@ public void createMergedSearchBubble(Point pt,String proj,String pfx)
       docsearch_bubble = bb;
     }
 
-   bubble_menu.createMenuAndSearch(this,pt,bb);
+   getBubbleMenu().createMenuAndSearch(this,pt,bb);
 }
 
 
@@ -723,7 +721,7 @@ public void createDocSearchBubble(Point pt,String proj,String pfx)
 public void noteSearchUsed(JComponent window)
 {
    BudaBubble bb = findBudaBubble(window);
-   if (bb != null) bubble_menu.noteSearchUsed(bb);
+   if (bb != null) getBubbleMenu().noteSearchUsed(bb);
 }
 
 
@@ -796,11 +794,18 @@ public static void registerMenuButton(String name,ButtonListener action, Icon ic
 {
    if (name == null || name.length() == 0) return;
 
-   bubble_menu.addMenuItem(name,action,icon);
+   getBubbleMenu().addMenuItem(name,action,icon);
 }
 
 
 
+private static synchronized BudaMenu getBubbleMenu()
+{
+   if (bubble_menu == null) {
+      bubble_menu = new BudaMenu();
+    }
+   return bubble_menu;
+}
 
 
 

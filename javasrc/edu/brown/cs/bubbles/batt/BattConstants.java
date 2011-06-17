@@ -85,6 +85,7 @@ enum TestState {
    UNKNOWN,
    PENDING,
    RUNNING,
+   STOPPED,
    EDITED,
    NEEDS_CHECK,
    CANT_RUN,

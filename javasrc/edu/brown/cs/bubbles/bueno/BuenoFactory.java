@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -50,16 +50,16 @@ private Map<BuenoMethod,BuenoCreator> creation_map;
 private BuenoCreator		cur_creator;
 
 
-private static BuenoFactory	the_factory;
+private static BuenoFactory	the_factory = null;
 
 
-static {
-   the_factory = new BuenoFactory();
-}
 
-
-public static BuenoFactory getFactory()
+public static synchronized BuenoFactory getFactory()
 {
+   if (the_factory == null) {
+      the_factory = new BuenoFactory();
+    }
+
    return the_factory;
 }
 
@@ -95,9 +95,7 @@ private BuenoFactory()
 
 public static void setup()
 {
-   // work handled by static initializer
 }
-
 
 
 

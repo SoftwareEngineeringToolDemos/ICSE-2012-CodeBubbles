@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -53,17 +53,8 @@ public class BconFactory implements BconConstants, BudaConstants.ButtonListener
 private Map<BudaBubbleArea,BconOverviewPanel> current_panel;
 
 
-private static BconFactory	the_factory;
+private static BconFactory	the_factory = null;
 
-
-static {
-   the_factory = new BconFactory();
-   BudaRoot.addBubbleConfigurator("BCON",new BconConfigurator());
-   BudaRoot.registerMenuButton(BCON_BUTTON,the_factory);
-   BconRepository br = new BconRepository();
-   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_CODE,br);
-   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,br);
-}
 
 
 
@@ -79,7 +70,11 @@ static {
 
 public static void setup()
 {
-   // work is done by the static initializer
+   BudaRoot.addBubbleConfigurator("BCON",new BconConfigurator());
+   BudaRoot.registerMenuButton(BCON_BUTTON,getFactory());
+   BconRepository br = new BconRepository();
+   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_CODE,br);
+   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,br);
 }
 
 
@@ -88,8 +83,11 @@ public static void setup()
  *	Return the singleton instance of the context viewer factory.
  **/
 
-public static BconFactory getFactory()
+public static synchronized BconFactory getFactory()
 {
+   if (the_factory == null) {
+      the_factory = new BconFactory();
+    }
    return the_factory;
 }
 

@@ -53,15 +53,7 @@ private BoardProperties 	batt_props;
 private boolean 		server_running;
 private BattModeler		batt_model;
 
-private static BattFactory	the_factory;
-
-
-
-static {
-   the_factory = new BattFactory();
-   BudaRoot.addBubbleConfigurator("BATT",new BattConfigurator());
-   BudaRoot.registerMenuButton(TEST_BUTTON,the_factory);
-}
+private static BattFactory	the_factory = null;
 
 
 
@@ -72,7 +64,13 @@ static {
 /*										*/
 /********************************************************************************/
 
-public static BattFactory getFactory()		{ return the_factory; }
+public synchronized static BattFactory getFactory()
+{
+   if (the_factory == null) {
+      the_factory = new BattFactory();
+    }
+   return the_factory;
+}
 
 
 
@@ -93,7 +91,8 @@ private BattFactory()
 
 public static void setup()
 {
-   // work is done by the static initializer
+   BudaRoot.addBubbleConfigurator("BATT",new BattConfigurator());
+   BudaRoot.registerMenuButton(TEST_BUTTON,getFactory());
 }
 
 

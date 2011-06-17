@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -70,17 +70,12 @@ private DescriptionView desc_view;
 private JTree		item_tree;
 private BdocCellRenderer cell_renderer;
 
-private static int	scroll_width;
+private static int	scroll_width = 0;
 
 
 private static final long serialVersionUID = 1;
 
 
-static {
-   JScrollBar sb = new JScrollBar(JScrollBar.VERTICAL);
-   Dimension dsb = sb.getPreferredSize();
-   scroll_width = dsb.width;
-}
 
 
 
@@ -267,7 +262,7 @@ void createLinkBubble(String lbl,URL u)
 
 static Dimension computeEditorSize(JEditorPane ep,int w0)
 {
-   int delta = scroll_width + 4;
+   int delta = getScrollWidth();
 
    JLabel lbl = new JLabel();
    lbl.setFont(ep.getFont());
@@ -284,17 +279,32 @@ static Dimension computeEditorSize(JEditorPane ep,int w0)
    return d;
 }
 
+
+
+static synchronized int getScrollWidth()
+{
+   if (scroll_width == 0) {
+      JScrollBar sb = new JScrollBar(JScrollBar.VERTICAL);
+      Dimension dsb = sb.getPreferredSize();
+      scroll_width = dsb.width + 4;
+    }
+   return scroll_width;
+}
+
+
 /********************************************************************************/
 /*										*/
 /*	Handle formatting text that is read in					*/
 /*										*/
 /********************************************************************************/
 
-private String noPre(String d) {
-   //String toreturn = d.replaceFirst("<pre>", "");
-   //toreturn = toreturn.replaceFirst("</pre>", "");
-   return d;//toreturn;
+private String noPre(String d)
+{
+   return d;
 }
+
+
+
 
 /********************************************************************************/
 /*										*/

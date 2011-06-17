@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -59,7 +59,7 @@ public class BgtaFactory implements BgtaConstants {
 /*										*/
 /********************************************************************************/
 
-private static BgtaFactory		the_factory;
+private static BgtaFactory		the_factory = null;
 private static Vector<BgtaManager>	chat_managers;
 private static BgtaRepository		buddy_list;
 private static BoardProperties		login_properties;
@@ -69,9 +69,20 @@ private static JMenu			metadata_menu;
 
 
 static {
-   the_factory = new BgtaFactory();
-   login_properties = BoardProperties.getProperties("Bgta");
    chat_managers = new Vector<BgtaManager>();
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Setup methods								*/
+/*										*/
+/********************************************************************************/
+
+public static void setup()
+{
+   login_properties = BoardProperties.getProperties("Bgta");
 
    // TODO: Needs to be altered to match spr's guidelines for property storage
    for (int i = 0; i < login_properties.getInt(BGTA_NUM_ACCOUNTS); i++) {
@@ -97,21 +108,11 @@ static {
 }
 
 
-
-/********************************************************************************/
-/*										*/
-/*	Setup methods								*/
-/*										*/
-/********************************************************************************/
-
-public static void setup()
+public static synchronized BgtaFactory getFactory()
 {
-// work is done by static initializer
-}
-
-
-public static BgtaFactory getFactory()
-{
+   if (the_factory == null) {
+      the_factory = new BgtaFactory();
+    }
    return the_factory;
 }
 
@@ -143,7 +144,7 @@ static void addManagerProperties(String usnm,String psswd,String svr)
    }
    catch (IOException e) {}
 }
-	
+
 
 static void clearManagerProperties()
 {
@@ -154,7 +155,7 @@ static void clearManagerProperties()
    }
    catch (IOException e) {}
 }
-	
+
 
 static void altColorUponRecieve(boolean b)
 {
@@ -165,11 +166,11 @@ static void altColorUponRecieve(boolean b)
    }
    catch (IOException e) {}
 }
-	
+
 
 static void logoutAllAccounts()
 { }
-	
+
 
 static boolean logoutAccount(String username,String password,String server)
 {
@@ -186,7 +187,7 @@ static boolean logoutAccount(String username,String password,String server)
 }
 
 
-@SuppressWarnings("deprecation") 
+@SuppressWarnings("deprecation")
 static void registerUserViaGateway(String username,String password,String server)
 {
    for (BgtaManager man : chat_managers) {
@@ -204,7 +205,7 @@ static void registerUserViaGateway(String username,String password,String server
 }
 
 
-@SuppressWarnings("deprecation") 
+@SuppressWarnings("deprecation")
 static void unregisterUserViaGateway(String username,String server)
 {
    for (BgtaManager man : chat_managers) {

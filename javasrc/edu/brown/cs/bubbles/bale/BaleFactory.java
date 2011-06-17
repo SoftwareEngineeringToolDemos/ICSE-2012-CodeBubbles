@@ -76,13 +76,6 @@ private static BaleFactory	the_factory;
 
 private static BumpClient      bump_client = null;
 
-static {
-   BaleConfigurator bc = new BaleConfigurator();
-   BudaRoot.addBubbleConfigurator("BALE",bc);
-   BudaRoot.addPortConfigurator("BALE",bc);
-}
-
-
 
 
 
@@ -126,7 +119,9 @@ public synchronized static BaleFactory getFactory()
 
 public static void setup()
 {
-   // work done in static initializer
+   BaleConfigurator bc = new BaleConfigurator();
+   BudaRoot.addBubbleConfigurator("BALE",bc);
+   BudaRoot.addPortConfigurator("BALE",bc);
 
    BuenoFactory.getFactory().addInsertionHandler(new BaleInserter());
 }

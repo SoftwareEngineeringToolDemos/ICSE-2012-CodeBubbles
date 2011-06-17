@@ -266,14 +266,14 @@ private void start()
    // next start Eclipse
    bs.setSplashTask("Starting IDE (" + bc.getName() + ") and Updating Projects");
    bc.waitForIDE();
-   
+
 
    // ensure various components are setup
 
    bs.setSplashTask("Initializing components");
-   BdocFactory.setup();
    BaleFactory.setup();
    BassFactory.setup();
+   BdocFactory.setup();
 
    bs.setSplashTask("Loading Project Symbols");
    BassFactory.waitForNames();

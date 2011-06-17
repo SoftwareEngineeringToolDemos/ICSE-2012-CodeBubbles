@@ -376,6 +376,7 @@ String [] BOARD_LIBRARY_FILES = new String [] {
 
 
 String [] BOARD_LIBRARY_EXTRAS = new String [] {
+   "junit.jar",
    "battagent.jar",
    "battjunit.jar",
    "bandaid.jar",

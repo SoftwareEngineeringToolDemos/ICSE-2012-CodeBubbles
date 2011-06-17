@@ -226,12 +226,13 @@ void startBattServer()
       args.add("-m");
       args.add(bc.getMintName());
 
+      String s0 = bs.getLibraryPath("junit.jar");
       String s1 = bs.getLibraryPath("battjunit.jar");
       String s2 = bs.getLibraryPath("battagent.jar");
-      if (s1 == null || s2 == null) {
+      if (s0 == null || s1 == null || s2 == null) {
 	 BoardProperties sp = BoardProperties.getProperties("System");
 	 String s3 = sp.getProperty("edu.brown.cs.bubbles.jar");
-	 BoardLog.logX("BATT","Missing batt file " + s1 + " " + s2 + " " + s3);
+	 BoardLog.logX("BATT","Missing batt file " + s0 + " " + s1 + " " + s2 + " " + s3);
 	 server_running = true;
 	 return;
        }
@@ -239,6 +240,8 @@ void startBattServer()
       args.add(s1);
       args.add("-a");
       args.add(s2);
+      args.add("-l");
+      args.add(s0);
 
       for (int i = 0; i < 100; ++i) {
 	 MintDefaultReply rply = new MintDefaultReply();

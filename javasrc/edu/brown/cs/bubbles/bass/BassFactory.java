@@ -76,25 +76,6 @@ private static Map<BassRepository,BassTreeModelBase> repository_map;
 
 
 
-static {
-   use_repositories = new HashMap<SearchType,Set<BassRepository>>();
-   use_repositories.put(SearchType.SEARCH_ALL,new HashSet<BassRepository>());
-
-   the_factory = new BassFactory();
-   BudaRoot.registerSearcher(the_factory);
-   BudaRoot.addBubbleConfigurator("BASS",new BassConfigurator());
-   package_explorers = new HashMap<BudaBubbleArea,BassBubble>();
-
-   BudaRoot.registerMenuButton("Package Explorer",new PackageExplorerButton());
-   BudaRoot.registerMenuButton("Text Search",new TextSearchButton());
-
-   repository_map = new HashMap<BassRepository,BassTreeModelBase>();
-
-   the_factory.addPopupHandler(new BassCreator());
-   the_factory.addPopupHandler(new ProjectProps());
-}
-
-
 /********************************************************************************/
 /*										*/
 /*	Constructors								*/
@@ -131,7 +112,25 @@ private BassFactory()
 
 public static void setup()
 {
-   // work is done by the static initializer
+   use_repositories = new HashMap<SearchType,Set<BassRepository>>();
+   use_repositories.put(SearchType.SEARCH_ALL,new HashSet<BassRepository>());
+
+   the_factory = new BassFactory();
+   BudaRoot.registerSearcher(the_factory);
+   BudaRoot.addBubbleConfigurator("BASS",new BassConfigurator());
+   package_explorers = new HashMap<BudaBubbleArea,BassBubble>();
+
+   BudaRoot.registerMenuButton("Package Explorer",new PackageExplorerButton());
+   BudaRoot.registerMenuButton("Text Search",new TextSearchButton());
+
+   repository_map = new HashMap<BassRepository,BassTreeModelBase>();
+
+   the_factory.addPopupHandler(new BassCreator());
+   the_factory.addPopupHandler(new ProjectProps());
+
+   bass_repository = new BassRepositoryLocation();
+   registerRepository(SearchType.SEARCH_CODE,bass_repository);
+   registerRepository(SearchType.SEARCH_EXPLORER,bass_repository);
 }
 
 
@@ -144,10 +143,6 @@ public static void setup()
 public static void initialize(BudaRoot br)
 {
    BoardLog.logD("BASS","Initialize");
-
-   bass_repository = new BassRepositoryLocation();
-   registerRepository(SearchType.SEARCH_CODE,bass_repository);
-   registerRepository(SearchType.SEARCH_EXPLORER,bass_repository);
 
    if (bass_properties.getBoolean(BASS_PACK_ON_START_NAME) &&
 	  !BoardSetup.getConfigurationFile().exists()) {
@@ -192,6 +187,8 @@ public static void registerRepository(SearchType st,BassRepository br)
 
 public static void waitForNames()
 {
+
+
    bass_repository.waitForNames();
 }
 

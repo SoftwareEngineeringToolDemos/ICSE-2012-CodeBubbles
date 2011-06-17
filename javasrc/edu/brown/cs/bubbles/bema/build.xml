@@ -185,6 +185,7 @@
 	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='joscar*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='junit.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${PRO}/bubbles/bubbles.jar' />
    </target>
@@ -217,6 +218,7 @@
 	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='joscar*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='junit.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${PRO}/bubbles/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -253,6 +255,7 @@
 	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='joscar*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='junit.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${PRO}/bubbles/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -286,6 +289,7 @@
 	 <fileset dir='${PRO}/bubbles/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='joscar*.jar' />
 	 <fileset dir='${PRO}/bubbles/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${PRO}/bubbles/lib/' includes='junit.jar' />
       </jar>
       <copy file='external/bubbles.jar' tofile='/pro/web/web/people/spr/bubbles.ext/bubbles.jar' />
       <copy file='external/version.xml' tofile='/pro/web/web/people/spr/bubbles.ext/version.xml' />

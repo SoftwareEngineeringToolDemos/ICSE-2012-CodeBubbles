@@ -112,6 +112,8 @@ private BassFactory()
 
 public static void setup()
 {
+   if (use_repositories != null) return;
+
    use_repositories = new HashMap<SearchType,Set<BassRepository>>();
    use_repositories.put(SearchType.SEARCH_ALL,new HashSet<BassRepository>());
 

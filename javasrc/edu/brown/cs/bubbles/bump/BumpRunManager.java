@@ -438,6 +438,8 @@ void handleLaunchEvent(Element xml)
       BoardLog.logE("BUMP","Launch configuration without an ID: " + IvyXml.convertXmlToString(xml));
       return;
     }
+   boolean ignore = IvyXml.getAttrBool(cnf,"IGNORE");
+   if (ignore) return;
 
    ConfigEvent evt = null;
 
@@ -835,7 +837,7 @@ private void handleTargetThreadState(ThreadData td,BumpThreadState st,BumpThread
 {
    if (td.getThreadState() == st) return;
    BumpThreadState ost = td.getThreadState();
-   
+
    if (ost == BumpThreadState.DEADLOCKED && st == BumpThreadState.BLOCKED) return;
 
    td.setThreadState(st,dtl);
@@ -966,7 +968,7 @@ private class LaunchConfig implements BumpLaunchConfig {
    @Override public String getRemoteHost()		{ return remote_host; }
    @Override public int getRemotePort() 		{ return remote_port; }
    @Override public boolean isWorkingCopy()		{ return is_working; }
-   @Override public boolean getStopInMain()             { return stop_in_main; }
+   @Override public boolean getStopInMain()		{ return stop_in_main; }
 
    @Override public BumpLaunchConfig clone(String name) {
       Element x = bump_client.getNewRunConfiguration(name,getId(),getConfigType());
@@ -990,31 +992,37 @@ private class LaunchConfig implements BumpLaunchConfig {
     }
 
    @Override public BumpLaunchConfig setProject(String pnm) {
+      if (pnm == null) pnm = "";
       Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.PROJECT_ATTR",pnm);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setMainClass(String cnm) {
+      if (cnm == null) cnm = "";
       Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.MAIN_TYPE",cnm);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setArguments(String arg) {
+      if (arg == null) arg = "";
       Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS",arg);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setVMArguments(String arg) {
+      if (arg == null) arg = "";
       Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.VM_ARGUMENTS",arg);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setTestName(String name) {
+      if (name == null) name = "";
       Element x = bump_client.editRunConfiguration(getId(),"TESTNAME",name);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setJunitKind(String name) {
+      if (name == null) name = "";
       Element x = bump_client.editRunConfiguration(getId(),"TEST_KIND","org.eclipse.jdt.junit.loader." + name);
       return getLaunchResult(x);
     }
@@ -1024,13 +1032,13 @@ private class LaunchConfig implements BumpLaunchConfig {
       Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.CONNECT_MAP",val);
       return getLaunchResult(x);
     }
-   
+
    @Override public BumpLaunchConfig setStopInMain(boolean fg) {
       String val = Boolean.toString(fg);
       Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.STOP_IN_MAIN",val);
       return getLaunchResult(x);
     }
-      
+
    @Override public BumpLaunchConfig setAttribute(String attr,String arg) {
       Element x = bump_client.editRunConfiguration(getId(),attr,arg);
       return getLaunchResult(x);
@@ -1182,12 +1190,12 @@ private class ProcessData implements BumpProcess {
       String host = nm.substring(0,idx);
       String port = nm.substring(idx+1);
       if (host.equals("localhost") || host.equals("127.0.0.1") || host.equals("0.0.0.0")) {
-         try {
-            host = InetAddress.getLocalHost().getHostName();
-          }
-         catch (UnknownHostException e) {
-            host = "localhost";
-          }
+	 try {
+	    host = InetAddress.getLocalHost().getHostName();
+	  }
+	 catch (UnknownHostException e) {
+	    host = "localhost";
+	  }
        }
       process_name = port + "@" + host;
       named_processes.put(process_name,this);
@@ -1196,59 +1204,59 @@ private class ProcessData implements BumpProcess {
    void handleBandaidData(long when,Element xml) {
       Map<String,ThreadData> ths = new HashMap<String,ThreadData>();
       for (ThreadData td : active_threads.values()) {
-         if (td.getProcess() == this) ths.put(td.getName(),td);
+	 if (td.getProcess() == this) ths.put(td.getName(),td);
        }
-   
+
       Element x = IvyXml.getChild(xml,"STATES");
       for (Element tc : IvyXml.children(x,"THREAD")) {
-         String nm = IvyXml.getAttrString(tc,"NAME");
-         ThreadData td = ths.get(nm);
-         if (td != null && td.handleBandaidData(tc)) {
-            ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
-            for (BumpRunEventHandler reh : event_handlers) {
-               try {
-        	  reh.handleThreadEvent(evt);
-        	}
-               catch (Throwable t) {
-        	  BoardLog.logE("BUMP","Problem handling state event",t);
-        	}
-             }
-          }
+	 String nm = IvyXml.getAttrString(tc,"NAME");
+	 ThreadData td = ths.get(nm);
+	 if (td != null && td.handleBandaidData(tc)) {
+	    ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
+	    for (BumpRunEventHandler reh : event_handlers) {
+	       try {
+		  reh.handleThreadEvent(evt);
+		}
+	       catch (Throwable t) {
+		  BoardLog.logE("BUMP","Problem handling state event",t);
+		}
+	     }
+	  }
        }
-      
+
       Element dx = IvyXml.getChild(xml,"DEADLOCKS");
       if (dx != null) {
-         for (Element de : IvyXml.children(dx,"DEADLOCK")) {
-            for (Element te : IvyXml.children(de,"THREAD")) {
-               String nm = IvyXml.getAttrString(te,"NAME");
-               ThreadData td = ths.get(nm);
-               if (td != null && td.handleBandaidDeadlock()) {
-                  ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
-                  for (BumpRunEventHandler reh : event_handlers) {
-                     try {
-                        reh.handleThreadEvent(evt);
-                      }
-                     catch (Throwable t) {
-                        BoardLog.logE("BUMP","Problem handling deadlock state event",t);
-                      }
-                   }
-                }
-             }
-          }
+	 for (Element de : IvyXml.children(dx,"DEADLOCK")) {
+	    for (Element te : IvyXml.children(de,"THREAD")) {
+	       String nm = IvyXml.getAttrString(te,"NAME");
+	       ThreadData td = ths.get(nm);
+	       if (td != null && td.handleBandaidDeadlock()) {
+		  ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
+		  for (BumpRunEventHandler reh : event_handlers) {
+		     try {
+			reh.handleThreadEvent(evt);
+		      }
+		     catch (Throwable t) {
+			BoardLog.logE("BUMP","Problem handling deadlock state event",t);
+		      }
+		   }
+		}
+	     }
+	  }
        }
-   
+
       Element px = IvyXml.getChild(xml,"CPUPERF");
       if (px != null) {
-         // BoardLog.logD("BUMP","CPU PERF: " + IvyXml.convertXmlToString(px));
-         ProcessPerfEvent ppe = new ProcessPerfEvent(this,px);
-         for (BumpRunEventHandler reh : event_handlers) {
-            try {
-               reh.handleProcessEvent(ppe);
-             }
-            catch (Throwable t) {
-               BoardLog.logE("BUMP","Problem handling performance event",t);
-             }
-          }
+	 // BoardLog.logD("BUMP","CPU PERF: " + IvyXml.convertXmlToString(px));
+	 ProcessPerfEvent ppe = new ProcessPerfEvent(this,px);
+	 for (BumpRunEventHandler reh : event_handlers) {
+	    try {
+	       reh.handleProcessEvent(ppe);
+	     }
+	    catch (Throwable t) {
+	       BoardLog.logE("BUMP","Problem handling performance event",t);
+	     }
+	  }
        }
    }
 
@@ -1336,7 +1344,7 @@ private class ThreadData implements BumpThread {
       stack_data = null;
       thread_detail = dtl;
     }
-   
+
 
    @Override public String getName()				{ return thread_name; }
    @Override public String getGroupName()			{ return thread_group; }
@@ -1386,17 +1394,17 @@ private class ThreadData implements BumpThread {
       boolean chng = false;
       BumpThreadState state = IvyXml.getAttrEnum(xml,"STATE",thread_state);
       if (state == BumpThreadState.BLOCKED &&
-            thread_state == BumpThreadState.DEADLOCKED)
-         state = thread_state;
+	    thread_state == BumpThreadState.DEADLOCKED)
+	 state = thread_state;
       else if (state == BumpThreadState.STOPPED_BLOCKED &&
-            thread_state == BumpThreadState.STOPPED_DEADLOCK)
-         state = thread_state;
-      
+	    thread_state == BumpThreadState.STOPPED_DEADLOCK)
+	 state = thread_state;
+
       if (state != thread_state) {
-         if (state.isRunning() == thread_state.isRunning() && !thread_state.isException()) {
-            chng = true;
-            thread_state = state;
-          }
+	 if (state.isRunning() == thread_state.isRunning() && !thread_state.isException()) {
+	    chng = true;
+	    thread_state = state;
+	  }
        }
       cpu_time = IvyXml.getAttrLong(xml,"CPUTM");
       user_time = IvyXml.getAttrLong(xml,"USERTM");
@@ -1406,8 +1414,8 @@ private class ThreadData implements BumpThread {
       block_count = IvyXml.getAttrInt(xml,"BLOCKCT");
       return chng;
     }
-   
-   
+
+
    boolean handleBandaidDeadlock()
    {
       BumpThreadState ts = BumpThreadState.STOPPED_DEADLOCK;
@@ -1416,7 +1424,7 @@ private class ThreadData implements BumpThread {
       thread_state = ts;
       return true;
    }
-         
+
 
    @Override public void requestHistory() {
       String cmd = "HISTORY " + getName();

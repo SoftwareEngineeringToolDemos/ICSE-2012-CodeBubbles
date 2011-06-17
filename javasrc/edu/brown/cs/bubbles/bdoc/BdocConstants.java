@@ -139,7 +139,7 @@ int BUBBLE_HEIGHT = 350;
 /**
  *	Default width of the description part of a documentation bubble
  **/
-int DESCRIPTION_WIDTH = 300;
+int DESCRIPTION_WIDTH = 400;
 
 
 /**

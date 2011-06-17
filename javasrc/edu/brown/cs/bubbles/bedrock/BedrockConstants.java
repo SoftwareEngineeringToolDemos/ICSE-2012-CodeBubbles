@@ -103,6 +103,7 @@ enum BedrockDebugAction {
 
 String	BEDROCK_LAUNCH_ID_PROP = "edu.brown.cs.bubbles.bedrock.ID";
 String	BEDROCK_LAUNCH_ORIGID_PROP = "edu.brown.cs.bubbles.bedrock.ORIGID";
+String	BEDROCK_LAUNCH_IGNORE_PROP = "edu.brown.cs.bubbles.bedrock.IGNORE";
 
 
 

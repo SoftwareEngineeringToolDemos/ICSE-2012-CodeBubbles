@@ -73,12 +73,12 @@ private JButton 		revert_button;
 private JButton 		clone_button;
 private JComboBox		project_name;
 private JComboBox		start_class;
-private JCheckBox               stop_in_main;
+private JCheckBox		stop_in_main;
 private JTextComponent		test_class;
 private JTextComponent		test_name;
 private JTextComponent		host_name;
 private SwingNumericField	port_number;
-private boolean			doing_load;
+private boolean 		doing_load;
 
 
 
@@ -117,7 +117,7 @@ BddtLaunchBubble(BumpLaunchConfig cfg)
 private void setupPanel()
 {
    doing_load = true;
-   
+
    SwingGridPanel pnl = new SwingGridPanel();
    pnl.beginLayout();
    launch_name = pnl.addTextField("Launch Name",launch_config.getConfigName(),null,this);
@@ -138,7 +138,7 @@ private void setupPanel()
 
    List<String> starts = new ArrayList<String>();
    BassRepository br = BassFactory.getRepository(BassConstants.SearchType.SEARCH_CODE);
-   for (BassName bn : br.getAllNames()) { 
+   for (BassName bn : br.getAllNames()) {
       if (lp == null || bn.getProject().equals(lp)) {
 	 if (bn.getName().endsWith(".main") &&
 		  bn.getNameType() == BassNameType.METHOD &&
@@ -157,13 +157,13 @@ private void setupPanel()
    test_name = null;
    host_name = null;
    port_number = null;
-   
+
 
    switch (launch_config.getConfigType()) {
       case JAVA_APP :
 	 start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
 	 start_class.setEditable(true);
-         stop_in_main = pnl.addBoolean("Stop in Main",launch_config.getStopInMain(),this);
+	 stop_in_main = pnl.addBoolean("Stop in Main",launch_config.getStopInMain(),this);
 	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
 	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
 	 break;
@@ -171,7 +171,7 @@ private void setupPanel()
 	 test_class = pnl.addTextField("Test Class",launch_config.getMainClass(),null,this);
 	 test_name = pnl.addTextField("Test Name",launch_config.getTestName(),null,this);
 	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
-	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);         
+	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
 	 break;
       case REMOTE_JAVA :
 	 host_name = pnl.addTextField("Remote Host",launch_config.getRemoteHost(),null,this);
@@ -186,7 +186,7 @@ private void setupPanel()
    clone_button = pnl.addBottomButton("Clone","CLONE",this);
    pnl.addBottomButtons();
    fixButtons();
-   
+
    doing_load = false;
 
    setContentPane(pnl,arg_area);
@@ -201,7 +201,7 @@ private void fixButtons()
    if (debug_button == null) return;
 
    boolean working = (edit_config != null || launch_config.isWorkingCopy());
-   
+
    debug_button.setEnabled(!working);
    save_button.setEnabled(working);
    revert_button.setEnabled(edit_config != null);
@@ -212,7 +212,7 @@ private void fixButtons()
 private void reload()
 {
    doing_load = true;
-   
+
    if (launch_name != null) launch_name.setText(launch_config.getConfigName());
    if (arg_area != null) arg_area.setText(launch_config.getArguments());
    if (vmarg_area != null) vmarg_area.setText(launch_config.getVMArguments());
@@ -221,7 +221,7 @@ private void reload()
    if (test_name != null) test_name.setText(launch_config.getTestName());
    if (host_name != null) host_name.setText(launch_config.getRemoteHost());
    if (port_number != null) port_number.setValue(launch_config.getRemotePort());
-   
+
    doing_load = false;
 }
 
@@ -332,7 +332,7 @@ private String getNewName()
    else if (cmd.equals("Stop in Main")) {
       if (edit_config == null) edit_config = launch_config;
       if (edit_config != null && stop_in_main != null) {
-         edit_config = edit_config.setStopInMain(stop_in_main.isSelected());
+	 edit_config = edit_config.setStopInMain(stop_in_main.isSelected());
        }
     }
    else if (cmd.equals("Project")) {
@@ -351,7 +351,7 @@ private String getNewName()
 @Override public void undoableEditHappened(UndoableEditEvent e)
 {
    Document doc = (Document) e.getSource();
-   
+
    if (doing_load) return;
 
    if (isArea(arg_area,doc)) {
@@ -360,7 +360,7 @@ private String getNewName()
     }
    else if (isArea(vmarg_area,doc)) {
       if (edit_config == null) edit_config = launch_config;
-      edit_config = edit_config.setVMArguments(vmarg_area.getText());	
+      edit_config = edit_config.setVMArguments(vmarg_area.getText());
     }
    else if (isArea(test_name,doc)) {
       if (edit_config == null) edit_config = launch_config;

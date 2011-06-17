@@ -51,6 +51,8 @@ import org.jivesoftware.smack.XMPPException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.swing.text.Document;
+
 
 class BgtaAimManager extends BgtaManager {
 
@@ -74,9 +76,16 @@ private IcbmListener		   conversation_listener;
 /*										*/
 /********************************************************************************/
 
+BgtaAimManager(String username,String password)
+{
+   this(username,password,ChatServer.AIM);
+}
+
 BgtaAimManager(String username,String password,ChatServer server)
 {
-   super(username,password,server);
+    super(username,password,ChatServer.AIM);
+    if (!server.equals(ChatServer.AIM))
+        BoardLog.logE("BGTA","AIM manager created with ChatServer: " + server.server() + " instead of AIM.");
 }
 
 @Override void login() throws XMPPException
@@ -86,6 +95,7 @@ BgtaAimManager(String username,String password,ChatServer server)
 
 @Override void login(String username,String password) throws XMPPException
 {
+   BoardLog.logD("BGTA","Starting login process for " + username + " on server: login.messaging.aol.com");
    Screenname screenname = new Screenname(username);
    AimSession aimSession = new DefaultAppSession().openAimSession(screenname);
    AimConnectionProperties props = new AimConnectionProperties(screenname,password);
@@ -107,7 +117,7 @@ BgtaAimManager(String username,String password,ChatServer server)
    the_connection.connect();
    if (the_connection.getState() == State.FAILED) {
       BoardLog.logE("BGTA", "Error connecting to AIM via OSCAR protocol.");
-      throw new XMPPException("Error connecting to AIM server.");
+      throw new XMPPException("Error connecting to AIM via OSCAR protocol.");
     }
    try {
       Thread.sleep(2000);
@@ -156,6 +166,7 @@ BgtaAimManager(String username,String password,ChatServer server)
       throw new XMPPException("Error connecting to AIM server.");
     }
    the_roster = new BgtaAIMRoster(ssi.getBuddyList());
+   BoardLog.logD("BGTA","Successfully logged into login.messaging.aol.com with username: " + username + ".");
 }
 
 
@@ -163,16 +174,13 @@ BgtaAimManager(String username,String password,ChatServer server)
 @Override void disconnect()
 {
    the_connection.disconnect();
-   for (BgtaBubble bub : existing_bubbles) {
-      bub.disposeBubble();
-    }
-   existing_bubbles.clear();
-   existing_conversations.clear();
+   existing_chats.clear();
 }
 
 
 
-@Override void removeConversation(BgtaConversation chat,MessageListener list) {
+@Override @Deprecated void removeConversation(BgtaConversation chat,MessageListener list)
+{
    if (chat.close())
       existing_conversations.removeElement(chat);
 }
@@ -187,9 +195,9 @@ BgtaAimManager(String username,String password,ChatServer server)
 
 
 
-@Override BgtaConversation startChat(String username,MessageListener list,BgtaBubble using)
+@Override @Deprecated BgtaConversation startChat(String username,MessageListener list,BgtaBubble using)
 {
-   if (!hasConversation(username)) {
+   if (!hasChat(username)) {
       Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
       AIMConversationListener listener = new AIMConversationListener();
       con.addConversationListener(listener);
@@ -202,6 +210,19 @@ BgtaAimManager(String username,String password,ChatServer server)
       return super.getExistingConversation(username);
 }
 
+
+@Override Document startChat(String username,BgtaBubble using)
+{
+    if (!hasChat(username)) {
+        Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
+        String name = ((BgtaAIMRosterEntry) the_roster.getEntry(username)).getBuddy().getAlias();
+        BgtaChat chat = new BgtaChat(username,name,ChatServer.AIM,con,getExistingDoc(username));
+        existing_bubbles.add(using);
+        existing_chats.put(username,chat);
+        existing_docs.put(username,chat.getDocument());
+     }
+    return getExistingDoc(username);
+}
 
 
 /**
@@ -345,6 +366,10 @@ class BgtaAIMRosterEntry implements BgtaRosterEntry {
 
    Screenname getScreenname() {
       return the_entry.getScreenname();
+    }
+   
+   Buddy getBuddy() {
+       return the_entry;
     }
 
 }	// end of inner class BgtaAIMRosterEntry

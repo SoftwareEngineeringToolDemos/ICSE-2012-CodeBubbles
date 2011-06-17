@@ -44,19 +44,19 @@ class BowiTaskManager {
       //if(!is_happening.contains(btt)) {
       switch(btt) {
       	case SAVE:
-	case EXPAND_ELLISONS:
-	case CREATE_BUBBLE:
-	case LOGIN_TO_CHAT:      
-	case FIND_ALL_REFERENCES:
-	case GO_TO_DEFINITION:
-	case TEXT_SEARCH:
-	case GO_TO_IMPLEMENTATION:
-	default:
-	   if(wait_cursor == 0) buda_root.startWaitCursor();
-	      wait_cursor++;
-	      break;
+    case EXPAND_ELLISONS:
+    case CREATE_BUBBLE:
+    case LOGIN_TO_CHAT:      
+    case FIND_ALL_REFERENCES:
+    case GO_TO_DEFINITION:
+    case TEXT_SEARCH:
+    case GO_TO_IMPLEMENTATION:
+    default:
+       if(wait_cursor == 0) buda_root.startWaitCursor();
+          wait_cursor++;
+          break;
       }
-	 //is_happening.put(btt, new Boolean(true));
+     //is_happening.put(btt, new Boolean(true));
       //}
    }
    

@@ -91,7 +91,7 @@ public class BowiFactory {
     */
    public static void startTask(BowiTaskType tostart) {
       if (my_task_manager != null)
-	 my_task_manager.startTask(tostart);
+     my_task_manager.startTask(tostart);
    }
    
    /**

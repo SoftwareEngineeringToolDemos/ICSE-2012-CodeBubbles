@@ -58,15 +58,14 @@ private XMPPConnection             the_connection;
 private static XMPPConnection      stat_con;
 private RosterListener             roster_listener;
 private BgtaRepository             the_repository;
-private Map<String, BgtaChat>      existing_chats;
-private Map<String, Document>      existing_docs;
 
 protected String                   user_name;
 protected String                   user_password;
 protected ChatServer               user_server;
 protected boolean                  being_saved;
 protected Vector<BgtaBubble>       existing_bubbles;
-protected Vector<BgtaConversation> existing_conversations;
+@Deprecated protected Vector<BgtaConversation> existing_conversations;
+protected Map<String, BgtaChat>    existing_chats;protected Map<String, Document>    existing_docs;
 protected BgtaRoster               the_roster;
 
 
@@ -224,6 +223,7 @@ void login() throws XMPPException
 
 void login(String username,String password,ChatServer server) throws XMPPException
 {
+   BoardLog.logD("BGTA", "Starting login process for " + username + " on server: " + server.server());
    String serv = server.server();
    String host = server.host();
    
@@ -247,11 +247,12 @@ void login(String username,String password,ChatServer server) throws XMPPExcepti
    try {
    	the_connection.connect();
    	the_connection.login(username, password);
-    } catch (Exception e) {
+    } catch (XMPPException e) {
    	the_connection.disconnect();
-   	throw new XMPPException("Could not login to XMPP server. Please try again.");
+        BoardLog.logE("BGTA","Error connecting to " + server.server() + ": ",e);
+   	throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
     }
-   if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to server.");
+    if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
 
    // Add a listener for messages as well as for roster updates.
    Message m = new Message();
@@ -259,6 +260,7 @@ void login(String username,String password,ChatServer server) throws XMPPExcepti
    roster_listener = new BgtaRosterListener();
    the_connection.getRoster().addRosterListener(roster_listener);
    the_roster = new BgtaXMPPRoster(the_connection.getRoster());
+   BoardLog.logD("BGTA","Successfully logged into " + server.server() + " with username: " + username + ".");
 }
 
 
@@ -447,7 +449,7 @@ Document getExistingDoc(String username)
 void disconnect()
 {
    the_connection.disconnect();
-   existing_conversations.clear();
+   existing_chats.clear();
    roster_listener = null;
 }
 

@@ -86,13 +86,13 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
    if (!server.equals("aim")) {
       is_xmpp = true;
       the_chat = (Chat) chat;
-      the_chat.addMessageListener(new ChatListener());
+      the_chat.addMessageListener(new XMPPChatListener());
     }
    else {
       the_conversation = (Conversation) chat;
       //TODO: fix AIM listener
 //      conversation_listener = (ConversationListener) listener;
-//      the_conversation.addConversationListener(new AIMListener());
+      the_conversation.addConversationListener(new AIMChatListener());
    }
    
    // Create a new Document for this user if one doesn't exist.
@@ -332,7 +332,7 @@ void close()
  * @author Sumner Warren
  *
  */
-private class ChatListener implements MessageListener {
+private class XMPPChatListener implements MessageListener {
 
 @Override public void processMessage(Chat ch,Message msg) {
    if (msg.getType() == Message.Type.chat) {
@@ -360,7 +360,44 @@ private class ChatListener implements MessageListener {
     }
  }
 
-}  // end of inner class ChatListener
+}  // end of inner class XMPPChatListener
+
+
+
+private class AIMChatListener implements ConversationListener {
+
+	@Override
+	public void canSendMessageChanged(Conversation arg0, boolean arg1) { }
+
+	@Override
+	public void conversationClosed(Conversation arg0) { }
+
+	@Override
+	public void conversationOpened(Conversation arg0) { }
+
+	@Override
+	public void gotMessage(Conversation arg0, MessageInfo arg1) {
+		// TODO: fill this in
+		
+	}
+
+	@Override
+	public void gotOtherEvent(Conversation arg0, ConversationEventInfo arg1) {
+		// TODO: metadata?
+	}
+
+	@Override
+	public void sentMessage(Conversation arg0, MessageInfo arg1) {
+		// TODO: I don't think I need anything here.
+	}
+
+	@Override
+	public void sentOtherEvent(Conversation arg0, ConversationEventInfo arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}  // end of inner class AIMChatListener
 
 
 

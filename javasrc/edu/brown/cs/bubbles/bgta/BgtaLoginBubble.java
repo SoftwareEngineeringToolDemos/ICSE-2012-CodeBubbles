@@ -283,7 +283,7 @@ private class LoginListener implements ActionListener {
       }
      if (putin) {
         if (selected_server == ChatServer.AIM) {
-           newman = new BgtaAimManager(username,password,selected_server);
+           newman = new BgtaAimManager(username,password);
          }
         else {
            newman = new BgtaManager(username,password,selected_server,my_repository);

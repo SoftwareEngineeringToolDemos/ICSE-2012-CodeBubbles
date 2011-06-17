@@ -301,9 +301,10 @@ private BoardUpdate(String [] args)
    jar_file = null;
    java_args = new ArrayList<String>();
    max_memory = 0;
+   boolean ourargs = true;
 
    for (int i = 0; i < args.length; ++i) {
-      if (args[i].startsWith("-")) {
+      if (args[i].startsWith("-") && ourargs) {
 	 if (args[i].startsWith("-m")) {
 	    try {
 	       max_memory = Long.parseLong(args[i].substring(2));
@@ -312,15 +313,21 @@ private BoardUpdate(String [] args)
 	       max_memory = 0;
 	     }
 	  }
-	 else if (args[i].startsWith("-p") && i+1 < args.length) {
+	 else if (args[i].startsWith("-P") && i+1 < args.length) {
 	    setupProxy(args[++i]);
+	  }
+	 else if (args[i].startsWith("-X")) {
+	    ourargs = false;
 	  }
 	 else {
 	    System.err.println("BOARDUPDATE: Illegal argument: " + args[i]);
 	  }
        }
       else if (jar_file == null) jar_file = args[i];
-      else java_args.add(args[i]);
+      else {
+	 ourargs = false;
+	 java_args.add(args[i]);
+       }
     }
 
    if (jar_file == null) badArgs();
@@ -364,23 +371,34 @@ private void startUpdate() throws IOException
    System.err.println("BUBBLES: Starting update");
 
    if (java_args == null) java_args = new ArrayList<String>();
-   java_args.add(0,"java");
-   java_args.add(1,"-jar");
-   java_args.add(2,f.getPath());
-   java_args.add(3,jar_file);
-   java_args.add(4,"-m" + Runtime.getRuntime().maxMemory());
+   int ln = java_args.size();
+
+   int idx = 0;
+   java_args.add(idx++,"java");
+
+   java_args.add(idx++,"-jar");
+   java_args.add(idx++,f.getPath());
+
+   java_args.add(idx++,jar_file);
+   java_args.add(idx++,"-m" + Runtime.getRuntime().maxMemory());
    try {
       if (update_proxy != null && update_proxy != Proxy.NO_PROXY) {
 	 String pstr = update_proxy.type().toString();
 	 InetSocketAddress sa = (InetSocketAddress) update_proxy.address();
 	 pstr += ":" + sa.getHostName() + ":" + sa.getPort();
-	 java_args.add(5,"-p");
-	 java_args.add(6,pstr);
+	 java_args.add(idx++,"-P");
+	 java_args.add(idx++,pstr);
        }
     }
    catch (Throwable t) {
       BoardLog.logE("BOARD","Problem getting proxy info for updater",t);
     }
+
+   if (ln > 0) java_args.add(idx++,"-X");
+
+   System.err.print("BUBBLES:");
+   for (String s : java_args) System.err.print(" " + s);
+   System.err.println();
 
    ProcessBuilder pb = new ProcessBuilder(java_args);
    pb.start();
@@ -487,6 +505,16 @@ private void setupUpdate()
       args.add(jf0.getPath());
       args.add("edu.brown.cs.bubbles.board.BoardSetup");
       args.add("-update");
+      if (java_args != null) {
+	 for (int i = 0; i < java_args.size(); ++i) {
+	    if (java_args.get(i).equals("-p")) {
+	       args.add("-p");
+	       args.add(java_args.get(i+1));
+	     }
+	  }
+	 args.add("-X");
+	 for (String s : java_args) args.add(s);
+       }
 
       ProcessBuilder pb = new ProcessBuilder(args);
 

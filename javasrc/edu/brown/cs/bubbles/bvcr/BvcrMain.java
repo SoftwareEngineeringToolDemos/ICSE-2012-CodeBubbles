@@ -28,6 +28,7 @@ package edu.brown.cs.bubbles.bvcr;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.exec.IvySetup;
 
 
 import java.util.*;
@@ -109,6 +110,8 @@ private BvcrMain(String [] args)
    change_map = new HashMap<String,BvcrChangeSet>();
 
    scanArgs(args);
+
+   IvySetup.setup();
 }
 
 

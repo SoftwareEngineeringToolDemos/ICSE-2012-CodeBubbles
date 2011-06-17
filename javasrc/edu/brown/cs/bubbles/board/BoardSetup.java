@@ -175,7 +175,7 @@ private BoardSetup()
    eclipse_directory = system_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    default_workspace = system_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
    ask_workspace = system_properties.getBoolean(BOARD_PROP_ECLIPSE_ASK_WS,true);
-   run_foreground = system_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,true);
+   run_foreground = system_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,false);
 
    BoardProperties bp = BoardProperties.getProperties("Board");
    update_proxy = bp.getProperty("Board.update.proxy");
@@ -214,8 +214,13 @@ private BoardSetup(String [] args)
 
 private void scanArgs(String [] args)
 {
+   List<String> javaargs = null;
+
    for (int i = 0; i < args.length; ++i) {
-      if (args[i].startsWith("-")) {
+      if (javaargs != null) {
+	 javaargs.add(args[i]);
+       }
+      else if (args[i].startsWith("-")) {
 	 if (args[i].startsWith("-f")) {                                // -force
 	    force_setup = true;
 	  }
@@ -240,10 +245,18 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-nosp")) {                        // -nosplash
 	    show_splash = false;
 	  }
+	 else if (args[i].startsWith("-p") && i+1 < args.length) {      // -prop <propdir>
+	    BoardProperties.setPropertyDirectory(args[++i]);
+	  }
+	 else if (args[i].startsWith("-X")) {                           // -X <run args...>
+	    javaargs = new ArrayList<String>();
+	  }
 	 else badArgs();
        }
       else badArgs();
     }
+
+   if (javaargs != null) setJavaArgs(javaargs);
 }
 
 
@@ -651,7 +664,7 @@ public boolean doSetup()
       system_properties.setProperty(BOARD_PROP_ECLIPSE_WS,default_workspace);
     }
 
-   BoardLog.setup();
+   if (!must_restart) BoardLog.setup();
 
    if (install_jar) {
       setSplashTask("Checking libraries");
@@ -1024,7 +1037,7 @@ private void checkJarLibraries()
    if (!libd.exists()) libd.mkdir();
 
    for (String s : BOARD_LIBRARY_FILES) {
-      must_restart |= extractLibraryResource(s,libd,false);
+      must_restart |= extractLibraryResource(s,libd,update_setup);
     }
 
    for (String s : BOARD_LIBRARY_EXTRAS) {
@@ -1322,6 +1335,7 @@ private void restartBubbles()
 	 args.add(idx++,"-Xdebug");
 	 args.add(idx++,"-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n");
        }
+
       args.add(idx++,BOARD_RESTART_CLASS);
       args.add(idx++,"-nosetup");
       ProcessBuilder pb = new ProcessBuilder(args);

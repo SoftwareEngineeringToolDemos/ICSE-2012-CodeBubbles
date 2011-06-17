@@ -26,7 +26,7 @@ package edu.brown.cs.bubbles.batt;
 
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.exec.IvyExec;
+import edu.brown.cs.ivy.exec.*;
 import edu.brown.cs.ivy.xml.*;
 
 import org.w3c.dom.*;
@@ -125,6 +125,8 @@ private BattMain(String [] args)
     }
 
    scanArgs(args);
+
+   IvySetup.setup();
 }
 
 

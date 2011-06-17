@@ -63,34 +63,8 @@ public class BeamFactory implements BeamConstants, BudaConstants.ButtonListener
 /*										*/
 /********************************************************************************/
 
-private static BeamFactory	the_factory;
+private static BeamFactory	the_factory = null;
 
-
-
-static {
-   the_factory = new BeamFactory();
-   BudaRoot.addBubbleConfigurator("BEAM",new BeamConfigurator());
-   BudaRoot.registerMenuButton(NOTE_BUTTON,the_factory);
-   // BudaRoot.registerMenuButton(WEB_BUTTON,the_factory);
-   BudaRoot.registerMenuButton(FLAG_BUTTON,the_factory, imageToFlagIcon(FLAG_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_FIXED_BUTTON,the_factory, imageToFlagIcon(FLAG_FIXED_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_WARNING_BUTTON,the_factory, imageToFlagIcon(FLAG_WARNING_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_ACTION_BUTTON,the_factory, imageToFlagIcon(FLAG_ACTION_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_BOMB_BUTTON,the_factory, imageToFlagIcon(FLAG_BOMB_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_BUG_BUTTON,the_factory, imageToFlagIcon(FLAG_BUG_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_CLOCK_BUTTON,the_factory, imageToFlagIcon(FLAG_CLOCK_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_DATABASE_BUTTON,the_factory, imageToFlagIcon(FLAG_DATABASE_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_FISH_BUTTON,the_factory, imageToFlagIcon(FLAG_FISH_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_IDEA_BUTTON,the_factory, imageToFlagIcon(FLAG_IDEA_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_INVESTIGATE_BUTTON,the_factory, imageToFlagIcon(FLAG_INVESTIGATE_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_LINK_BUTTON,the_factory, imageToFlagIcon(FLAG_LINK_IMAGE));
-   BudaRoot.registerMenuButton(FLAG_STAR_BUTTON,the_factory, imageToFlagIcon(FLAG_STAR_IMAGE));
-   BudaRoot.registerMenuButton(PROBLEM_BUTTON,the_factory);
-   BudaRoot.registerMenuButton(TASK_BUTTON,the_factory);
-   BudaRoot.registerMenuButton(HELP_HOME_BUTTON,the_factory);
-   BudaRoot.registerMenuButton(HELP_VIDEO_BUTTON,the_factory);
-   BudaRoot.registerMenuButton(HELP_WIKI_BUTTON,the_factory);
-}
 
 
 /********************************************************************************/
@@ -103,8 +77,11 @@ static {
  *	Return the singleton instance of the miscellaneous bubble factory.
  **/
 
-public static BeamFactory getFactory()
+public static synchronized BeamFactory getFactory()
 {
+   if (the_factory == null) {
+      the_factory = new BeamFactory();
+    }
    return the_factory;
 }
 
@@ -127,7 +104,26 @@ private BeamFactory()				{ }
 
 public static void setup()
 {
-   // work is done by the static initializer
+   BudaRoot.addBubbleConfigurator("BEAM",new BeamConfigurator());
+   BudaRoot.registerMenuButton(NOTE_BUTTON,getFactory());
+   BudaRoot.registerMenuButton(FLAG_BUTTON,getFactory(), imageToFlagIcon(FLAG_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_FIXED_BUTTON,getFactory(), imageToFlagIcon(FLAG_FIXED_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_WARNING_BUTTON,getFactory(), imageToFlagIcon(FLAG_WARNING_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_ACTION_BUTTON,getFactory(), imageToFlagIcon(FLAG_ACTION_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_BOMB_BUTTON,getFactory(), imageToFlagIcon(FLAG_BOMB_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_BUG_BUTTON,getFactory(), imageToFlagIcon(FLAG_BUG_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_CLOCK_BUTTON,getFactory(), imageToFlagIcon(FLAG_CLOCK_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_DATABASE_BUTTON,getFactory(), imageToFlagIcon(FLAG_DATABASE_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_FISH_BUTTON,getFactory(), imageToFlagIcon(FLAG_FISH_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_IDEA_BUTTON,getFactory(), imageToFlagIcon(FLAG_IDEA_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_INVESTIGATE_BUTTON,getFactory(), imageToFlagIcon(FLAG_INVESTIGATE_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_LINK_BUTTON,getFactory(), imageToFlagIcon(FLAG_LINK_IMAGE));
+   BudaRoot.registerMenuButton(FLAG_STAR_BUTTON,getFactory(), imageToFlagIcon(FLAG_STAR_IMAGE));
+   BudaRoot.registerMenuButton(PROBLEM_BUTTON,getFactory());
+   BudaRoot.registerMenuButton(TASK_BUTTON,getFactory());
+   BudaRoot.registerMenuButton(HELP_HOME_BUTTON,getFactory());
+   BudaRoot.registerMenuButton(HELP_VIDEO_BUTTON,getFactory());
+   BudaRoot.registerMenuButton(HELP_WIKI_BUTTON,getFactory());
 }
 
 

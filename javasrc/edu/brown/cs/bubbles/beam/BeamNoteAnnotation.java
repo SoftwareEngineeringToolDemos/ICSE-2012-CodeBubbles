@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -66,12 +66,11 @@ private Position note_position;
 
 
 private static Color annot_color;
-private static Icon  note_icon;
+private static Icon  note_icon = null;
 
 static {
    annot_color = new Color(0x40ffff00);
    annot_color = null;
-   note_icon = BoardImage.getIcon("note");
 }
 
 
@@ -130,16 +129,28 @@ BeamNoteAnnotation(Element xml)
 /********************************************************************************/
 
 @Override public File getFile() 			{ return for_file; }
+
 @Override public int getDocumentOffset() {
    if (note_position == null) return -1;
    return note_position.getOffset();
 }
-@Override public Icon getIcon() 			{ return note_icon; }
+
+@Override public synchronized Icon getIcon()	
+{
+   if (note_icon == null) {
+      note_icon = BoardImage.getIcon("note");
+    }
+   return note_icon;
+}
+
 @Override public String getToolTip()			{ return "Note Bubble"; }
+
 @Override public Color getLineColor()			{ return annot_color; }
+
 @Override public boolean getForceVisible(BudaBubble bbl) {
    return false;
 }
+
 @Override public int getPriority()			{ return 2; }
 
 @Override public void addPopupButtons(JPopupMenu m)

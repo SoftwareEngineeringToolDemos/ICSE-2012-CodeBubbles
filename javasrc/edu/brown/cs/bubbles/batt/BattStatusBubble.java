@@ -290,11 +290,12 @@ enum BarType {
    RUNNING,
    PENDING,
    CANT_RUN,
+   STOPPED,
    NEED_FAILURE,
    FAILURE
 }
 
-private static final int NUM_BAR_TYPES = 7;
+private static final int NUM_BAR_TYPES = 8;
 private static final int BAR_INSET = 3;
 
 private static final Paint [] bar_colors = new Color [] {
@@ -303,6 +304,7 @@ private static final Paint [] bar_colors = new Color [] {
    Color.YELLOW,
    Color.GRAY,
    Color.BLACK,
+   new Color(255,192,64),
    new Color(255,128,0),
    Color.RED
 };
@@ -311,6 +313,8 @@ private static final Paint [] bar_colors = new Color [] {
 private BarType getTestType(BattTestCase btc)
 {
    switch (btc.getState()) {
+      case STOPPED :
+	 return BarType.STOPPED;
       case CANT_RUN :
 	 return BarType.CANT_RUN;
       case EDITED :

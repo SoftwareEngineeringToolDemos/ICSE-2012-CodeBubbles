@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bgta;
@@ -53,7 +53,8 @@ public class BgtaFactory implements BgtaConstants
 /*										*/
 /********************************************************************************/
 
-private static BgtaFactory				the_factory;
+private static BgtaFactory		the_factory = null;
+
 private static Vector<BgtaManager>	chat_managers;
 private static BgtaRepository			buddy_list;
 private static BoardProperties		login_properties;
@@ -62,48 +63,51 @@ private static boolean					rec_dif_back;
 private static JMenu						metadata_menu;
 
 static {
-	the_factory = new BgtaFactory();
-	login_properties = BoardProperties.getProperties("Bgta");
-	chat_managers = new Vector<BgtaManager>();
-
-	// TODO: Needs to be altered to match spr's guidelines for property storage
-	for (int i = 0; i < login_properties.getInt(BGTA_NUM_ACCOUNTS); i++) {
-		try {
-			BgtaManager man = new BgtaManager(login_properties
-					.getProperty(BGTA_USERNAME_PREFIX + i),login_properties
-					.getProperty(BGTA_PASSWORD_PREFIX + i),login_properties
-					.getProperty(BGTA_SERVER_PREFIX + i));
-			man.setBeingSaved(true);
-			chat_managers.add(man);
-		} catch (XMPPException e) {
-			System.err.println("BGTA: COULDN'T LOAD ACCOUNT FOR "
-					+ login_properties.getProperty(BGTA_USERNAME_PREFIX + i));
-		}
-
-	}
-	buddy_list = new BgtaRepository(chat_managers);
-	rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
-	BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_PEOPLE,
-			buddy_list);
-	BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,
-			buddy_list);
-	BudaRoot.addBubbleConfigurator("BGTA",new BgtaConfigurator());
+   chat_managers = new Vector<BgtaManager>();
 }
+
+
 
 /********************************************************************************/
 /*										*/
-/* Setup methods */
+/*	Setup methods								*/
 /*										*/
 /********************************************************************************/
 
 public static void setup()
 {
-	// work is done by static initializer
+   login_properties = BoardProperties.getProperties("Bgta");
+
+   // TODO: Needs to be altered to match spr's guidelines for property storage
+   for (int i = 0; i < login_properties.getInt(BGTA_NUM_ACCOUNTS); i++) {
+      try {
+	 BgtaManager man = new BgtaManager(
+		  login_properties.getProperty(BGTA_USERNAME_PREFIX + i),
+		  login_properties.getProperty(BGTA_PASSWORD_PREFIX + i),
+		  login_properties.getProperty(BGTA_PASSWORD_PREFIX + i));
+	 man.setBeingSaved(true);
+	 chat_managers.add(man);
+      }
+      catch (XMPPException e) {
+	 System.err.println("BGTA: COULDN'T LOAD ACCOUNT FOR "
+		  + login_properties.getProperty(BGTA_USERNAME_PREFIX + i));
+      }
+
+   }
+   buddy_list = new BgtaRepository(chat_managers);
+   rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
+   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_PEOPLE, buddy_list);
+   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, buddy_list);
+   BudaRoot.addBubbleConfigurator("BGTA", new BgtaConfigurator());
 }
 
-public static BgtaFactory getFactory()
+
+public static synchronized BgtaFactory getFactory()
 {
-	return the_factory;
+   if (the_factory == null) {
+      the_factory = new BgtaFactory();
+    }
+   return the_factory;
 }
 
 public static void initialize(BudaRoot br)
@@ -132,6 +136,7 @@ static void addManagerProperties(String usnm,String psswd,String svr)
 	}
 }
 
+
 static void clearManagerProperties()
 {
 	login_properties.clear();
@@ -141,6 +146,7 @@ static void clearManagerProperties()
 	} catch (IOException e) {
 	}
 }
+
 
 static void altColorUponRecieve(boolean b)
 {
@@ -152,9 +158,14 @@ static void altColorUponRecieve(boolean b)
 	}
 }
 
+
 static void logoutAllAccounts()
-{
-}
+{ }
+
+
+//static boolean logoutAccount(String username,String password,String server)
+//{
+//}
 
 static boolean logoutAccount(String username,String server)
 {
@@ -190,6 +201,7 @@ static void registerUserViaGateway(String username,String password,String server
 		}
 	}
 }
+
 
 @SuppressWarnings("deprecation")
 static void unregisterUserViaGateway(String username,String server)

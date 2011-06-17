@@ -71,7 +71,6 @@ public static void main(String [] args)
    new SwingSetup();
 
    BoardSetup bs = new BoardSetup(args);
-
    bs.doSetup();
 
    System.exit(0);
@@ -598,8 +597,10 @@ public boolean doSetup()
 
    if (setup_count != 0 && default_workspace != null && eclipse_directory != null) {
       BoardLog.setup();
-      if (setup_count < 0) BoardUpdate.setVersion();
-      setupPaths();
+      if (setup_count < 0) {
+	 BoardUpdate.setVersion();
+	 setupPaths();
+       }
       return false;
     }
 
@@ -652,12 +653,14 @@ public boolean doSetup()
 
    BoardLog.setup();
 
-   setSplashTask("Checking libraries");
-   String cp = System.getProperty("java.class.path");
-   for (String s : BOARD_LIBRARY_FILES) {
-      if (!s.endsWith(".jar")) continue;
-      s = s.replace('/',File.separatorChar);
-      if (!cp.contains(s)) must_restart = true;
+   if (install_jar) {
+      setSplashTask("Checking libraries");
+      String cp = System.getProperty("java.class.path");
+      for (String s : BOARD_LIBRARY_FILES) {
+	 if (!s.endsWith(".jar")) continue;
+	 s = s.replace('/',File.separatorChar);
+	 if (!cp.contains(s)) must_restart = true;
+      }
     }
 
    if (must_restart) {

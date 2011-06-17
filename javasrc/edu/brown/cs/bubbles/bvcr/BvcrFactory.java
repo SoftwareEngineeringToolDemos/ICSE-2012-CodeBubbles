@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -48,14 +48,7 @@ public class BvcrFactory implements BvcrConstants, MintConstants
 
 private boolean 		server_running;
 
-private static BvcrFactory	the_factory;
-
-
-
-static {
-   the_factory = new BvcrFactory();
-}
-
+private static BvcrFactory	the_factory = null;
 
 
 
@@ -65,8 +58,11 @@ static {
 /*										*/
 /********************************************************************************/
 
-public static BvcrFactory getFactory()		{ return the_factory; }
-
+public static BvcrFactory getFactory()
+{
+   if (the_factory == null) the_factory = new BvcrFactory();
+   return the_factory;
+}
 
 
 private BvcrFactory()
@@ -91,7 +87,7 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
-   the_factory.startBvcrServer();
+   getFactory().startBvcrServer();
 }
 
 

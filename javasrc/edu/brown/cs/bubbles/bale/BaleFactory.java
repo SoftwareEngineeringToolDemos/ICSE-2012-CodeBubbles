@@ -74,16 +74,12 @@ private SwingEventListenerList<BaleContextListener> context_listeners;
 
 private static BaleFactory	the_factory;
 
-private static BumpClient      bump_client;
+private static BumpClient      bump_client = null;
 
 static {
-   bump_client = BumpClient.getBump();
-   bump_client.startIDE();
-
    BaleConfigurator bc = new BaleConfigurator();
    BudaRoot.addBubbleConfigurator("BALE",bc);
    BudaRoot.addPortConfigurator("BALE",bc);
-   BuenoFactory.getFactory().addInsertionHandler(new BaleInserter());
 }
 
 
@@ -98,6 +94,8 @@ static {
 
 private BaleFactory()
 {
+   bump_client.startIDE();
+
    file_documents = new HashMap<File,BaleDocumentIde>();
    style_context = new StyleContext();
    bale_attributes = new BoardAttributes("Bale");
@@ -129,6 +127,8 @@ public synchronized static BaleFactory getFactory()
 public static void setup()
 {
    // work done in static initializer
+
+   BuenoFactory.getFactory().addInsertionHandler(new BaleInserter());
 }
 
 
@@ -139,6 +139,8 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
+   bump_client = BumpClient.getBump();
+
    bump_client.addOpenEditorBubbleHandler(new BaleOpenEditorHandler(br));
 }
 
@@ -403,9 +405,9 @@ public BudaBubble createSystemMethodBubble(String proj,String fct,File src)
 {
    // this doesn't do what we want it to
    List<BumpLocation> locs = bump_client.findMethod(proj,fct,true);
-   
+
    if (locs == null || locs.isEmpty()) return null;
-   
+
    // need to create a bubble using the given file here
 
    return null;

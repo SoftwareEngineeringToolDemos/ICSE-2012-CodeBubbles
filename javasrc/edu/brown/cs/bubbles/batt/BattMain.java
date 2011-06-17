@@ -156,6 +156,9 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-a") && i+1 < args.length) {      // -a <agent jar>
 	    bubbles_agentjar = args[++i];
 	  }
+	 else if (args[i].startsWith("-l") && i+1 < args.length) {      // -l <junit.jar>
+	    junit_jar = args[++i];
+	  }
 	 else if (args[i].startsWith("-b") && i+1 < args.length) {      // -j <java arg>
 	    java_args.add(args[++i]);
 	  }

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -76,29 +76,6 @@ private static Map<BassRepository,BassTreeModelBase> repository_map;
 
 
 
-static {
-   use_repositories = new HashMap<SearchType,Set<BassRepository>>();
-   use_repositories.put(SearchType.SEARCH_ALL,new HashSet<BassRepository>());
-
-   bass_repository = new BassRepositoryLocation();
-   registerRepository(SearchType.SEARCH_CODE,bass_repository);
-   registerRepository(SearchType.SEARCH_EXPLORER,bass_repository);
-
-   the_factory = new BassFactory();
-   BudaRoot.registerSearcher(the_factory);
-   BudaRoot.addBubbleConfigurator("BASS",new BassConfigurator());
-   package_explorers = new HashMap<BudaBubbleArea,BassBubble>();
-
-   BudaRoot.registerMenuButton("Package Explorer",new PackageExplorerButton());
-   BudaRoot.registerMenuButton("Text Search",new TextSearchButton());
-
-   repository_map = new HashMap<BassRepository,BassTreeModelBase>();
-
-   the_factory.addPopupHandler(new BassCreator());
-   the_factory.addPopupHandler(new ProjectProps());
-}
-
-
 /********************************************************************************/
 /*										*/
 /*	Constructors								*/
@@ -135,7 +112,25 @@ private BassFactory()
 
 public static void setup()
 {
-   // work is done by the static initializer
+   use_repositories = new HashMap<SearchType,Set<BassRepository>>();
+   use_repositories.put(SearchType.SEARCH_ALL,new HashSet<BassRepository>());
+
+   the_factory = new BassFactory();
+   BudaRoot.registerSearcher(the_factory);
+   BudaRoot.addBubbleConfigurator("BASS",new BassConfigurator());
+   package_explorers = new HashMap<BudaBubbleArea,BassBubble>();
+
+   BudaRoot.registerMenuButton("Package Explorer",new PackageExplorerButton());
+   BudaRoot.registerMenuButton("Text Search",new TextSearchButton());
+
+   repository_map = new HashMap<BassRepository,BassTreeModelBase>();
+
+   the_factory.addPopupHandler(new BassCreator());
+   the_factory.addPopupHandler(new ProjectProps());
+
+   bass_repository = new BassRepositoryLocation();
+   registerRepository(SearchType.SEARCH_CODE,bass_repository);
+   registerRepository(SearchType.SEARCH_EXPLORER,bass_repository);
 }
 
 
@@ -192,6 +187,8 @@ public static void registerRepository(SearchType st,BassRepository br)
 
 public static void waitForNames()
 {
+
+
    bass_repository.waitForNames();
 }
 

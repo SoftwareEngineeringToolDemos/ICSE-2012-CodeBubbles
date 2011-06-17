@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -75,7 +75,7 @@ private BurpChangeData			first_change;
 private Map<JTextComponent,BurpEditorData>  editor_map;
 private Map<UndoableEdit,BurpChangeData>    change_map;
 
-private static BurpHistory		the_history = new BurpHistory();
+private static BurpHistory		the_history = null;
 private static UndoRedoAction		undo_action = new UndoRedoAction(-1);
 private static UndoRedoAction		redo_action = new UndoRedoAction(1);
 
@@ -91,7 +91,15 @@ private static UndoRedoAction		redo_action = new UndoRedoAction(1);
  *	Return the singular instance of the history module for all bubbles.
  **/
 
-public static BurpHistory getHistory()		{ return the_history; }
+public synchronized static BurpHistory getHistory()
+{
+   if (the_history == null) {
+      the_history = new BurpHistory();
+    }
+   return the_history;
+}
+
+
 
 
 /**

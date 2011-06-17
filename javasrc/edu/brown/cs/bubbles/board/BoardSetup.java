@@ -599,6 +599,7 @@ public boolean doSetup()
    if (setup_count != 0 && default_workspace != null && eclipse_directory != null) {
       BoardLog.setup();
       if (setup_count < 0) BoardUpdate.setVersion();
+      setupPaths();
       return false;
     }
 
@@ -825,6 +826,14 @@ private void saveProperties()
     }
 }
 
+
+
+private void setupPaths()
+{
+   install_path = system_properties.getProperty(BOARD_PROP_INSTALL_DIR);
+   jar_directory = system_properties.getProperty(BOARD_PROP_JAR_DIR);
+   if (jar_directory != null) install_jar = true;
+}
 
 
 
@@ -1764,10 +1773,10 @@ private class ProxyManager extends ProxySelector {
     }
 
    @Override public void connectFailed(URI uri,SocketAddress sa,IOException e) {
-//      Proxy p = null;
-//      for (Proxy px : proxy_list) {
+//	Proxy p = null;
+//	for (Proxy px : proxy_list) {
 //	 if (px.address().equals(sa)) p = px;
-//       }
+//	 }
     }
 
    @Override public List<Proxy> select(URI uri) {

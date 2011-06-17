@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -78,8 +78,6 @@ private RenamePanel	the_panel;
 private static final int	X_DELTA = 0;
 private static final int	Y_DELTA = 0;
 private static final Pattern	ID_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z_0-9]*");
-
-private static BumpClient      bump_client = BumpClient.getBump();
 
 
 
@@ -291,7 +289,8 @@ private void rename()
    int soff = for_document.mapOffsetToEclipse(for_id.getStartOffset());
    int eoff = for_document.mapOffsetToEclipse(for_id.getEndOffset());
 
-   Element edits = bump_client.rename(for_document.getProjectName(),for_document.getFile(),soff,eoff,ntext);
+   BumpClient bc = BumpClient.getBump();
+   Element edits = bc.rename(for_document.getProjectName(),for_document.getFile(),soff,eoff,ntext);
 
    removeContext();
 

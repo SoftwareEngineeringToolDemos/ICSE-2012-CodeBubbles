@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -67,16 +67,6 @@ private static BdocFactory	the_factory;
 private static BdocRepository	bdoc_repository;
 
 
-static {
-   the_factory = new BdocFactory();
-   bdoc_repository = new BdocRepository();
-   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_DOC,bdoc_repository);
-   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,bdoc_repository);
-   BudaRoot.registerDocumentationCreator(the_factory);
-   BudaRoot.addBubbleConfigurator("BDOC",new BdocConfigurator());
-}
-
-
 
 /********************************************************************************/
 /*										*/
@@ -91,7 +81,12 @@ static {
 
 public static void setup()
 {
-   // work is done by the static initializer
+   the_factory = new BdocFactory();
+   bdoc_repository = new BdocRepository();
+   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_DOC,bdoc_repository);
+   BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,bdoc_repository);
+   BudaRoot.registerDocumentationCreator(the_factory);
+   BudaRoot.addBubbleConfigurator("BDOC",new BdocConfigurator());
 }
 
 

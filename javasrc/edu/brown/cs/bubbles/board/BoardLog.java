@@ -103,10 +103,15 @@ private void setupLogger()
    String jar = bp.getProperty(BOARD_PROP_JAR_DIR);
    use_stderr = bp.getBoolean(BOARD_PROP_USE_STDERR,(jar == null));
 
-   File wsd = new File(bp.getProperty(BOARD_PROP_ECLIPSE_WS));
+   String wsn = bp.getProperty(BOARD_PROP_ECLIPSE_WS);
+   File wsd = null;
+   if (wsn == null) {
+      use_stderr = true;
+    }
+   else wsd = new File(wsn);
 
    String id = "";
-   if (use_stderr) {
+   if (use_stderr && wsd != null) {
       for (int i = 0; i < 100; ++i) {
 	 if (i > 0) id = "_" + i;
 	 String nm = "bubbles_" + i + ".lock";
@@ -123,40 +128,46 @@ private void setupLogger()
        }
     }
 
-   bedrock_log = new File(wsd,"bedrock_log" + id + ".log");
-   monitor_log = new File(wsd,"monitor_log.log");
+   if (wsd != null) {
+      bedrock_log = new File(wsd,"bedrock_log" + id + ".log");
+      monitor_log = new File(wsd,"monitor_log.log");
+    }
 
    // TODO: This should be in the plugin subdirectory
-   if (use_stderr) {
-      // doing debugging: use a single file and keep it around
-      debug_log = new File(wsd,"bubbles_log" + id + ".log");
-      File t1 = new File(wsd,"bedrock_log" + id + ".save");
-      File t2 = new File(wsd,"bubbles_log" + id + ".save");
-      if (bedrock_log.exists()) bedrock_log.renameTo(t1);
-      if (debug_log.exists()) debug_log.renameTo(t2);
-    }
-   else {
-      // normal run: find an unused file, delete after exit
-      // file should be available for sending a bug report
-      for (int i = 0; i < 100; ++i) {
-	 String lognm = "bubbles_log_" + i + ".log";
-	 debug_log = new File(wsd,lognm);
-	 if (!debug_log.exists()) {
-	    debug_log.deleteOnExit();
-	    break;
+   if (wsd != null) {
+      if (use_stderr) {
+	 // doing debugging: use a single file and keep it around
+	 debug_log = new File(wsd,"bubbles_log" + id + ".log");
+	 File t1 = new File(wsd,"bedrock_log" + id + ".save");
+	 File t2 = new File(wsd,"bubbles_log" + id + ".save");
+	 if (bedrock_log.exists()) bedrock_log.renameTo(t1);
+	 if (debug_log.exists()) debug_log.renameTo(t2);
+       }
+      else {
+	 // normal run: find an unused file, delete after exit
+	 // file should be available for sending a bug report
+	 for (int i = 0; i < 100; ++i) {
+	    String lognm = "bubbles_log_" + i + ".log";
+	    debug_log = new File(wsd,lognm);
+	    if (!debug_log.exists()) {
+	       debug_log.deleteOnExit();
+	       break;
+	     }
 	  }
        }
     }
 
    debug_writer = null;
-   try {
-      FileWriter fw = new FileWriter(debug_log);
-      debug_writer = new PrintWriter(fw,true);
-    }
-   catch (IOException e) {
-      System.err.println("BOARD: Problem creating log file: " + e);
-      use_stderr = true;
-      // problem creating debug output, might want to try a different location
+   if (debug_log != null) {
+      try {
+	 FileWriter fw = new FileWriter(debug_log);
+	 debug_writer = new PrintWriter(fw,true);
+       }
+      catch (IOException e) {
+	 System.err.println("BOARD: Problem creating log file: " + e);
+	 use_stderr = true;
+	 // problem creating debug output, might want to try a different location
+       }
     }
 
    String lvl = bp.getProperty(BOARD_PROP_LOG_LEVEL);

@@ -99,11 +99,12 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
    GridBagLayout lay = (GridBagLayout) pan.getLayout();
    GridBagConstraints c = new GridBagConstraints();
 
+   Document doc = null;
    logging_area = new BgtaLoggingArea(this);
    if (!the_manager.hasBubble(chat_username)) {
 	  if (!the_manager.hasChat(chat_username)) {
 //	 the_chat = the_manager.startChat(chat_username, logging_area, this);
-	     Document doc = the_manager.startChat(chat_username,this);
+	     doc = the_manager.startChat(chat_username,this);
 	     logging_area.setDocument(doc);
 	 current_id.put(chat_username, 1);
      username_id = 1;
@@ -112,7 +113,7 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 	  else {
 //	 the_chat = the_manager.getExistingChat(chat_username);
 //	 the_chat.increaseUseCount();
-	     Document doc = the_manager.getExistingDoc(chat_username);
+	     doc = the_manager.getExistingDoc(chat_username);
 	     logging_area.setDocument(doc);
 	 Integer id = current_id.remove(chat_username);
 	 current_id.put(chat_username, id.intValue() + 1);
@@ -123,7 +124,6 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
    else {
       BgtaBubble existingBubble = the_manager.getExistingBubble(chat_username);
       BgtaLoggingArea existingLog = null;
-      Document doc = null;
       if (existingBubble != null) {
 	 existingLog = existingBubble.getLog();
 	 if (existingLog != null) {
@@ -141,8 +141,10 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 	  }
        }
     }
-//   logging_area.setChat(the_chat);
 
+   // Register bubble as document listener.
+   if (doc != null)
+      doc.addDocumentListener(this);
    draft_area = new BgtaDraftingArea(/*the_chat*/the_manager.getChat(chat_username),logging_area,this);
    JScrollPane log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 					     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -319,8 +321,9 @@ boolean getAltColorIsOn()
 @Override
 public void changedUpdate(DocumentEvent e)
 {
-   if (isVisible())
-      repaint();
+    if (isVisible())
+        repaint();
+    logging_area.setCaretPosition(logging_area.getDocument().getLength());
 }
 
 
@@ -330,6 +333,7 @@ public void insertUpdate(DocumentEvent e)
 {
    if (isVisible())
       repaint();
+   logging_area.setCaretPosition(logging_area.getDocument().getLength());
 }
 
 
@@ -337,8 +341,9 @@ public void insertUpdate(DocumentEvent e)
 @Override
 public void removeUpdate(DocumentEvent e)
 {
-   if (isVisible())
-      repaint();
+    if (isVisible())
+        repaint();
+    logging_area.setCaretPosition(logging_area.getDocument().getLength());
 }
 
 

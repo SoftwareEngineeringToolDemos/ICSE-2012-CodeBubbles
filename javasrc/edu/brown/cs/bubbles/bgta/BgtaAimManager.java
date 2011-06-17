@@ -74,18 +74,15 @@ private IcbmListener		   conversation_listener;
 /*										*/
 /********************************************************************************/
 
-BgtaAimManager(String username,String password,String server) throws XMPPException
+BgtaAimManager(String username,String password,ChatServer server)
 {
-   user_name = username;
-   user_password = password;
-   user_server = server;
-   existing_bubbles = new Vector<BgtaBubble>();
-   existing_conversations = new Vector<BgtaConversation>();
-   being_saved = false;
-   login(username, password);
+   super(username,password,server);
 }
 
-
+@Override void login() throws XMPPException
+{
+   login(user_name, user_password);
+}
 
 @Override void login(String username,String password) throws XMPPException
 {

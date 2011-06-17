@@ -185,22 +185,29 @@ enum ChatServer {
 		this.ending = ending;
 	}
 	
-	public String selector() { return selector; }
+	String selector() { return selector; }
 	
-	public String server() { return server; }
+	String server() { return server; }
 	
-	public String display() { return display; }
+	String display() { return display; }
 	
-	public String host() { return host; }
+	String host() { return host; }
 	
-	public boolean hasEnding() {
+	boolean hasEnding() {
 		return ending;
 	}
 	
-	public String ending() {
+	String ending() {
 		if (ending)
 			return display;
 		return "";
+	}
+	
+	static ChatServer fromServer(String server) {
+	   for (ChatServer s : values())
+	      if (server.equals(s.server()))
+	         return s;
+	   return null;
 	}
 	
 	@Override public String toString() { return selector + " - " + display; }

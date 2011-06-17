@@ -47,7 +47,7 @@ public class BgtaChat implements BgtaConstants {
 // used for all chats
 private String user_name;
 private String user_display;
-private String user_server;
+private ChatServer user_server;
 private Document user_document;
 
 // used for XMPP chats
@@ -67,7 +67,7 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-BgtaChat(String username,String displayName,String server,Object chat,Document doc)
+BgtaChat(String username,String displayName,ChatServer server,Object chat,Document doc)
 {
    user_name = username;
    user_display = displayName;
@@ -113,7 +113,7 @@ BgtaChat(String username,String displayName,String server,Object chat,Document d
 
 String getUsername()    { return user_name; }
 
-String getServer()      { return user_server; }
+ChatServer getServer()      { return user_server; }
 
 Document getDocument()  { return user_document; }
 
@@ -254,35 +254,25 @@ private String getName(String username)
    int idx = name.indexOf("@");
    if (idx > 0)
        name = name.substring(0, idx);
-   while (name.indexOf(".") != -1) {
-      if (name.charAt(name.indexOf(".") + 1) != ' ') {
-         String back = name.substring(name.indexOf(".") + 1);
-         String front = name.substring(0, name.indexOf("."));
-         name = front + " " + back;
-       }
-      else {
-         String back = name.substring(name.indexOf(".") + 1);
-         String front = name.substring(0, name.indexOf("."));
-         name = front + back;
-       }   
-    }
+   name = whiteSpaceAwareReplace(name,".");
+   name = whiteSpaceAwareReplace(name,"_");
    return name;
 }
 
 
 
-private String whiteSpaceAwareReplace(String input,String toreplace,String replacewith)
+private String whiteSpaceAwareReplace(String input,String toreplace)
 {
    String current = new String(input);
-   while (current.indexOf(".") != -1) {
-      if (current.charAt(current.indexOf(".") + 1) != ' ') {
-         String back = current.substring(current.indexOf(".") + 1);
-         String front = current.substring(0, current.indexOf("."));
+   while (current.indexOf(toreplace) != -1) {
+      if (current.charAt(current.indexOf(toreplace) + 1) != ' ') {
+         String back = current.substring(current.indexOf(toreplace) + 1);
+         String front = current.substring(0, current.indexOf(toreplace));
          current = front + " " + back;
        }
       else {
-         String back = current.substring(current.indexOf(".") + 1);
-         String front = current.substring(0, current.indexOf("."));
+         String back = current.substring(current.indexOf(toreplace) + 1);
+         String front = current.substring(0, current.indexOf(toreplace));
          current = front + back;
        }   
     }

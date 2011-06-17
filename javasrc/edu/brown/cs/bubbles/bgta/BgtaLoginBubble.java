@@ -272,11 +272,10 @@ private class LoginListener implements ActionListener {
      boolean putin = true;
      String username = user_field.getText();
      String password = new String(pass_field.getPassword());
-     String servername = selected_server.server();
      if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
         username += selected_server.ending();
      for (BgtaManager man : all_managers) {
-        if (man.isEquivalent(username,servername)
+        if (man.propertiesMatch(username,selected_server.server())
       		  && man.getPassword().equals(new String(password))) {
            newman = man;
       	  putin = false;
@@ -284,34 +283,26 @@ private class LoginListener implements ActionListener {
       }
      if (putin) {
         if (selected_server == ChatServer.AIM) {
-           newman = new BgtaAimManager(username,password,servername);
+           newman = new BgtaAimManager(username,password,selected_server);
          }
         else {
-           newman = new BgtaManager(username,password,servername,my_repository);
+           newman = new BgtaManager(username,password,selected_server,my_repository);
          }
-        newman.setBeingSaved(rem_user);
-        manager_list.add(newman);
         all_managers.add(newman);
-        my_repository.addNewRep(new BgtaBuddyRepository(newman));
-        if (rem_user)
-           BgtaFactory.addManagerProperties(username, password, servername);
-        removeBubble();
       }
-     else {
-        if (newman.isLoggedIn()) {
-           user_field.setText("already logged in");
-           pass_field.setText("");
-         }
-        else {
-           newman.login();
-           newman.setBeingSaved(rem_user);
-           manager_list.add(newman);
-           my_repository.addNewRep(new BgtaBuddyRepository(newman));
-           if (rem_user)
-              BgtaFactory.addManagerProperties(username, password, servername);
-           removeBubble();
-         }
+     else if (newman.isLoggedIn()) {
+        user_field.setText("already logged in");
+        pass_field.setText("");
+        BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
+        return;
       }
+     newman.login();
+     newman.setBeingSaved(rem_user);
+     manager_list.add(newman);
+     my_repository.addNewRep(new BgtaBuddyRepository(newman));
+     if (rem_user)
+        BgtaFactory.addManagerProperties(username, password, selected_server.server());
+     removeBubble();
        }
       catch (XMPPException xmppe) {
      user_field.setText("incorrect login information");

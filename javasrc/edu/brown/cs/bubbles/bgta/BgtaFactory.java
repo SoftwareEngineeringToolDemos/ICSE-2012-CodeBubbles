@@ -53,8 +53,7 @@ public class BgtaFactory implements BgtaConstants
 /*										*/
 /********************************************************************************/
 
-private static BgtaFactory		the_factory = null;
-
+private static BgtaFactory		      the_factory = null;
 private static Vector<BgtaManager>	chat_managers;
 private static BgtaRepository			buddy_list;
 private static BoardProperties		login_properties;
@@ -84,8 +83,10 @@ public static void setup()
 	 BgtaManager man = new BgtaManager(
 		  login_properties.getProperty(BGTA_USERNAME_PREFIX + i),
 		  login_properties.getProperty(BGTA_PASSWORD_PREFIX + i),
-		  login_properties.getProperty(BGTA_PASSWORD_PREFIX + i));
+		  login_properties.getProperty(BGTA_PASSWORD_PREFIX + i),
+		  buddy_list);
 	 man.setBeingSaved(true);
+	 man.login();
 	 chat_managers.add(man);
       }
       catch (XMPPException e) {
@@ -100,7 +101,6 @@ public static void setup()
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, buddy_list);
    BudaRoot.addBubbleConfigurator("BGTA", new BgtaConfigurator());
 }
-
 
 public static synchronized BgtaFactory getFactory()
 {
@@ -136,7 +136,6 @@ static void addManagerProperties(String usnm,String psswd,String svr)
 	}
 }
 
-
 static void clearManagerProperties()
 {
 	login_properties.clear();
@@ -146,7 +145,6 @@ static void clearManagerProperties()
 	} catch (IOException e) {
 	}
 }
-
 
 static void altColorUponRecieve(boolean b)
 {
@@ -162,16 +160,11 @@ static void altColorUponRecieve(boolean b)
 static void logoutAllAccounts()
 { }
 
-
-//static boolean logoutAccount(String username,String password,String server)
-//{
-//}
-
 static boolean logoutAccount(String username,String server)
 {
    BgtaManager logout = null;
 	for (BgtaManager man : chat_managers) {
-		if (man.isEquivalent(username,server)) {
+		if (man.propertiesMatch(username,server)) {
 			buddy_list.removeManager(man);
 			man.disconnect();
 			logout = man;
@@ -190,7 +183,7 @@ static boolean logoutAccount(String username,String server)
 static void registerUserViaGateway(String username,String password,String server)
 {
 	for (BgtaManager man : chat_managers) {
-		if (man.isEquivalent("codebubbles4tester@gmail.com","gmail.com")) {
+		if (man.propertiesMatch("codebubbles4tester@gmail.com","gmail.com")) {
 			try {
 				man.register(username,password,server);
 				BassFactory.reloadRepository(buddy_list);
@@ -207,7 +200,7 @@ static void registerUserViaGateway(String username,String password,String server
 static void unregisterUserViaGateway(String username,String server)
 {
 	for (BgtaManager man : chat_managers) {
-		if (man.isEquivalent("codebubbles4tester@gmail.com","gmail.com")) {
+		if (man.propertiesMatch("codebubbles4tester@gmail.com","gmail.com")) {
 			try {
 				man.unregister(username,server);
 				BassFactory.reloadRepository(buddy_list);
@@ -248,7 +241,8 @@ BudaBubble createChatBubble(String friendname,String myname,String password,
 	BgtaManager newman;
 	BgtaBubble bb = null;
 	try {
-		newman = new BgtaManager(myname,password,server);
+		newman = new BgtaManager(myname,password,server,buddy_list);
+		newman.login();
 		chat_managers.add(newman);
 		bb = new BgtaBubble(friendname,newman);
 	} catch (XMPPException e) {

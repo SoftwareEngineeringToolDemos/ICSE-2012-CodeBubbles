@@ -54,21 +54,20 @@ class BgtaManager implements PacketListener {
 /*										*/
 /********************************************************************************/
 
-private XMPPConnection		the_connection;
-private static XMPPConnection	stat_con;
+private XMPPConnection             the_connection;
+private static XMPPConnection      stat_con;
+private RosterListener             roster_listener;
+private BgtaRepository             the_repository;
+private Map<String, BgtaChat>      existing_chats;
+private Map<String, Document>      existing_docs;
 
-protected String		user_name;
-protected String		user_password;
-protected String		user_server;
-protected boolean 		being_saved;
-
-protected Vector<BgtaBubble>	existing_bubbles;
-protected Vector<BgtaConversation>		existing_conversations;
-protected BgtaRoster			the_roster;
-private RosterListener		roster_listener;
-private BgtaRepository		the_repository;
-private Map<String, BgtaChat> existing_chats;
-private Map<String, Document> existing_docs;
+protected String                   user_name;
+protected String                   user_password;
+protected ChatServer               user_server;
+protected boolean                  being_saved;
+protected Vector<BgtaBubble>       existing_bubbles;
+protected Vector<BgtaConversation> existing_conversations;
+protected BgtaRoster               the_roster;
 
 
 
@@ -79,7 +78,11 @@ private Map<String, Document> existing_docs;
 /********************************************************************************/
 
 BgtaManager(String username,String password,String server,BgtaRepository repo)
-	throws XMPPException
+{
+   this(username,password,ChatServer.fromServer(server),repo);
+}
+
+BgtaManager(String username,String password,ChatServer server,BgtaRepository repo)
 {
    this(username,password,server);
    the_repository = repo;
@@ -87,34 +90,34 @@ BgtaManager(String username,String password,String server,BgtaRepository repo)
 
 
 
-BgtaManager(String username,String password,String server) throws XMPPException
+BgtaManager(String username,String password,ChatServer server)
 {
    user_name = username;
    user_password = password;
    user_server = server;
+   if (user_server == null)
+      user_server = ChatServer.GMAIL;
    existing_bubbles = new Vector<BgtaBubble>();
    existing_conversations = new Vector<BgtaConversation>();
    existing_chats = new HashMap<String, BgtaChat>();
    existing_docs = new HashMap<String, Document>();
    being_saved = false;
    roster_listener = null;
-   login(username, password, server);
 }
 
 
 
-BgtaManager(String username,String password) throws XMPPException
+BgtaManager(String username,String password)
 {
    user_name = username;
    user_password = password;
-   user_server = "";
+   user_server = ChatServer.GMAIL;
    existing_bubbles = new Vector<BgtaBubble>();
    existing_conversations = new Vector<BgtaConversation>();
    existing_chats = new HashMap<String, BgtaChat>();
    existing_docs = new HashMap<String, Document>();
    being_saved = false;
    roster_listener = null;
-   login(username, password);
 }
 
 
@@ -135,7 +138,7 @@ String getUsername()				   { return user_name; }
 
 String getPassword()				   { return user_password; }
 
-String getServer()				   { return user_server; }
+ChatServer getServer()				   { return user_server; }
 
 boolean isBeingSaved()           { return being_saved; }
 
@@ -154,9 +157,9 @@ boolean isLoggedIn()
 /*										*/
 /********************************************************************************/
 
-boolean isEquivalent(String un,String se)
+boolean propertiesMatch(String un,String se)
 {
-   return un.equals(user_name) && se.equals(user_server);
+   return un.equals(user_name) && se.equals(user_server.server());
 }
 
 
@@ -205,9 +208,10 @@ void addPresenceListener(PacketListener p)
 /*										*/
 /********************************************************************************/
 
+@Deprecated
 void login(String username,String password) throws XMPPException
 {
-   login(username, password, "gmail.com");
+   login(username, password, ChatServer.GMAIL);
 }
 
 
@@ -218,23 +222,12 @@ void login() throws XMPPException
 }
 
 
-void login(String username,String password,String server) throws XMPPException
+void login(String username,String password,ChatServer server) throws XMPPException
 {
-   String serv, host;
-   serv = server;
-   if (server.equals(ChatServer.GMAIL.server())) {
-      host = ChatServer.GMAIL.host();
-    }
-   else if (server.equals(ChatServer.FACEBOOK.server())) {
-      host = ChatServer.FACEBOOK.host();
-    }
-   else if (server.equals(ChatServer.JABBER.server())) {
-      host = ChatServer.JABBER.host();
-    }
-   else {
-      serv = ChatServer.GMAIL.server();
-      host = ChatServer.GMAIL.host();
-    }
+   String serv = server.server();
+   String host = server.host();
+   
+   // Set up extra security for Facebook.
    ConnectionConfiguration config = null;
    if (serv.equals(ChatServer.FACEBOOK.server())) {
       SASLAuthentication.registerSASLMechanism("DIGEST-MD5",
@@ -249,6 +242,8 @@ void login(String username,String password,String server) throws XMPPException
    the_connection = new XMPPConnection(config);
    stat_con = the_connection;
 
+   // Make a connection and try to login.
+   // Disconnect if login fails.
    try {
    	the_connection.connect();
    	the_connection.login(username, password);
@@ -258,6 +253,7 @@ void login(String username,String password,String server) throws XMPPException
     }
    if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to server.");
 
+   // Add a listener for messages as well as for roster updates.
    Message m = new Message();
    the_connection.addPacketListener(this, new PacketTypeFilter(m.getClass()));
    roster_listener = new BgtaRosterListener();

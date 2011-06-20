@@ -141,6 +141,8 @@ int	BGTA_DATA_BUTTON_WIDTH	     = 5;
 
 int	BGTA_DATA_BUTTON_HEIGHT      = 3 * BGTA_DATA_BUTTON_WIDTH;
 
+String  BGTA_XMPP_RESOURCE_NAME           = "CodeBubbles";
+
 
 
 /********************************************************************************/

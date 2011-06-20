@@ -207,7 +207,7 @@ void login(String username,String password,String server) throws XMPPException
    stat_con = the_connection;
 
    the_connection.connect();
-   the_connection.login(username, password);
+   the_connection.login(username, password, BgtaConstants.BGTA_XMPP_RESOURCE_NAME);
    if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to server.");
 
    Message m = new Message();

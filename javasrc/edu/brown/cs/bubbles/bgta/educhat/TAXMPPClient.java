@@ -33,6 +33,7 @@ import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
@@ -44,7 +45,7 @@ public class TAXMPPClient {
    private String username;
    private String resource_name; //this will be used to identify the TA uniquely
    private String xmpp_password;
-   private String cur_student;
+   private String cur_student_jid;
    private String service;
    
    //using a LinkedHashMap so we can keep the tickets in order 
@@ -92,9 +93,9 @@ public class TAXMPPClient {
       
       conn.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
       System.out.println(conn.getRoster().getEntries());
-      if(!conn.getRoster().contains(username + "@" + service))
+      if(!conn.getRoster().contains(getMyBareJID()))
       {
-         conn.getRoster().createEntry(username + "@" + service, "Me", null);
+         conn.getRoster().createEntry(getMyBareJID(), "Me", null);
       }
       System.out.println(conn.getRoster().getEntries());
 
@@ -105,7 +106,7 @@ public class TAXMPPClient {
       conn.disconnect();
    }
    
-   public void removeTicketAndAlertPeers(StudentTicket t)
+   public void acceptTicketAndAlertPeers(StudentTicket t)
    {
       //should i determine if the ticket is actually in the list?
       
@@ -113,6 +114,8 @@ public class TAXMPPClient {
       sendMessageToOtherResources("ACCEPTING:" + t.textHash());
       
       ticket_map.remove(t.textHash());
+      
+      cur_student_jid = t.getStudentJID();
       
       //now we need to open up a chat window or maybe this should be 
       //done on the outside, better figure that out and then this is called
@@ -132,7 +135,7 @@ public class TAXMPPClient {
    
    private void sendMessageToOtherResources(String msg)
    {
-      for(String full_jid : BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), username+"@"+service))
+      for(String full_jid : BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID()))
       {
          Chat other_ta_chat = conn.getChatManager().createChat(full_jid, new MessageListener() {
             @Override
@@ -151,31 +154,51 @@ public class TAXMPPClient {
       }
    }
    
+   private String getMyBareJID()
+   {
+      return StringUtils.parseBareAddress(conn.getConnectionID());
+   }
+   
    private class StudentXMPPBotMessageListener implements MessageListener {
       @Override
       public void processMessage(Chat c, Message m) {
-	     System.out.println("TAClient received message: " + m.getBody());
-        String[] args = m.getBody().split(":");
-
-        String cmd = args[0];
+             System.out.println("TAClient received message: " + m.getBody());
+        String[] chat_args = m.getBody().split(":");
+   
+        String cmd = chat_args[0];
         if(cmd.equals("TICKET"))
         {
            //comes in the form "TICKET:<message>"
-           StudentTicket t = new StudentTicket(args[1], new Date(System.currentTimeMillis()), m.getFrom());
-           ticket_map.put(args[1].hashCode(), t);
-           sendMessageToOtherResources("TICKET-FORWARD:" + m.getFrom() + ":" + args[1]);
+           StudentTicket t = new StudentTicket(chat_args[1], new Date(System.currentTimeMillis()), m.getFrom());
+           ticket_map.put(chat_args[1].hashCode(), t);
+           sendMessageToOtherResources("TICKET-FORWARD:" + m.getFrom() + ":" + chat_args[1]);
         }
-        else if(cmd.equals("TICKET-FORWARD"))
+        else if(StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("TICKET-FORWARD"))
         {
            //comes in the form "TICKET-FORWARD:<student-jid>:<message>"
-           StudentTicket t = new StudentTicket(args[2], new Date(System.currentTimeMillis()), args[1]);
-           ticket_map.put(args[2].hashCode(), t);
+           StudentTicket t = new StudentTicket(chat_args[2], new Date(System.currentTimeMillis()), chat_args[1]);
+           ticket_map.put(chat_args[2].hashCode(), t);
         }
-        else if(cmd.equals("ACCEPTING"))
+        else if(StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("ACCEPTING"))
         {
            //form: "ACCEPTING:<string hash>"
-           int id = Integer.valueOf(args[1]);
+           int id = Integer.valueOf(chat_args[1]);
            ticket_map.remove(id);
+        }
+        else if(StringUtils.parseBareAddress(c.getParticipant()).equals(StringUtils.parseBareAddress(cur_student_jid)))
+        {
+           //let the message go through to the UI
+           System.out.println("Student message: " + c.getParticipant() + " : " + m.getBody());
+        }
+        else
+        {
+           try{
+              c.sendMessage("Please submit a ticket to chat with a TA");
+           } catch(XMPPException e)
+           {
+              //this exception doesn't really matter because this 
+              //person shouldn't be chatting with us anyway
+           }
         }
       }
    }

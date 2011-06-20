@@ -415,11 +415,6 @@ public BudaBubble createSystemMethodBubble(String proj,String fct,File src)
 
 
 
-
-
-
-
-
 /**
  *	Return the code bubble for all the fields of the given class.
  **/

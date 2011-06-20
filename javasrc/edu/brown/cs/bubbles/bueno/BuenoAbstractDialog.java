@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -390,9 +390,19 @@ protected void parseClassSignature(String txt) throws BuenoException
    else throw new BuenoException("No class/enum/interface keyword");
 
    parseName(tok);
+   parseGenerics(tok);
    parseExtends(tok);
    parseImplements(tok);
    parseEnd(tok);
+}
+
+
+
+protected void parseGenerics(StreamTokenizer tok) throws BuenoException
+{
+   if (!checkNextToken(tok,'<')) return;
+   parseType(tok);
+   if (!checkNextToken(tok,'>')) throw new BuenoException("Unclosed generic specification");
 }
 
 

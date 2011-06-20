@@ -120,7 +120,8 @@ enum BumpSymbolType {
 
 enum BumpFixType {
    NONE,
-   NEW_METHOD
+   NEW_METHOD,
+   TRY_IMPORT
 }
 
 
@@ -213,6 +214,11 @@ interface BumpProblem {
  *	return null if there are no fixes.
  **/
    List<BumpFix> getFixes();
+
+/**
+ *	Return project for this problem
+ **/
+   String getProject();
 
 }	// end of inner interface BumpProblem
 
@@ -422,66 +428,66 @@ enum BumpThreadState {
 
    public BumpThreadState getStopState() {
       switch (this) {
-         case DEAD :
-         default :
-            return this;
-         case NONE :
-         case NEW :
-         case RUNNING :
-            return STOPPED;
-         case RUNNING_SYNC :
-            return STOPPED_SYNC;
-         case RUNNING_IO :
-            return STOPPED_IO;
-         case RUNNING_SYSTEM :
-            return STOPPED_SYSTEM;
-         case BLOCKED :
-            return STOPPED_BLOCKED;
-         case DEADLOCKED :
-            return STOPPED_DEADLOCK;
-         case WAITING :
-            return STOPPED_WAITING;
-         case TIMED_WAITING :
-            return STOPPED_TIMED;
+	 case DEAD :
+	 default :
+	    return this;
+	 case NONE :
+	 case NEW :
+	 case RUNNING :
+	    return STOPPED;
+	 case RUNNING_SYNC :
+	    return STOPPED_SYNC;
+	 case RUNNING_IO :
+	    return STOPPED_IO;
+	 case RUNNING_SYSTEM :
+	    return STOPPED_SYSTEM;
+	 case BLOCKED :
+	    return STOPPED_BLOCKED;
+	 case DEADLOCKED :
+	    return STOPPED_DEADLOCK;
+	 case WAITING :
+	    return STOPPED_WAITING;
+	 case TIMED_WAITING :
+	    return STOPPED_TIMED;
        }
     }
 
    public BumpThreadState getExceptionState() {
       switch (this) {
-         case DEAD :
-            return this;
-         default :
-            return EXCEPTION;
+	 case DEAD :
+	    return this;
+	 default :
+	    return EXCEPTION;
        }
     }
-   
+
    public BumpThreadState getRunState() {
       switch (this) {
-         case DEAD :
-         default :
-            return this;
-         case NONE :
-         case NEW :
-         case STOPPED :
-         case EXCEPTION :
-            return RUNNING;
-         case STOPPED_SYNC :
-            return RUNNING_SYNC;
-         case STOPPED_IO :
-            return RUNNING_IO;
-         case STOPPED_SYSTEM :
-            return RUNNING_SYSTEM;
-         case STOPPED_BLOCKED :
-            return BLOCKED;
-         case STOPPED_WAITING :
-            return WAITING;
-         case STOPPED_TIMED :
-            return TIMED_WAITING;
-         case STOPPED_DEADLOCK :
-            return DEADLOCKED;
+	 case DEAD :
+	 default :
+	    return this;
+	 case NONE :
+	 case NEW :
+	 case STOPPED :
+	 case EXCEPTION :
+	    return RUNNING;
+	 case STOPPED_SYNC :
+	    return RUNNING_SYNC;
+	 case STOPPED_IO :
+	    return RUNNING_IO;
+	 case STOPPED_SYSTEM :
+	    return RUNNING_SYSTEM;
+	 case STOPPED_BLOCKED :
+	    return BLOCKED;
+	 case STOPPED_WAITING :
+	    return WAITING;
+	 case STOPPED_TIMED :
+	    return TIMED_WAITING;
+	 case STOPPED_DEADLOCK :
+	    return DEADLOCKED;
        }
     }
-   
+
    public boolean isRunning() {
       switch (this) {
 	 case NEW :
@@ -492,7 +498,7 @@ enum BumpThreadState {
 	 case WAITING :
 	 case TIMED_WAITING :
 	 case BLOCKED :
-         case DEADLOCKED :
+	 case DEADLOCKED :
 	    return true;
        }
       return false;
@@ -500,15 +506,15 @@ enum BumpThreadState {
 
    public boolean isStopped() {
       switch (this) {
-         case STOPPED :
-         case STOPPED_SYNC :
-         case STOPPED_IO :
-         case STOPPED_WAITING :
-         case STOPPED_SYSTEM :
-         case STOPPED_BLOCKED :
-         case STOPPED_TIMED :
-         case EXCEPTION :
-            return true;
+	 case STOPPED :
+	 case STOPPED_SYNC :
+	 case STOPPED_IO :
+	 case STOPPED_WAITING :
+	 case STOPPED_SYSTEM :
+	 case STOPPED_BLOCKED :
+	 case STOPPED_TIMED :
+	 case EXCEPTION :
+	    return true;
        }
       return false;
     }

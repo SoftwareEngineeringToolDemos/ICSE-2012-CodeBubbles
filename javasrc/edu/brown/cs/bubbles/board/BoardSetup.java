@@ -1305,8 +1305,6 @@ private void restartBubbles()
 
    BoardLog.logD("BOARD","RESTART: java -Xmx" + run_size + " -cp " + cp.toString() + " " +
 		    BOARD_RESTART_CLASS + " -nosetup");
-   boolean dorun = true;
-
    try {
       int idx = 0;
       args.add(idx++,"java");
@@ -1339,7 +1337,7 @@ private void restartBubbles()
       args.add(idx++,BOARD_RESTART_CLASS);
       args.add(idx++,"-nosetup");
       ProcessBuilder pb = new ProcessBuilder(args);
-      if (dorun) pb.start();
+      pb.start();
     }
    catch (IOException e) {
       BoardLog.logE("BOARD","Problem restarting bubbles: " + e);
@@ -1347,7 +1345,7 @@ private void restartBubbles()
       System.exit(1);
     }
 
-   if (dorun) System.exit(0);
+   System.exit(0);
 
    BoardLog.logE("BOARD","RESTART FAILED");
 }

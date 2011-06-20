@@ -49,6 +49,8 @@ private String user_name;
 private String user_display;
 private ChatServer user_server;
 private Document user_document;
+private BgtaManager the_manager;
+private boolean is_open;
 
 // used for XMPP chats
 private Chat the_chat;
@@ -67,7 +69,7 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-BgtaChat(String username,String displayName,ChatServer server,Object chat,Document doc)
+BgtaChat(String username,String displayName,ChatServer server,Object chat,Document doc,BgtaManager man)
 {
    user_name = username;
    user_display = displayName;
@@ -81,18 +83,20 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
    the_chat = null;
    the_conversation = null;
    is_xmpp = false;
+   the_manager = man;
+   is_open = true;
    
    // Determine the protocol and set up members appropriately.
    if (!server.equals(ChatServer.AIM)) {
       is_xmpp = true;
       the_chat = (Chat) chat;
-      the_chat.addMessageListener(new XMPPChatListener());
+      chat_listener = new XMPPChatListener();
+      the_chat.addMessageListener(chat_listener);
     }
    else {
       the_conversation = (Conversation) chat;
-      //TODO: fix AIM listener
-//      conversation_listener = (ConversationListener) listener;
-      the_conversation.addConversationListener(new AIMChatListener());
+      conversation_listener = new AIMChatListener();
+      the_conversation.addConversationListener(conversation_listener);
    }
    
    // Create a new Document for this user if one doesn't exist.
@@ -183,16 +187,16 @@ Object getChat()
 
 void messageReceived(Object msg)
 {
-   Message message = null;
-   MessageInfo minfo = null;
+   String message = null;
    if (is_xmpp) {
-      message = (Message) msg;
-      logMessage(message.getBody());
+      message = ((Message) msg).getBody(); 
     }
    else {
-      minfo = (MessageInfo) msg;
-      logMessage(minfo.getMessage().getMessageBody().replaceAll("<.*?>",""));
+      message = ((MessageInfo) msg).getMessage().getMessageBody().replaceAll("<.*?>","");
     }
+   if (message == null || message.equals(""))
+      return;
+   logMessage(message);
 }
 
 
@@ -314,14 +318,7 @@ private String replace(String input,String toreplace,String replacewith)
 
 void close()
 {
-   if (is_xmpp) {
-      if (the_chat != null && chat_listener != null)
-         the_chat.removeMessageListener(chat_listener);
-    }
-   else {
-      if (the_conversation != null && conversation_listener != null)
-         the_conversation.removeConversationListener(conversation_listener);
-    }
+   is_open = false;
 }
 
 
@@ -363,7 +360,7 @@ private class XMPPChatListener implements MessageListener {
 
 
 private class AIMChatListener implements ConversationListener {
-
+    
    @Override public void canSendMessageChanged(Conversation arg0, boolean arg1) { }
 
    @Override public void conversationClosed(Conversation arg0) { }
@@ -373,6 +370,10 @@ private class AIMChatListener implements ConversationListener {
    @Override public void gotMessage(Conversation con, MessageInfo msg) {
       if (!con.equals(the_conversation))
           return;
+      if (!is_open) {
+          BgtaFactory.createRecievedChatBubble(msg.getFrom().getFormatted(),the_manager);
+          is_open = true;
+       }
       messageReceived(msg);
     }
 
@@ -388,4 +389,10 @@ private class AIMChatListener implements ConversationListener {
 
 
 
+
+
+void open()
+{
+    is_open = true;
+}
 }

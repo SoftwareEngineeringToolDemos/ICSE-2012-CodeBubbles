@@ -194,10 +194,12 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 @Override public void setVisible(boolean vis)
 {
    super.setVisible(vis);
-   if (!vis)
+   if (!vis) {
 	  the_manager.removeBubble(this);
-   else
+    }
+   else {
 	  the_manager.updateBubble(this);
+    }
 }
 
 
@@ -206,7 +208,7 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 {
    // Remove the chat.
 //   the_manager.removeChat(the_chat,logging_area);
-   the_manager.removeChat(chat_username);
+   // the_manager.removeChat(chat_username);
    
    // TODO: there should only be one, right?
    // If that was the last one, clear the id for the user.

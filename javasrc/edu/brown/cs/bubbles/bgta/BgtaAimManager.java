@@ -66,6 +66,7 @@ class BgtaAimManager extends BgtaManager {
 
 private AimConnection	   the_connection;
 private IcbmListener		   conversation_listener;
+private IcbmService the_service;
 
 
 
@@ -86,6 +87,17 @@ BgtaAimManager(String username,String password,ChatServer server)
     super(username,password,ChatServer.AIM);
     if (!server.equals(ChatServer.AIM))
         BoardLog.logE("BGTA","AIM manager created with ChatServer: " + server.server() + " instead of AIM.");
+}
+
+/********************************************************************************/
+/*                                                                              */
+/*      Accesors                                                                */
+/*                                                                              */
+/********************************************************************************/
+
+@Override boolean isLoggedIn()
+{
+   return the_connection.getState() == State.ONLINE;
 }
 
 @Override void login() throws XMPPException
@@ -125,8 +137,8 @@ BgtaAimManager(String username,String password,ChatServer server)
    catch (InterruptedException e) {
       //do nothing
     }
-   IcbmService icbm = the_connection.getIcbmService();
-   if (icbm == null) {
+   the_service = the_connection.getIcbmService();
+   if (the_service == null) {
       try {
 	 Thread.sleep(1000);
        }
@@ -134,17 +146,17 @@ BgtaAimManager(String username,String password,ChatServer server)
 	 //do nothing
        }
     }
-   if (icbm == null) {
+   if (the_service == null) {
       BoardLog.logE("BGTA", "Icbm service not available.");
       throw new XMPPException("Error connecting to AIM server.");
     }
-   if (!icbm.isReady()) {
+   if (!the_service.isReady()) {
       BoardLog.logE("BGTA", "Icbm service is not ready.");
       throw new XMPPException("Error connecting to AIM server.");
     }
-   icbm.removeIcbmListener(conversation_listener);
+   the_service.removeIcbmListener(conversation_listener);
    conversation_listener = new AIMServiceListener();
-   icbm.addIcbmListener(conversation_listener);
+   the_service.addIcbmListener(conversation_listener);
    OscarConnection con = the_connection.getInfoService().getOscarConnection();
    con.addGlobalServiceListener(
       new ServiceListener() {
@@ -216,11 +228,11 @@ BgtaAimManager(String username,String password,ChatServer server)
     if (!hasChat(username)) {
         Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
         String name = ((BgtaAIMRosterEntry) the_roster.getEntry(username)).getBuddy().getAlias();
-        BgtaChat chat = new BgtaChat(username,name,ChatServer.AIM,con,getExistingDoc(username));
-        existing_bubbles.add(using);
+        BgtaChat chat = new BgtaChat(username,name,ChatServer.AIM,con,getExistingDoc(username),this);
         existing_chats.put(username,chat);
         existing_docs.put(username,chat.getDocument());
      }
+    existing_bubbles.add(using);
     return getExistingDoc(username);
 }
 
@@ -239,7 +251,7 @@ class AIMServiceListener implements IcbmListener {
    @Override public void newConversation(IcbmService service, Conversation conv) {
       if (!hasChat(conv.getBuddy().getFormatted()))
         BgtaFactory.createRecievedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
-       }
+    }
 
       @Override public void sendAutomaticallyFailed(IcbmService service, Message message,
 						    Set<Conversation> conv) { }
@@ -465,6 +477,15 @@ class BgtaAIMMessage implements BgtaMessage {
 
 
 
+
+
+@Override void removeChat(String username)
+{
+   if (!hasBubble(username)) {
+      BgtaChat chat = getChat(username);
+      chat.close();
+    }
+}
 }	// end of class BgtaAimManager
 
 

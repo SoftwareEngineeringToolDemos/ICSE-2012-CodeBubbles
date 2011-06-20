@@ -145,6 +145,8 @@ void setBeingSaved(boolean bs)   { being_saved = bs; }
 
 boolean isLoggedIn()
 {
+   if (the_connection == null)
+       return false;
    return the_connection.isConnected() && the_connection.isAuthenticated();
 }
 
@@ -291,7 +293,7 @@ Document startChat(String username,BgtaBubble using)
    if (!hasChat(username)) {
       Chat ch = the_connection.getChatManager().createChat(username,null);
       String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
-      BgtaChat chat = new BgtaChat(username,name,user_server,ch,getExistingDoc(username));
+      BgtaChat chat = new BgtaChat(username,name,user_server,ch,getExistingDoc(username),this);
       existing_chats.put(username,chat);
       existing_docs.put(username,chat.getDocument());
     }
@@ -366,7 +368,7 @@ BgtaBubble getExistingBubble(String username)
 void removeBubble(BgtaBubble bub)
 {
    existing_bubbles.removeElement(bub);
-   return;
+   removeChat(bub.getUsername());
 }
 
 
@@ -425,7 +427,11 @@ void removeConversation(BgtaConversation chat,MessageListener list)
 
 void removeChat(String username)
 {
-   getChat(username).close();
+   if (!hasBubble(username)) {
+      BgtaChat chat = getChat(username);
+      chat.close();
+      existing_chats.remove(chat);
+    }
 }
 
 
@@ -504,7 +510,11 @@ static Icon iconFor(Presence pres)
 @Override public void processPacket(Packet pack)
 {
    if (pack instanceof Message) {
-      String from = pack.getFrom();
+      if (((Message) pack).getBody() == null)
+           return;
+      if (((Message) pack).getBody().equals(""))
+           return;
+       String from = pack.getFrom();
       if (from.lastIndexOf("/") != -1) from = from.substring(0, from.lastIndexOf("/"));
       if (from.equals(user_name)) return;
       for (BgtaBubble tbb : existing_bubbles) {
@@ -819,6 +829,16 @@ class BgtaXMPPMessage implements BgtaMessage {
 
 
 
+
+
+/*
+ * 
+ */
+
+void theC()
+{
+    // method body goes here
+}
 }	// end of class BgtaManager
 
 

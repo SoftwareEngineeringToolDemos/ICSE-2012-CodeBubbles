@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -53,6 +53,7 @@ class BumpProblemImpl implements BumpConstants.BumpProblem, BumpConstants {
 private String	problem_id;
 private int	problem_msgid;
 private String	problem_message;
+private String	for_project;
 private File	file_name;
 private int	line_number;
 private int	start_position;
@@ -69,11 +70,12 @@ private List<BumpFix> problem_fixes;
 /*										*/
 /********************************************************************************/
 
-BumpProblemImpl(Element d,String id,int eid)
+BumpProblemImpl(Element d,String id,int eid,String proj)
 {
    problem_id = id;
    problem_msgid = IvyXml.getAttrInt(d,"MSGID");
    problem_message = IvyXml.getTextElement(d,"MESSAGE");
+   for_project = proj;
    String fnm = IvyXml.getTextElement(d,"FILE");
    if (fnm == null) file_name = null;
    else file_name = new File(fnm);
@@ -104,6 +106,7 @@ BumpProblemImpl(Element d,String id,int eid)
 @Override public int getEnd()					{ return end_position; }
 @Override public BumpErrorType getErrorType()			{ return error_type; }
 @Override public int getEditId()				{ return edit_id; }
+@Override public String getProject()				{ return for_project; }
 
 @Override public List<BumpFix> getFixes()			{ return problem_fixes; }
 
@@ -172,6 +175,7 @@ private class FixImpl implements BumpConstants.BumpFix {
    FixImpl(Element e) {
       fix_type = IvyXml.getAttrEnum(e,"TYPE",BumpFixType.NONE);
       fix_attrs = new HashMap<String,String>(4);
+      if (for_project != null) fix_attrs.put("PROJECT",for_project);
       for (String s : FIX_PARAMETERS) {
 	 String v = IvyXml.getTextElement(e,s);
 	 if (v != null) fix_attrs.put(s,v);

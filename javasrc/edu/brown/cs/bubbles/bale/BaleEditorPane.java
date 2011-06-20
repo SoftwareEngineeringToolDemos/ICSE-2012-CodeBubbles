@@ -544,7 +544,7 @@ private String getIndication(String key)
 
    getBaleDocument().baleReadLock();
    try {
-      active_regions.clear();
+      clearRegions(g2.getClipBounds());
       BaleAnnotationArea baa = getAnnotationArea();
       if (baa != null) {
 	 baa.paintEditor(g2);
@@ -987,6 +987,17 @@ void clearRegions()
 }
 
 
+void clearRegions(Rectangle r)
+{
+   for (Iterator<ActiveRegion> it = active_regions.iterator(); it.hasNext(); ) {
+      ActiveRegion ar = it.next();
+      if (r == null || ar.intersects(r)) it.remove();
+    }
+}
+      
+      
+
+
 void addActiveRegion(int x,int y,int w,int h,RegionAction act)
 {
    ActiveRegion ar = new ActiveRegion(new Rectangle(x,y,w,h),act);
@@ -1018,6 +1029,7 @@ private static class ActiveRegion {
     }
 
    boolean contains(int x,int y)		{ return region_bounds.contains(x,y); }
+   boolean intersects(Rectangle r)		{ return region_bounds.intersects(r); }
 
    boolean perform(MouseEvent e) {
       if (region_action == null) return false;

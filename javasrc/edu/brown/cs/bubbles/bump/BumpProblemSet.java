@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -126,7 +126,7 @@ List<BumpProblem> getProblems(File f)
 /*										*/
 /********************************************************************************/
 
-void handleErrors(File forfile,int eid,Element ep)
+void handleErrors(String proj,File forfile,int eid,Element ep)
 {
    Set<BumpProblemImpl> found = new HashSet<BumpProblemImpl>();
    List<BumpProblemImpl> added = null;
@@ -139,7 +139,7 @@ void handleErrors(File forfile,int eid,Element ep)
 	 String pid = getProblemId(e);
 	 BumpProblemImpl bp = current_problems.get(pid);
 	 if (bp == null) {
-	    bp = new BumpProblemImpl(e,pid,eid);
+	    bp = new BumpProblemImpl(e,pid,eid,proj);
 	    current_problems.put(pid,bp);
 	    if (added == null) added = new ArrayList<BumpProblemImpl>();
 	    added.add(bp);

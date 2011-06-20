@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -31,6 +31,7 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.bump.*;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -38,10 +39,11 @@ import javax.swing.text.Position;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.io.File;
 
 
-class BaleFixer extends AbstractAction implements BaleConstants
+class BaleFixer extends AbstractAction implements BaleConstants, BumpConstants
 {
 
 
@@ -91,6 +93,9 @@ BaleFixer(BumpProblem bp,BumpFix bf)
       case NEW_METHOD :
 	 using_code = new NewMethodFixup(this,bf);
 	 break;
+      case TRY_IMPORT :
+	 using_code = new TryImportFixup(this,bf);
+	 break;
     }
 
    if (using_code != null) {
@@ -136,6 +141,14 @@ Position getPosition(BaleDocument doc)
 
    return null;
 }
+
+
+
+String getProject()			{ return for_problem.getProject(); }
+int getStartPosition()			{ return for_problem.getStart(); }
+int getEndPosition()			{ return for_problem.getEnd(); }
+File getFile()				{ return for_problem.getFile(); }
+
 
 
 
@@ -234,6 +247,50 @@ private static class NewMethodFixup implements Fixup {
     }
 
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Fixups to add imports							*/
+/*										*/
+/********************************************************************************/
+
+private static class TryImportFixup implements Fixup {
+
+   private BaleFixer for_fix;
+   private String import_name;
+
+   TryImportFixup(BaleFixer fix,BumpFix bf) {
+      for_fix = fix;
+      import_name = null;
+      findImportName();
+    }
+
+   @Override public String getLabel() {
+      if (import_name == null) return null;
+
+      return "Add import " + import_name;
+    }
+
+   @Override public void perform(ActionEvent evt) {
+      File f = for_fix.getFile();
+      BaleDocumentIde doc = BaleFactory.getFactory().getDocument(for_fix.getProject(),f);
+      if (doc == null) return;
+      // TODO: add import
+    }
+
+   private void findImportName() {
+      BumpClient bc = BumpClient.getBump();
+      int pos = (for_fix.getStartPosition() + for_fix.getEndPosition())/2;
+      List<BumpLocation> locs = bc.findDefinition(for_fix.getProject(),for_fix.getFile(),pos,pos);
+      if (locs.size() != 1) return;
+      BumpLocation loc = locs.get(0);
+      String nm = loc.getSymbolName();
+      import_name = nm;
+    }
+
+}	// end of inner class TryImportFixup
 
 
 

@@ -237,13 +237,11 @@ class AIMServiceListener implements IcbmListener {
 					     IcbmBuddyInfo arg2) { }
 
    @Override public void newConversation(IcbmService service, Conversation conv) {
-      if (!hasConversation(conv.getBuddy().getFormatted())) {
-	 conv.addConversationListener(new AIMConversationListener());
-	 BgtaFactory.createRecievedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
+      if (!hasChat(conv.getBuddy().getFormatted()))
+        BgtaFactory.createRecievedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
        }
-    }
 
-   @Override public void sendAutomaticallyFailed(IcbmService service, Message message,
+      @Override public void sendAutomaticallyFailed(IcbmService service, Message message,
 						    Set<Conversation> conv) { }
 
 }	// end of inner class AIMServiceListener

@@ -83,7 +83,7 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
    is_xmpp = false;
    
    // Determine the protocol and set up members appropriately.
-   if (!server.equals("aim")) {
+   if (!server.equals(ChatServer.AIM)) {
       is_xmpp = true;
       the_chat = (Chat) chat;
       the_chat.addMessageListener(new XMPPChatListener());
@@ -191,7 +191,7 @@ void messageReceived(Object msg)
     }
    else {
       minfo = (MessageInfo) msg;
-      logMessage(minfo.getMessage().getMessageBody().replaceAll("<.*?>",""),minfo.getFrom().getFormatted());
+      logMessage(minfo.getMessage().getMessageBody().replaceAll("<.*?>",""));
     }
 }
 
@@ -352,8 +352,6 @@ private class XMPPChatListener implements MessageListener {
 //    insertComponent(accept);
 //       }
 //      else 
-      String from = msg.getFrom();
-      from = from.substring(0, from.indexOf('/'));
       if (!ch.equals(the_chat))
          return;
       messageReceived(msg);
@@ -366,36 +364,25 @@ private class XMPPChatListener implements MessageListener {
 
 private class AIMChatListener implements ConversationListener {
 
-	@Override
-	public void canSendMessageChanged(Conversation arg0, boolean arg1) { }
+   @Override public void canSendMessageChanged(Conversation arg0, boolean arg1) { }
 
-	@Override
-	public void conversationClosed(Conversation arg0) { }
+   @Override public void conversationClosed(Conversation arg0) { }
 
-	@Override
-	public void conversationOpened(Conversation arg0) { }
+   @Override public void conversationOpened(Conversation arg0) { }
 
-	@Override
-	public void gotMessage(Conversation arg0, MessageInfo arg1) {
-		// TODO: fill this in
-		
-	}
+   @Override public void gotMessage(Conversation con, MessageInfo msg) {
+      if (!con.equals(the_conversation))
+          return;
+      messageReceived(msg);
+    }
 
-	@Override
-	public void gotOtherEvent(Conversation arg0, ConversationEventInfo arg1) {
+   @Override public void gotOtherEvent(Conversation arg0, ConversationEventInfo arg1) {
 		// TODO: metadata?
-	}
+    }
 
-	@Override
-	public void sentMessage(Conversation arg0, MessageInfo arg1) {
-		// TODO: I don't think I need anything here.
-	}
+   @Override public void sentMessage(Conversation arg0, MessageInfo arg1) { }
 
-	@Override
-	public void sentOtherEvent(Conversation arg0, ConversationEventInfo arg1) {
-		// TODO Auto-generated method stub
-		
-	}
+   @Override public void sentOtherEvent(Conversation arg0, ConversationEventInfo arg1) { }
 
 }  // end of inner class AIMChatListener
 

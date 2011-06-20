@@ -292,10 +292,10 @@ Document startChat(String username,BgtaBubble using)
       Chat ch = the_connection.getChatManager().createChat(username,null);
       String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
       BgtaChat chat = new BgtaChat(username,name,user_server,ch,getExistingDoc(username));
-      existing_bubbles.add(using);
       existing_chats.put(username,chat);
       existing_docs.put(username,chat.getDocument());
     }
+   existing_bubbles.add(using);
    return getExistingDoc(username);
 }
 
@@ -504,18 +504,15 @@ static Icon iconFor(Presence pres)
 @Override public void processPacket(Packet pack)
 {
    if (pack instanceof Message) {
-      String with = pack.getFrom();
-      if (with.lastIndexOf("/") != -1) with = with.substring(0, with.lastIndexOf("/"));
-      if (with.equals(user_name)) return;
-      boolean receive = true;
+      String from = pack.getFrom();
+      if (from.lastIndexOf("/") != -1) from = from.substring(0, from.lastIndexOf("/"));
+      if (from.equals(user_name)) return;
       for (BgtaBubble tbb : existing_bubbles) {
-	 if (with.equals(tbb.getUsername())) {
+          if (from.equals(tbb.getUsername())) {
 	    if (!tbb.isPreview()) return;
-	    receive = false;
 	  }
        }
-      BgtaBubble bb = BgtaFactory.createRecievedChatBubble(with, this);
-      if (receive) bb.recieveMessage(new BgtaXMPPMessage((Message) pack));
+     BgtaFactory.createRecievedChatBubble(from, this);
     }
 }
 

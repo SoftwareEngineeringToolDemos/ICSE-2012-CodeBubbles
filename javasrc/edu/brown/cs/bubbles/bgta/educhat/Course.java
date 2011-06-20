@@ -40,14 +40,12 @@ public class Course implements BassName {
 
    @Override
    public String getDisplayName() {
-      // TODO Auto-generated method stub
-      return null;
+      return "displayName";
    }
 
    @Override
    public String getFullName() {
-      // TODO Auto-generated method stub
-      return null;
+      return "fullName";
    }
 
    @Override
@@ -64,8 +62,7 @@ public class Course implements BassName {
 
    @Override
    public String getName() {
-      // TODO Auto-generated method stub
-      return null;
+      return "Name";
    }
 
    @Override

@@ -92,6 +92,8 @@ private static Icon config_expand_image = null;
 private static Icon config_collapse_image = null;
 private static Icon process_expand_image = null;
 private static Icon process_collapse_image = null;
+private static Icon courses_expand_image = null;
+private static Icon courses_collapse_image = null;
 
 
 private static final Color default_label_color = new Color(0xc0ffff80);
@@ -213,6 +215,8 @@ private static synchronized void loadImages()
    config_collapse_image = BoardImage.getIcon("doccollapse");
    process_expand_image = BoardImage.getIcon("docexpand");
    process_collapse_image = BoardImage.getIcon("doccollapse");
+   courses_expand_image = BoardImage.getIcon("courses_expand");
+   courses_collapse_image = BoardImage.getIcon("courses_collapse");
 }
 
 
@@ -1111,6 +1115,10 @@ private class SearchBoxCellRenderer extends DefaultTreeCellRenderer implements T
 	 if (expanded) label.setIcon(process_collapse_image);
 	 else label.setIcon(process_expand_image);
        }
+      else if (value.toString().equals(BASS_COURSE_LIST_NAME)){
+	 if(expanded) label.setIcon(courses_collapse_image);
+	 else label.setIcon(courses_expand_image);
+      }
       else {
 	 if (expanded) label.setIcon(((BassTreeBase)value).getCollapseIcon());
 	 else label.setIcon(((BassTreeBase)value).getExpandIcon());

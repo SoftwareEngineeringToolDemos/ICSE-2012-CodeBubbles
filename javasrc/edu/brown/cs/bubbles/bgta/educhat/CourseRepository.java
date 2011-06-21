@@ -6,16 +6,21 @@ import java.util.List;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
+import edu.brown.cs.bubbles.buda.BudaConstants;
 
 public class CourseRepository implements BassRepository {
-   static
+   public static void setup()
    {
-      BassFactory.reloadRepository(new CourseRepository());
+      CourseRepository cr = new CourseRepository();
+      BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, cr);
+      BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_COURSES, cr);
+      //BassFactory.reloadRepository(cr);
    }
+   
    @Override
    public Iterable<BassName> getAllNames() {
       ArrayList<BassName> l = new ArrayList<BassName>();
-      l.add(new Course());
+      l.add(new Course("CS019", "codebubbles@jabber.org"));
       return l;
    }
 

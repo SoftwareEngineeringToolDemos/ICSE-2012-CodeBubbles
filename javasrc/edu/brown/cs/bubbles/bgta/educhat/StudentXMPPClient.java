@@ -5,7 +5,7 @@ import org.jivesoftware.smack.XMPPException;
 public class StudentXMPPClient {
    XMPPConnection conn;
    
-   public StudentXMPPClient(XMPPConnection a_connection) throws XMPPException
+   public StudentXMPPClient(XMPPConnection a_connection, Course course) throws XMPPException
    { 
       conn = a_connection;
       if(!conn.isConnected() || !conn.isAuthenticated())
@@ -13,4 +13,6 @@ public class StudentXMPPClient {
          throw new XMPPException("Tried to initiate Student chat XMPPConnection that was not logged in");
        }
    } 
+   
+   
 }

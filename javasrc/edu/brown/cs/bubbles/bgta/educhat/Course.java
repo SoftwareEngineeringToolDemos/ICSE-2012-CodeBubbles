@@ -2,109 +2,53 @@ package edu.brown.cs.bubbles.bgta.educhat;
 
 import javax.swing.Icon;
 
+import edu.brown.cs.bubbles.bass.BassConstants;
 import edu.brown.cs.bubbles.bass.BassName;
+import edu.brown.cs.bubbles.bass.BassNameBase;
 import edu.brown.cs.bubbles.bass.BassConstants.BassNameType;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.board.BoardImage;
 
-public class Course implements BassName {
-
+class Course extends BassNameBase {
+   
+   private String course_name;
+   private String ta_chat_jid;
+   
+   public Course(String a_course_name, String a_jid)
+   {
+      course_name = a_course_name;
+      ta_chat_jid = a_jid;
+   }
    @Override
    public BudaBubble createBubble() {
-      // TODO Auto-generated method stub
       return null;
    }
 
    @Override
-   public BudaBubble createPreviewBubble() {
-      // TODO Auto-generated method stub
-      return null;
+   protected String getKey() {
+      return "key";
    }
 
    @Override
-   public String createPreviewString() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public String getClassName() {
-      return this.getClassName();
-   }
-
-   @Override
-   public Icon getDisplayIcon() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public String getDisplayName() {
-      return "displayName";
-   }
-
-   @Override
-   public String getFullName() {
-      return "fullName";
-   }
-
-   @Override
-   public BumpLocation getLocation() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public int getModifiers() {
-      // TODO Auto-generated method stub
-      return 0;
-   }
-
-   @Override
-   public String getName() {
-      return "Name";
-   }
-
-   @Override
-   public String[] getNameComponents() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public String getNameHead() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public BassNameType getNameType() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public String getNameWithParameters() {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   @Override
-   public String getPackageName() {
-      // TODO Auto-generated method stub
+   protected String getParameters() {
       return null;
    }
 
    @Override
    public String getProject() {
-      // TODO Auto-generated method stub
+      //return "Courses";
       return null;
    }
 
    @Override
-   public int getSortPriority() {
-      // TODO Auto-generated method stub
-      return 0;
+   protected String getSymbolName() {
+      return BassConstants.BASS_COURSE_LIST_NAME + "." + course_name;
    }
-
+   
+   @Override
+   public Icon getDisplayIcon()
+   {
+      return BoardImage.getIcon("contents_view");
+   }
 }

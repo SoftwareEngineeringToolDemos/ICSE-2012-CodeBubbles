@@ -22,11 +22,9 @@
 package edu.brown.cs.bubbles.bgta;
 
 
-import edu.brown.cs.bubbles.bgta.BgtaManager.*;
 import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
 
-import org.jivesoftware.smack.XMPPException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -55,13 +53,11 @@ private String		  chat_username;
 private BoardProperties   my_props;
 private BgtaLoggingArea   logging_area;
 private BgtaDraftingArea  draft_area;
-private BgtaConversation		  the_chat;
 private boolean 	  is_saved;
 private boolean 	  alt_color;
 private boolean 	  alt_color_is_on;
 private int		  username_id;
 private boolean 	  is_preview;
-private boolean		  is_listener;
 
 private static final long serialVersionUID = 1L;
 private static HashMap<String, Integer> current_id;
@@ -84,13 +80,11 @@ BgtaBubble(String username,BgtaManager man)
 }
 
 
-
 BgtaBubble(String username,BgtaManager man,boolean preview)
 {
    the_manager = man;
    is_saved = the_manager.isBeingSaved();
    is_preview = preview;
-   is_listener = false;
    chat_username = username;
    my_props = BgtaFactory.getBgtaProperties();
    alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
@@ -103,16 +97,12 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
    logging_area = new BgtaLoggingArea(this);
    if (!the_manager.hasBubble(chat_username)) {
 	  if (!the_manager.hasChat(chat_username)) {
-//	 the_chat = the_manager.startChat(chat_username, logging_area, this);
 	     doc = the_manager.startChat(chat_username,this);
 	     logging_area.setDocument(doc);
 	 current_id.put(chat_username, 1);
      username_id = 1;
-     is_listener = true;
 	   }
 	  else {
-//	 the_chat = the_manager.getExistingChat(chat_username);
-//	 the_chat.increaseUseCount();
 	     doc = the_manager.getExistingDoc(chat_username);
 	     logging_area.setDocument(doc);
 	 Integer id = current_id.remove(chat_username);
@@ -127,11 +117,8 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
       if (existingBubble != null) {
 	 existingLog = existingBubble.getLog();
 	 if (existingLog != null) {
-//	    doc = existingLog.getDocument();
 	    doc = the_manager.getExistingDoc(chat_username);
-//	    the_chat = existingLog.getChat();
-//	    the_chat.increaseUseCount();
-	    if (doc != null/* && the_chat != null*/) {
+	    if (doc != null) {
 	       logging_area.setDocument(doc);
 	       Integer id = current_id.remove(chat_username);
 		   current_id.put(chat_username, id.intValue() + 1);
@@ -145,7 +132,7 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
    // Register bubble as document listener.
    if (doc != null)
       doc.addDocumentListener(this);
-   draft_area = new BgtaDraftingArea(/*the_chat*/the_manager.getChat(chat_username),logging_area,this);
+   draft_area = new BgtaDraftingArea(the_manager.getChat(chat_username),logging_area,this);
    JScrollPane log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 					     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
@@ -190,7 +177,6 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 }
 
 
-
 @Override public void setVisible(boolean vis)
 {
    super.setVisible(vis);
@@ -198,33 +184,17 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 	  the_manager.removeBubble(this);
     }
    else {
-	  the_manager.updateBubble(this);
+	  the_manager.addDuplicateBubble(this);
     }
 }
 
 
-
 @Override protected void localDispose()
 {
-   // Remove the chat.
-//   the_manager.removeChat(the_chat,logging_area);
-   // the_manager.removeChat(chat_username);
-   
-   // TODO: there should only be one, right?
-   // If that was the last one, clear the id for the user.
-//   if (!the_manager.hasConversation(chat_username))
+   // If there isn't a chat anymore, then remove the id
+   // from the map.
    if (!the_manager.hasChat(chat_username))
 	  current_id.remove(chat_username);
-   the_chat = null;
-}
-
-
-
-void makeActive()
-{
-   BgtaConversation chat = logging_area.getChat();
-   if (chat.isListener(logging_area))
-	  is_listener = true;
 }
 
 
@@ -243,8 +213,6 @@ BgtaLoggingArea getLog()			{ return logging_area; }
 
 boolean isPreview()				{ return is_preview; }
 
-boolean isListener()			{ return is_listener; }
-
 BgtaManager getManager()			{ return the_manager; }
 
 
@@ -255,16 +223,6 @@ BgtaManager getManager()			{ return the_manager; }
 /*										*/
 /********************************************************************************/
 
-void recieveMessage(BgtaMessage mess)
-{
-   if (mess instanceof BgtaXMPPMessage)
-	  logging_area.processMessage(((BgtaXMPPConversation) the_chat).getChat(), ((BgtaXMPPMessage) mess).getMessage());
-   else
-	  logging_area.logMessage(mess.getBody());
-}
-
-
-
 void sendMessage(String mess)
 {
    draft_area.send(mess);
@@ -274,12 +232,7 @@ void sendMessage(String mess)
 
 void sendMetadata(String metadata)
 {
-   try {
-      the_chat.sendMessage(metadata);
-    }
-   catch (XMPPException e) {}
-
-   logging_area.logMessage("Sent the data", " ");
+    draft_area.send(metadata);
 }
 
 
@@ -298,14 +251,12 @@ void setAltColorIsOn(boolean ison)
 }
 
 
-
 boolean reloadAltColor()
 {
    alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
    if (!alt_color) alt_color_is_on = false;
    return alt_color;
 }
-
 
 
 boolean getAltColorIsOn()
@@ -316,12 +267,12 @@ boolean getAltColorIsOn()
 
 
 /********************************************************************************/
-/*                            */
-/* Document listener methods                           */
-/*                            */
+/*                                                                              */
+/* Document listener methods                                                    */
+/*                                                                              */
 /********************************************************************************/
-@Override
-public void changedUpdate(DocumentEvent e)
+
+@Override public void changedUpdate(DocumentEvent e)
 {
     if (isVisible())
         repaint();
@@ -329,9 +280,7 @@ public void changedUpdate(DocumentEvent e)
 }
 
 
-
-@Override
-public void insertUpdate(DocumentEvent e)
+@Override public void insertUpdate(DocumentEvent e)
 {
    if (isVisible())
       repaint();
@@ -339,9 +288,7 @@ public void insertUpdate(DocumentEvent e)
 }
 
 
-
-@Override
-public void removeUpdate(DocumentEvent e)
+@Override public void removeUpdate(DocumentEvent e)
 {
     if (isVisible())
         repaint();
@@ -365,12 +312,10 @@ public void removeUpdate(DocumentEvent e)
 }
 
 
-
 @Override public int hashCode()
 {
    return chat_username.hashCode() + username_id;
 }
-
 
 
 @Override public String toString()

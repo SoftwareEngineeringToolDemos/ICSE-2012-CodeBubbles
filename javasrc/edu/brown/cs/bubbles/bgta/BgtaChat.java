@@ -389,10 +389,4 @@ private class AIMChatListener implements ConversationListener {
 
 
 
-
-
-void open()
-{
-    is_open = true;
-}
 }

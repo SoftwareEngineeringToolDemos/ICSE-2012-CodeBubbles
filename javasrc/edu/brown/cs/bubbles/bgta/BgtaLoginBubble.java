@@ -215,7 +215,6 @@ void removeBubble()
 }
 
 
-
 @Override public void setVisible(boolean vis)
 {
    super.setVisible(vis);
@@ -229,6 +228,7 @@ void removeBubble()
 /*	Interaction Listeners									*/
 /*										*/
 /********************************************************************************/
+
 private class LogoutListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
@@ -248,7 +248,6 @@ private class LogoutListener implements ActionListener {
 }	// end of inner class LogoutListener
 
 
-
 private class RememberListener implements ItemListener {
 
    @Override public void itemStateChanged(ItemEvent e) {
@@ -256,7 +255,6 @@ private class RememberListener implements ItemListener {
     }
 
 }	// end of inner class RememberListener
-
 
 
 private class LoginListener implements ActionListener {
@@ -316,7 +314,6 @@ private class LoginListener implements ActionListener {
 }	// end of inner class LoginListener
 
 
-
 private class EnterListener implements ActionListener {
 
    private JTextField next_field;
@@ -335,7 +332,6 @@ private class EnterListener implements ActionListener {
     }
 
 }	// end of inner class EnterListener
-
 
 
 private class FocusSelectionListener extends FocusAdapter {

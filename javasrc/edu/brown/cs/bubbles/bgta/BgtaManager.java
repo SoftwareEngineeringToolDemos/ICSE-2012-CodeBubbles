@@ -26,12 +26,8 @@ import edu.brown.cs.bubbles.board.BoardImage;
 import edu.brown.cs.bubbles.board.BoardLog;
 
 import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.filter.PacketIDFilter;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.*;
-import org.jivesoftware.smackx.ServiceDiscoveryManager;
-import org.jivesoftware.smackx.packet.DiscoverInfo;
-import org.jivesoftware.smackx.packet.DiscoverItems;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -64,7 +60,6 @@ protected String                   user_password;
 protected ChatServer               user_server;
 protected boolean                  being_saved;
 protected Vector<BgtaBubble>       existing_bubbles;
-@Deprecated protected Vector<BgtaConversation> existing_conversations;
 protected Map<String, BgtaChat>    existing_chats;protected Map<String, Document>    existing_docs;
 protected BgtaRoster               the_roster;
 
@@ -97,7 +92,6 @@ BgtaManager(String username,String password,ChatServer server)
    if (user_server == null)
       user_server = ChatServer.GMAIL;
    existing_bubbles = new Vector<BgtaBubble>();
-   existing_conversations = new Vector<BgtaConversation>();
    existing_chats = new HashMap<String, BgtaChat>();
    existing_docs = new HashMap<String, Document>();
    being_saved = false;
@@ -112,7 +106,6 @@ BgtaManager(String username,String password)
    user_password = password;
    user_server = ChatServer.GMAIL;
    existing_bubbles = new Vector<BgtaBubble>();
-   existing_conversations = new Vector<BgtaConversation>();
    existing_chats = new HashMap<String, BgtaChat>();
    existing_docs = new HashMap<String, Document>();
    being_saved = false;
@@ -127,7 +120,7 @@ BgtaManager() { }
 
 /********************************************************************************/
 /*										*/
-/*	Access methods								*/
+/*	Access Methods								*/
 /*										*/
 /********************************************************************************/
 
@@ -167,24 +160,24 @@ boolean propertiesMatch(String un,String se)
 
 @Override public boolean equals(Object o)
 {
-	if (!(o instanceof BgtaManager)) return false;
-	BgtaManager man = (BgtaManager) o;
+   if (!(o instanceof BgtaManager)) return false;
+   BgtaManager man = (BgtaManager) o;
 	
-	return user_name.equals(man.getUsername()) && user_password.equals(man.getPassword()) && user_server.equals(man.getServer());
+   return user_name.equals(man.getUsername()) && user_password.equals(man.getPassword()) && user_server.equals(man.getServer());
 }
 
 
 
 @Override public int hashCode()
 {
-	return user_name.hashCode() + user_password.hashCode() + user_server.hashCode();
+   return user_name.hashCode() + user_password.hashCode() + user_server.hashCode();
 }
 
 
 
 @Override public String toString()
 {
-	return user_name + ", " + user_server;
+   return user_name + ", " + user_server;
 }
 
 
@@ -205,11 +198,10 @@ void addPresenceListener(PacketListener p)
 
 /********************************************************************************/
 /*										*/
-/*	Login methods								*/
+/*	Connection methods							*/
 /*										*/
 /********************************************************************************/
 
-@Deprecated
 void login(String username,String password) throws XMPPException
 {
    login(username, password, ChatServer.GMAIL);
@@ -266,83 +258,28 @@ void login(String username,String password,ChatServer server) throws XMPPExcepti
 }
 
 
-/********************************************************************************/
-/*										*/
-/*	Connection methods							*/
-/*										*/
-/********************************************************************************/
-
-@Deprecated
-BgtaConversation startChat(String username,MessageListener list,BgtaBubble using)
+void disconnect()
 {
-   if (!hasConversation(username)) {
-	  Chat ch = the_connection.getChatManager().createChat(username, list);
-	  existing_bubbles.add(using);
-	  BgtaXMPPConversation chat = new BgtaXMPPConversation(ch,list);
-	  existing_conversations.add(chat);
-	  return chat;
-    }
-   else
-	  return getExistingConversation(username);
+    the_connection.disconnect();
+    existing_chats.clear();
+    roster_listener = null;
 }
 
 
 
-Document startChat(String username,BgtaBubble using)
-{
-   if (!hasChat(username)) {
-      Chat ch = the_connection.getChatManager().createChat(username,null);
-      String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
-      BgtaChat chat = new BgtaChat(username,name,user_server,ch,getExistingDoc(username),this);
-      existing_chats.put(username,chat);
-      existing_docs.put(username,chat.getDocument());
-    }
-   existing_bubbles.add(using);
-   return getExistingDoc(username);
-}
-
-
+/********************************************************************************/
+/*										*/
+/*	Bubble, Chat, & Doc Managers      					*/
+/*										*/
+/********************************************************************************/
 
 void addDuplicateBubble(BgtaBubble dup)
 {
    existing_bubbles.add(dup);
-   return;
 }
 
 
-
-void updateBubble(BgtaBubble up)
-{
-//   if (hasBubble(up.getUsername())) {
-//      String text = null;
-//      Document doc = up.getLog().getDocument();
-//      try {
-//	 text = doc.getText(0, doc.getLength());
-//	 doc = getExistingBubble(up.getUsername()).getLog().getDocument();
-//	 String curr = doc.getText(0, doc.getLength());
-//	 if (curr.indexOf(text) < 0) {
-//	    doc.insertString(0, text, null);
-//	  }
-//       }
-//      catch (Throwable t) {
-//	 BoardLog.logE("BGTA", "problem updating chat bubble", t);
-//       }
-//      up.getLog().setDocument(doc);
-//    }
-//   if (hasBubble(up.getUsername())) {
-//	  if (!up.isListener())
-////	 up.getLog().setDocument(getExistingBubble(up.getUsername()).getLog().getDocument());
-//	  else {
-//	 for (BgtaBubble bub : existing_bubbles) {
-//		bub.getLog().setDocument(up.getLog().getDocument()); 
-//	  }
-//	   }
-//    }
-   existing_bubbles.add(up);
-}
-
-
-
+// TODO: reimplement as multimap
 boolean hasBubble(String username)
 {
    for (BgtaBubble tbb : existing_bubbles) {
@@ -351,7 +288,6 @@ boolean hasBubble(String username)
     }
    return false;
 }
-
 
 
 BgtaBubble getExistingBubble(String username)
@@ -364,7 +300,6 @@ BgtaBubble getExistingBubble(String username)
 }
 
 
-
 void removeBubble(BgtaBubble bub)
 {
    existing_bubbles.removeElement(bub);
@@ -372,17 +307,18 @@ void removeBubble(BgtaBubble bub)
 }
 
 
-
-@Deprecated
-boolean hasConversation(String username)
+Document startChat(String username,BgtaBubble using)
 {
-   for (BgtaConversation chat : existing_conversations) {
-	  if (chat.getUser().equals(username))
-		 return true;
+    if (!hasChat(username)) {
+        Chat ch = the_connection.getChatManager().createChat(username,null);
+        String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
+        BgtaChat chat = new BgtaChat(username,name,user_server,ch,getExistingDoc(username),this);
+        existing_chats.put(username,chat);
+        existing_docs.put(username,chat.getDocument());
     }
-   return false;
+    existing_bubbles.add(using);
+    return getExistingDoc(username);
 }
-
 
 
 boolean hasChat(String username)
@@ -393,36 +329,10 @@ boolean hasChat(String username)
 }
 
 
-
 BgtaChat getChat(String username)
 {
    return existing_chats.get(username);
 }
-
-
-@Deprecated
-BgtaConversation getExistingConversation(String username)
-{
-   for (BgtaConversation chat : existing_conversations) {
-	  if (chat.getUser().equals(username))
-		 return chat;
-    }
-   return null;
-}
-
-
-@Deprecated
-void removeConversation(BgtaConversation chat,MessageListener list)
-{
-   if (((BgtaXMPPConversation) chat).isListener(list) && hasBubble(chat.getUser())) {
-	  BgtaBubble bub = getExistingBubble(chat.getUser());
-      ((BgtaXMPPConversation) chat).exchangeListeners(bub.getLog());
-      bub.makeActive();
-    }
-   if (chat.close())
-      existing_conversations.removeElement(chat);
-}
-
 
 
 void removeChat(String username)
@@ -435,7 +345,6 @@ void removeChat(String username)
 }
 
 
-
 boolean hasExistingDoc(String username)
 {
    if (existing_docs.get(username) == null)
@@ -444,19 +353,9 @@ boolean hasExistingDoc(String username)
 }
 
 
-
 Document getExistingDoc(String username)
 {
    return existing_docs.get(username);
-}
-
-
-
-void disconnect()
-{
-   the_connection.disconnect();
-   existing_chats.clear();
-   roster_listener = null;
 }
 
 
@@ -525,133 +424,6 @@ static Icon iconFor(Presence pres)
      BgtaFactory.createRecievedChatBubble(from, this);
     }
 }
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Service methods 							*/
-/*										*/
-/********************************************************************************/
-@Deprecated
-private String getGateway(String service)
-{
-   try {
-      ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(the_connection);
-      // jabber.yeahnah.co.nz is a free server which provides gateways to several legacy
-      // IM services
-      DiscoverItems items = sdm.discoverItems("jabber.yeahnah.co.nz");
-      Iterator<DiscoverItems.Item> itemsIterator = items.getItems();
-      while (itemsIterator.hasNext()) {
-	 DiscoverItems.Item item = itemsIterator.next();
-	 DiscoverInfo info = sdm.discoverInfo(item.getEntityID(), item.getNode());
-	 if (info.containsFeature("jabber:iq:gateway")) {
-	    if (item.getEntityID().contains(service.toLowerCase())) {
-	       return item.getEntityID();
-	     }
-	  }
-       }
-      return null;
-    }
-   catch (Throwable t) {
-      BoardLog.logE("BGTA", "Failed to find gateway for legacy service: " + service, t);
-      return null;
-    }
-}
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Registration management 						*/
-/*										*/
-/********************************************************************************/
-@Deprecated
-void register(String username,String password,String service) throws XMPPException
-{
-   String gateway = getGateway(service);
-   Registration registration = new Registration();
-   registration.addExtension(new GatewayRegistrationExtension());
-   registration.setType(IQ.Type.SET);
-   registration.setTo(gateway);
-   registration.setFrom(the_connection.getUser());
-
-   Map<String, String> attributes = new HashMap<String, String>();
-   attributes.put("username", username);
-   attributes.put("password", password);
-   registration.setAttributes(attributes);
-
-   PacketCollector collector = the_connection.createPacketCollector(new PacketIDFilter(
-								       registration.getPacketID()));
-   the_connection.sendPacket(registration);
-
-   IQ response = (IQ) collector.nextResult(SmackConfiguration.getPacketReplyTimeout());
-   collector.cancel();
-   if (response == null) throw new XMPPException("Server timed out.");
-   if (response.getType() == IQ.Type.ERROR) throw new XMPPException(
-      "Error registering user",response.getError());
-   if (!the_connection.getRoster().contains(gateway)) the_connection.getRoster().createEntry(
-      gateway, gateway, null);
-
-   Presence pres = new Presence(Presence.Type.subscribe);
-   pres.setTo(gateway);
-   pres.setFrom(the_connection.getUser());
-   the_connection.sendPacket(pres);
-   pres.setType(Presence.Type.available);
-   the_connection.sendPacket(pres);
-}
-
-
-@Deprecated
-void unregister(String username,String service) throws XMPPException
-{
-   String gateway = getGateway(service);
-   Registration registration = new Registration();
-   registration.addExtension(new GatewayRegistrationExtension());
-   registration.setType(IQ.Type.SET);
-   registration.setTo(gateway);
-   registration.setFrom(the_connection.getUser());
-   Map<String, String> attributes = new HashMap<String, String>();
-   attributes.put("remove", null);
-   registration.setAttributes(attributes);
-
-   PacketCollector collector = the_connection.createPacketCollector(new PacketIDFilter(
-								       registration.getPacketID()));
-   the_connection.sendPacket(registration);
-   IQ response = (IQ) collector.nextResult(SmackConfiguration.getPacketReplyTimeout());
-   collector.cancel();
-   if (response == null) throw new XMPPException("Server timed out.");
-   if (response.getType() == IQ.Type.ERROR) throw new XMPPException(
-      "Error unregistering user",response.getError());
-   if (the_connection.getRoster().contains(gateway)) the_connection.getRoster().removeEntry(
-      the_connection.getRoster().getEntry(gateway));
-   Roster roster = the_connection.getRoster();
-   Collection<RosterEntry> buddies = roster.getEntries();
-   for (RosterEntry buddy : buddies) {
-      if (buddy.getUser().contains(gateway)) {
-	 roster.removeEntry(buddy);
-       }
-    }
-}
-
-
-@Deprecated
-private class GatewayRegistrationExtension implements PacketExtension {
-
-   @Override public String getElementName() {
-      return "x";
-    }
-
-   @Override public String getNamespace() {
-      return "jabber:iq:gateway:register";
-    }
-
-   @Override public String toXML() {
-      return "<" + getElementName() + " xmlns=\"" + getNamespace() + "\"/>";
-    }
-
-}	// end of inner class GatewayRegistrationExtension
-
 
 
 private class BgtaRosterListener implements RosterListener {
@@ -755,91 +527,7 @@ class BgtaXMPPRosterEntry implements BgtaRosterEntry {
 
 
 
-class BgtaXMPPConversation implements BgtaConversation {
-	
-   private Chat				the_chat;
-   private MessageListener  the_listener;
-   private int				current_uses;
-   
-   BgtaXMPPConversation(Chat ch,MessageListener list) {
-	  the_chat = ch;
-	  the_listener = list;
-	  current_uses = 1;
-    }
-	
-   @Override public String getUser() {
-	  return the_chat.getParticipant();
-	 }
-   
-   @Override public void sendMessage(String message) throws XMPPException {
-	  the_chat.sendMessage(message);
-    }
-   
-   @Override public boolean close() {
-	   if (--current_uses < 1) {
-		  current_uses = 0;
-		  the_chat.removeMessageListener(the_listener);
-		  return true;
-	    }
-	   return false;
-    }
-   
-   @Override public void increaseUseCount() { current_uses++; }
-   
-   @Override public boolean isListener(Object list) {
-	  return list.equals((MessageListener) the_listener);
-    }
-   
-   @Override public void exchangeListeners(Object list) {
-	  MessageListener listener = (MessageListener) list;
-	  the_chat.addMessageListener(listener);
-	  the_chat.removeMessageListener(the_listener);
-	  the_listener = listener;
-    }
-   
-   Chat getChat() { return the_chat; }
-   
-}   // end of inner class BgtaXMPPChat
-
-
-
-class BgtaXMPPMessage implements BgtaMessage {
-	
-   private Message			the_message;
-	
-   BgtaXMPPMessage(Message mess) { the_message = mess;	}
-	
-   @Override public String getBody() {
-	  return the_message.getBody();
-    }
-   
-   @Override public String getFrom() {
-	  return the_message.getFrom();
-    }
-   
-   @Override public String getTo() {
-	  return the_message.getTo();
-    }
-   
-   Message getMessage() {
-	  return the_message;
-    }
-   
-}   // end of inner class BgtaXMPPMessage
-
-
-
-
-
-/*
- * 
- */
-
-void theC()
-{
-    // method body goes here
-}
-}	// end of class BgtaManager
+}   // end of class BgtaManager
 
 
 

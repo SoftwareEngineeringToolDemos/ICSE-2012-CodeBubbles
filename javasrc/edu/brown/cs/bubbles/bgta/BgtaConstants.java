@@ -26,7 +26,6 @@ import edu.brown.cs.bubbles.bass.BassConstants;
 import java.awt.Color;
 import java.util.Collection;
 
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 
 
@@ -237,28 +236,6 @@ interface BgtaRosterEntry {
    String getUser();
    
 }   // end of inner interface BgtaRosterEntry
-
-
-
-interface BgtaConversation {
-	
-	String getUser();
-	void sendMessage(String message) throws XMPPException;
-	boolean close();
-	void increaseUseCount();
-	boolean isListener(Object list);
-	void exchangeListeners(Object list);
-	
-}   // end of inner interface BgtaChat
-
-
-
-interface BgtaMessage {
-	
-	String getBody();
-	String getFrom();
-	String getTo();
-}
 
 
 

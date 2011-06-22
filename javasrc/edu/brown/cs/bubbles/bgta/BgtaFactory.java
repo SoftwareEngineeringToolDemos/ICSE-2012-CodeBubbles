@@ -179,40 +179,6 @@ static boolean logoutAccount(String username,String server)
 	return false;
 }
 
-@SuppressWarnings("deprecation")
-static void registerUserViaGateway(String username,String password,String server)
-{
-	for (BgtaManager man : chat_managers) {
-		if (man.propertiesMatch("codebubbles4tester@gmail.com","gmail.com")) {
-			try {
-				man.register(username,password,server);
-				BassFactory.reloadRepository(buddy_list);
-			} catch (Throwable t) {
-				BoardLog.logE("BGTA",
-						"Problem registering user with legacy service: " + server,t);
-			}
-		}
-	}
-}
-
-
-@SuppressWarnings("deprecation")
-static void unregisterUserViaGateway(String username,String server)
-{
-	for (BgtaManager man : chat_managers) {
-		if (man.propertiesMatch("codebubbles4tester@gmail.com","gmail.com")) {
-			try {
-				man.unregister(username,server);
-				BassFactory.reloadRepository(buddy_list);
-			} catch (Throwable t) {
-				BoardLog
-						.logE("BGTA",
-								"Problem unregistering user with legacy service: "
-										+ server,t);
-			}
-		}
-	}
-}
 
 static BoardProperties getBgtaProperties()
 {

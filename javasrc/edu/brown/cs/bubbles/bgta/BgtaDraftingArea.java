@@ -27,10 +27,6 @@ package edu.brown.cs.bubbles.bgta;
 
 
 
-import org.jivesoftware.smack.XMPPException;
-
-import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
-
 import javax.swing.JTextArea;
 
 import java.awt.event.*;
@@ -47,7 +43,7 @@ class BgtaDraftingArea extends JTextArea {
 /*										*/
 /********************************************************************************/
 
-private BgtaChat/*Conversation*/		my_chat;
+private BgtaChat	my_chat;
 private BgtaLoggingArea my_log;
 private BgtaBubble	my_bubble;
 
@@ -76,7 +72,6 @@ BgtaDraftingArea(/*BgtaConversation ch*/BgtaChat ch,BgtaLoggingArea bla,BgtaBubb
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Sending methods 							*/
@@ -85,35 +80,17 @@ BgtaDraftingArea(/*BgtaConversation ch*/BgtaChat ch,BgtaLoggingArea bla,BgtaBubb
 
 void send()
 {
-//   boolean sent = true;
-//   try {
-//      boolean sent = my_chat.sendMessage(getText());
-//      my_log.logMessage(getText(), "Me: ");
-//   }
-//   catch (Exception e) {
-	  //System.out.println(e.getMessage());
-//      sent = false;
-//   }
-   boolean sent = my_chat.sendMessage(getText());
-   if (sent) setText("");
-   else {
-//      setText("Message was not sent. Please try again.");
-//      selectAll();
-//      setCaretPosition(getText().length());
-      grabFocus();
-    }
-   
+   send(getText());   
 }
-
 
 
 void send(String message)
 {
-   my_chat.sendMessage(message);
-//   my_log.logMessage(message, "Me: ");
-//   my_log.setCaretPosition(my_log.getDocument().getLength());
+   boolean sent = my_chat.sendMessage(message);
+   if (sent) setText("");
+   else
+       grabFocus();
 }
-
 
 
 
@@ -137,7 +114,6 @@ private class DraftingListener extends KeyAdapter {
 
 
 
-
 private class FocusForLogListener implements FocusListener {
 
    @Override public void focusGained(FocusEvent e) {
@@ -153,7 +129,6 @@ private class FocusForLogListener implements FocusListener {
     }
 
 }	// end of inner class FocusForLogListener
-
 
 
 

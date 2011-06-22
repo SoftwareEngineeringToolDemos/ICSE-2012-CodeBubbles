@@ -112,8 +112,8 @@ BdocRepository()
 	 String nm = bp.getProperty(s);
 	 if (nm != null) bdoc_props.add(s);
        }
-    }		
-   
+    }	
+
    File f = BoardSetup.getDocumentationFile();
 
    if (loadXml(f)) {
@@ -126,7 +126,7 @@ BdocRepository()
    for (String s : bdoc_props) {
       String nm = bp.getProperty(s);
       if (nm != null) addJavadoc(nm);
-    }		
+    }	
 
    noteSearcherDone();
 }
@@ -602,7 +602,10 @@ private boolean loadXml(File f)
 	    URI u = new URI(nm);
 	    if (u.getScheme().equals("file")) {
 	       File f0 = new File(u.getPath());
-	       if (!f0.exists() || f0.lastModified() > dlm) return false;
+	       if (!f0.exists() || f0.lastModified() > dlm) {
+		  BoardLog.logD("BDOC","Update doc because of " + f0);
+		  return false;
+		}
 	     }
 	    else if (u.getScheme().equals("http")) {
 	       try {
@@ -612,13 +615,16 @@ private boolean loadXml(File f)
 		  int cd = c.getResponseCode();
 		  if (cd == HttpURLConnection.HTTP_OK) {
 		     long ndlm = c.getLastModified();
-		     if (ndlm > dlm) return false;
+		     if (ndlm > dlm) {
+			BoardLog.logD("BDOC","Update doc because of " + u);
+			return false;
+		      }
 		   }
 		  else if (cd >= 400) return false;
-	        }
+		}
 	       catch (IOException e) {
 		  // ignore bad connection -- use cached value
-	        }
+		}
 	     }
 	  }
 	 catch (URISyntaxException e) {

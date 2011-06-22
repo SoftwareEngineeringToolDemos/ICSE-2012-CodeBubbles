@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -129,8 +129,15 @@ private void addFixes(int id,String [] args,IvyXmlWriter xw)
 	 // TODO: determine return type
 	 xw.end("FIX");
 	 break;
+      case IProblem.UndefinedName :
+      case IProblem.UndefinedType :
+	 xw.begin("FIX");
+	 xw.field("TYPE","TRY_IMPORT");
+	 xw.field("CLASS",args[0]);
+	 xw.end("FIX");
+	 break;
       default :
-         break;
+	 break;
     }
 }
 

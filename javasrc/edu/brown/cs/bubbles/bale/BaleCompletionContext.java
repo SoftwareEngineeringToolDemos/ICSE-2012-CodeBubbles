@@ -875,7 +875,10 @@ private static class CompletionItemBump extends CompletionItem {
 
    String getCompletionText() {
       String toreturn = bump_completion.getCompletion();
-      if (toreturn.charAt(toreturn.length()-1)==')'){
+      if (toreturn == null) return null;
+      int ln = toreturn.length();
+      if (ln > 1 && toreturn.charAt(ln-1) == ')' &&
+	     (param_types != null && param_types.length() > 0)){
 	 toreturn = toreturn.substring(0, toreturn.length()-1);
        }
       return toreturn;

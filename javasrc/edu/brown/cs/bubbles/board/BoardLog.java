@@ -104,6 +104,7 @@ private void setupLogger()
    use_stderr = bp.getBoolean(BOARD_PROP_USE_STDERR,(jar == null));
 
    String wsn = bp.getProperty(BOARD_PROP_ECLIPSE_WS);
+   System.err.println("BOARD: " + jar + " " + use_stderr + " " + wsn);
    File wsd = null;
    if (wsn == null) {
       use_stderr = true;

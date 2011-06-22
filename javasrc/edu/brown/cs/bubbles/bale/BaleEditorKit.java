@@ -1533,8 +1533,10 @@ private static class RemoveElisionAction extends AbstractAction {
 	 BaleDocument bd = target.getBaleDocument();
 	 bd.baleWriteLock();
 	 try {
+	    BaleElideMode em = bd.getElideMode();
 	    bd.removeElision();
 	    bd.handleElisionChange();
+	    bd.setElideMode(em);
 	  }
 	 finally { bd.baleWriteUnlock(); }
 	 BoardMetrics.noteCommand("BALE","RemoveElision");

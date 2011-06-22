@@ -422,6 +422,9 @@ private class DescriptionView extends JEditorPane {
 
 }	// end of inner class DescriptionView
 
+
+	
+
 private class DocLinker implements HyperlinkListener {
 
    @Override public void hyperlinkUpdate(HyperlinkEvent e) {

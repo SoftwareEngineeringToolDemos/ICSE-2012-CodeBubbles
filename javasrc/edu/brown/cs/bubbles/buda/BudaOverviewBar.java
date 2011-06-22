@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -33,6 +33,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+
+import java.util.*;
 
 
 class BudaOverviewBar extends JPanel implements BudaConstants,
@@ -194,6 +196,9 @@ void setFakeWorkingSet(boolean b)
    repaint();
 }
 
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Output methods								*/
@@ -244,7 +249,23 @@ private void handleMouseEvent(MouseEvent e)
    double x0 = e.getX() / sx;
    double y0 = e.getY() / sy;
 
-   if (r.contains((int) x0,(int) y0) && e.getID() == MouseEvent.MOUSE_PRESSED &&
+   Collection<BudaBubble> bbls = bubble_area.getBubblesInRegion(new Rectangle((int) x0,(int) y0,1,1));
+   BudaBubble bb = null;
+   BudaBubbleGroup bg = null;
+   if (bbls.size() > 0) {
+      for (BudaBubble bbx : bbls) {
+	 if (bb == null || bb.isFixed()) bb = bbx;
+       }
+      for (BudaBubbleGroup bgx : bubble_area.getBubbleGroups()) {
+	 if (bgx.getBubbles().contains(bb)) bg = bgx;
+      }
+   }
+
+   if (e.getID() == MouseEvent.MOUSE_PRESSED && e.getButton() == MouseEvent.BUTTON3 &&
+	    bb != null) {
+      mouse_context = new BubbleMoveContext(e,bb,bg);
+    }
+   else if (r.contains((int) x0,(int) y0) && e.getID() == MouseEvent.MOUSE_PRESSED &&
 	  e.getButton() == MouseEvent.BUTTON3) {
       mouse_context = new PanelMoveContext(e);
     }
@@ -308,13 +329,68 @@ private class PanelMoveContext extends MouseContext {
       if (x0 > area_bounds.width - view_position.width) x0 = area_bounds.width - view_position.width;
       if (y0 < 0) y0 = 0;
       if (y0 > area_bounds.height - view_position.height) y0 = area_bounds.height - view_position.height;
-   
+
       setViewport((int) x0,(int) y0);
     }
 
    void finish() {
       super.finish();
       if (move_count > 0) BoardMetrics.noteCommand("BUDA","overviewMove");
+    }
+
+}	// end of inner class PanelMoveContext
+
+
+
+
+private class BubbleMoveContext extends MouseContext {
+
+   private double scale_x;
+   private double scale_y;
+   private int move_count;
+   private Map<BudaBubble,Point> initial_position;
+
+   BubbleMoveContext(MouseEvent e,BudaBubble bb,BudaBubbleGroup bg) {
+      super(e);
+      Dimension sz = getSize();
+      Dimension bounds = bubble_area.getSize();
+      scale_x = sz.getWidth() / bounds.getWidth();
+      scale_y = sz.getHeight() / bounds.getHeight();
+      initial_position = new HashMap<BudaBubble,Point>();
+      if (bg != null) {
+	 for (BudaBubble bbx : bg.getBubbles()) addInitialPosition(bbx);
+       }
+      else if (bb != null) addInitialPosition(bb);
+      move_count = 0;
+    }
+
+   void next(MouseEvent e) {
+      ++move_count;
+      BudaCursorManager.setGlobalCursorForComponent(BudaOverviewBar.this, Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+      Point p0 = e.getPoint();
+      int x1 = p0.x;
+      int y1 = p0.y;
+      if (x1 < 0) x1 = 0;
+      x1 = Math.min(x1,BudaOverviewBar.this.getWidth());
+      if (y1 < 0) y1 = 0;
+      y1 = Math.min(y1,BudaOverviewBar.this.getHeight());
+
+      for (Map.Entry<BudaBubble,Point> ent : initial_position.entrySet()) {
+	 BudaBubble bb = ent.getKey();
+	 Point ip = ent.getValue();
+	 double x0 = ip.x + (x1 - initial_mouse.x)/scale_x;
+	 double y0 = ip.y + (y1 - initial_mouse.y)/scale_y;
+	 bb.setLocation(new Point((int) x0,(int) y0));
+       }
+    }
+
+   void finish() {
+      super.finish();
+      if (move_count > 0) BoardMetrics.noteCommand("BUDA","overviewMove");
+    }
+
+   private void addInitialPosition(BudaBubble bb) {
+      initial_position.put(bb,bb.getLocation());
     }
 
 }	// end of inner class PanelMoveContext

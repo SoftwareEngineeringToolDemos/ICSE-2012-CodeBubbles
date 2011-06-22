@@ -80,7 +80,7 @@ public static void main(String [] args)
 	 System.err.println("BEMA: Problem setting l&f: " + t);
        }
     }
-
+   
    bm.start();
 }
 

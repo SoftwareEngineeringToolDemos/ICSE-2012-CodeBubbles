@@ -110,9 +110,9 @@ boolean BGTA_INITIAL_REM_SETTING     = false;
 /*										*/
 /********************************************************************************/
 
-String	BGTA_METADATA_START	  = "///({";
+String	BGTA_METADATA_START	  = "http://conifer.cs.brown.edu/bubbles/uploads/WorkingSets/";
 
-String	BGTA_METADATA_FINISH	 = "})///";
+String	BGTA_METADATA_FINISH	 = ".xml";
 
 
 
@@ -148,7 +148,7 @@ int	BGTA_DATA_BUTTON_HEIGHT      = 3 * BGTA_DATA_BUTTON_WIDTH;
 /*										*/
 /********************************************************************************/
 
-String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar and select \"Load Task\".\n";
+String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar\nand select \"Load Task\".\n";
 
 
 

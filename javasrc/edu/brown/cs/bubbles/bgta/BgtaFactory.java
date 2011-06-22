@@ -226,17 +226,19 @@ private BudaBubble createMetadataChatBubble(String friendname,String url)
 	boolean isknownmanager = false;
 	BgtaManager man = buddy_list.getBuddyInfo(friendname).getManager();
 	for (BgtaManager m : chat_managers) {
-		if (man == m) {
-			isknownmanager = true;
-			break;
-		}
-	}
+	   if (man == m) {
+	      isknownmanager = true;
+	      break;
+            }
+	 }
 	if (!isknownmanager) return null;
-	BgtaBubble bb = new BgtaBubble(friendname,man);
-	Rectangle vp = my_buda_root.getViewport();
-	my_buda_root.add(bb,new BudaConstraint(vp.x,vp.y));
-	bb.sendMessage("Here's my Data!");
-	bb.sendMessage(BGTA_METADATA_START + url + BGTA_METADATA_FINISH);
+        BgtaBubble bb = man.getExistingBubble(friendname);
+        if (bb == null) {
+           bb = new BgtaBubble(friendname,man);
+           Rectangle vp = my_buda_root.getViewport();
+           my_buda_root.add(bb,new BudaConstraint(vp.x,vp.y));
+         }
+	bb.sendMessage(url);
 	return bb;
 }
 

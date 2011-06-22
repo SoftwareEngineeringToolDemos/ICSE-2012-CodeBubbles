@@ -23,6 +23,8 @@ package edu.brown.cs.bubbles.bgta;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 
+import java.util.Collection;
+
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -332,27 +334,26 @@ void close()
 private class XMPPChatListener implements MessageListener {
 
 @Override public void processMessage(Chat ch,Message msg) {
-   if (msg.getType() == Message.Type.chat) {
-//      String tolog = msg.getBody();
-//      if (tolog.startsWith(BGTA_METADATA_START) && tolog.endsWith(BGTA_METADATA_FINISH)) {
-//    tolog = tolog.substring(BGTA_METADATA_START.length(), tolog.length()
-//                - BGTA_METADATA_FINISH.length());
-//    logMessage("Click the button below to load the data", "");
-//    JButton accept = new JButton("Load Task to Task Shelf");
-//    Dimension d = new Dimension(BGTA_DATA_BUTTON_WIDTH,BGTA_DATA_BUTTON_HEIGHT);
-//    accept.setPreferredSize(d);
-//    accept.setSize(d);
-//    accept.setMinimumSize(d);
-//    Element xml = IvyXml.loadXmlFromURL(tolog);
-//    accept.addActionListener(new XMLListener(xml));
-//    setCaretPosition(my_doc.getLength());
-//    insertComponent(accept);
-//       }
-//      else 
-      if (!ch.equals(the_chat))
-         return;
-      messageReceived(msg);
-    }
+    if (!ch.equals(the_chat))
+        return;
+    if (msg.getType() == Message.Type.chat) {
+       String data = msg.getBody();
+       if (data.startsWith(BGTA_METADATA_START) && data.endsWith(BGTA_METADATA_FINISH)) {
+          logMessage("Click the button below to load the data", "Bubbles");
+          Collection<BgtaBubble> bubbles = the_manager.getExistingBubbles(user_name);
+          if (bubbles != null) {
+              for (BgtaBubble bb : the_manager.getExistingBubbles(user_name)) {
+                 bb.processMetadata(data);
+               }
+           }
+          else {
+              BgtaBubble bb = BgtaFactory.createRecievedChatBubble(user_name,the_manager);
+              bb.processMetadata(data);
+           }
+        }
+       else 
+          messageReceived(msg);
+     }
  }
 
 }  // end of inner class XMPPChatListener

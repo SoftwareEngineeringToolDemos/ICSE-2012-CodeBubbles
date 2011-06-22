@@ -22,6 +22,8 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import edu.brown.cs.ivy.xml.IvyXml;
+
 import org.w3c.dom.Element;
 
 import javax.swing.*;
@@ -48,7 +50,7 @@ private Document	my_doc;
 // private AttributeSet	is_bolded;
 private AttributeSet	is_unbolded;
 private AttributeSet	in_use;
-// private int		last_focused_caret_pos;
+private int		last_focused_caret_pos;
 
 private static final long serialVersionUID = 1L;
 
@@ -140,16 +142,39 @@ void unbold()
 
 /********************************************************************************/
 /*										*/
+/*	Metadata processing							*/
+/*										*/
+/********************************************************************************/
+
+void processMetadata(String data)
+{
+    JButton accept = new JButton("Load Task to Task Shelf");
+    Dimension d = new Dimension(BGTA_DATA_BUTTON_WIDTH,BGTA_DATA_BUTTON_HEIGHT);
+    accept.setPreferredSize(d);
+    accept.setSize(d);
+    accept.setMinimumSize(d);
+    Element xml = IvyXml.loadXmlFromURL(data);
+    accept.addActionListener(new XMLListener(xml));
+    setCaretPosition(my_doc.getLength());
+    last_focused_caret_pos = getCaretPosition();
+    insertComponent(accept);
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Button press methods							*/
 /*										*/
 /********************************************************************************/
 
-void pressedButton()
+void pressedButton(JButton button)
 {
    try {
       my_doc.insertString(my_doc.getLength(), BGTA_TASK_DESCRIPTION, in_use);
     }
    catch (BadLocationException e) {}
+   removeAll();
 }
 
 
@@ -164,7 +189,7 @@ private class XMLListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent arg0) {
       BgtaFactory.addTaskToRoot(_xml);
-      pressedButton();
+      pressedButton((JButton) arg0.getSource());
     }
 
 }	// end of private class XMLListener

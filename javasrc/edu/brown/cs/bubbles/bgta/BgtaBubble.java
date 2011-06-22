@@ -188,6 +188,12 @@ void sendMessage(String mess)
 }
 
 
+void processMetadata(String data)
+{
+    logging_area.processMetadata(data);
+}
+
+
 
 /********************************************************************************/
 /*										*/

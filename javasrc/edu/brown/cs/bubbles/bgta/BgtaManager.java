@@ -25,9 +25,11 @@ import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
 import edu.brown.cs.bubbles.board.BoardImage;
 import edu.brown.cs.bubbles.board.BoardLog;
 
+import org.apache.commons.collections15.MultiMap;
+import org.apache.commons.collections15.multimap.MultiHashMap;
 import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.*;
+import org.jivesoftware.smack.filter.PacketTypeFilter;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -59,8 +61,9 @@ protected String                   user_name;
 protected String                   user_password;
 protected ChatServer               user_server;
 protected boolean                  being_saved;
-protected Vector<BgtaBubble>       existing_bubbles;
-protected Map<String, BgtaChat>    existing_chats;protected Map<String, Document>    existing_docs;
+protected MultiMap<String, BgtaBubble>       existing_bubbles;
+protected Map<String, BgtaChat>    existing_chats;
+protected Map<String, Document>    existing_docs;
 protected BgtaRoster               the_roster;
 
 
@@ -91,7 +94,7 @@ BgtaManager(String username,String password,ChatServer server)
    user_server = server;
    if (user_server == null)
       user_server = ChatServer.GMAIL;
-   existing_bubbles = new Vector<BgtaBubble>();
+   existing_bubbles = new MultiHashMap<String, BgtaBubble>();
    existing_chats = new HashMap<String, BgtaChat>();
    existing_docs = new HashMap<String, Document>();
    being_saved = false;
@@ -105,7 +108,7 @@ BgtaManager(String username,String password)
    user_name = username;
    user_password = password;
    user_server = ChatServer.GMAIL;
-   existing_bubbles = new Vector<BgtaBubble>();
+   existing_bubbles = new MultiHashMap<String, BgtaBubble>();
    existing_chats = new HashMap<String, BgtaChat>();
    existing_docs = new HashMap<String, Document>();
    being_saved = false;
@@ -280,34 +283,37 @@ void disconnect()
 
 void addDuplicateBubble(BgtaBubble dup)
 {
-   existing_bubbles.add(dup);
+   existing_bubbles.put(dup.getUsername(), dup);
 }
 
 
-// TODO: reimplement as multimap
 boolean hasBubble(String username)
 {
-   for (BgtaBubble tbb : existing_bubbles) {
-      String s = tbb.getUsername();
-      if (s.equals(username)) return true;
-    }
-   return false;
+   return existing_bubbles.get(username) != null;
 }
 
 
 BgtaBubble getExistingBubble(String username)
 {
-   for (BgtaBubble tbb : existing_bubbles) {
-      String s = tbb.getUsername();
-      if (s.equals(username)) return tbb;
-    }
+   List<BgtaBubble> bubbles = (List<BgtaBubble>) existing_bubbles.get(username);
+   if (bubbles != null)
+       return bubbles.get(0);
    return null;
+}
+
+
+List<BgtaBubble> getExistingBubbles(String username)
+{
+    List<BgtaBubble> bubbles = (List<BgtaBubble>) existing_bubbles.get(username);
+    if (bubbles != null)
+        return new ArrayList<BgtaBubble>(bubbles);
+    return null;
 }
 
 
 void removeBubble(BgtaBubble bub)
 {
-   existing_bubbles.removeElement(bub);
+   existing_bubbles.remove(bub.getUsername(), bub);
    removeChat(bub.getUsername());
 }
 
@@ -321,7 +327,7 @@ Document startChat(String username,BgtaBubble using)
         existing_chats.put(username,chat);
         existing_docs.put(username,chat.getDocument());
     }
-    existing_bubbles.add(using);
+    existing_bubbles.put(username,using);
     return getExistingDoc(username);
 }
 
@@ -421,12 +427,13 @@ static Icon iconFor(Presence pres)
        String from = pack.getFrom();
       if (from.lastIndexOf("/") != -1) from = from.substring(0, from.lastIndexOf("/"));
       if (from.equals(user_name)) return;
-      for (BgtaBubble tbb : existing_bubbles) {
-          if (from.equals(tbb.getUsername())) {
-	    if (!tbb.isPreview()) return;
-	  }
+      Collection<BgtaBubble> bubbles = existing_bubbles.get(from);
+      if (bubbles != null) {
+         for (BgtaBubble bb : bubbles) {
+            if (!bb.isPreview()) return;
+          }
        }
-     BgtaFactory.createRecievedChatBubble(from, this);
+      BgtaFactory.createRecievedChatBubble(from, this);
     }
 }
 

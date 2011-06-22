@@ -232,7 +232,7 @@ BgtaAimManager(String username,String password,ChatServer server)
         existing_chats.put(username,chat);
         existing_docs.put(username,chat.getDocument());
      }
-    existing_bubbles.add(using);
+    existing_bubbles.put(username,using);
     return getExistingDoc(username);
 }
 

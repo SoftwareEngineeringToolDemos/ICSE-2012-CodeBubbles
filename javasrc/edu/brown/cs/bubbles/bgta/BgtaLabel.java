@@ -95,7 +95,8 @@ BgtaLabel(String username,BgtaRoster rost)
 	 if (pr.getType() == Presence.Type.available) {
 	    my_icon = (ImageIcon) BgtaManager.iconFor(my_presence);
 	    setIcon(my_icon);
-	    setToolTipText(my_presence.getMode().toString());
+            if (my_presence.getMode() != null)
+	       setToolTipText(my_presence.getMode().toString());
 	 }
 	 else if (pr.getType() == Presence.Type.unavailable) {
 	    my_icon = (ImageIcon) BgtaManager.iconFor(my_presence);

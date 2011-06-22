@@ -236,7 +236,7 @@ private BudaBubble createMetadataChatBubble(String friendname,String url)
 	Rectangle vp = my_buda_root.getViewport();
 	my_buda_root.add(bb,new BudaConstraint(vp.x,vp.y));
 	bb.sendMessage("Here's my Data!");
-	bb.sendMetadata(BGTA_METADATA_START + url + BGTA_METADATA_FINISH);
+	bb.sendMessage(BGTA_METADATA_START + url + BGTA_METADATA_FINISH);
 	return bb;
 }
 

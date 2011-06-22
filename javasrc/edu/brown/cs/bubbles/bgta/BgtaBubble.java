@@ -34,7 +34,6 @@ import javax.swing.text.Document;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
 
 
 
@@ -56,15 +55,9 @@ private BgtaDraftingArea  draft_area;
 private boolean 	  is_saved;
 private boolean 	  alt_color;
 private boolean 	  alt_color_is_on;
-private int		  username_id;
 private boolean 	  is_preview;
 
 private static final long serialVersionUID = 1L;
-private static HashMap<String, Integer> current_id;
-
-static {
-	current_id = new HashMap<String, Integer>();
-}
 
 
 
@@ -95,43 +88,20 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 
    Document doc = null;
    logging_area = new BgtaLoggingArea(this);
-   if (!the_manager.hasBubble(chat_username)) {
-	  if (!the_manager.hasChat(chat_username)) {
-	     doc = the_manager.startChat(chat_username,this);
-	     logging_area.setDocument(doc);
-	 current_id.put(chat_username, 1);
-     username_id = 1;
-	   }
-	  else {
-	     doc = the_manager.getExistingDoc(chat_username);
-	     logging_area.setDocument(doc);
-	 Integer id = current_id.remove(chat_username);
-	 current_id.put(chat_username, id.intValue() + 1);
-	 username_id = id.intValue() + 1;
-	 the_manager.addDuplicateBubble(this);
-	   }
+   if (!the_manager.hasChat(chat_username)) {
+      doc = the_manager.startChat(chat_username,this);
+      logging_area.setDocument(doc);
     }
    else {
-      BgtaBubble existingBubble = the_manager.getExistingBubble(chat_username);
-      BgtaLoggingArea existingLog = null;
-      if (existingBubble != null) {
-	 existingLog = existingBubble.getLog();
-	 if (existingLog != null) {
-	    doc = the_manager.getExistingDoc(chat_username);
-	    if (doc != null) {
-	       logging_area.setDocument(doc);
-	       Integer id = current_id.remove(chat_username);
-		   current_id.put(chat_username, id.intValue() + 1);
-		   username_id = id.intValue() + 1;
-	       the_manager.addDuplicateBubble(this);
-	     }
-	  }
+      doc = the_manager.getExistingDoc(chat_username);
+      if (doc != null) {
+         logging_area.setDocument(doc);
+         the_manager.addDuplicateBubble(this);
        }
     }
 
    // Register bubble as document listener.
-   if (doc != null)
-      doc.addDocumentListener(this);
+   doc.addDocumentListener(this);
    draft_area = new BgtaDraftingArea(the_manager.getChat(chat_username),logging_area,this);
    JScrollPane log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 					     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -189,15 +159,6 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 }
 
 
-@Override protected void localDispose()
-{
-   // If there isn't a chat anymore, then remove the id
-   // from the map.
-   if (!the_manager.hasChat(chat_username))
-	  current_id.remove(chat_username);
-}
-
-
 
 /********************************************************************************/
 /*										*/
@@ -206,8 +167,6 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 /********************************************************************************/
 
 String getUsername()				{ return chat_username; }
-
-int getUsernameID()				{ return username_id; }
 
 BgtaLoggingArea getLog()			{ return logging_area; }
 
@@ -226,13 +185,6 @@ BgtaManager getManager()			{ return the_manager; }
 void sendMessage(String mess)
 {
    draft_area.send(mess);
-}
-
-
-
-void sendMetadata(String metadata)
-{
-    draft_area.send(metadata);
 }
 
 
@@ -299,28 +251,13 @@ boolean getAltColorIsOn()
 
 /********************************************************************************/
 /*										*/
-/*	Comparison methods							*/
+/*	Object methods 							*/
 /*										*/
 /********************************************************************************/
 
-@Override public boolean equals(Object o)
-{
-   if (!(o instanceof BgtaBubble)) return false;
-   BgtaBubble b = (BgtaBubble) o;
-
-   return chat_username.equals(b.getUsername()) && username_id == b.getUsernameID();
-}
-
-
-@Override public int hashCode()
-{
-   return chat_username.hashCode() + username_id;
-}
-
-
 @Override public String toString()
 {
-   return "BgtaBubble Username: " + chat_username + ", UsernameID: " + username_id;
+   return "BgtaBubble - Username: " + chat_username;
 }
 
 

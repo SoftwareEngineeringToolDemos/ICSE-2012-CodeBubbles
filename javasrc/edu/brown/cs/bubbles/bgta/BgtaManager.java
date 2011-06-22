@@ -242,8 +242,13 @@ void login(String username,String password,ChatServer server) throws XMPPExcepti
    	the_connection.connect();
    	the_connection.login(username, password);
     } catch (XMPPException e) {
-   	the_connection.disconnect();
-        BoardLog.logE("BGTA","Error connecting to " + server.server() + ": ",e);
+       try {
+    	  if (the_connection.isConnected())
+    	     the_connection.disconnect();
+        } catch (Exception ex) {
+            BoardLog.logE("BGTA", "Error disconnecting: " + ex.getMessage());
+        }
+        BoardLog.logE("BGTA","Error connecting to " + server.server() + ": " + e.getMessage());
    	throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
     }
     if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to " + server.server() + ". Please try again.");

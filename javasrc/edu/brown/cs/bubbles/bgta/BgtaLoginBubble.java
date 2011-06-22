@@ -77,6 +77,7 @@ private JButton                        logout_button;
 private JTextField                     user_field;
 private JPasswordField                 pass_field;
 private JLabel                         server_field;
+private JLabel                         error_label;
 private BgtaRepository                 my_repository;
 private BgtaLoginName                  my_name;
 private ChatServer                     selected_server;
@@ -120,6 +121,12 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    server_field.setHorizontalAlignment(SwingConstants.RIGHT);
    server_field.setVerticalAlignment(SwingConstants.TOP);
    server_field.setFont(BoardFont.getFont(server_field.getFont().getFontName(),Font.PLAIN,10));
+   error_label = new JLabel("Login failed. Please try again.");
+   // error_label.setVisible(false);
+   error_label.setHorizontalAlignment(SwingConstants.CENTER);
+   error_label.setVerticalAlignment(SwingConstants.BOTTOM);
+   error_label.setFont(BoardFont.getFont(error_label.getFont().getFontName(),Font.PLAIN,10));
+   error_label.setForeground(Color.RED);
 
    user_field = new JTextField(15);
    pass_field = new JPasswordField(15);
@@ -151,7 +158,7 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    logout_button.addActionListener(new LogoutListener());
    logout_button.setFont(BoardFont.getFont(logout_button.getFont().getFontName(),Font.PLAIN,10));
 
-   lpan.setLayout(new GridBagLayout());
+   // lpan.setLayout(new GridBagLayout());
    GridBagConstraints c = new GridBagConstraints();
    c.fill = GridBagConstraints.NONE;
    c.anchor = GridBagConstraints.LINE_START;
@@ -166,29 +173,32 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    c.gridx = 1;
    c.insets = new Insets(5,0,0,10);
    lpan.add(serverchoice, c);
-   c.anchor = GridBagConstraints.LAST_LINE_START;
+   c.anchor = GridBagConstraints.CENTER;
    c.gridx = 0;
    c.gridy = 1;
    c.gridwidth = 2;
    c.weighty = 0.5;
    c.insets = new Insets(0,10,0,10);
+   lpan.add(error_label,c);
+   c.anchor = GridBagConstraints.LAST_LINE_START;
+   c.gridy = 2;
    lpan.add(userlabel, c);
    c.anchor = GridBagConstraints.CENTER;
-   c.gridy = 2;
+   c.gridy = 3;
    lpan.add(user_field, c);
    c.anchor = GridBagConstraints.LAST_LINE_END;
-   c.gridy = 3;
+   c.gridy = 4;
    lpan.add(server_field, c);
    c.anchor = GridBagConstraints.LAST_LINE_START;
-   c.gridy = 4;
+   c.gridy = 5;
    lpan.add(passlabel, c);
    c.anchor = GridBagConstraints.CENTER;
-   c.gridy = 5;
-   lpan.add(pass_field, c);
    c.gridy = 6;
+   lpan.add(pass_field, c);
+   c.gridy = 7;
    lpan.add(rembox, c);
    c.anchor = GridBagConstraints.LINE_START;
-   c.gridy = 7;
+   c.gridy = 8;
    c.gridwidth = 1;
    c.insets = new Insets(0,10,5,0);
    lpan.add(sub_button, c);
@@ -198,6 +208,7 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    lpan.add(logout_button, c);
 
    setContentPane(lpan);
+   error_label.setVisible(false);
 }
 
 
@@ -222,10 +233,27 @@ void removeBubble()
 }
 
 
+@Override public void setSize(Dimension size)
+{
+    super.setSize(size);
+}
+
+
+@Override public void setSize(int x,int y)
+{
+    super.setSize(x,y);
+}
+
+
+@Override public void setPreferredSize(Dimension size)
+{
+    super.setPreferredSize(size);
+}
+
 
 /********************************************************************************/
 /*										*/
-/*	Interaction Listeners									*/
+/*	Interaction Listeners							*/
 /*										*/
 /********************************************************************************/
 
@@ -240,8 +268,8 @@ private class LogoutListener implements ActionListener {
       if (BgtaFactory.logoutAccount(username,servername)) removeBubble();
       // if not logged in in the first place, display a message saying so
       else {
-	 user_field.setText("weren't logged in to begin with");
-	 pass_field.setText("");
+         error_label.setText("You weren't logged in yet.");
+         error_label.setVisible(true);
        }
     }
 
@@ -289,8 +317,8 @@ private class LoginListener implements ActionListener {
         all_managers.add(newman);
       }
      else if (newman.isLoggedIn()) {
-        user_field.setText("already logged in");
-        pass_field.setText("");
+        error_label.setText("Already logged in.");
+        error_label.setVisible(true);
         BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
         return;
       }
@@ -300,13 +328,11 @@ private class LoginListener implements ActionListener {
      my_repository.addNewRep(new BgtaBuddyRepository(newman));
      if (rem_user)
         BgtaFactory.addManagerProperties(username, password, selected_server.server());
-     removeBubble();
+        removeBubble();
        }
       catch (XMPPException xmppe) {
-     user_field.setText("incorrect login information");
-     pass_field.setText("");
-     pass_field.setToolTipText(xmppe.getMessage());
-//     user_field.setText(xmppe.getClass() + xmppe.getMessage());
+         error_label.setText("Login failed. Please try again.");
+         error_label.setVisible(true);
        }
       BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
     }

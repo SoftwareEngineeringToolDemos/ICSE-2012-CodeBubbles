@@ -100,7 +100,7 @@ public class BowiFactory {
     */
    public static void stopTask(BowiTaskType tostop) {
       if (my_task_manager != null)
-	 my_task_manager.stopTask(tostop);
+        my_task_manager.stopTask(tostop);
    }
 
 }

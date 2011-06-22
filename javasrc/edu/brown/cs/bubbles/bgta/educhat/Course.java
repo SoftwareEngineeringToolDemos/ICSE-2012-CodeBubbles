@@ -22,7 +22,7 @@ class Course extends BassNameBase {
    }
    @Override
    public BudaBubble createBubble() {
-      return null;
+      return new EduchatTicketBubble();
    }
 
    @Override

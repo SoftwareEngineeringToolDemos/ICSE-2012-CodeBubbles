@@ -57,10 +57,12 @@ private boolean is_open;
 // used for XMPP chats
 private Chat the_chat;
 private MessageListener chat_listener;
+private Message last_message;
 
 // used for AIM (OSCAR) conversations
 private Conversation the_conversation;
 private ConversationListener conversation_listener;
+private MessageInfo last_minfo;
 
 // wrapper members
 private boolean is_xmpp;
@@ -87,6 +89,8 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
    is_xmpp = false;
    the_manager = man;
    is_open = true;
+   last_message = null;
+   last_minfo = null;
    
    // Determine the protocol and set up members appropriately.
    if (!server.equals(ChatServer.AIM)) {
@@ -153,6 +157,13 @@ Object getChat()
    return the_conversation;
 }
 
+Object getLastMessage()
+{
+    if (!is_xmpp)
+        return last_minfo;
+    return last_message;
+}
+
 
 
 /********************************************************************************/
@@ -191,14 +202,34 @@ void messageReceived(Object msg)
 {
    String message = null;
    if (is_xmpp) {
-      message = ((Message) msg).getBody(); 
+      if (msg == last_message)
+         return;
+      message = ((Message) msg).getBody();
+      last_message = (Message) msg;
     }
    else {
-      message = ((MessageInfo) msg).getMessage().getMessageBody().replaceAll("<.*?>","");
+       if (msg == last_minfo)
+          return;
+       message = ((MessageInfo) msg).getMessage().getMessageBody().replaceAll("<.*?>","");
+       last_minfo = (MessageInfo) msg;
     }
    if (message == null || message.equals(""))
       return;
-   logMessage(message);
+   if (!is_open) {
+       BgtaFactory.createRecievedChatBubble(user_name,the_manager);
+       is_open = true;
+    }
+   if (message.startsWith(BGTA_METADATA_START) && message.endsWith(BGTA_METADATA_FINISH)) {
+       logMessage("Working set received.","Bubbles");
+       Collection<BgtaBubble> bubbles = the_manager.getExistingBubbles(user_name);
+       if (bubbles != null) {
+           for (BgtaBubble bb : the_manager.getExistingBubbles(user_name)) {
+               bb.processMetadata(message);
+            }
+        }
+    }
+   else
+      logMessage(message);
 }
 
 
@@ -212,12 +243,12 @@ void logMessage(String message)
 
 void logMessage(String message,String from)
 {
-   if (!from.equals(user_display) && !from.equals("Me") && !from.equals("Error"))
+   if (!from.equals(user_display) && !from.equals("Me") && !from.equals("Error") && !from.equals("Bubbles"))
       return;
    try {
       user_document.insertString(user_document.getLength(), from + ": " + message + "\n", null);
     } catch (BadLocationException e) {
-   //System.out.println("bad loc");
+       //System.out.println("bad loc");
     }
 }
 
@@ -336,25 +367,10 @@ private class XMPPChatListener implements MessageListener {
 @Override public void processMessage(Chat ch,Message msg) {
     if (!ch.equals(the_chat))
         return;
-    if (msg.getType() == Message.Type.chat) {
-       String data = msg.getBody();
-       if (data.startsWith(BGTA_METADATA_START) && data.endsWith(BGTA_METADATA_FINISH)) {
-          logMessage("Click the button below to load the data", "Bubbles");
-          Collection<BgtaBubble> bubbles = the_manager.getExistingBubbles(user_name);
-          if (bubbles != null) {
-              for (BgtaBubble bb : the_manager.getExistingBubbles(user_name)) {
-                 bb.processMetadata(data);
-               }
-           }
-          else {
-              BgtaBubble bb = BgtaFactory.createRecievedChatBubble(user_name,the_manager);
-              bb.processMetadata(data);
-           }
-        }
-       else 
-          messageReceived(msg);
-     }
- }
+    if (msg.getType() != Message.Type.chat)
+        return;
+    messageReceived(msg);
+}
 
 }  // end of inner class XMPPChatListener
 
@@ -371,10 +387,6 @@ private class AIMChatListener implements ConversationListener {
    @Override public void gotMessage(Conversation con, MessageInfo msg) {
       if (!con.equals(the_conversation))
           return;
-      if (!is_open) {
-          BgtaFactory.createRecievedChatBubble(msg.getFrom().getFormatted(),the_manager);
-          is_open = true;
-       }
       messageReceived(msg);
     }
 

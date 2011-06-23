@@ -136,9 +136,9 @@ int	BGTA_LOG_WIDTH	       = 275;
 
 int	BGTA_LOG_HEIGHT       = (int) (0.75 * BGTA_LOG_WIDTH);
 
-int	BGTA_DATA_BUTTON_WIDTH	     = 5;
+int	BGTA_DATA_BUTTON_WIDTH	     = 110;
 
-int	BGTA_DATA_BUTTON_HEIGHT      = 3 * BGTA_DATA_BUTTON_WIDTH;
+int	BGTA_DATA_BUTTON_HEIGHT      = 15;
 
 
 
@@ -148,7 +148,7 @@ int	BGTA_DATA_BUTTON_HEIGHT      = 3 * BGTA_DATA_BUTTON_WIDTH;
 /*										*/
 /********************************************************************************/
 
-String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar\nand select \"Load Task\".\n";
+String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar and choose it from the list of tasks.\n";
 
 
 

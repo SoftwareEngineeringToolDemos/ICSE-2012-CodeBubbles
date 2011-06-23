@@ -23,7 +23,9 @@ package edu.brown.cs.bubbles.bgta;
 
 
 import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.board.BoardFont;
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 
 import javax.swing.*;
@@ -31,9 +33,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+
+import org.w3c.dom.Element;
 
 
 
@@ -52,6 +59,7 @@ private String		  chat_username;
 private BoardProperties   my_props;
 private BgtaLoggingArea   logging_area;
 private BgtaDraftingArea  draft_area;
+private BgtaLabel         bubble_label;
 private boolean 	  is_saved;
 private boolean 	  alt_color;
 private boolean 	  alt_color_is_on;
@@ -111,15 +119,15 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
    log_pane.getViewport().setOpaque(false);
    log_pane.setBorder(new EmptyBorder(0,0,0,0));
 
-   BgtaLabel lab = new BgtaLabel(chat_username,the_manager.getRoster());
-   the_manager.addPresenceListener(lab);
+   bubble_label = new BgtaLabel(chat_username,the_manager.getRoster());
+   the_manager.addPresenceListener(bubble_label);
 
    c.fill = GridBagConstraints.BOTH;
    c.gridwidth = GridBagConstraints.REMAINDER;
    c.weighty = 0.0;
    c.weightx = 1.0;
 
-   lay.setConstraints(lab, c);
+   lay.setConstraints(bubble_label, c);
 
    c.weighty = 1.0;
 
@@ -132,7 +140,7 @@ BgtaBubble(String username,BgtaManager man,boolean preview)
 
    lay.setConstraints(draft_area, c);
 
-   pan.add(lab);
+   pan.add(bubble_label);
    pan.add(log_pane);
    pan.add(sep);
    pan.add(draft_area);
@@ -188,10 +196,57 @@ void sendMessage(String mess)
 }
 
 
+/********************************************************************************/
+/*										*/
+/*	Metadata processing							*/
+/*										*/
+/********************************************************************************/
+
 void processMetadata(String data)
 {
-    logging_area.processMetadata(data);
+    JButton accept = new JButton("Load Task");
+    accept.setFont(BoardFont.getFont(accept.getFont().getFontName(),Font.PLAIN,10));
+    Dimension d = new Dimension(BGTA_DATA_BUTTON_WIDTH,BGTA_DATA_BUTTON_HEIGHT);
+    accept.setPreferredSize(d);
+    accept.setSize(d);
+    accept.setMinimumSize(d);
+    Element xml = IvyXml.loadXmlFromURL(data);
+    accept.addActionListener(new XMLListener(xml));
+    logging_area.setCaretPosition(logging_area.getDocument().getLength());
+    bubble_label.setButton(accept);
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Button press methods							*/
+/*										*/
+/********************************************************************************/
+
+void pressedButton(JButton button,String msg)
+{
+    try {
+        logging_area.getDocument().insertString(logging_area.getDocument().getLength(),msg,null);
+     }
+    catch (BadLocationException e) {}
+    bubble_label.setButton(null);
+}
+
+private class XMLListener implements ActionListener {
+    
+    private Element _xml;
+    
+    private XMLListener(Element xml) {
+        _xml = xml;
+    }
+    
+    @Override public void actionPerformed(ActionEvent e) {
+        BgtaFactory.addTaskToRoot(_xml);
+        pressedButton((JButton) e.getSource(),BGTA_TASK_DESCRIPTION);
+    }
+    
+}	// end of private class XMLListener
 
 
 

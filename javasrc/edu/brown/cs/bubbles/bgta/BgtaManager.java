@@ -424,16 +424,22 @@ static Icon iconFor(Presence pres)
            return;
       if (((Message) pack).getBody().equals(""))
            return;
-       String from = pack.getFrom();
+      //TODO: FIX THIS TO USE CHAT AND CHECK LAST MESSAGE
+      String from = pack.getFrom();
       if (from.lastIndexOf("/") != -1) from = from.substring(0, from.lastIndexOf("/"));
       if (from.equals(user_name)) return;
-      Collection<BgtaBubble> bubbles = existing_bubbles.get(from);
-      if (bubbles != null) {
-         for (BgtaBubble bb : bubbles) {
-            if (!bb.isPreview()) return;
-          }
+      BgtaChat chat = getChat(from);
+      if (chat != null) {
+         chat.messageReceived(pack);
+         return;
        }
-      BgtaFactory.createRecievedChatBubble(from, this);
+      else {
+         BgtaFactory.createRecievedChatBubble(from, this);
+         chat = getChat(from);
+         if (chat != null)
+            chat.messageReceived(pack);
+         return;
+       }
     }
 }
 

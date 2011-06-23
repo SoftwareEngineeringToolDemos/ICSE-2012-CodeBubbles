@@ -6,6 +6,7 @@ import edu.brown.cs.bubbles.bass.BassConstants;
 import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassNameBase;
 import edu.brown.cs.bubbles.bass.BassConstants.BassNameType;
+import edu.brown.cs.bubbles.bgta.BgtaFactory;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.board.BoardImage;
@@ -14,15 +15,25 @@ class Course extends BassNameBase {
    
    private String course_name;
    private String ta_chat_jid;
+   private Role role;
    
-   public Course(String a_course_name, String a_jid)
+   public Course(String a_course_name, String a_jid, Role r)
    {
       course_name = a_course_name;
       ta_chat_jid = a_jid;
+      role = r;
    }
    @Override
    public BudaBubble createBubble() {
-      return new EduchatTicketBubble();
+      switch(role)
+      {
+      case STUDENT:
+	 return new EduchatTicketSubmitBubble();
+      case TA:
+	 return new EduchatTicketListBubble();
+      default:
+	 return null;
+      }
    }
 
    @Override
@@ -43,12 +54,41 @@ class Course extends BassNameBase {
 
    @Override
    protected String getSymbolName() {
-      return BassConstants.BASS_COURSE_LIST_NAME + "." + course_name;
+      
+      switch(role)
+      {
+      case STUDENT:
+	 return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + course_name + " help";
+      case TA:
+	 return BassConstants.BASS_COURSE_LIST_NAME + ".Enable " + course_name + " chat hours";
+      default:
+	 return BassConstants.BASS_COURSE_LIST_NAME + course_name;
+      }
    }
    
    @Override
    public Icon getDisplayIcon()
    {
-      return BoardImage.getIcon("contents_view");
+      switch(role)
+      {
+      case STUDENT:
+	 return BoardImage.getIcon("question");
+      case TA:
+	 return BoardImage.getIcon("contents_view"); 
+      default:
+	 return BoardImage.getIcon("contents_view");
+      }
+      
+   }
+   
+   /**
+    * Defines what role the user 
+    * has in the given class (TA or student)
+    * @author akovacs
+    *
+    */
+   enum Role {
+      	STUDENT,
+      	TA
    }
 }

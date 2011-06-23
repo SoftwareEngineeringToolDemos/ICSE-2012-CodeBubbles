@@ -14,13 +14,13 @@ public class CourseRepository implements BassRepository {
       CourseRepository cr = new CourseRepository();
       BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, cr);
       BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_COURSES, cr);
-      //BassFactory.reloadRepository(cr);
    }
    
    @Override
    public Iterable<BassName> getAllNames() {
       ArrayList<BassName> l = new ArrayList<BassName>();
-      l.add(new Course("CS019", "codebubbles@jabber.org"));
+      l.add(new Course("CS019", "codebubbles@jabber.org", Course.Role.TA));
+      l.add(new Course("CS031", "codebubbles2@jabber.org", Course.Role.STUDENT));
       return l;
    }
 

@@ -66,7 +66,7 @@ public class TAXMPPClient {
       config.setSendPresence(true); 
       
       ticket_map = new LinkedHashMap<Integer, StudentTicket>();
-
+   
       username = aUsername;
       xmpp_password = an_xmpp_password;
       resource_name = a_resource_name;
@@ -93,10 +93,10 @@ public class TAXMPPClient {
       
       conn.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
       System.out.println(conn.getRoster().getEntries());
-      if(!conn.getRoster().contains(getMyBareJID()))
-      {
-         conn.getRoster().createEntry(getMyBareJID(), "Me", null);
-      }
+      //if(!conn.getRoster().contains(getMyBareJID()))
+     // {
+     //    conn.getRoster().createEntry(getMyBareJID(), "Me", null);
+      //}
       System.out.println(conn.getRoster().getEntries());
 
    }
@@ -127,7 +127,7 @@ public class TAXMPPClient {
       ArrayList<StudentTicket> l = new ArrayList<StudentTicket>();
       for(Integer i : ticket_map.keySet())
       {
-	l.add(ticket_map.get(i)); 
+        l.add(ticket_map.get(i)); 
       }
       
       return l;

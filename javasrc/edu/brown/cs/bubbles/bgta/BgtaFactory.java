@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
+import java.util.Collections;
 
 /**
  * This class sets up the chat interface and provides calls to define chat
@@ -78,23 +79,22 @@ public static void setup()
    login_properties = BoardProperties.getProperties("Bgta");
 
    // TODO: Needs to be altered to match spr's guidelines for property storage
-   for (int i = 0; i < login_properties.getInt(BGTA_NUM_ACCOUNTS); i++) {
-      try {
-	 BgtaManager man = new BgtaManager(
-		  login_properties.getProperty(BGTA_USERNAME_PREFIX + i),
-		  login_properties.getProperty(BGTA_PASSWORD_PREFIX + i),
-		  login_properties.getProperty(BGTA_PASSWORD_PREFIX + i),
-		  buddy_list);
-	 man.setBeingSaved(true);
-	 man.login();
-	 chat_managers.add(man);
-      }
-      catch (XMPPException e) {
-	 System.err.println("BGTA: COULDN'T LOAD ACCOUNT FOR "
-		  + login_properties.getProperty(BGTA_USERNAME_PREFIX + i));
-      }
-
-   }
+   String username = null;
+   ChatServer server = null;
+   try {
+      for (int i = 1; i <= login_properties.getInt(BGTA_NUM_ACCOUNTS); ++i) {
+         username = login_properties.getProperty(BGTA_USERNAME_PREFIX + i);
+         String password = login_properties.getProperty(BGTA_PASSWORD_PREFIX + i);
+         server = ChatServer.fromServer(login_properties.getProperty(BGTA_SERVER_PREFIX + i));
+         BgtaManager man = BgtaManager.getManager(username,password,server,buddy_list);
+         man.setBeingSaved(true);
+         man.login();
+         chat_managers.add(man);
+       }
+    }
+   catch (XMPPException e) {
+      BoardLog.logE("BGTA","Couldn't load account for " + username + " on " + server.server() + ":" + e.getMessage());
+    }
    buddy_list = new BgtaRepository(chat_managers);
    rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_PEOPLE, buddy_list);
@@ -122,13 +122,12 @@ public static void initialize(BudaRoot br)
 /*										*/
 /********************************************************************************/
 
-static void addManagerProperties(String usnm,String psswd,String svr)
+static void addManagerProperties(String username,String password,ChatServer server)
 {
-	int newnum = login_properties.getInt(BGTA_NUM_ACCOUNTS);
-	login_properties.setProperty(BGTA_USERNAME_PREFIX + newnum,usnm);
-	login_properties.setProperty(BGTA_PASSWORD_PREFIX + newnum,psswd);
-	login_properties.setProperty(BGTA_SERVER_PREFIX + newnum,svr);
-	++newnum;
+	int newnum = login_properties.getInt(BGTA_NUM_ACCOUNTS) + 1;
+	login_properties.setProperty(BGTA_USERNAME_PREFIX + newnum,username);
+	login_properties.setProperty(BGTA_PASSWORD_PREFIX + newnum,password);
+	login_properties.setProperty(BGTA_SERVER_PREFIX + newnum,server.server());
 	login_properties.setProperty(BGTA_NUM_ACCOUNTS,newnum);
 	try {
 		login_properties.save();
@@ -140,6 +139,7 @@ static void clearManagerProperties()
 {
 	login_properties.clear();
 	login_properties.setProperty(BGTA_NUM_ACCOUNTS,0);
+        login_properties.setProperty(BGTA_ALT_COLOR_UPON_RECIEVE,rec_dif_back);
 	try {
 		login_properties.save();
 	} catch (IOException e) {
@@ -297,12 +297,12 @@ private class SendMetadataChatListener implements MenuListener
 @Override
 public void menuSelected(MenuEvent e)
 {
-	List<String> chatters = BgtaFactory.getChatters();
-	metadata_menu.removeAll();
-	for (String name : chatters) {
-		addChatButton(metadata_menu,name,null);
-	}
-
+   List<String> chatters = BgtaFactory.getChatters();
+   Collections.sort(chatters);
+   metadata_menu.removeAll();
+   for (String name : chatters) {
+      addChatButton(metadata_menu,name,null);
+    }
 }
 
 @Override

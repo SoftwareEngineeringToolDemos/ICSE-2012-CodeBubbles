@@ -70,6 +70,25 @@ protected BgtaRoster               the_roster;
 
 /********************************************************************************/
 /*										*/
+/*	Factory Method								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ * Returns the proper manager type depending on the ChatServer.
+ */
+static BgtaManager getManager(String username,String password,ChatServer server,BgtaRepository repo)
+{
+   if (server.equals(ChatServer.AIM))
+       return new BgtaAimManager(username,password,server);
+   else
+       return new BgtaManager(username,password,server,repo);
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Constructors								*/
 /*										*/
 /********************************************************************************/
@@ -85,8 +104,6 @@ BgtaManager(String username,String password,ChatServer server,BgtaRepository rep
    the_repository = repo;
 }
 
-
-
 BgtaManager(String username,String password,ChatServer server)
 {
    user_name = username;
@@ -100,8 +117,6 @@ BgtaManager(String username,String password,ChatServer server)
    being_saved = false;
    roster_listener = null;
 }
-
-
 
 BgtaManager(String username,String password)
 {

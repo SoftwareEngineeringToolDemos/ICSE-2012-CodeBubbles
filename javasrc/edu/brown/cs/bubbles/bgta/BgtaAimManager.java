@@ -122,7 +122,6 @@ BgtaAimManager(String username,String password,ChatServer server)
    login(username,password,ChatServer.AIM);
 }
 
-
 @Override void login(String username,String password,ChatServer server) throws XMPPException
 {
    BoardLog.logD("BGTA","Starting login process for " + username + " on server: login.messaging.aol.com");
@@ -199,7 +198,6 @@ BgtaAimManager(String username,String password,ChatServer server)
    BoardLog.logD("BGTA","Successfully logged into login.messaging.aol.com with username: " + username + ".");
 }
 
-
 @Override void disconnect()
 {
    the_connection.disconnect();
@@ -235,7 +233,6 @@ BgtaAimManager(String username,String password,ChatServer server)
     existing_bubbles.put(username,using);
     return getExistingDoc(username);
 }
-
 
 @Override void removeChat(String username)
 {

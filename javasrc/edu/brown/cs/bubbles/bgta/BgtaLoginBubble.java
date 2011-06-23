@@ -100,6 +100,12 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
 {
    super();
    manager_list = mans;
+   if (!all_managers.containsAll(mans)) {
+      for (BgtaManager man : mans) {
+         if (!all_managers.contains(man))
+            all_managers.add(man);
+       }
+    }
    my_repository = repo;
    my_name = name;
    selected_server = ChatServer.GMAIL;
@@ -308,12 +314,7 @@ private class LoginListener implements ActionListener {
          }
       }
      if (putin) {
-        if (selected_server == ChatServer.AIM) {
-           newman = new BgtaAimManager(username,password);
-         }
-        else {
-           newman = new BgtaManager(username,password,selected_server,my_repository);
-         }
+        newman = BgtaManager.getManager(username,password,selected_server,my_repository);
         all_managers.add(newman);
       }
      else if (newman.isLoggedIn()) {
@@ -323,12 +324,21 @@ private class LoginListener implements ActionListener {
         return;
       }
      newman.login();
-     newman.setBeingSaved(rem_user);
      manager_list.add(newman);
      my_repository.addNewRep(new BgtaBuddyRepository(newman));
-     if (rem_user)
-        BgtaFactory.addManagerProperties(username, password, selected_server.server());
-        removeBubble();
+     if (rem_user) {
+        BgtaFactory.addManagerProperties(username, password, selected_server);
+        newman.setBeingSaved(true);
+     }
+     else if (newman.isBeingSaved()) {
+        newman.setBeingSaved(false);
+        BgtaFactory.clearManagerProperties();
+        for (BgtaManager man : all_managers) {
+            if (man.isBeingSaved())
+               BgtaFactory.addManagerProperties(man.getUsername(),man.getPassword(),man.getServer());
+         }
+      }
+     removeBubble();
        }
       catch (XMPPException xmppe) {
          error_label.setText("Login failed. Please try again.");

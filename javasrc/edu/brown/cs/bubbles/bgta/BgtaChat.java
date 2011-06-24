@@ -22,8 +22,19 @@
 package edu.brown.cs.bubbles.bgta;
 
 import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardSetup;
+
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import java.util.Collection;
+import java.util.Vector;
+import java.util.Date;
+
+import java.text.SimpleDateFormat;
+
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.BadLocationException;
@@ -33,6 +44,8 @@ import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+
+import org.w3c.dom.*;
 
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
 
@@ -52,7 +65,11 @@ private String user_display;
 private ChatServer user_server;
 private Document user_document;
 private BgtaManager the_manager;
+private ChatHistory the_history;
+private File history_file;
 private boolean is_open;
+private static final String HISTORY_TIMESTAMP_FORMAT = "MM/dd/yyyy HH:mm:ss";
+private static final SimpleDateFormat date_format = new SimpleDateFormat(HISTORY_TIMESTAMP_FORMAT);
 
 // used for XMPP chats
 private Chat the_chat;
@@ -110,7 +127,11 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
    user_document = doc;
    if (user_document == null) {
       user_document = new HTMLDocument();
-    }   
+    }
+   
+   // Create a new ChatHistory for this chat.
+   the_history = new ChatHistory(this);
+   history_file = null;
 }
 
 
@@ -123,7 +144,7 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
 
 String getUsername()    { return user_name; }
 
-ChatServer getServer()      { return user_server; }
+ChatServer getServer()  { return user_server; }
 
 Document getDocument()  { return user_document; }
 
@@ -232,27 +253,25 @@ void messageReceived(Object msg)
       logMessage(message);
 }
 
-
-
 void logMessage(String message)
 {
    logMessage(message,user_display);
 }
-
-
 
 void logMessage(String message,String from)
 {
    if (!from.equals(user_display) && !from.equals("Me") && !from.equals("Error") && !from.equals("Bubbles"))
       return;
    try {
-      user_document.insertString(user_document.getLength(), from + ": " + message + "\n", null);
+      user_document.insertString(user_document.getLength(),from + ": " + message + "\n",null);
     } catch (BadLocationException e) {
        //System.out.println("bad loc");
     }
+    String to = the_manager.getUsername();
+    if (from.equals("Me"))
+        to = user_name;
+   the_history.addHistoryItem(new ChatHistoryItem(from,to,message,date_format.format(new Date())));
 }
-
-
 
 boolean sendMessage(String message)
 {
@@ -296,8 +315,6 @@ private String getName(String username)
    return name;
 }
 
-
-
 private String whiteSpaceAwareReplace(String input,String toreplace)
 {
    String current = new String(input);
@@ -316,8 +333,6 @@ private String whiteSpaceAwareReplace(String input,String toreplace)
    return current;
 }
 
-
-
 private String wrapHTML(String text)
 {
    String temp = text;
@@ -329,8 +344,6 @@ private String wrapHTML(String text)
    return "<html><body>" + temp + "</body></html>";
 }
 
-
-
 private String replace(String input,String toreplace,String replacewith)
 {
    String current = new String(input);
@@ -341,6 +354,50 @@ private String replace(String input,String toreplace,String replacewith)
    return current;
 }
 
+private void createHistoryFile()
+{
+   if (history_file != null) return;
+   
+   File dir = BoardSetup.getBubblesPluginDirectory();
+   if (dir != null) {
+      try {
+         for (int i = 0; i < 5; ++i) {
+            String fnm = "history_" + the_manager.getUsername().toLowerCase() + "_" + replace(user_name," ","").toLowerCase() + ".xml";
+            File f = new File(dir,fnm);
+            if (f.createNewFile()) {
+               history_file = f;
+               break;
+             }
+            try {
+               Thread.sleep(1000);
+             }
+            catch (InterruptedException e) { }
+          }
+       }
+      catch (IOException e) {
+         BoardLog.logE("BGTA","Problem created chat history file",e);
+       }
+    }
+}
+
+private synchronized void saveHistory()
+{
+   if (history_file == null) createHistoryFile();
+   if (history_file == null) {
+      BoardLog.logE("BGTA","Problem saving chat history");
+      return;
+    }
+   
+   try {
+      IvyXmlWriter xw = new IvyXmlWriter(history_file);
+      the_history.outputToXML(xw);
+      xw.close();
+    }
+   catch (IOException e) {
+      BoardLog.logE("BGTA","Problem writing chat history file",e);
+      history_file = null;
+    }
+}
 
 
 /********************************************************************************/
@@ -352,12 +409,12 @@ private String replace(String input,String toreplace,String replacewith)
 void close()
 {
    is_open = false;
+   saveHistory();   
 }
 
 
 /**
  * A class for processing received XMPP messages.
- * TODO: handle metadata messages.
  * 
  * @author Sumner Warren
  *
@@ -390,15 +447,75 @@ private class AIMChatListener implements ConversationListener {
       messageReceived(msg);
     }
 
-   @Override public void gotOtherEvent(Conversation arg0, ConversationEventInfo arg1) {
-		// TODO: metadata?
-    }
+   @Override public void gotOtherEvent(Conversation arg0, ConversationEventInfo arg1) { }
 
    @Override public void sentMessage(Conversation arg0, MessageInfo arg1) { }
 
    @Override public void sentOtherEvent(Conversation arg0, ConversationEventInfo arg1) { }
 
 }  // end of inner class AIMChatListener
+
+
+
+private class ChatHistory {
+    
+    private Vector<ChatHistoryItem> my_items;
+    
+    ChatHistory(BgtaChat ch) {
+        my_items = new Vector<ChatHistoryItem>();
+    }
+    
+    public void addHistoryItem(ChatHistoryItem item) {
+        my_items.add(item);
+    }
+    
+    public void outputToXML(IvyXmlWriter xw) {
+        xw.begin("HISTORY");
+        xw.field("FROM",user_name);
+        xw.field("TO",the_manager.getUsername());
+        xw.field("SERVER",user_server.server());
+        for (ChatHistoryItem item : my_items) {
+            item.outputToXML(xw);
+         }
+        xw.end("HISTORY");
+    }
+
+}  // end of inner class ChatHistory
+
+
+
+private class ChatHistoryItem {
+    
+    private String item_from;
+    private String item_to;
+    private String item_text;
+    private String item_time;
+    
+    ChatHistoryItem(String from,String to,String text,String time) {
+        item_from = from;
+        item_to = to;
+        item_text = text;
+        item_time = time;
+    }
+    
+    public String getFrom() { return item_from; }
+    
+    public String getTo() { return item_to; }
+    
+    public String getText() { return item_text; }
+    
+    public String getTime() { return item_time; }
+    
+    public void outputToXML(IvyXmlWriter xw) {
+        xw.begin("MESSAGE");
+        xw.textElement("FROM",item_from);
+        xw.textElement("TO",item_to);
+        xw.textElement("TEXT",item_text);
+        xw.textElement("TIMESTAMP",item_time);
+        xw.end("MESSAGE");
+    }
+    
+}  // end of inner class ChatHistoryItem
 
 
 

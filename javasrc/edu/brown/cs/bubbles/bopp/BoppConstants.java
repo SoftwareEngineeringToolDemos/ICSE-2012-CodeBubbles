@@ -76,6 +76,7 @@ enum TabName {
    VISUALIZATIONS,
    SEARCH_OPTIONS,
    USER_RECENT_OPTIONS,
+   CHAT_OPTIONS,
    SEARCH,
    ALL
 }
@@ -152,6 +153,11 @@ String	  ALL_STRING			= "All Options";
  * Name of the recently changed options tab
  */
 String	  USER_RECENT_OPTIONS_STRING	 = "Recently Changed";
+
+/**
+ * Name of the chat options tab
+ */
+String    CHAT_OPTIONS_STRING           = "Chat Options";
 
 
 /**

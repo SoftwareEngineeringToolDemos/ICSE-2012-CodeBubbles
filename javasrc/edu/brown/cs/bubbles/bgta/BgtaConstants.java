@@ -160,9 +160,9 @@ String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar
 enum ChatServer {
 	GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com", true),
 	BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com", true),
-	FACEBOOK("Facebook", "chat.facebook.com", "chat.facebook.com", "", false),
+	FACEBOOK("Facebook", "chat.facebook.com", " ", "", false),
 	JABBER("Jabber", "jabber.org", "@jabber.org", "", false),
-	AIM("AIM", "aim", "", "", false);
+	AIM("AIM", "aim", " ", "", false);
 	
 	private String selector;
 	private String server;

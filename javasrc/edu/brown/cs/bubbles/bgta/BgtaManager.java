@@ -283,9 +283,13 @@ void login(String username,String password,ChatServer server) throws XMPPExcepti
 
 void disconnect()
 {
+    BoardLog.logD("BGTA","Starting logout process for " + user_name + " on " + user_server.server());
     the_connection.disconnect();
+    for (BgtaChat ch : existing_chats.values())
+        ch.close();
     existing_chats.clear();
     roster_listener = null;
+    BoardLog.logD("BGTA","Successful logout for " + user_name + " on " + user_server.server());
 }
 
 
@@ -365,7 +369,8 @@ void removeChat(String username)
 {
    if (!hasBubble(username)) {
       BgtaChat chat = getChat(username);
-      chat.close();
+      if (chat != null)
+         chat.close();
       existing_chats.remove(chat);
     }
 }

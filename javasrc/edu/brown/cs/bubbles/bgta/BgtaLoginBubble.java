@@ -128,7 +128,6 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    server_field.setVerticalAlignment(SwingConstants.TOP);
    server_field.setFont(BoardFont.getFont(server_field.getFont().getFontName(),Font.PLAIN,10));
    error_label = new JLabel("Login failed. Please try again.");
-   // error_label.setVisible(false);
    error_label.setHorizontalAlignment(SwingConstants.CENTER);
    error_label.setVerticalAlignment(SwingConstants.BOTTOM);
    error_label.setFont(BoardFont.getFont(error_label.getFont().getFontName(),Font.PLAIN,10));
@@ -164,7 +163,6 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    logout_button.addActionListener(new LogoutListener());
    logout_button.setFont(BoardFont.getFont(logout_button.getFont().getFontName(),Font.PLAIN,10));
 
-   // lpan.setLayout(new GridBagLayout());
    GridBagConstraints c = new GridBagConstraints();
    c.fill = GridBagConstraints.NONE;
    c.anchor = GridBagConstraints.LINE_START;
@@ -431,22 +429,22 @@ private class ServerListener implements ActionListener {
       String selection = (String) cb.getSelectedItem();
       selected_server = ChatServer.GMAIL;
       if (selection.equals(ChatServer.BROWN.selector())) {
-      	selected_server = ChatServer.BROWN;
+      	 selected_server = ChatServer.BROWN;
        }
       else if (selection.equals(ChatServer.FACEBOOK.selector())) {
-      	selected_server = ChatServer.FACEBOOK;
+      	 selected_server = ChatServer.FACEBOOK;
        }
       else if (selection.equals(ChatServer.AIM.selector())) {
-      	selected_server = ChatServer.AIM;
+      	 selected_server = ChatServer.AIM;
        }
       else if (selection.equals(ChatServer.JABBER.selector())) {
-      	selected_server = ChatServer.JABBER;
+      	 selected_server = ChatServer.JABBER;
        }
       server_field.setText(selected_server.display());
       if (selected_server == ChatServer.FACEBOOK || selected_server == ChatServer.AIM)
-      	server_field.setVisible(false);
+      	 server_field.setVisible(false);
       else
-      	server_field.setVisible(true);
+      	 server_field.setVisible(true);
     }
 
 }  // end of inner class ServerListener

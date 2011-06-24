@@ -120,7 +120,7 @@ public class TAXMPPClientTest{
    public void teastTicketForward() throws Exception
    {
       TAXMPPClient ta_client2 = new TAXMPPClient(ta_login, "brownbears", "jabber.org", "TA2");
-
+   
       ta_client2.connect();
       Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", new MessageListener(){
          @Override
@@ -134,7 +134,7 @@ public class TAXMPPClientTest{
       assertTrue(ta_client2.getTickets().size() == 0);
       c.sendMessage("TICKET:ticket");
       Thread.sleep(1000);
-
+   
       assertTrue(ta_client.getTickets().size() == 2);
       assertTrue(ta_client2.getTickets().size() == 1);
       

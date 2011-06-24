@@ -16,7 +16,9 @@ import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import java.util.Date;
 
+
 import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 
 /**
@@ -28,36 +30,33 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 class EduchatTicketListBubble extends BudaBubble {
    private static Color GRADIENT_BOTTOM_COLOR = Color.white;
    private static Color GRADIENT_TOP_COLOR = new Color(0x33,0x00,0x99);
-   private static Dimension DEFAULT_DIMENSION = new Dimension(200, 300);
+   private static Dimension DEFAULT_DIMENSION = new Dimension(200, 200);
    
    
-   public EduchatTicketListBubble()
+   public EduchatTicketListBubble(TicketList list)
    {
-      TicketListPanel p = new TicketListPanel(this);
+      TicketListPanel p = new TicketListPanel(list, this);
       setContentPane(p);
    }
    
    private class TicketListPanel extends JPanel implements MouseListener
    {
-      private JTable table;
-      private TicketList tl;
-      
-      public TicketListPanel(BudaBubble parent)
+            private JTable table;
+      private TicketList ticket_list; 
+      private BudaBubble parent;
+      public TicketListPanel(TicketList list, BudaBubble a_parent)
       {
          super(new BorderLayout());
+         parent = a_parent;
+         
+         ticket_list = list;
          setOpaque(false);
          setPreferredSize(DEFAULT_DIMENSION);
-         
-         String[] columns = {"Ticket", "Student"};
-         Object[][] data = {{"How do you use println??",new Date(0)},{"I can't get my quadtree to work", new Date(13371337)}};
-         
-         tl = new TicketList();
-         tl.add(new StudentTicket("lol", new Date(3454353), "Sdf"));
-         tl.add(new StudentTicket("ldsfol", new Date(546254353), "Sdsdff"));
       
-         table = new JTable(tl);
+        table = new JTable(list);
         
          table.getColumnModel().getColumn(1).setPreferredWidth(50);
+         
          table.getColumnModel().getColumn(0).setPreferredWidth(150);
        
          //this.set
@@ -71,41 +70,45 @@ class EduchatTicketListBubble extends BudaBubble {
          table.addMouseListener(this);
          add(p, BorderLayout.CENTER);
       }
-
-	 @Override
-	 public void mouseClicked(MouseEvent e) {
-	    if(e.getClickCount() == 2){
-	       if(table.rowAtPoint(e.getPoint()) != -1)
-	       {
-		  BudaRoot.findBudaBubbleArea(this).add(new TicketViewBubble(tl.get(table.rowAtPoint(e.getPoint()))));
-	       }
-	    }
-	      
-	 }
-
-	 @Override
-	 public void mouseEntered(MouseEvent e) {
-	    // TODO Auto-generated method stub
-	    
-	 }
-
-	 @Override
-	 public void mouseExited(MouseEvent e) {
-	    // TODO Auto-generated method stub
-	    
-	 }
-
-	 @Override
-	 public void mousePressed(MouseEvent e) {
-	    // TODO Auto-generated method stub
-	    
-	 }
-
-	 @Override
-	 public void mouseReleased(MouseEvent e) {
-	    // TODO Auto-generated method stub
-	    
-	 }
+   
+         @Override
+         public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() == 2){
+               if(table.rowAtPoint(e.getPoint()) != -1)
+               {
+                  BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+                  BudaBubble ticket_view_bubble = new TicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint())));
+                     bba.addBubble(ticket_view_bubble,parent, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+         //.add(new TicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint()))));
+                  
+               }
+            }
+              
+         }
+   
+         @Override
+         public void mouseEntered(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+         }
+   
+         @Override
+         public void mouseExited(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+         }
+   
+         @Override
+         public void mousePressed(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+         }
+   
+         @Override
+         public void mouseReleased(MouseEvent e) {
+            // TODO Auto-generated method stub
+            
+         }
    }
    
    @Override public void paintComponent(Graphics g) {

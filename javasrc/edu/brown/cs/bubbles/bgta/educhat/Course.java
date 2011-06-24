@@ -2,6 +2,8 @@ package edu.brown.cs.bubbles.bgta.educhat;
 
 import javax.swing.Icon;
 
+import org.jivesoftware.smack.XMPPException;
+
 import edu.brown.cs.bubbles.bass.BassConstants;
 import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassNameBase;
@@ -30,7 +32,14 @@ class Course extends BassNameBase {
       case STUDENT:
 	 return new EduchatTicketSubmitBubble();
       case TA:
-	 return new EduchatTicketListBubble();
+	 TAXMPPClient c = new TAXMPPClient("codebubbles", "brownbears", "jabber.org", "TA1");
+	 try {
+	       c.connect();
+	    } catch (XMPPException e) {
+	       // TODO Auto-generated catch block
+	       e.printStackTrace();
+	    }
+	 return new EduchatTicketListBubble(c.getTickets());
       default:
 	 return null;
       }

@@ -49,8 +49,8 @@ public class TAXMPPClient {
    private String service;
    
    //using a LinkedHashMap so we can keep the tickets in order 
-   private LinkedHashMap<Integer, StudentTicket> ticket_map;
-   
+   //private LinkedHashMap<Integer, StudentTicket> ticket_map;
+   private TicketList ticket_list;
    /**
     *  Logs in with the given username/password at the XMPP service 
     * at service (i.e. "jabber.org")
@@ -64,8 +64,8 @@ public class TAXMPPClient {
       config = new ConnectionConfiguration("jabber.org");
       config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
       config.setSendPresence(true); 
-      
-      ticket_map = new LinkedHashMap<Integer, StudentTicket>();
+      ticket_list = new TicketList();
+      //ticket_map = new LinkedHashMap<Integer, StudentTicket>();
    
       username = aUsername;
       xmpp_password = an_xmpp_password;
@@ -94,8 +94,8 @@ public class TAXMPPClient {
       conn.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
       System.out.println(conn.getRoster().getEntries());
       //if(!conn.getRoster().contains(getMyBareJID()))
-     // {
-     //    conn.getRoster().createEntry(getMyBareJID(), "Me", null);
+      //{
+      //   conn.getRoster().createEntry(getMyBareJID(), "Me", null);
       //}
       System.out.println(conn.getRoster().getEntries());
 
@@ -113,7 +113,7 @@ public class TAXMPPClient {
       //we need to alert all the other TAs that we're accepting this ticket
       sendMessageToOtherResources("ACCEPTING:" + t.textHash());
       
-      ticket_map.remove(t.textHash());
+      ticket_list.remove(t);
       
       cur_student_jid = t.getStudentJID();
       
@@ -122,15 +122,9 @@ public class TAXMPPClient {
    }
 
 
-   public List<StudentTicket> getTickets()
+   public TicketList getTickets()
    {
-      ArrayList<StudentTicket> l = new ArrayList<StudentTicket>();
-      for(Integer i : ticket_map.keySet())
-      {
-        l.add(ticket_map.get(i)); 
-      }
-      
-      return l;
+     return ticket_list;
    }
    
    private void sendMessageToOtherResources(String msg)
@@ -170,20 +164,26 @@ public class TAXMPPClient {
         {
            //comes in the form "TICKET:<message>"
            StudentTicket t = new StudentTicket(chat_args[1], new Date(System.currentTimeMillis()), m.getFrom());
-           ticket_map.put(chat_args[1].hashCode(), t);
+           ticket_list.add(t);
            sendMessageToOtherResources("TICKET-FORWARD:" + m.getFrom() + ":" + chat_args[1]);
         }
         else if(StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("TICKET-FORWARD"))
         {
            //comes in the form "TICKET-FORWARD:<student-jid>:<message>"
            StudentTicket t = new StudentTicket(chat_args[2], new Date(System.currentTimeMillis()), chat_args[1]);
-           ticket_map.put(chat_args[2].hashCode(), t);
+           ticket_list.add(t);
         }
         else if(StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("ACCEPTING"))
         {
            //form: "ACCEPTING:<string hash>"
-           int id = Integer.valueOf(chat_args[1]);
-           ticket_map.remove(id);
+           int hash = Integer.valueOf(chat_args[1]);
+           for(StudentTicket t : ticket_list)
+           {
+              if(t.hashCode() == hash)
+              {
+        	 ticket_list.remove(t);
+              }
+           }
         }
         else if(StringUtils.parseBareAddress(c.getParticipant()).equals(StringUtils.parseBareAddress(cur_student_jid)))
         {

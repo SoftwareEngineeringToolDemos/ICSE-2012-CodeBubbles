@@ -60,6 +60,7 @@ public class BgtaChat implements BgtaConstants {
 /********************************************************************************/
 
 // used for all chats
+private String this_user;
 private String user_name;
 private String user_display;
 private ChatServer user_server;
@@ -92,6 +93,7 @@ private boolean is_xmpp;
 
 BgtaChat(String username,String displayName,ChatServer server,Object chat,Document doc,BgtaManager man)
 {
+   this_user = getName(man.getUsername());
    user_name = username;
    user_display = displayName;
    if (user_display == null) {
@@ -267,9 +269,11 @@ void logMessage(String message,String from)
     } catch (BadLocationException e) {
        //System.out.println("bad loc");
     }
-    String to = the_manager.getUsername();
-    if (from.equals("Me"))
-        to = user_name;
+   String to = the_manager.getUsername();
+   if (from.equals("Me")) {
+      to = user_display;
+      from = this_user;
+    }
    the_history.addHistoryItem(new ChatHistoryItem(from,to,message,date_format.format(new Date())));
 }
 
@@ -300,9 +304,9 @@ boolean sendMessage(String message)
 /********************************************************************************/
 
 /**
- * A method which creates a more display-able version of a username. This
+ * Creates a more displayable version of a username. This
  * is accomplished by tearing off anything after an @, and replacing periods
- * and underscores with whitespace.
+ * and underscores with spaces.
  */
 private String getName(String username)
 {
@@ -315,6 +319,12 @@ private String getName(String username)
    return name;
 }
 
+/**
+ * Replaces all occurrences of toreplace with a space. This method checks
+ * to make sure that there isn't a space next to an occurrence of toreplace
+ * already before replacing it. If there is, it simply removes the occurrence
+ * of toreplace, leaving the already present space to fill the void.
+ */
 private String whiteSpaceAwareReplace(String input,String toreplace)
 {
    String current = new String(input);
@@ -333,6 +343,10 @@ private String whiteSpaceAwareReplace(String input,String toreplace)
    return current;
 }
 
+/**
+ * Wraps a string of text in html tags, and escapes several popular characters with
+ * their HTML entities.
+ */
 private String wrapHTML(String text)
 {
    String temp = text;
@@ -344,6 +358,9 @@ private String wrapHTML(String text)
    return "<html><body>" + temp + "</body></html>";
 }
 
+/**
+ * Replaces all occurrences of toreplace with replacewith.
+ */
 private String replace(String input,String toreplace,String replacewith)
 {
    String current = new String(input);
@@ -358,13 +375,16 @@ private void createHistoryFile()
 {
    if (history_file != null) return;
    
+   BoardLog.logD("BGTA","Creating chat history file for " + this_user + " and " + user_display);
    File dir = BoardSetup.getBubblesPluginDirectory();
    if (dir != null) {
       try {
+         String login_user = replace(this_user," ","").toLowerCase();
+         String other_user = replace(user_display," ","").toLowerCase();
          for (int i = 0; i < 5; ++i) {
-            String fnm = "history_" + the_manager.getUsername().toLowerCase() + "_" + replace(user_name," ","").toLowerCase() + ".xml";
+            String fnm = "history_" + login_user + "_" + other_user + ".xml";
             File f = new File(dir,fnm);
-            if (f.createNewFile()) {
+            if (f.createNewFile() || f.exists()) {
                history_file = f;
                break;
              }
@@ -375,9 +395,10 @@ private void createHistoryFile()
           }
        }
       catch (IOException e) {
-         BoardLog.logE("BGTA","Problem created chat history file",e);
+         BoardLog.logE("BGTA","Problem creating chat history file",e);
        }
     }
+   BoardLog.logD("BGTA","Successfully created chat history file for " + this_user + " and " + user_display);
 }
 
 private synchronized void saveHistory()
@@ -388,6 +409,7 @@ private synchronized void saveHistory()
       return;
     }
    
+   BoardLog.logD("BGTA","Saving chat history for " + this_user + " and " + user_display + " to " + history_file.getName());
    try {
       IvyXmlWriter xw = new IvyXmlWriter(history_file);
       the_history.outputToXML(xw);
@@ -397,6 +419,7 @@ private synchronized void saveHistory()
       BoardLog.logE("BGTA","Problem writing chat history file",e);
       history_file = null;
     }
+   BoardLog.logD("BGTA","Successfully saved chat history for " + this_user + " and " + user_display + " to " + history_file.getName());
 }
 
 

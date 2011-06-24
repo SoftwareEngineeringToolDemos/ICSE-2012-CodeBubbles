@@ -88,6 +88,10 @@ void createExecBubble(BumpThread bt)
 	 BddtStackView sv = new BddtStackView(launch_control,bt);
 	 Rectangle r = BudaRoot.findBudaLocation(bb);
 	 BudaRoot br = BudaRoot.findBudaRoot(bb);
+	 if (br == null || r == null) {
+	    BoardLog.logX("BDDT","Unexpected invalid bubble " + (r == null) + " " + (br == null));
+	    return;
+	  }
 	 BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
 	 bubble_map.put(sv,nbd);
 	 br.add(sv,new BudaConstraint(r.x,r.y+r.height+20));
@@ -116,7 +120,7 @@ void createUserStackBubble(BubbleData bd)
       br.add(sv,new BudaConstraint(r.x,r.y+r.height+20));
       bd.setAssocBubble(sv);
    }
-}  
+}
 
 
 

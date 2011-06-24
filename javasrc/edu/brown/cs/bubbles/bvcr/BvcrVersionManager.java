@@ -65,6 +65,8 @@ static BvcrVersionManager createVersionManager(BvcrProject bp)
 
    BvcrVersionManager bvm = null;
 
+   System.err.println("BVCR: check repository for " + f);
+
    if (bvm == null) bvm = BvcrVersionSVN.getRepository(bp,f);
    if (bvm == null) bvm = BvcrVersionCVS.getRepository(bp,f);
    // handle HG
@@ -146,7 +148,8 @@ protected interface CommandCallback {
 protected String runCommand(String cmd,CommandCallback cb)
 {
    try {
-      IvyExec ex = new IvyExec(cmd,IvyExec.READ_OUTPUT);
+      IvyExec ex = new IvyExec(cmd,getRootDirectory(),IvyExec.READ_OUTPUT);
+      System.err.println("BVCR: Run " + ex.getCommand());
       InputStream ins = ex.getInputStream();
       BufferedReader br = new BufferedReader(new InputStreamReader(ins));
       for ( ; ; ) {
@@ -208,9 +211,13 @@ protected class XmlCommand extends StringCommand {
 /*										*/
 /********************************************************************************/
 
-private static final Pattern LINE_PAT = Pattern.compile("@@ \\-(\\d+),(\\d+) \\+(\\d+),(\\d+) @@");
-private static final Pattern LINE_PAT1 = Pattern.compile("@@ \\-(\\d+) \\+(\\d+) @@");
+private static final Pattern LINE_PAT = Pattern.compile("@@ \\-(\\d+),(\\d+) \\+(\\d+),(\\d+) @@.*");
+private static final Pattern LINE_PAT1 = Pattern.compile("@@ \\-(\\d+) \\+(\\d+) @@.*");
 private static final Pattern SOURCE_PAT = Pattern.compile("\\-\\-\\- (\\S+)\\s+\\(revision (\\w+)\\)");
+
+private static final Pattern GIT_INDEX = Pattern.compile("index ([0-9a-f.]+)\\s.*");
+private static final Pattern GIT_SOURCE = Pattern.compile("\\-\\-\\- a[/\\\\](\\S+)");
+
 
 
 protected class DiffAnalyzer implements CommandCallback {
@@ -219,11 +226,14 @@ protected class DiffAnalyzer implements CommandCallback {
    private int source_line;
    private int target_line;
    private int del_count;
+   private String base_version;
 
    DiffAnalyzer(BvcrDifferenceSet ds) {
       diff_set = ds;
       source_line = 0;
       target_line = 0;
+      del_count = 0;
+      base_version = null;
     }
 
    @Override public void handleLine(String ln) {
@@ -233,6 +243,13 @@ protected class DiffAnalyzer implements CommandCallback {
 	 case 'I' :                     // skip Index: lines and ========
 	 case '=' :
 	    source_line = 0;
+	    break;
+	 case 'i' :                     // git index line
+	    source_line = 0;
+	    Matcher m3 = GIT_INDEX.matcher(ln);
+	    if (m3.matches()) {
+	       base_version = m3.group(1);
+	     }
 	    break;
 	 case '\\' :
 	    break;
@@ -255,10 +272,16 @@ protected class DiffAnalyzer implements CommandCallback {
 	 case '-' :
 	    if (source_line == 0) {
 	       Matcher m1 = SOURCE_PAT.matcher(ln);
+	       Matcher m2 = GIT_SOURCE.matcher(ln);
 	       if (m1.matches()) {
 		  String fil = m1.group(1);
 		  String ver = m1.group(2);
 		  diff_set.beginFile(fil,ver);
+		}
+	       else if (m2.matches()) {
+		  String fil = m2.group(1);
+		  File f = new File(getRootDirectory(),fil);
+		  diff_set.beginFile(f.getPath(),base_version);
 		}
 	     }
 	    else {

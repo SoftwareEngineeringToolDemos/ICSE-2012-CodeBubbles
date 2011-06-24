@@ -256,7 +256,7 @@ private int findPosition(JTextComponent c, int pos, boolean down) throws BadLoca
    if (initview.x > 3) initview.x = 3;
    
    if (posview != null) {
-      int dy = Math.max(posview.height,initview.height);
+      int dy = Math.max(posview.height,initview.height) + 2;
       if (down) {
 	 front = c.viewToModel(new Point(initview.x, posview.y + dy));
 	 back = c.viewToModel(new Point(initview.x, posview.y + 2*dy));

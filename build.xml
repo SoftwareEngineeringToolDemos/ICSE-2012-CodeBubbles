@@ -4,10 +4,15 @@
    <path id='setuppath'>
       <pathelement location='..' />
    </path>
+   <path id='bubblespath'>
+      <pathelement location='.' />
+   </path>
    <property name='setupfile' refid='setuppath' />
+   <property name='bubblesfile' refid='bubblespath' />
 
    <target name='setup' unless='setup.done'>
-      <echo file='./build.properties' message="PRO=${setupfile}" />
+      <echo file='./build.properties' message="PRO=${setupfile}${line.separator}" />
+      <echo file='./build.properties' message='BUBBLES=${bubblesfile}${line.separator}' append='true' />
       <mkdir dir='./java/edu/brown/cs/bubbles' />
    </target>
 

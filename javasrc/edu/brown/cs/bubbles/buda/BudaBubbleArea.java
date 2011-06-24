@@ -369,7 +369,7 @@ void removeCurrentBubble(MouseEvent e)
 		       bc.getPositionType(),e);
     }
 
-   BoardMetrics.noteCommand("BUDA","addBubble_" + bb.getHashId());
+   BoardMetrics.noteCommand("BUDA","addBubble_" + bb.getClass().getName() + "_" + bb.getHashId());
 
    bb.addComponentListener(bubble_manager);
 }
@@ -654,7 +654,7 @@ void moveBubble(BudaBubble bb,Point loc)
 
 
 
-private void fixupBubble(BudaBubble bb)
+void fixupBubble(BudaBubble bb)
 {
    if (bb.isFixed() || bb.isFloating()) return;
 
@@ -665,6 +665,8 @@ private void fixupBubble(BudaBubble bb)
 
 private BudaBubbleGroup getBubbleGroup(BudaBubble bb)
 {
+   if (bb == null) return null;
+
    synchronized (bubble_groups) {
       for (BudaBubbleGroup bg : bubble_groups) {
 	 if (bg.getBubbles().contains(bb)) return bg;
@@ -675,12 +677,11 @@ private BudaBubbleGroup getBubbleGroup(BudaBubble bb)
 }
 
 
-private void fixupBubbleGroup(BudaBubble bb)
+void fixupBubbleGroup(BudaBubble bb)
 {
    BudaBubbleGroup bg = getBubbleGroup(bb);
 
-   if(bg == null)
-      return;
+   if (bg == null) return;
 
    BudaGroupSpacer gs = new BudaGroupSpacer(this, bg);
 
@@ -1145,7 +1146,7 @@ public Point getViewPosition()
 
 
 /**
- * get the current viewport	
+ * get the current viewport
  **/
 
 public Rectangle getViewport()

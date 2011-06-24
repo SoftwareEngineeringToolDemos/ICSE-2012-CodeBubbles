@@ -32,6 +32,7 @@ import edu.brown.cs.ivy.exec.IvyExecQuery;
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import org.w3c.dom.Element;
 
@@ -75,7 +76,7 @@ private Map<String,NameCollector> name_collects;
 private Map<String,EvalData> eval_handlers;
 private int		collect_id;
 private Map<BumpChangeHandler,Boolean> change_handlers;
-private Collection<BumpOpenEditorBubbleHandler> open_editor_bubble_handlers;
+private SwingEventListenerList<BumpOpenEditorBubbleHandler> open_editor_bubble_handlers;
 
 private boolean 	eclipse_active;
 private boolean 	eclipse_starting;
@@ -148,7 +149,8 @@ private BumpClient()
    name_collects = new HashMap<String,NameCollector>();
    eval_handlers = new HashMap<String,EvalData>();
    change_handlers = new ConcurrentHashMap<BumpChangeHandler,Boolean>();
-   open_editor_bubble_handlers = new HashSet<BumpOpenEditorBubbleHandler>();
+   open_editor_bubble_handlers = new SwingEventListenerList<BumpOpenEditorBubbleHandler>(
+      BumpOpenEditorBubbleHandler.class);
    collect_id = (int)(Math.random() * 10000);
 
    source_id = "BUBBLES_" + IvyExecQuery.getHostName() + "_" + IvyExecQuery.getProcessId();

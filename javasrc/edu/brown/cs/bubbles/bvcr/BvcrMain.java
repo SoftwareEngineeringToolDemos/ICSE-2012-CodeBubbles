@@ -315,14 +315,16 @@ private void processChanges()
 	 ds = new BvcrDifferenceSet(this,findProject(id));
 	 diff_map.put(id,ds);
        }
-      bvm.getDifferences(ds);
-      IvyXmlWriter xw = new IvyXmlWriter();
-      ds.outputXml(xw);
-      SecretKey sk = key_map.get(id);
-      String rid = id_map.get(id);
-      String uid = user_map.get(id);
-      if (!BvcrUpload.upload(xw.toString(),uid,rid,sk)) {
-	 System.err.println("BVCR: Upload failed");
+      if (ds.computationNeeded()) {
+	 bvm.getDifferences(ds);
+	 IvyXmlWriter xw = new IvyXmlWriter();
+	 ds.outputXml(xw);
+	 SecretKey sk = key_map.get(id);
+	 String rid = id_map.get(id);
+	 String uid = user_map.get(id);
+	 if (!BvcrUpload.upload(xw.toString(),uid,rid,sk)) {
+	    System.err.println("BVCR: Upload failed");
+	  }
        }
     }
 }
@@ -333,6 +335,13 @@ void handleFileChanged(String proj,File file)
 {
    BvcrDifferenceSet ds = diff_map.get(proj);
    if (ds != null) ds.handleFileChanged(file);
+}
+
+
+
+void handleEndUpdate()
+{
+   processChanges();
 }
 
 

@@ -42,7 +42,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.regex.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+
 
 
 class BumpRunManager implements BumpConstants, BumpConstants.BumpRunModel, BandaidConstants
@@ -69,7 +69,7 @@ private boolean 	use_debug_server = true;
 private String		server_host;
 private String		server_port;
 
-private Collection<BumpRunEventHandler> event_handlers;
+private SwingEventListenerList<BumpRunEventHandler> event_handlers;
 
 
 enum RunEventKind { NONE, RESUME, SUSPEND, CREATE, TERMINATE, CHANGE, MODEL_SPECIFIC };
@@ -143,7 +143,7 @@ BumpRunManager()
    active_processes = new ConcurrentHashMap<String,ProcessData>();
    named_processes = new ConcurrentHashMap<String,ProcessData>();
    active_threads = new ConcurrentHashMap<String,ThreadData>();
-   event_handlers = new ConcurrentLinkedQueue<BumpRunEventHandler>();
+   event_handlers = new SwingEventListenerList<BumpRunEventHandler>(BumpRunEventHandler.class);
    server_host = null;
    server_port = null;
    source_map = new HashMap<String,File>();

@@ -479,7 +479,7 @@ private boolean checkElement(BaleElement be)
    if (be.isLineElement() || (be.isUnknown() && be.isEndOfLine())) {
       int off = be.getStartOffset();
       int eoff = be.getEndOffset();
-      if (off < 0) return true;
+      if (off < 0 || eoff < off) return true;
       int y0;
       try {
 	 r = for_editor.modelToView(off);

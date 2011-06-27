@@ -24,7 +24,6 @@ package edu.brown.cs.bubbles.bgta;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardSetup;
 
-import edu.brown.cs.ivy.xml.IvyXml;
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import java.util.Collection;
@@ -34,6 +33,8 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.IOException;
 
 import javax.swing.text.html.HTMLDocument;
@@ -45,9 +46,20 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
-import org.w3c.dom.*;
-
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
+
+
+
+/**
+ * This class represents a chat between two users. It is a wrapper around two different
+ * chat objects: one for the XMPP protocol (Chat) and one for AIM's OSCAR protocol (Conversation).
+ * A chat is first created when the bubbles user receives a message from a buddy, or when the bubbles
+ * user clicks on or hovers over one of the buddy names in his buddy list. A chat persists until the
+ * bubbles user logs out of the account containing the chat. A chat has an associated Document which it
+ * uses to log the messages that are sent between the two users. In addition, the chat also maintains a
+ * history of the messages which transpire between the users, saving it to a file in the bubbles user's
+ * eclipse workspace so that it can be loaded and browsed by the bubbles user at a later point in time.
+ */
 
 public class BgtaChat implements BgtaConstants {
 
@@ -92,16 +104,15 @@ private boolean is_xmpp;
 /********************************************************************************/
 
 BgtaChat(String username,String displayName,ChatServer server,Object chat,Document doc,BgtaManager man)
-{
+{ 
+   // Fix display names to not have the server endings.
    this_user = getName(man.getUsername());
    user_name = username;
    user_display = displayName;
    if (user_display == null) {
       user_display = getName(user_name);
    }
-   // Fix display name to not have the server ending.
-   
-   
+  
    user_server = server;
    the_chat = null;
    the_conversation = null;
@@ -132,7 +143,7 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
     }
    
    // Create a new ChatHistory for this chat.
-   the_history = new ChatHistory(this);
+   the_history = new ChatHistory();
    history_file = null;
 }
 
@@ -144,42 +155,42 @@ BgtaChat(String username,String displayName,ChatServer server,Object chat,Docume
 /*                            */
 /********************************************************************************/
 
+/**
+ * Returns the name of the participant in this chat.
+ * 
+ * @return the name of the participant in this chat.
+ */
 String getUsername()    { return user_name; }
 
+
+/**
+ * Returns the name of the server hosting this chat.
+ * 
+ * @return the name of the server hosting this chat.
+ */
 ChatServer getServer()  { return user_server; }
 
+
+/**
+ * Returns the Document associated with this chat.
+ * 
+ * @return the Document associated with this chat.
+ */
 Document getDocument()  { return user_document; }
 
+
+/**
+ * Returns whether or not this chat is over the XMPP protocol.
+ * 
+ * @return true if this chat is over the XMPP protocol; false otherwise.
+ */
 boolean isXMPP()        { return is_xmpp; }
 
 /**
- * Preferred method of setting the document is by passing
- * it to the constructor.
+ * Returns the last message logged in this chat.
+ * 
+ * @return the last message logged in this chat.
  */
-@Deprecated
-void setDocument(Document doc) { user_document = doc; }
-
-Chat getXMPPChat()
-{
-   if (is_xmpp)
-      return the_chat;
-   return null;
-}
-
-Conversation getAIMConversation()
-{
-   if (!is_xmpp)
-      return the_conversation;
-   return null;
-}
-
-Object getChat()
-{
-   if (is_xmpp)
-      return the_chat;
-   return the_conversation;
-}
-
 Object getLastMessage()
 {
     if (!is_xmpp)
@@ -221,6 +232,13 @@ Object getLastMessage()
 /*                            */
 /********************************************************************************/
 
+/**
+ * Proccesses a received message. Creates a new bubble for this
+ * chat if it there are none. Handles metatdata if present. Otherwise, 
+ * just logs the message to all existing chat bubbles.
+ * 
+ * @param msg The received message object to be processed. Either an instance of Message of MessageInfo, depending on the protocol in use.
+ */
 void messageReceived(Object msg)
 {
    String message = null;
@@ -255,46 +273,70 @@ void messageReceived(Object msg)
       logMessage(message);
 }
 
-void logMessage(String message)
+/**
+ * Convenience method for logMessage(message,user_display).
+ * 
+ * @param msg A String
+ */
+void logMessage(String msg)
 {
-   logMessage(message,user_display);
+   logMessage(msg,user_display);
 }
 
-void logMessage(String message,String from)
+/**
+ * Logs a message in the Chat's Document. All chat bubbles
+ * which are registered a listeners of the Document will 
+ * receive the change.
+ * 
+ * @param msg The text of the message
+ * @param from The name of the user that sent the message
+ */
+void logMessage(String msg,String from)
 {
    if (!from.equals(user_display) && !from.equals("Me") && !from.equals("Error") && !from.equals("Bubbles"))
       return;
    try {
-      user_document.insertString(user_document.getLength(),from + ": " + message + "\n",null);
+       user_document.insertString(user_document.getLength(),from + ": " + msg + "\n",null);
     } catch (BadLocationException e) {
        //System.out.println("bad loc");
     }
-   String to = the_manager.getUsername();
+   String to = this_user;
    if (from.equals("Me")) {
       to = user_display;
       from = this_user;
     }
-   the_history.addHistoryItem(new ChatHistoryItem(from,to,message,date_format.format(new Date())));
+   the_history.addHistoryItem(new ChatHistoryItem(from,to,msg,date_format.format(new Date())));
 }
 
-boolean sendMessage(String message)
+/**
+ * Sends a message from the bubbles user to
+ * the other participant of this chat. Logs
+ * the message in the chat bubble afterward
+ * so the user knows it was sent. Logs an error
+ * to the bubble if the message sending failed
+ * for some reason.
+ * 
+ * @param msg The text of the message to be sent
+ * 
+ * @return true if the message sent successfully; false otherwise.
+ */
+boolean sendMessage(String msg)
 {
    boolean sent = true;
    try {
       if (is_xmpp && the_chat != null)
-         the_chat.sendMessage(message);
+          the_chat.sendMessage(msg);
       if (!is_xmpp && the_conversation != null)
-         the_conversation.sendMessage(new SimpleMessage(wrapHTML(message)));
+          the_conversation.sendMessage(new SimpleMessage(wrapHTML(msg)));
     } catch (XMPPException e) {
       sent = false;
-      BoardLog.logE("BGTA","Error sending message: " + message + " to: " + user_name);
+      BoardLog.logE("BGTA","Error sending message: " + msg + " to: " + user_name);
       logMessage("Message not sent. Please try again.", "Error");
     }
    if (sent)
-      logMessage(message, "Me");
+       logMessage(msg, "Me");
    return sent;
 }
-
 
 
 /********************************************************************************/
@@ -307,6 +349,10 @@ boolean sendMessage(String message)
  * Creates a more displayable version of a username. This
  * is accomplished by tearing off anything after an @, and replacing periods
  * and underscores with spaces.
+ * 
+ * @param username The username to be transformed into just a name
+ * 
+ * @return The resulting String
  */
 private String getName(String username)
 {
@@ -324,6 +370,11 @@ private String getName(String username)
  * to make sure that there isn't a space next to an occurrence of toreplace
  * already before replacing it. If there is, it simply removes the occurrence
  * of toreplace, leaving the already present space to fill the void.
+ * 
+ * @param input A String
+ * @param toreplace The String to replace
+ * 
+ * @return The resulting String
  */
 private String whiteSpaceAwareReplace(String input,String toreplace)
 {
@@ -346,6 +397,10 @@ private String whiteSpaceAwareReplace(String input,String toreplace)
 /**
  * Wraps a string of text in html tags, and escapes several popular characters with
  * their HTML entities.
+ * 
+ * @param text A String
+ * 
+ * @return The resulting String
  */
 private String wrapHTML(String text)
 {
@@ -360,6 +415,14 @@ private String wrapHTML(String text)
 
 /**
  * Replaces all occurrences of toreplace with replacewith.
+ * A recursive, non-regular expression alternative to the
+ * builtin String replaceAll method.
+ * 
+ * @param input A String
+ * @param toreplace The String to replace
+ * @param repalcewith The String to be used for replacement
+ * 
+ * @return The resulting String
  */
 private String replace(String input,String toreplace,String replacewith)
 {
@@ -371,6 +434,12 @@ private String replace(String input,String toreplace,String replacewith)
    return current;
 }
 
+/**
+ * Creates a file for the history to be saved in.
+ * The name of the file contains the names of the
+ * two users involved in the chat. The file is created
+ * in the eclipse workspace that bubbles uses.
+ */
 private void createHistoryFile()
 {
    if (history_file != null) return;
@@ -396,11 +465,18 @@ private void createHistoryFile()
        }
       catch (IOException e) {
          BoardLog.logE("BGTA","Problem creating chat history file",e);
+         return;
        }
     }
    BoardLog.logD("BGTA","Successfully created chat history file for " + this_user + " and " + user_display);
 }
 
+/**
+ * Saves the history of this chat to a file.
+ * This is done so that the history can be loaded
+ * in a later run of bubbles so that the user
+ * can browse the chat history if they wish to do so.
+ */
 private synchronized void saveHistory()
 {
    if (history_file == null) createHistoryFile();
@@ -411,13 +487,14 @@ private synchronized void saveHistory()
    
    BoardLog.logD("BGTA","Saving chat history for " + this_user + " and " + user_display + " to " + history_file.getName());
    try {
-      IvyXmlWriter xw = new IvyXmlWriter(history_file);
-      the_history.outputToXML(xw);
+      IvyXmlWriter xw = new IvyXmlWriter(new OutputStreamWriter(new FileOutputStream(history_file,true),"UTF-8"));
+      the_history.outputXML(xw);
       xw.close();
     }
    catch (IOException e) {
       BoardLog.logE("BGTA","Problem writing chat history file",e);
       history_file = null;
+      return;
     }
    BoardLog.logD("BGTA","Successfully saved chat history for " + this_user + " and " + user_display + " to " + history_file.getName());
 }
@@ -428,34 +505,36 @@ private synchronized void saveHistory()
 /* Management methods                           */
 /*                            */
 /********************************************************************************/
-
+/**
+ * Closes this chat and saves the chat's history so it can be loaded
+ * in a later run of bubbles.
+ */
 void close()
 {
    is_open = false;
-   saveHistory();   
+   saveHistory();
 }
 
 
 /**
  * A class for processing received XMPP messages.
- * 
- * @author Sumner Warren
- *
  */
 private class XMPPChatListener implements MessageListener {
 
-@Override public void processMessage(Chat ch,Message msg) {
-    if (!ch.equals(the_chat))
-        return;
-    if (msg.getType() != Message.Type.chat)
-        return;
-    messageReceived(msg);
-}
+   @Override public void processMessage(Chat ch,Message msg) {
+      if (!ch.equals(the_chat))
+         return;
+      if (msg.getType() != Message.Type.chat)
+         return;
+     messageReceived(msg);
+    }
 
 }  // end of inner class XMPPChatListener
 
 
-
+/**
+ * A class for processing received AIM messages.
+ */
 private class AIMChatListener implements ConversationListener {
     
    @Override public void canSendMessageChanged(Conversation arg0, boolean arg1) { }
@@ -479,34 +558,67 @@ private class AIMChatListener implements ConversationListener {
 }  // end of inner class AIMChatListener
 
 
-
+/**
+ * Represents a full history of a chat between two users. This history
+ * only represents a single session (any number of chats during one run of bubbles).
+ */
 private class ChatHistory {
     
     private Vector<ChatHistoryItem> my_items;
+    boolean has_changed;
+    int previous_size;
     
-    ChatHistory(BgtaChat ch) {
-        my_items = new Vector<ChatHistoryItem>();
+    /**
+     * Creates an empty ChatHistory.
+     */
+    ChatHistory() {
+       my_items = new Vector<ChatHistoryItem>();
+       has_changed = false;
+       previous_size = 0;
     }
     
-    public void addHistoryItem(ChatHistoryItem item) {
-        my_items.add(item);
+    /**
+     * Adds an item to this chat history.
+     * 
+     * @param item A ChatHistoryItem
+     * 
+     */
+    void addHistoryItem(ChatHistoryItem item) {
+       my_items.add(item);
+       has_changed = true;
     }
     
-    public void outputToXML(IvyXmlWriter xw) {
-        xw.begin("HISTORY");
-        xw.field("FROM",user_name);
-        xw.field("TO",the_manager.getUsername());
-        xw.field("SERVER",user_server.server());
-        for (ChatHistoryItem item : my_items) {
-            item.outputToXML(xw);
-         }
-        xw.end("HISTORY");
+    /**
+     * Writes this history to a file so it can be loaded later.
+     * 
+     * @param xw An IvyXmlWriter
+     * 
+     */
+    void outputXML(IvyXmlWriter xw) {
+       if (has_changed) {
+          xw.begin("SESSION");
+          xw.field("FROM",user_name);
+          xw.field("TO",the_manager.getUsername());
+          xw.field("SERVER",user_server.server());
+          for (int i = previous_size; i < my_items.size(); ++i) {
+             ChatHistoryItem item = my_items.get(i);
+             item.outputXML(xw);
+           }
+          xw.end("SESSION");
+          has_changed = false;
+          previous_size = my_items.size();
+        }
     }
 
 }  // end of inner class ChatHistory
 
 
-
+/**
+ * Represents a single item in a chat history. Right now
+ * this represents a single message. I might extend this
+ * to be a interface and have subclasses which represent
+ * different events: messages, login, logout, metatdata.
+ */
 private class ChatHistoryItem {
     
     private String item_from;
@@ -514,32 +626,65 @@ private class ChatHistoryItem {
     private String item_text;
     private String item_time;
     
+    /**
+     * Creates a ChatHistoryItem with the given users, message, and timestamp.
+     * 
+     * @param from The name of the user that sent the message
+     * @param to The name of the user that received the message
+     * @param text The body of the message
+     * @param time The time at which the message transpired
+     */
     ChatHistoryItem(String from,String to,String text,String time) {
-        item_from = from;
-        item_to = to;
-        item_text = text;
-        item_time = time;
+       item_from = from;
+       item_to = to;
+       item_text = text;
+       item_time = time;
     }
     
-    public String getFrom() { return item_from; }
+    /**
+     * Returns the name of this message's sender.
+     *
+     * @return the name of this message's sender.    
+     */
+    String getFrom() { return item_from; }
     
+    /**
+     * Returns the name of this message's recipient.
+     * 
+     * @return the name of this message's recipient.
+     */
     public String getTo() { return item_to; }
     
+    /**
+     * Returns the body of this message.
+     * 
+     * @return the body of this message.
+     */
     public String getText() { return item_text; }
     
+    /**
+     * Returns the time at which this message occurred.
+     * 
+     * @return the time at which this message occurred.
+     */
     public String getTime() { return item_time; }
     
-    public void outputToXML(IvyXmlWriter xw) {
-        xw.begin("MESSAGE");
-        xw.textElement("FROM",item_from);
-        xw.textElement("TO",item_to);
-        xw.textElement("TEXT",item_text);
-        xw.textElement("TIMESTAMP",item_time);
-        xw.end("MESSAGE");
+    /**
+     * Writes this history to a file so it can be loaded later.
+     * 
+     * @param xw An IvyXmlWriter
+     * 
+     */
+    public void outputXML(IvyXmlWriter xw) {
+       xw.begin("MESSAGE");
+       xw.textElement("FROM",item_from);
+       xw.textElement("TO",item_to);
+       xw.textElement("TEXT",item_text);
+       xw.textElement("TIME",item_time);
+       xw.end("MESSAGE");
     }
     
 }  // end of inner class ChatHistoryItem
-
 
 
 }

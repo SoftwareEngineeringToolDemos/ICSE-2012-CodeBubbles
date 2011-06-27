@@ -224,7 +224,7 @@ void processMetadata(String data)
 /*										*/
 /********************************************************************************/
 
-void pressedButton(JButton button,String msg)
+void pressedButton(String msg)
 {
     try {
         logging_area.getDocument().insertString(logging_area.getDocument().getLength(),msg,null);
@@ -243,7 +243,7 @@ private class XMLListener implements ActionListener {
     
     @Override public void actionPerformed(ActionEvent e) {
         BgtaFactory.addTaskToRoot(_xml);
-        pressedButton((JButton) e.getSource(),BGTA_TASK_DESCRIPTION);
+        pressedButton(BGTA_TASK_DESCRIPTION);
     }
     
 }	// end of private class XMLListener
@@ -364,7 +364,7 @@ BudaConstants.BudaBubbleOutputer {
       xw.field("NAME", chat_username);
       xw.field("USERNAME", the_manager.getUsername());
       xw.field("PASSWORD", the_manager.getPassword());
-      xw.field("SERVER", the_manager.getServer());
+      xw.field("SERVER", the_manager.getServer().server());
     }
 
 }	// end of private class ChatPanel

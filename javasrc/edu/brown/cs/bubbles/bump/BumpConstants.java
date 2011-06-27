@@ -137,7 +137,7 @@ enum BumpFixType {
  *	messages related to remote edits, updated ASTs, etc.
  **/
 
-interface BumpFileHandler {
+interface BumpFileHandler extends EventListener {
 
 /**
  *	This routine is invoked with an updated elision information which is
@@ -324,7 +324,7 @@ interface BumpBreakpoint {
  *	changes to breakpoints.
  **/
 
-interface BumpBreakpointHandler {
+interface BumpBreakpointHandler extends EventListener {
 
    void handleBreakpointAdded(BumpBreakpoint bp);
    void handleBreakpointRemoved(BumpBreakpoint bp);
@@ -631,7 +631,7 @@ enum BumpLaunchConfigType {
 }
 
 
-interface BumpRunEventHandler {
+interface BumpRunEventHandler extends EventListener {
 
    void handleLaunchEvent(BumpRunEvent evt);
    void handleProcessEvent(BumpRunEvent evt);
@@ -893,7 +893,7 @@ interface BumpCompletion {
 /*										*/
 /********************************************************************************/
 
-interface BumpChangeHandler {
+interface BumpChangeHandler extends EventListener {
 
    void handleFileChanged(String project,String file);
    void handleFileAdded(String project,String file);
@@ -909,7 +909,7 @@ interface BumpChangeHandler {
 /*										*/
 /********************************************************************************/
 
-interface BumpOpenEditorBubbleHandler {
+interface BumpOpenEditorBubbleHandler extends EventListener {
    static final int DELAY_TIME = 300;
 
    void handleOpenEditorBubble(String projname, String resourcepath, String type);
@@ -918,7 +918,7 @@ interface BumpOpenEditorBubbleHandler {
 
 
 
-interface BumpEvaluationHandler {
+interface BumpEvaluationHandler extends EventListener {
 
    void evaluationResult(String eid,String expr,BumpRunValue val);
    void evaluationError(String eid,String expr,String error);

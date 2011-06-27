@@ -2,29 +2,30 @@
 
    <property file='../../../../../../build.properties' />
    <property name='PRO' value='/pro' />
+   <property name='BUBBLES' value='/pro/bubbles' />
    <available file="${PRO}/ivy" type="dir" property="ivy.present" />
    <target name="init1" if="ivy.present" >
       <property name='IVYBIN' value='${PRO}/ivy/java' />
    </target>
    <target name="init2" unless="ivy.present" >
-      <property name='IVYBIN' value='${PRO}/bubbles/lib/ivy.jar' />
+      <property name='IVYBIN' value='${BUBBLES}/lib/ivy.jar' />
    </target>
    <target name='init' depends='init1,init2' >
       <path id='bubbles.classpath'>
-	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
-	 <fileset dir='${PRO}/bubbles/eclipsejar'>
+	 <fileset dir='${BUBBLES}/eclipsejar'>
 	    <include name='*.jar' />
 	 </fileset>
       </path>
       <path id='test.classpath'>
-	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
       </path>
    </target>
 
    <target name='compile' depends='init'>
-      <javac srcdir='.' destdir='${PRO}/bubbles/java' debug='on' deprecation='on'
+      <javac srcdir='.' destdir='${BUBBLES}/java' debug='on' deprecation='on'
 		includeantruntime='false'>
 	 <classpath refid='bubbles.classpath' />
       </javac>
@@ -54,12 +55,12 @@
    <target name='plugin' depends='compile' if='ivy.present'>
       <jar destfile="bedrock.jar" manifest='manifest.mf'>
 	 <fileset dir='${PRO}/ivy/java' includes= '**/*.class' />
-	 <fileset dir='${PRO}/bubbles/java' includes= '**/bedrock/*.class' />
-	 <fileset dir='${PRO}/bubbles/bedrock/src' includes='plugin.xml' />
-	 <fileset dir='${PRO}/bubbles/images' includes='agt_web.png' />
+	 <fileset dir='${BUBBLES}/java' includes= '**/bedrock/*.class' />
+	 <fileset dir='${BUBBLES}/bedrock/src' includes='plugin.xml' />
+	 <fileset dir='${BUBBLES}/images' includes='agt_web.png' />
       </jar>
       <copy file='bedrock.jar'
-		tofile='${PRO}/bubbles/lib/bedrock.jar' />
+		tofile='${BUBBLES}/lib/bedrock.jar' />
    </target>
 
    <target name='myplugin' depends='plugin' if='ivy.present'>

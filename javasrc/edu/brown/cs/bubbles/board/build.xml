@@ -2,6 +2,7 @@
 
    <property file='../../../../../../build.properties' />
    <property name='PRO' value='/pro' />
+   <property name='BUBBLES' value='/pro/bubbles' />
    <available file="${PRO}/ivy" type="dir" property="ivy.present" />
    <target name="init1" if="ivy.present" >
       <property name='IVYBIN' value='${PRO}/ivy/java' />
@@ -9,23 +10,23 @@
       <property name='IVYJAR2' value='**/*.class' />
    </target>
    <target name="init2" unless="ivy.present" >
-      <property name='IVYBIN' value='${PRO}/bubbles/lib/ivy.jar' />
-      <property name='IVYJAR1' value='${PRO}/bubbles/lib' />
+      <property name='IVYBIN' value='${BUBBLES}/lib/ivy.jar' />
+      <property name='IVYJAR1' value='${BUBBLES}/lib' />
       <property name='IVYJAR2' value='ivy.jar' />
    </target>
    <target name='init' depends='init1,init2' >
       <path id='bubbles.classpath'>
-	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
       </path>
       <path id='test.classpath'>
-	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
       </path>
    </target>
 
    <target name='compile' depends='init'>
-      <javac srcdir='.' destdir='${PRO}/bubbles/java' debug='on' deprecation='on'
+      <javac srcdir='.' destdir='${BUBBLES}/java' debug='on' deprecation='on'
 		includeantruntime='false' excludes='scan/**' >
 	 <classpath refid='bubbles.classpath' />
 	 <compilerarg value='-Xlint:all' />
@@ -33,7 +34,7 @@
    </target>
 
    <target name='clean'>
-      <delete dir='${PRO}/bubbles/java/edu/brown/cs/bubbles/board' />
+      <delete dir='${BUBBLES}/java/edu/brown/cs/bubbles/board' />
    </target>
 
    <target name='testsetup' depends='compile'>
@@ -73,9 +74,9 @@
 
    <target name='updatejar' depends='compile'>
       <jar destfile="updater.jar" manifest='update.mf'>
-	 <fileset dir='${PRO}/bubbles/java' includes= '**/BoardUpdate.class' />
+	 <fileset dir='${BUBBLES}/java' includes= '**/BoardUpdate.class' />
       </jar>
-      <copy file='updater.jar' tofile='${PRO}/bubbles/lib/updater.jar' />
+      <copy file='updater.jar' tofile='${BUBBLES}/lib/updater.jar' />
       <copy file='updater.jar' tofile='/pro/web/web/people/spr/bubbles/updater.jar' />
    </target>
 

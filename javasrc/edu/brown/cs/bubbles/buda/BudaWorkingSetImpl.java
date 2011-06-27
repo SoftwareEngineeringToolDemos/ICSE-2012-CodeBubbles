@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -32,8 +32,7 @@ package edu.brown.cs.bubbles.buda;
 
 import edu.brown.cs.bubbles.board.*;
 
-import java.awt.Color;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -102,12 +101,21 @@ void setLabel(String s)
 
 
 
-@Override public Rectangle getRegion()			{ return new Rectangle(set_region); }
+@Override public Rectangle getRegion()
+{
+   Dimension r = bubble_area.getSize();
+   set_region.height = r.height;
+
+   return new Rectangle(set_region);
+}
+
+
 
 void setRegion(Rectangle r)
 {
    set_region = new Rectangle(r);
-   // TODO: cause top bar and overview to be redrawn
+   BudaRoot br = BudaRoot.findBudaRoot(bubble_area);
+   if (br != null) br.repaint();
 }
 
 

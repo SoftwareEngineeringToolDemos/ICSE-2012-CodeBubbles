@@ -3,6 +3,7 @@
 
    <property file='../build.properties' />
    <property name='PRO' value='/pro' />
+   <property name='BUBBLES' value='/pro/bubbles' />
 
    <target name='all'>
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bedrock" target='plugin' />
@@ -31,30 +32,30 @@
    </target>
 
    <path id='bubbles.classpath'>
-      <pathelement location='${PRO}/bubbles/java' />
-      <pathelement location='${PRO}/ivy/java' />
+      <pathelement location='${BUBBLES}/java' />
+      <pathelement location='${2AO}/ivy/java' />
    </path>
 
    <path id='test.classpath'>
-      <pathelement location='${PRO}/bubbles/java' />
+      <pathelement location='${BUBBLES}/java' />
       <pathelement location='${PRO}/ivy/java' />
    </path>
 
    <path id='jdocsrc'>
-      <pathelement location='${PRO}/bubbles/javasrc' />
+      <pathelement location='${BUBBLES}/javasrc' />
       <pathelement location='${PRO}/ivy/javasrc' />
    </path>
 
 
    <target name='compile'>
-      <javac srcdir='.' destdir='${PRO}/bubbles/java' debug='on' deprecation='on'>
+      <javac srcdir='.' destdir='${BUBBLES}/java' debug='on' deprecation='on'>
 	 <classpath refid='bubbles.classpath' />
       </javac>
    </target>
 
 
    <target name='doc'>
-      <javadoc sourcepathref='jdocsrc' classpathref='bubbles.classpath' destdir='${PRO}/bubbles/doc'>
+      <javadoc sourcepathref='jdocsrc' classpathref='bubbles.classpath' destdir='${BUBBLES}/doc'>
 	 <package name='edu.brown.cs.bubbles.bale' />
 	 <package name='edu.brown.cs.bubbles.banal' />
 	 <package name='edu.brown.cs.bubbles.bandaid' />

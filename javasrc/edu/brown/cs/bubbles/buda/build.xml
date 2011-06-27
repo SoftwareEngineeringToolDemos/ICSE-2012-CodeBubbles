@@ -2,37 +2,38 @@
 
    <property file='../../../../../../build.properties' />
    <property name='PRO' value='/pro' />
+   <property name='BUBBLES' value='/pro/bubbles' />
    <available file="${PRO}/ivy" type="dir" property="ivy.present" />
    <target name="init1" if="ivy.present" >
       <property name='IVYBIN' value='${PRO}/ivy/java' />
    </target>
    <target name="init2" unless="ivy.present" >
-      <property name='IVYBIN' value='${PRO}/bubbles/lib/ivy.jar' />
+      <property name='IVYBIN' value='${BUBBLES}/lib/ivy.jar' />
    </target>
    <target name='init' depends='init1,init2' >
       <path id='bubbles.classpath'>
-	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
-	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
-	 <fileset dir='${PRO}/bubbles/lib/' includes='Lobo/**/*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='Lobo/**/*.jar' />
       </path>
       <path id='test.classpath'>
-	 <pathelement location='${PRO}/bubbles/java' />
+	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
-	 <fileset dir='${PRO}/bubbles/lib/' includes='iText.jar' />
-	 <fileset dir='${PRO}/bubbles/lib/' includes='Lobo/**/*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='Lobo/**/*.jar' />
       </path>
    </target>
 
    <target name='compile' depends='init'>
-      <javac srcdir='.' destdir='${PRO}/bubbles/java' debug='on' deprecation='on'
+      <javac srcdir='.' destdir='${BUBBLES}/java' debug='on' deprecation='on'
 		includeantruntime='false'>
 	 <classpath refid='bubbles.classpath' />
       </javac>
    </target>
 
    <target name='clean'>
-      <delete dir='${PRO}/bubbles/java/edu/brown/cs/bubbles/buda' />
+      <delete dir='${BUBBLES}/java/edu/brown/cs/bubbles/buda' />
    </target>
 
    <target name='test' depends='compile'>
@@ -56,7 +57,7 @@
    <target name='jar' depends='compile'>
       <jar destfile="buda.jar" manifest='manifest.mf'>
 	 <fileset dir='${PRO}/ivy/java' includes= '**/*.class' />
-	 <fileset dir='${PRO}/bubbles/java' includes= '**/*.class' />
+	 <fileset dir='${BUBBLES}/java' includes= '**/*.class' />
       </jar>
    </target>
 

@@ -121,7 +121,7 @@ private BaleDocumentIde findDocumentForLocation(BuenoLocation loc)
    String pkg = loc.getPackage();
    String cls = loc.getClassName();
    if (cls != null) {
-      if (!cls.startsWith(pkg)) cls = pkg + "." + cls;
+      if (pkg != null && !cls.startsWith(pkg)) cls = pkg + "." + cls;
       List<BumpLocation> blocs = bump_client.findClassDefinition(proj,cls);
       if (blocs != null && blocs.size() > 0) {
 	 BumpLocation bl = blocs.get(0);

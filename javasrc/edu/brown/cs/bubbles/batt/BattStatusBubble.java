@@ -403,26 +403,44 @@ private class DisplayTable extends JTable implements MouseListener {
    DisplayTable() {
       super(batt_model.getTableModel());
       setShowGrid(true);
-      setPreferredScrollableViewportSize(new Dimension(300,100));
+      setPreferredScrollableViewportSize(new Dimension(350,100));
       setAutoCreateRowSorter(true);
       setColumnSelectionAllowed(false);
       setDragEnabled(false);
       setFillsViewportHeight(true);
+      
+      getColumnModel().getColumn(0).setMinWidth(BATT_STATUS_COL_MIN_WIDTH);
+      getColumnModel().getColumn(0).setMaxWidth(BATT_STATUS_COL_MAX_WIDTH);
+      
+      getColumnModel().getColumn(1).setMinWidth(BATT_STATE_COL_MIN_WIDTH);
+      getColumnModel().getColumn(1).setMaxWidth(BATT_STATE_COL_MAX_WIDTH);
+      
+      getColumnModel().getColumn(2).setPreferredWidth(BATT_CLASS_COL_PREF_WIDTH);
+      getColumnModel().getColumn(3).setPreferredWidth(BATT_NAME_COL_PREF_WIDTH);
+      
+      setCellSelectionEnabled(false);
+      setRowSelectionAllowed(true);
+      setColumnSelectionAllowed(false);
+      addMouseListener(this);
     }
 
    @Override public boolean getScrollableTracksViewportWidth()		{ return true; }
 
    @Override public void mouseClicked(MouseEvent e) {
-      if (e.getClickCount() > 1) return;
+      if (e.getClickCount() < 2) return;
       BattTestCase btc = findTestCase(e.getPoint());
       if (btc == null) return;
       // show bubble for that test case
+      SourceAction sa = new SourceAction(btc);
+      sa.actionPerformed(null);
     }
 
    @Override public void mouseEntered(MouseEvent _e)			{ }
    @Override public void mouseExited(MouseEvent _e)			{ }
    @Override public void mouseReleased(MouseEvent e)			{ }
    @Override public void mousePressed(MouseEvent e)			{ }
+   
+   @Override public boolean isCellEditable(int r,int c)                 { return false; }
 
    @Override public String getToolTipText(MouseEvent e) {
       BattTestCase btc = findTestCase(e.getPoint());
@@ -436,6 +454,7 @@ private class DisplayTable extends JTable implements MouseListener {
       BattTestCase btc = batt_model.getTestCase(row);
       return btc;
     }
+   
 }	// end of inner class DisplayTable
 
 

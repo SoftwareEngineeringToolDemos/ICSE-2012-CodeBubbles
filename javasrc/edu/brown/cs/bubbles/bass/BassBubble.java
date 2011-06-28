@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -35,6 +35,7 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
+import java.awt.*;
 
 
 class BassBubble extends BudaBubble implements BassConstants
@@ -51,6 +52,9 @@ class BassBubble extends BudaBubble implements BassConstants
 private static final long serialVersionUID = 1;
 private BassTreeModel my_tree_model;
 private BassSearchBox my_search_box;
+
+
+private Stroke overview_stroke = new BasicStroke(1f,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL);
 
 
 
@@ -107,6 +111,13 @@ void resetTreeModel(BassRepository br)
 {
    //to keep package explorer from appearing in overview
    if (bass_properties.getBoolean(BASS_PACK_IN_OVERVIEW)) super.paintOverview(g);
+   else {
+      Shape s0 = getShape();
+      g.setColor(getBorderColor());
+
+      g.setStroke(overview_stroke);
+      g.draw(s0);
+    }
 }
 
 

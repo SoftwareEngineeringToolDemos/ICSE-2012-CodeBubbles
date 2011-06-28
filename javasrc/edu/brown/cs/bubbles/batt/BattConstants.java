@@ -129,6 +129,21 @@ interface BattModelListener extends EventListener {
 
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Text status display constants                                           */
+/*                                                                              */
+/********************************************************************************/
+
+int BATT_STATUS_COL_MIN_WIDTH = 55;
+int BATT_STATUS_COL_MAX_WIDTH = 75;
+int BATT_STATE_COL_MIN_WIDTH = 90;
+int BATT_STATE_COL_MAX_WIDTH = 110;
+int BATT_CLASS_COL_PREF_WIDTH = 150;
+int BATT_NAME_COL_PREF_WIDTH = 150;
+
+
+
 }	// end of interface BattConstants
 
 

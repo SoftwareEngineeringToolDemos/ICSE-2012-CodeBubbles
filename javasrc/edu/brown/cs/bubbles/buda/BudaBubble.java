@@ -1127,7 +1127,7 @@ private double getShapeBottomOffset()		{ return (BUBBLE_FOCUS_EDGE_SIZE/2); }
 /*										*/
 /********************************************************************************/
 
-Shape getShape()
+protected Shape getShape()
 {
    if (border_shape == null) {
       Dimension sz = getSize();

@@ -43,7 +43,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
-import java.util.Iterator;
+
+
+
+
 /**
  * This class sets up the chat interface and provides calls to define chat bubbles
  **/
@@ -264,12 +267,6 @@ public static List<String> getChatters()
 }
 
 
-
-
-public Iterator<BgtaManager> getManagers()
-{
-   return chat_managers.iterator();
-}
 private BudaBubble createMetadataChatBubble(String friendname,String url)
 {
    boolean isknownmanager = false;
@@ -290,7 +287,7 @@ private BudaBubble createMetadataChatBubble(String friendname,String url)
 }
 
 
-public static BgtaBubble createRecievedChatBubble(String username,BgtaManager man)
+static BgtaBubble createRecievedChatBubble(String username,BgtaManager man)
 {
    BgtaBubble bb = new BgtaBubble(username,man);
    if (bb != null) {

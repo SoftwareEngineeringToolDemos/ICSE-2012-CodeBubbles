@@ -11,5 +11,8 @@
 <entry key="Buda.border.focus.width">1</entry>
 <entry key="Buda.close.ask">true</entry>
 <entry key="Buda.close.save">true</entry>
+<entry key="Buda.tooltip.background">ffffffc0</entry>
+<entry key="Buda.tooltip.foreground">ff000000</entry>
+<entry key="Buda.tooltip.font">Monospaced/0/9</entry>
 </properties>
 

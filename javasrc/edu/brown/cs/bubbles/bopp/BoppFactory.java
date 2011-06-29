@@ -94,7 +94,7 @@ public static void initialize(BudaRoot br)
    chevron = BoardImage.resizeIcon(((ImageIcon) chevron).getImage(),
 				      BUDA_BUTTON_RESIZE_WIDTH, BUDA_BUTTON_RESIZE_HEIGHT);
 
-   option_set = new BoppOptionSet();
+   option_set = new BoppOptionSet(br);
 
    JButton btn1 = new JButton("Options",chevron);
    btn1.setIconTextGap(0);

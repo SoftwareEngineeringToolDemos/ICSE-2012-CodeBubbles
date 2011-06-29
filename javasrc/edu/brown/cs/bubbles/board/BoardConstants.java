@@ -362,7 +362,6 @@ String [] BOARD_LIBRARY_FILES = new String [] {
    "ivy.jar",
    "iText.jar",
    "jsyntaxpane.jar",
-   "copyright.txt",
    "smack.jar",
    "smackx-debug.jar",
    "smackx-jingle.jar",
@@ -371,11 +370,13 @@ String [] BOARD_LIBRARY_FILES = new String [] {
    "joscar-common.jar",
    "joscar-protocol.jar",
    "jsocks-klea.jar",
-   "bubblesasm.jar"
+   "bubblesasm.jar",
+   "ColorPicker.jar"
 };
 
 
 String [] BOARD_LIBRARY_EXTRAS = new String [] {
+   "copyright.txt",
    "junit.jar",
    "battagent.jar",
    "battjunit.jar",
@@ -459,6 +460,14 @@ long	BOARD_POOL_KEEP_ALIVE_TIME = 10*60*1000;
  **/
 
 String BOARD_SAVE_ADDR_PROP = "Board.save.address";
+
+
+/**
+ *	Property indicating URL where uploads are saved
+ **/
+
+String BOARD_UPLOAD_URL = "Board.upload.address";
+
 
 
 /**

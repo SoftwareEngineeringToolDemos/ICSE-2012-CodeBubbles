@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -128,6 +128,7 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    addButton(workingset_menu,"Clear and Remove Working Set","Remove the working set and close its bubbles");
    addButton(workingset_menu,"Save Working Set","Save the working set to a file");
    addButton(workingset_menu,"Save Working Set to Task Shelf","Save the working set to the task shelf");
+   addButton(workingset_menu,"Clear Bubbles in Working Set","Remove all bubbles in the working set");
    workingset_menu.add(new JSeparator());
    addButton(workingset_menu,"Clear All Bubbles","Close all bubbles");
 
@@ -279,6 +280,9 @@ private void addButton(JComponent menu,String id,String tt)
 	 bubble_area.userRemoveBubble(bb);
        }
     }
+   else if (cmd.equals("Clear Bubbles in Working Set")) {
+      cur_workingset.removeBubbles();
+    }
    else if (cmd.equals("Remove Working Set")) {
       /**********
       if (cur_workingset.getLabel() != null) {
@@ -335,16 +339,6 @@ private void addButton(JComponent menu,String id,String tt)
 	  }
        }
     }
-   /***********************
-   else if(cmd.equals("Send Working Set over Chat")){
-      ArrayList<String> chatters = BgtaFactory.getChatters();
-      JPopupMenu chatmenu = new JPopupMenu("Buddies");
-      for(String name: chatters){
-	 addChatButton(chatmenu, name, null, cur_workingset);
-       }
-      chatmenu.show(workingset_menu.getInvoker(), (int)popup_point.getX(), 0);
-    }
-   ************************/
    else if (cmd.equals("EMail Working Set")) {
       cur_workingset.sendMail(null);
     }

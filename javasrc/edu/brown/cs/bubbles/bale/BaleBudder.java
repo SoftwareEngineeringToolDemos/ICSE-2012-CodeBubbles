@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -352,13 +352,18 @@ private class FragmentAction extends TextAction {
       finally { bd.baleWriteUnlock(); }
 
       if (bfe != null) {
+	 BaleEditorBubble bb = new BaleEditorBubble(bfe);
+
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
+	 bba.addBubble(bb,target,null,
+			  PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	
+	 /*************
 	 BudaRoot broot = BudaRoot.findBudaRoot(target);
 	 Rectangle loc = BudaRoot.findBudaLocation(target);
-
-	 BaleEditorBubble bb = new BaleEditorBubble(bfe);
 	 broot.add(bb,new BudaConstraint(loc.x + loc.width + BUBBLE_CREATION_NEAR_SPACE,
 					    loc.y));
-
+	 **************/
 	 /*************
 	 BudaBubble obbl = BudaRoot.findBudaBubble(target);
 	 BudaConstants.LinkPort port0 = new BaleLinePort(target,spos,null);

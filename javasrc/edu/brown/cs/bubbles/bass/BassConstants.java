@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -174,11 +174,9 @@ Color	BASS_PANEL_SELECT_BACKGROUND = new Color(80,80,255);
 /**
  *	Font used in search bubbles.
  **/
-String BASS_TEXT_SIZE_PROP = "Bass.font.size";
 String BASS_TEXT_FONT_PROP = "Bass.font";
 
-Font	BASS_TEXT_FONT = BoardFont.getFont(Font.MONOSPACED,Font.PLAIN,
-					      bass_properties.getInt(BASS_TEXT_SIZE_PROP,10));
+Font	BASS_TEXT_FONT = BoardFont.getFont(Font.MONOSPACED,Font.PLAIN,10);
 
 
 /**

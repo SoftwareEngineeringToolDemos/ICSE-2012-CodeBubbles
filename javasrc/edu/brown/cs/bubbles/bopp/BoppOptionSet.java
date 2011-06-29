@@ -34,6 +34,7 @@ import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.io.*;
 
 
 /**
@@ -54,8 +55,9 @@ class BoppOptionSet implements BoppConstants, BudaConstants {
 /********************************************************************************/
 
 private Map<String,List<BoppOptionNew>> tab_map;
-private List<BoppOptionNew> all_options;
-
+private List<BoppOptionBase> all_options;
+private Map<String,String> changed_options;
+private BudaRoot  buda_root;
 
 
 
@@ -65,15 +67,18 @@ private List<BoppOptionNew> all_options;
 /*										*/
 /********************************************************************************/
 
-BoppOptionSet()
+BoppOptionSet(BudaRoot br)
 {
    tab_map = new HashMap<String,List<BoppOptionNew>>();
-   all_options = new ArrayList<BoppOptionNew>();
+   all_options = new ArrayList<BoppOptionBase>();
+   changed_options = new LinkedHashMap<String,String>();
    
    Element xml = IvyXml.loadXmlFromStream(BoardProperties.getLibraryFile(PREFERENCES_XML_FILENAME_NEW));
    for (Element op : IvyXml.children(xml,"PACKAGE")) {
       loadXmlPackage(op);
     }
+   
+   for (BoppOptionBase op : all_options) op.setOptionSet(this);
 }
 
 
@@ -97,6 +102,104 @@ List<BoppOptionNew> getOptionsForTab(String tab)
 
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Search Methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+List<BoppOptionNew> search(String text)
+{
+   String[] words = text.split(" ");
+   Pattern[] patterns = new Pattern[words.length];
+   List<BoppOptionNew> rslt = new ArrayList<BoppOptionNew>();
+   
+   for (int i = 0; i < words.length; i++) {
+      try {
+         patterns[i] = (Pattern.compile(words[i], Pattern.CASE_INSENSITIVE));
+       }
+      catch (PatternSyntaxException e) {
+         patterns[i] = null;
+       }
+    }
+   for (BoppOptionNew opt : all_options) {
+      if (opt.search(patterns)) rslt.add(opt);
+    }   
+   
+   return rslt;
+}
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Update methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+void saveOptions()
+{
+   Set<String> pkgs = new HashSet<String>();
+   for (String k : changed_options.keySet()) {
+      int idx = k.indexOf("@");
+      if (idx < 0) continue;
+      String pkg = k.substring(0,idx);
+      pkgs.add(pkg);
+    }
+   for (String p : pkgs) {
+      BoardProperties bp = BoardProperties.getProperties(p);
+      try {
+         if (bp != null) bp.save();
+       }
+      catch (IOException e) { 
+         BoardLog.logE("BOPP","Problem saving properties",e);
+       }
+    }
+   changed_options.clear();
+}
+
+
+void revertOptions()
+{
+   for (Map.Entry<String,String> ent : changed_options.entrySet()) {
+      String key = ent.getKey();
+      int idx = key.indexOf("@");
+      if (idx < 0) continue;
+      String pkg = key.substring(0,idx);
+      String prop = key.substring(idx+1);
+      String val = ent.getValue();
+      BoardProperties bp = BoardProperties.getProperties(pkg);
+      if (bp == null) continue;
+      if (val == null) bp.remove(prop);
+      else bp.setProperty(prop,val);
+    }
+   changed_options.clear();   
+}
+
+
+
+void noteChange(String pkg,String prop)
+{
+   String key = pkg + "@" + prop;
+   
+   if (changed_options.containsKey(key)) return;
+   
+   String val = null;
+   BoardProperties bp = BoardProperties.getProperties(pkg);
+   val = bp.getProperty(prop);
+   
+   changed_options.put(key,val);
+}
+
+
+void finishChanges()
+{ 
+   if (buda_root != null) buda_root.repaint();
+}
+
+
+
 /********************************************************************************/
 /*                                                                              */
 /*      Loading methods                                                         */
@@ -115,7 +218,7 @@ private void loadXmlPackage(Element px)
 
 private void loadXmlOption(Element ox,String pkgname)
 {
-   BoppOptionNew bopt = BoppOptionBase.getOption(pkgname,ox);
+   BoppOptionBase bopt = BoppOptionBase.getOption(pkgname,ox);
    if (bopt == null) return;
    all_options.add(bopt);
    for (String tnm : bopt.getOptionTabs()) {

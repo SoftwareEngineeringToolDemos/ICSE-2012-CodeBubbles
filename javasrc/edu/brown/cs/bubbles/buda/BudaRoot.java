@@ -350,9 +350,10 @@ BudaBubbleArea getBubbleArea()			{ return bubble_area; }
 
 public void addLink(BudaBubbleLink lnk)
 {
+   if (lnk == null) return;
+
    BudaBubble src = lnk.getSource();
    BudaBubbleArea ba = findBudaBubbleArea(src);
-   if (src.isFloating() || lnk.getTarget().isFloating()) return;
 
    ba.addLink(lnk);
 }

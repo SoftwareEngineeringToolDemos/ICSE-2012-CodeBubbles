@@ -80,7 +80,23 @@ BddtBubbleManager(BddtLaunchControl blc)
 void createExecBubble(BumpThread bt)
 {
    BumpThreadStack stk = bt.getStack();
-   BudaBubble bb = createSourceBubble(stk,0,BubbleType.EXEC);
+   BudaBubble bb = createSourceBubble(stk,0,BubbleType.EXEC,false);
+   if (bb == null && stk != null && bddt_properties.getBoolean("Bddt.show.user.bubble")) {
+      BumpStackFrame frm = stk.getFrame(0);
+      if (frm != null) {
+	 BubbleData bd = findClosestBubble(bt,stk,frm);
+	 if (bd != null && bd.match(bt,stk,frm)) return;
+	 for (int i = 1; i < stk.getNumFrames(); ++i) {
+	    BumpStackFrame frame = stk.getFrame(i);
+	    if (frame.getFile() != null && frame.getFile().exists() && 
+		     !frame.isSystem()) {
+	       bb = createSourceBubble(stk,i,BubbleType.EXEC,false);
+	       break;
+	    }
+	  }
+       }
+    }
+
    if (bb != null) {
       BubbleData bd = bubble_map.get(bb);
       if (bd == null || bd.getBubbleType() != BubbleType.EXEC) return;
@@ -121,7 +137,7 @@ void createUserStackBubble(BubbleData bd)
 
 
 
-private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ)
+private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ,boolean frc)
 {
    // TODO: handle system and class files here
    setupBubbleArea();
@@ -129,6 +145,8 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    if (stk == null) return null;
 
    BumpThread bt = stk.getThread();
+   
+   boolean libbbl = frc || bddt_properties.getBoolean("Bddt.show.library.bubbles");
 
    // find user stack frame for the stack
    if (stk.getNumFrames() <= frm) return null;
@@ -163,9 +181,31 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	 ypos = r.y;
 	 link = bd.getBubble();
        }
-      else if (r != null) {
-	 xpos = r.x + r.width + 40;
+      else if (bd.getBubbleType() == BubbleType.BDDT) {
+	 int wd0 = r.x + r.width;
+	 for (BubbleData bdx : bubble_map.values()) {
+	    switch (bdx.getBubbleType()) {
+	       case CONSOLE :
+	       case HISTORY :
+	       case THREADS :
+		  Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
+		  wd0 = Math.max(wd0,rx.x + rx.width);
+		  continue;
+	     }
+	  }
+	 xpos = wd0 + 40;
 	 ypos = r.y;
+       }
+      else if (r != null) {
+	 // xpos = r.x + r.width + 40;
+	 // ypos = r.y;
+         xpos = r.x;
+         ypos = r.y + r.height + 40;
+         BudaBubble abb = bd.getAssocBubble();
+         if (abb != null) {
+            Rectangle rx = BudaRoot.findBudaLocation(abb);
+            ypos = Math.max(ypos,rx.y + rx.height + 40);
+          }
        }
       else {
 	 xpos = 100;
@@ -188,7 +228,9 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
       if (frame.isSystem()) {
 	 bb = BaleFactory.getFactory().createSystemMethodBubble(proj,mid,frame.getFile());
 	 if (bb == null) {
-	    bb = new BddtLibraryBubble(frame);
+            if (libbbl) {
+               bb = new BddtLibraryBubble(frame);
+             }
 	  }
        }
       else {
@@ -199,7 +241,9 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
        }
     }
    else {
-      bb = new BddtLibraryBubble(frame);
+      if (libbbl) {
+         bb = new BddtLibraryBubble(frame);
+       }
     }
 
    if (bb == null) {
@@ -510,8 +554,8 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
 	 switch (bd.getBubbleType()) {
 	    case CONSOLE :
 	    case HISTORY :
-	    case STOP_TRACE :
 	    case THREADS :
+	    case STOP_TRACE :
 	       continue;
 	  }
 	 if (best == null) {
@@ -579,6 +623,7 @@ private class BubbleUpdater implements BubbleViewCallback {
 
    @Override public void bubbleAdded(BudaBubble bb) {
       if (BudaRoot.findBudaBubbleArea(bb) != bubble_area) return;
+      if (bb.isTransient()) return;
       if (bubble_map.get(bb) == null) {
 	 bubble_map.put(bb,new BubbleData(bb));
        }

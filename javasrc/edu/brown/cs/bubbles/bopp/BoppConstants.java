@@ -30,6 +30,7 @@ import javax.swing.border.Border;
 
 import java.awt.*;
 import java.util.*;
+import java.util.regex.*;
 
 
 /**
@@ -436,6 +437,8 @@ interface BoppOptionNew {
    Collection<String> getOptionTabs();
 
    void addButton(SwingGridPanel pnl);
+   
+   boolean search(Pattern [] pat);
 
 }	// end of inner interface BoppOptionNew
 

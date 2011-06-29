@@ -1134,7 +1134,7 @@ private static class CommentLinesAction extends TextAction {
 	    elno = slno;
 	    slno = x;
 	  }
-	 
+
 	 LinkedList<Integer> fixups = new LinkedList<Integer>();
 	 for (int i = elno; i >= slno; --i) {
 	    int loff = bd.findLineOffset(i);
@@ -1143,15 +1143,15 @@ private static class CommentLinesAction extends TextAction {
 	       ce = ce.getNextCharacterElement();
 	     }
 	    int noff = ce.getStartOffset();
-	    
+
 	    try {
 	       if (ce != null && ce.getName().equals("LineComment")) {
 		  bd.remove(noff,2);
 		  fixups.addFirst(i);
-	        }
+		}
 	       else {
 		  bd.insertString(noff,"// ",null);
-	        }
+		}
 	     }
 	    catch (BadLocationException ex) {
 	       return;
@@ -1756,7 +1756,10 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
       BudaBubble bb = BaleFactory.getFactory().createMethodBubble(proj,name);
-      if (bb != null) bba.add(bb,new BudaConstraint(p));
+      if (bb == null) return;
+      bba.addBubble(bb,null,p,PLACEMENT_MOVETO);
+      // bba.add(bb,new BudaConstraint(p));
+      bb.markBubbleAsNew();
    }
 
 }	// end of inner class ExtractMethodAction
@@ -2032,19 +2035,29 @@ private static class GotoDocAction extends TextAction {
 	 // BoardLog.logD("BALE","FIND DOCUMENTATION FOR " + fullnm);
 	 BudaBubble bb = BudaRoot.createDocumentationBubble(fullnm);
 	 if (bb != null) {
-	    BudaRoot root = BudaRoot.findBudaRoot(target);
+	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
 	    BudaBubble obbl = BudaRoot.findBudaBubble(target);
-	    Rectangle loc = BudaRoot.findBudaLocation(target);
+	    
+	    Point lp = null;
 	    BudaConstants.LinkPort port0 = null;
 	    if (sp != null) {
 	       port0 = new BaleLinePort(target,sp,"Find Link");
-	       loc.y += port0.getLinkPoint(obbl,obbl.getLocation()).y;
+	       lp = port0.getLinkPoint(obbl,obbl.getLocation());
 	     }
 	    else port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
+
+	    bba.addBubble(bb,target,lp,PLACEMENT_RIGHT|PLACEMENT_MOVETO);
+
+	    /****************
+	    BudaRoot root = BudaRoot.findBudaRoot(target);
+	    Rectangle loc = BudaRoot.findBudaLocation(target);
+	    if (lp != null) loc.y = lp.y;
 	    root.add(bb,new BudaConstraint(loc.x+loc.width+BUBBLE_CREATION_SPACE,loc.y));
+	    ****************/
+
 	    BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
 	    BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
-	    root.addLink(lnk);
+	    bba.addLink(lnk);
 	    bb.markBubbleAsNew();
 	    BoardMetrics.noteCommand("BALE","GoToDocumentation");
 	    return;

@@ -916,80 +916,80 @@ private class RegionRenderer extends DefaultListCellRenderer {
 
    @Override public Component getListCellRendererComponent(JList l,Object v,int ldx,boolean issel,boolean hasfoc) {
       BconRegion br = (BconRegion) v;
-
+   
       Color classcolor = bcon_props.getColor(BCON_CLASS_CLASS_COLOR,CLASS_COLOR);
       Color methodcolor = bcon_props.getColor(BCON_CLASS_METHOD_COLOR,METHOD_COLOR);
       Color fieldcolor = bcon_props.getColor(BCON_CLASS_FIELD_COLOR,FIELD_COLOR);
       Color initcolor = bcon_props.getColor(BCON_CLASS_INITIALIZER_COLOR,INITIALIZER_COLOR);
       Color cmmtcolor = bcon_props.getColor(BCON_CLASS_COMMENT_COLOR,COMMENT_COLOR);
       Color hdrcolor = bcon_props.getColor(BCON_CLASS_HEADER_COLOR,HEADER_COLOR);
-
+   
       String pfx = "  ";
       String nam = null;
-
+   
       int mods = br.getModifiers();
       if (mods != BCON_MODIFIERS_UNDEFINED) {
-	 // TODO: should use icons here
-	 if (Modifier.isPublic(mods)) pfx = "+ ";
-	 else if (Modifier.isProtected(mods)) pfx = "# ";
-	 else if (Modifier.isPrivate(mods)) pfx = "- ";
-	 else pfx = "  ";
-
-	 if (Modifier.isStatic(mods)) pfx += "static ";
-	 if (Modifier.isAbstract(mods)) pfx += "abstract ";
+         // TODO: should use icons here
+         if (Modifier.isPublic(mods)) pfx = "+ ";
+         else if (Modifier.isProtected(mods)) pfx = "# ";
+         else if (Modifier.isPrivate(mods)) pfx = "- ";
+         else pfx = "  ";
+   
+         if (Modifier.isStatic(mods)) pfx += "static ";
+         if (Modifier.isAbstract(mods)) pfx += "abstract ";
        }
-
+   
       int idx;
       Color c = null;
       String rnm = br.getRegionName();
       switch (br.getRegionType()) {
-	 case REGION_CLASS :
-	    String typ = (Modifier.isInterface(mods) ? "interface " : "class ");
-	    idx = rnm.indexOf("$");
-	    if (idx < 0) idx = rnm.lastIndexOf(".");
-	    if (idx < 0) nam = typ + rnm;
-	    else nam = typ + rnm.substring(idx+1);
-	    c = classcolor;
-	    break;
-	 case REGION_METHOD :
-	 case REGION_CONSTRUCTOR :
-	    idx = rnm.indexOf("(");
-	    idx = rnm.lastIndexOf(".",idx);
-	    if (idx < 0) nam = rnm;
-	    else nam = rnm.substring(idx+1);
-	    // TODO: simplify arguments
-	    c = methodcolor;
-	    break;
-	 case REGION_FIELD :
-	    idx = rnm.lastIndexOf(".");
-	    if (idx < 0) nam = rnm;
-	    else nam = rnm.substring(idx+1);
-	    c = fieldcolor;
-	    break;
-	 case REGION_INITIALIZER :
-	    nam = "< Static Initializer >";
-	    c = initcolor;
-	    break;
-	 case REGION_COMMENT :
-	 case REGION_COPYRIGHT :
-	    if (rnm.length() >= MAX_COMMENT_SIZE) nam = rnm.substring(0,MAX_COMMENT_SIZE);
-	    else nam = rnm;
-	    c = cmmtcolor;
-	    break;
-	 case REGION_PACKAGE :
-	 case REGION_IMPORT :
-	 case REGION_CLASS_HEADER :
-	    c = hdrcolor;
-	    nam = rnm;
-	    break;
-	}
-
+         case REGION_CLASS :
+            String typ = (Modifier.isInterface(mods) ? "interface " : "class ");
+            idx = rnm.indexOf("$");
+            if (idx < 0) idx = rnm.lastIndexOf(".");
+            if (idx < 0) nam = typ + rnm;
+            else nam = typ + rnm.substring(idx+1);
+            c = classcolor;
+            break;
+         case REGION_METHOD :
+         case REGION_CONSTRUCTOR :
+            idx = rnm.indexOf("(");
+            idx = rnm.lastIndexOf(".",idx);
+            if (idx < 0) nam = rnm;
+            else nam = rnm.substring(idx+1);
+            // TODO: simplify arguments
+            c = methodcolor;
+            break;
+         case REGION_FIELD :
+            idx = rnm.lastIndexOf(".");
+            if (idx < 0) nam = rnm;
+            else nam = rnm.substring(idx+1);
+            c = fieldcolor;
+            break;
+         case REGION_INITIALIZER :
+            nam = "< Static Initializer >";
+            c = initcolor;
+            break;
+         case REGION_COMMENT :
+         case REGION_COPYRIGHT :
+            if (rnm.length() >= MAX_COMMENT_SIZE) nam = rnm.substring(0,MAX_COMMENT_SIZE);
+            else nam = rnm;
+            c = cmmtcolor;
+            break;
+         case REGION_PACKAGE :
+         case REGION_IMPORT :
+         case REGION_CLASS_HEADER :
+            c = hdrcolor;
+            nam = rnm;
+            break;
+        }
+   
       if (pfx != null) nam = pfx + nam;
-
+   
       Component comp = super.getListCellRendererComponent(l,nam,ldx,issel,hasfoc);
-
+   
       if (c != null && !issel) comp.setForeground(c);
-
+   
       return comp;
     }
 

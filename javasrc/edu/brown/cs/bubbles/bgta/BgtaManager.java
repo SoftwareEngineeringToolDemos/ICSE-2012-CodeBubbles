@@ -40,7 +40,7 @@ import java.util.*;
 
 
 
-class BgtaManager implements PacketListener {
+public class BgtaManager implements PacketListener {
 
 
 
@@ -63,6 +63,7 @@ protected Vector<BgtaBubble>       existing_bubbles;
 protected Map<String, BgtaChat>    existing_chats;
 protected Map<String, Document>    existing_docs;
 protected BgtaRoster               the_roster;
+
 
 
 
@@ -549,10 +550,8 @@ class BgtaXMPPRosterEntry implements BgtaRosterEntry {
     }
    
 }   // end of inner class BgtaXMPPRosterEntry
-
-
-
 }   // end of class BgtaManager
+
 
 
 

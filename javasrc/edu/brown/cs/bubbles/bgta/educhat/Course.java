@@ -13,91 +13,119 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.board.BoardImage;
 
-class Course extends BassNameBase {
+import javax.naming.OperationNotSupportedException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+abstract class Course extends BassNameBase {
    
    private String course_name;
    private String ta_chat_jid;
-   private Role role;
    
-   public Course(String a_course_name, String a_jid, Role r)
-   {
+   protected Course(String a_course_name, String a_jid){
       course_name = a_course_name;
       ta_chat_jid = a_jid;
-      role = r;
    }
-   @Override
-   public BudaBubble createBubble() {
-      switch(role)
-      {
-      case STUDENT:
-	 return new EduchatTicketSubmitBubble();
-      case TA:
-	 TAXMPPClient c = new TAXMPPClient("codebubbles", "brownbears", "jabber.org", "TA1");
-	 try {
-	       c.connect();
-	    } catch (XMPPException e) {
-	       // TODO Auto-generated catch block
-	       e.printStackTrace();
-	    }
-	 return new EduchatTicketListBubble(c.getTickets());
-      default:
-	 return null;
-      }
+   
+   @Override protected String getParameters() {
+      return null;
    }
 
+   @Override public String getProject() {
+      return null;
+   }
+   
    @Override
    protected String getKey() {
-      return "key";
+         return course_name;
    }
 
    @Override
-   protected String getParameters() {
-      return null;
-   }
-
-   @Override
-   public String getProject() {
-      //return "Courses";
-      return null;
-   }
-
-   @Override
-   protected String getSymbolName() {
-      
-      switch(role)
-      {
-      case STUDENT:
-	 return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + course_name + " help";
-      case TA:
-	 return BassConstants.BASS_COURSE_LIST_NAME + ".Enable " + course_name + " chat hours";
-      default:
-	 return BassConstants.BASS_COURSE_LIST_NAME + course_name;
-      }
-   }
-   
-   @Override
-   public Icon getDisplayIcon()
+   public BudaBubble createBubble()
    {
-      switch(role)
-      {
-      case STUDENT:
-	 return BoardImage.getIcon("question");
-      case TA:
-	 return BoardImage.getIcon("contents_view"); 
-      default:
-	 return BoardImage.getIcon("contents_view");
+      return new EduchatTicketSubmitBubble("andrewkova@gmail.com");
+   }
+   static class TACourse extends Course{
+         private String xmpp_password;
+      private String xmpp_server;
+     
+      protected TACourse(String a_course_name, String a_jid, String a_password, String a_server) {
+         super(a_course_name, a_jid);
+         xmpp_password = a_password;
+         xmpp_server = a_server;
       }
       
-   }
+      @Override public BudaBubble createBubble()
+      {
+         System.out.println("Creating TA bubble");
+         TAXMPPClient client = null;
+      
+         //TODO: maybe we want a bubble where the TA
+         //can select a resource name, but then again
+         //as its planned right now that wouldn't 
+         //appear on the other end 
+         try{
+            client = EduchatManager.startHoursForCourse(this, InetAddress.getLocalHost().getHostName());
+         }catch(UnknownHostException hostE)
+         {
+            hostE.printStackTrace();
+         }catch(XMPPException xmppE)
+         {
+            xmppE.printStackTrace();
+         }catch(OperationNotSupportedException opE)
+         {
+            opE.printStackTrace();
+         }
+         
+         return new EduchatTicketListBubble(client.getTickets());
+      }
    
-   /**
-    * Defines what role the user 
-    * has in the given class (TA or student)
-    * @author akovacs
-    *
-    */
-   enum Role {
-      	STUDENT,
-      	TA
+      @Override protected String getSymbolName() {
+       return BassConstants.BASS_COURSE_LIST_NAME + ".Enable " + getCourseName() + " chat hours";
+      }
+   
+      @Override public Icon getDisplayIcon(){
+         return BoardImage.getIcon("contents_view");
+      }
+      
+      public String getXMPPServer(){
+         return xmpp_server;
+      }
+      
+      public String getXMPPPassword(){
+         return xmpp_password;
+      }
    }
+
+   static class StudentCourse extends Course
+   {
+      public StudentCourse(String a_course_name, String a_jid) {
+         super(a_course_name, a_jid);
+      }
+   
+      /*
+      @Override public BudaBubble createBubble(){
+	 System.out.println("Creating student bubble");
+         return null;
+      }
+   */
+      @Override protected String getSymbolName(){
+         return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + getCourseName() + " help";
+      }
+   
+      @Override public Icon getDisplayIcon(){
+         return BoardImage.getIcon("question");
+      }     
+   }
+
+
+public String getTAJID()
+{
+   return ta_chat_jid;
+}
+
+public String getCourseName()
+{
+   return course_name;
+} 
 }

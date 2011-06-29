@@ -79,11 +79,8 @@ class EduchatTicketListBubble extends BudaBubble {
                   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
                   BudaBubble ticket_view_bubble = new TicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint())));
                      bba.addBubble(ticket_view_bubble,parent, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-         //.add(new TicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint()))));
-                  
                }
-            }
-              
+            } 
          }
    
          @Override

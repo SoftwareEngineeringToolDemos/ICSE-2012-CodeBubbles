@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -12,6 +14,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import edu.brown.cs.bubbles.bgta.BgtaFactory;
+import edu.brown.cs.bubbles.bgta.BgtaManager;
+import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+import edu.brown.cs.bubbles.buda.BudaRoot;
+
+
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 
@@ -25,16 +34,16 @@ class TicketViewBubble extends BudaBubble {
    public TicketViewBubble(StudentTicket t)
    {
       ticket = t;
-      setContentPane(new TicketViewPanel(t));
+      setContentPane(new TicketViewPanel(t, this));
    }
    
    private class TicketViewPanel extends JPanel
    {
-      public TicketViewPanel(StudentTicket t)
+      public TicketViewPanel(StudentTicket t, TicketViewBubble a_bubble)
       {
-	 //add(new JLabel(t.getText()));
-	 setOpaque(false); 
-	         
+         //add(new JLabel(t.getText()));
+         setOpaque(false); 
+                 
          setPreferredSize(DEFAULT_DIMENSION);
          setLayout(new GridBagLayout());
          
@@ -72,7 +81,7 @@ class TicketViewBubble extends BudaBubble {
          add(scroll, c);
          
          JButton submit_button = new JButton("Chat with student");
-         
+         submit_button.addActionListener(new ChatStartListener(a_bubble));
          c.anchor = GridBagConstraints.PAGE_END;
          c.gridx = 1;
          c.gridy = 2;
@@ -85,4 +94,24 @@ class TicketViewBubble extends BudaBubble {
       }
    }
 
+
+
+private class ChatStartListener implements ActionListener{
+        private TicketViewBubble bubble;
+        
+        public ChatStartListener(TicketViewBubble a_bubble)
+        {
+           bubble = a_bubble;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+           /*
+           BgtaManager man = BgtaFactory.getFactory().getManagers().next();                                                  
+           BudaBubble chat_bub = BgtaFactory.createRecievedChatBubble("andrewkova@gmail.com", man);
+           BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
+           bba.addBubble(chat_bub,bubble, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);*/
+        }
+}
 }

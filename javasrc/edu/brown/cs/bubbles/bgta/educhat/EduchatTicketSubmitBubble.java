@@ -20,7 +20,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import edu.brown.cs.bubbles.bgta.*;
+
 import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaRoot;
+import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 
 class EduchatTicketSubmitBubble extends BudaBubble {
    private static Color GRADIENT_BOTTOM_COLOR = Color.white;
@@ -30,8 +37,9 @@ class EduchatTicketSubmitBubble extends BudaBubble {
    
    private static final long serialVersionUID = 1L;
    
-   public EduchatTicketSubmitBubble()
+   public EduchatTicketSubmitBubble(String ta_jid)
    {
+      SubmitListener l = new SubmitListener(ta_jid, this);
       TicketPanel p = new TicketPanel();
       setContentPane(p);
    }
@@ -121,4 +129,27 @@ class EduchatTicketSubmitBubble extends BudaBubble {
          super.paintComponent(g);
       }
    }
+private class SubmitListener implements ActionListener{
+   private String ta_jid;
+   private EduchatTicketSubmitBubble bubble;
+   
+   public SubmitListener(String jid, EduchatTicketSubmitBubble a_bubble)
+   {
+       bubble = a_bubble;
+       ta_jid = jid;
+   }
+   
+   @Override public void actionPerformed(ActionEvent e)
+   {
+      //we need to give the student the chance to choose an account, for now we'll pick arbitrarily just to try it out
+    //  BgtaManager man = BgtaFactory.getFactory().getManagers().next();
+      
+     // BgtaBubble chat_b = BgtaFactory.createRecievedChatBubble(ta_jid, man);
+    //  BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
+      
+     // bba.addBubble(chat_b, bubble, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+   }
+
+}
+  
 }

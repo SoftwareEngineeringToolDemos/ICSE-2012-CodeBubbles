@@ -22,42 +22,19 @@
 package edu.brown.cs.bubbles.bgta;
 
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.geom.Rectangle2D;
-import java.util.Collection;
-import java.util.Vector;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import edu.brown.cs.bubbles.board.BoardFont;
+import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
+import edu.brown.cs.bubbles.bowi.BowiFactory;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 
 import org.jivesoftware.smack.XMPPException;
 
-import edu.brown.cs.bubbles.board.BoardFont;
-import edu.brown.cs.bubbles.bowi.BowiFactory;
-import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
-import edu.brown.cs.bubbles.buda.BudaBubble;
+import javax.swing.*;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
+import java.util.Vector;
 
 
 
@@ -71,24 +48,19 @@ class BgtaLoginBubble extends BudaBubble implements BgtaConstants {
 /*										*/
 /********************************************************************************/
 
-private Vector<BgtaManager>            manager_list;
-private JButton                        sub_button;
-private JButton                        logout_button;
-private JTextField                     user_field;
-private JPasswordField                 pass_field;
-private JLabel                         server_field;
-private JLabel                         error_label;
-private BgtaRepository                 my_repository;
-private BgtaLoginName                  my_name;
-private ChatServer                     selected_server;
-private boolean                        rem_user;
-private static Collection<BgtaManager> all_managers;
+private Vector<BgtaManager> manager_list;
+private JButton 	    sub_button;
+private JButton 	    logout_button;
+private JTextField	    user_field;
+private JPasswordField	    pass_field;
+private JLabel		    server_field;
+private BgtaRepository	    my_repository;
+private BgtaLoginName	    my_name;
+private boolean 	    rem_user;
 
 private static final long   serialVersionUID = 1L;
 
-static {
-   all_managers = new Vector<BgtaManager>();
-}
+
 
 /********************************************************************************/
 /*										*/
@@ -100,15 +72,8 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
 {
    super();
    manager_list = mans;
-   if (!all_managers.containsAll(mans)) {
-      for (BgtaManager man : mans) {
-         if (!all_managers.contains(man))
-            all_managers.add(man);
-       }
-    }
    my_repository = repo;
    my_name = name;
-   selected_server = ChatServer.GMAIL;
 
    LoginPanel lpan = new LoginPanel();
    JLabel userlabel = new JLabel("Username: ");
@@ -123,32 +88,20 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    serverlabel.setHorizontalAlignment(SwingConstants.LEFT);
    serverlabel.setVerticalAlignment(SwingConstants.BOTTOM);
    serverlabel.setFont(BoardFont.getFont(serverlabel.getFont().getFontName(),Font.PLAIN,10));
-   server_field = new JLabel(selected_server.display());
+   server_field = new JLabel("@gmail.com");
    server_field.setHorizontalAlignment(SwingConstants.RIGHT);
    server_field.setVerticalAlignment(SwingConstants.TOP);
    server_field.setFont(BoardFont.getFont(server_field.getFont().getFontName(),Font.PLAIN,10));
-   error_label = new JLabel("Login failed. Please try again.");
-   error_label.setHorizontalAlignment(SwingConstants.CENTER);
-   error_label.setVerticalAlignment(SwingConstants.BOTTOM);
-   error_label.setFont(BoardFont.getFont(error_label.getFont().getFontName(),Font.PLAIN,10));
-   error_label.setForeground(Color.RED);
 
    user_field = new JTextField(15);
    pass_field = new JPasswordField(15);
-   int servers = ChatServer.values().length;
-   String[] serverStrings = new String[servers];
-   servers = 0;
-   for (ChatServer server : ChatServer.values()) {
-   	serverStrings[servers++] = server.selector();
-   }
+   String[] serverStrings = { "Gmail", "Brown Gmail", "Facebook", "AIM", "Jabber" };
    JComboBox serverchoice = new JComboBox(serverStrings);
    serverchoice.setFont(BoardFont.getFont(serverchoice.getFont().getFontName(),Font.PLAIN,10));
 
    user_field.addActionListener(new EnterListener(pass_field));
-   user_field.addFocusListener(new FocusSelectionListener());
    pass_field.addActionListener(new EnterListener(null));
-   pass_field.addFocusListener(new FocusSelectionListener());
-   serverchoice.addActionListener(new ServerListener());
+   serverchoice.addActionListener(new ServerListener(server_field));
 
    JCheckBox rembox = new JCheckBox("Keep me signed in");
    rembox.setOpaque(false);
@@ -163,6 +116,7 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    logout_button.addActionListener(new LogoutListener());
    logout_button.setFont(BoardFont.getFont(logout_button.getFont().getFontName(),Font.PLAIN,10));
 
+   lpan.setLayout(new GridBagLayout());
    GridBagConstraints c = new GridBagConstraints();
    c.fill = GridBagConstraints.NONE;
    c.anchor = GridBagConstraints.LINE_START;
@@ -177,32 +131,29 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    c.gridx = 1;
    c.insets = new Insets(5,0,0,10);
    lpan.add(serverchoice, c);
-   c.anchor = GridBagConstraints.CENTER;
+   c.anchor = GridBagConstraints.LAST_LINE_START;
    c.gridx = 0;
    c.gridy = 1;
    c.gridwidth = 2;
    c.weighty = 0.5;
    c.insets = new Insets(0,10,0,10);
-   lpan.add(error_label,c);
-   c.anchor = GridBagConstraints.LAST_LINE_START;
-   c.gridy = 2;
    lpan.add(userlabel, c);
    c.anchor = GridBagConstraints.CENTER;
-   c.gridy = 3;
+   c.gridy = 2;
    lpan.add(user_field, c);
    c.anchor = GridBagConstraints.LAST_LINE_END;
-   c.gridy = 4;
+   c.gridy = 3;
    lpan.add(server_field, c);
    c.anchor = GridBagConstraints.LAST_LINE_START;
-   c.gridy = 5;
+   c.gridy = 4;
    lpan.add(passlabel, c);
    c.anchor = GridBagConstraints.CENTER;
-   c.gridy = 6;
+   c.gridy = 5;
    lpan.add(pass_field, c);
-   c.gridy = 7;
+   c.gridy = 6;
    lpan.add(rembox, c);
    c.anchor = GridBagConstraints.LINE_START;
-   c.gridy = 8;
+   c.gridy = 7;
    c.gridwidth = 1;
    c.insets = new Insets(0,10,5,0);
    lpan.add(sub_button, c);
@@ -212,7 +163,6 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    lpan.add(logout_button, c);
 
    setContentPane(lpan);
-   error_label.setVisible(false);
 }
 
 
@@ -230,6 +180,7 @@ void removeBubble()
 }
 
 
+
 @Override public void setVisible(boolean vis)
 {
    super.setVisible(vis);
@@ -237,47 +188,34 @@ void removeBubble()
 }
 
 
-@Override public void setSize(Dimension size)
-{
-    super.setSize(size);
-}
-
-
-@Override public void setSize(int x,int y)
-{
-    super.setSize(x,y);
-}
-
-
-@Override public void setPreferredSize(Dimension size)
-{
-    super.setPreferredSize(size);
-}
-
-
-/********************************************************************************/
-/*										*/
-/*	Interaction Listeners							*/
-/*										*/
-/********************************************************************************/
 
 private class LogoutListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
 	  // attempt to log out of the chosen server
       String username = user_field.getText();
-      String servername = selected_server.server();
-      if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
-      	username += selected_server.ending();
-      if (BgtaFactory.logoutAccount(username,servername)) removeBubble();
+      String server = server_field.getText();
+      if (server.equals("@gmail.com")) {
+	 if (!username.contains("@gmail.com")) username += "@gmail.com";
+	 server = "gmail.com";
+       }
+      else if (server.equals("@brown.edu")) {
+	 if (!username.contains("@brown.edu")) username += "@brown.edu";
+	 server = "gmail.com";
+       }
+      else if (server.equals("@jabber.org")) {
+	 server = "jabber.org";
+       }
+      if (BgtaFactory.logoutAccount(username, new String(pass_field.getPassword()), server)) removeBubble();
       // if not logged in in the first place, display a message saying so
       else {
-         error_label.setText("You weren't logged in yet.");
-         error_label.setVisible(true);
+	 user_field.setText("weren't logged in to begin with");
+	 pass_field.setText("");
        }
     }
 
 }	// end of inner class LogoutListener
+
 
 
 private class RememberListener implements ItemListener {
@@ -287,6 +225,8 @@ private class RememberListener implements ItemListener {
     }
 
 }	// end of inner class RememberListener
+
+
 
 
 private class LoginListener implements ActionListener {
@@ -300,52 +240,55 @@ private class LoginListener implements ActionListener {
       BgtaManager newman = null;
       try {
      boolean putin = true;
-     String username = user_field.getText();
-     String password = new String(pass_field.getPassword());
-     if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
-        username += selected_server.ending();
-     for (BgtaManager man : all_managers) {
-        if (man.propertiesMatch(username,selected_server.server())
-      		  && man.getPassword().equals(new String(password))) {
-           newman = man;
-      	  putin = false;
-         }
+     for (BgtaManager man : manager_list) {
+        if (man.isEquivalent(user_field.getText(), new String(pass_field.getPassword()),
+    			    server_field.getText())) putin = false;
       }
      if (putin) {
-        newman = BgtaManager.getManager(username,password,selected_server,my_repository);
-        all_managers.add(newman);
-      }
-     else if (newman.isLoggedIn()) {
-        error_label.setText("Already logged in.");
-        error_label.setVisible(true);
-        BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
-        return;
-      }
-     newman.login();
-     manager_list.add(newman);
-     my_repository.addNewRep(new BgtaBuddyRepository(newman));
-     if (rem_user) {
-        BgtaFactory.addManagerProperties(username, password, selected_server);
-        newman.setBeingSaved(true);
-     }
-     else if (newman.isBeingSaved()) {
-        newman.setBeingSaved(false);
-        BgtaFactory.clearManagerProperties();
-        for (BgtaManager man : all_managers) {
-            if (man.isBeingSaved())
-               BgtaFactory.addManagerProperties(man.getUsername(),man.getPassword(),man.getServer());
+        String username = user_field.getText();
+        String server = server_field.getText();
+        String password = new String(pass_field.getPassword());
+        if (server.equals("@gmail.com")) {
+           if (!username.contains("@gmail.com")) username += "@gmail.com";
+           server = "gmail.com";
          }
+        else if (server.equals("@brown.edu")) {
+           if (!username.contains("@brown.edu")) username += "@brown.edu";
+           server = "gmail.com";
+         }
+        else if (server.equals("chat.facebook.com")) {
+           server = "chat.facebook.com";
+         }
+        else if (server.equals("@jabber.org")) {
+           server = "jabber.org";
+         }
+        if (server.equals("AIM")) {
+           newman = new BgtaAimManager(username,password,server);
+         }
+        else {
+           newman = new BgtaManager(username,password,server,my_repository);
+         }
+        newman.setBeingSaved(rem_user);
+        manager_list.add(newman);
+        my_repository.addNewRep(new BgtaBuddyRepository(newman));
+        if (rem_user) BgtaFactory.addManagerProperties(username, password, server);
+        removeBubble();
       }
-     removeBubble();
+     else {
+        user_field.setText("already logged in");
+        pass_field.setText("");
+      }
        }
       catch (XMPPException xmppe) {
-         error_label.setText("Login failed. Please try again.");
-         error_label.setVisible(true);
+     user_field.setText("invalid login");
+     pass_field.setText("");
+     pass_field.setToolTipText(xmppe.getMessage());
        }
       BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
     }
 
 }	// end of inner class LoginListener
+
 
 
 private class EnterListener implements ActionListener {
@@ -367,19 +310,6 @@ private class EnterListener implements ActionListener {
 
 }	// end of inner class EnterListener
 
-
-private class FocusSelectionListener extends FocusAdapter {
-	
-	@Override public void focusGained(FocusEvent e) {
-		((JTextField) e.getSource()).selectAll();
-	}
-	
-	@Override public void focusLost(FocusEvent e) {
-		((JTextField) e.getSource()).setCaretPosition(0);
-		((JTextField) e.getSource()).moveCaretPosition(0);
-	}
-	
-} // end of inner class FocusSelectionListener
 
 
 
@@ -424,30 +354,38 @@ private class LoginPanel extends JPanel implements BgtaConstants {
 
 private class ServerListener implements ActionListener {
 
-   @Override public void actionPerformed(ActionEvent e) {
-      JComboBox cb = (JComboBox) e.getSource();
-      String selection = (String) cb.getSelectedItem();
-      selected_server = ChatServer.GMAIL;
-      if (selection.equals(ChatServer.BROWN.selector())) {
-      	 selected_server = ChatServer.BROWN;
-       }
-      else if (selection.equals(ChatServer.FACEBOOK.selector())) {
-      	 selected_server = ChatServer.FACEBOOK;
-       }
-      else if (selection.equals(ChatServer.AIM.selector())) {
-      	 selected_server = ChatServer.AIM;
-       }
-      else if (selection.equals(ChatServer.JABBER.selector())) {
-      	 selected_server = ChatServer.JABBER;
-       }
-      server_field.setText(selected_server.display());
-      if (selected_server == ChatServer.FACEBOOK || selected_server == ChatServer.AIM)
-      	 server_field.setVisible(false);
-      else
-      	 server_field.setVisible(true);
+   private JLabel serverlabel;
+
+   private ServerListener(JLabel example) {
+      serverlabel = example;
     }
 
-}  // end of inner class ServerListener
+   @Override public void actionPerformed(ActionEvent e) {
+      JComboBox cb = (JComboBox) e.getSource();
+      String server = (String) cb.getSelectedItem();
+      if (server.equals("Gmail")) {
+	 serverlabel.setText("@gmail.com");
+	 serverlabel.setVisible(true);
+       }
+      else if (server.equals("Brown Gmail")) {
+	 serverlabel.setText("@brown.edu");
+	 serverlabel.setVisible(true);
+       }
+      else if (server.equals("Facebook")) {
+	 serverlabel.setText("chat.facebook.com");
+	 serverlabel.setVisible(false);
+       }
+      else if (server.equals("AIM")) {
+	 serverlabel.setText("AIM");
+	 serverlabel.setVisible(false);
+       }
+      else if (server.equals("Jabber")) {
+	 serverlabel.setText("@jabber.org");
+	 serverlabel.setVisible(true);
+       }
+    }
+
+}	// end of inner class ServerListener
 
 
 

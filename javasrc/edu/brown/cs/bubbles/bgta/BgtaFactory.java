@@ -363,9 +363,8 @@ public void actionPerformed(ActionEvent e)
 	String url = "";
 	try {
 		File f = my_buda_root.findCurrentWorkingSet().getDescription();
-		BoardUpload bup = new BoardUpload(f);
+                BoardUpload bup = new BoardUpload(f);
 		url = bup.getFileURL();
-                // getUploadURL()
 	} catch (IOException e1) {
 	}
 	createMetadataChatBubble(cmd,url);

@@ -23,6 +23,7 @@ package edu.brown.cs.bubbles.bgta;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.BoardUpload;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 import edu.brown.cs.ivy.xml.IvyXmlReader;
@@ -276,7 +277,7 @@ void messageReceived(Object msg)
        BgtaFactory.createReceivedChatBubble(user_name,man);
        is_open = true;
     }
-   if (message.startsWith("http://conifer.cs.brown.edu/bubbles/uploads/WorkingSets/") && message.endsWith(".xml")) {
+   if (message.startsWith(BoardUpload.getUploadUrl() + "WorkingSets/") && message.endsWith(".xml")) {
        logMessage("Working set received.","Bubbles");
        Collection<BgtaBubble> bubbles = man.getExistingBubbles(user_name);
        if (bubbles != null) {

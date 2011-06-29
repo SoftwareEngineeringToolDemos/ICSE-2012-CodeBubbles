@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -119,7 +119,7 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 private Component			source_bubble;
 private Position			source_position;
 private Point				source_point;
-private int				bubble_offset;
+private boolean 			place_near;
 private int				title_width;
 private Map<String,List<BumpLocation>>	location_set;
 private BudaLinkStyle			link_style;
@@ -144,7 +144,7 @@ private BaleBubbleStack(Component src,Position p,Point pt,boolean near,BudaLinkS
    source_point = pt;
    location_set = locs;
    title_width = 0;
-   bubble_offset = (near ? BUBBLE_CREATION_NEAR_SPACE : BUBBLE_CREATION_SPACE);
+   place_near = near;
    link_style = link;
 }
 
@@ -207,25 +207,31 @@ private void setupStack()
    BussFactory bussf = BussFactory.getFactory();
    BussBubble bb = bussf.createBubbleStack(entries, contentwidth + title_width);
 
-   BudaRoot root = BudaRoot.findBudaRoot(source_bubble);
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_bubble);
+   int place = PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO;
+   if (place_near) place |= PLACEMENT_GROUPED;
+   bba.addBubble(bb,source_bubble,source_point,place);
+
+   /******************
    Rectangle loc = BudaRoot.findBudaLocation(source_bubble);
-
-   BudaRoot.addBubbleViewCallback(new EditorBubbleCallback(bb));
-
    BudaConstraint bcr = null;
-   if (source_point == null) bcr = new BudaConstraint(loc.x+loc.width+bubble_offset,loc.y);
+   int boffset = (place_near ? BUBBLE_CREATION_NEAR_SPACE : BUBBLE_CREATION_SPACE);
+   if (source_point == null) bcr = new BudaConstraint(loc.x+loc.width+boffset,loc.y);
    else bcr = new BudaConstraint(source_point);
-
    root.add(bb,bcr);
+   *******************/
 
    if (source_bubble != null && source_position != null) {
       BudaConstants.LinkPort p0 = new BaleLinePort(source_bubble,source_position,null);
       BudaConstants.LinkPort p1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
       BudaBubble obbl = BudaRoot.findBudaBubble(source_bubble);
       BudaBubbleLink lnk = new BudaBubbleLink(obbl,p0,bb,p1,true,link_style);
-      root.addLink(lnk);
+      bba.addLink(lnk);
       bb.setSourceBubbleInfomation(obbl, p0);
     }
+
+   bb.markBubbleAsNew();
+   BudaRoot.addBubbleViewCallback(new EditorBubbleCallback(bb));
 }
 
 

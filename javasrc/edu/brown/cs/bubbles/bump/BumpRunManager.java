@@ -1514,14 +1514,17 @@ private class StackFrame implements BumpStackFrame {
 		     for_file = File.createTempFile("BUBBLES_" + xnm,".java");
 		     source_map.put(fnm,for_file);
 		     byte [] data = IvyXml.stringToByteArray(IvyXml.getTextElement(xml,"SOURCE"));
-		     FileOutputStream fos = new FileOutputStream(for_file);
-		     fos.write(data);
-		     fos.close();
+		     if (data == null) for_file = null;
+		     else {
+			FileOutputStream fos = new FileOutputStream(for_file);
+			fos.write(data);
+			fos.close();
+		      } 
 		   }
 		  catch (IOException e) {
 		     BoardLog.logE("BUMP","Problem writing source file: " + e,e);
 		   }
-		  for_file.deleteOnExit();
+		  if (for_file != null) for_file.deleteOnExit();
 		}
 	     }
 	  }

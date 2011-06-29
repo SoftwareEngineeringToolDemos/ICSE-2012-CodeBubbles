@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -88,8 +88,11 @@ BudaPlacement(BudaBubbleArea bba)
 /*										*/
 /********************************************************************************/
 
-void placeBubble(BudaBubble bbl,BudaBubble rel,Point relpt,int place)
+void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubblePosition pos)
 {
+   BudaBubble rel = null;
+   if (rcom != null) rel = BudaRoot.findBudaBubble(rcom);
+
    Rectangle r = new Rectangle();
    if (rel != null) {
       r = BudaRoot.findBudaLocation(rel);
@@ -140,10 +143,15 @@ void placeBubble(BudaBubble bbl,BudaBubble rel,Point relpt,int place)
    int x0;
    int y0;
    int delta;
+
    if ((place & PLACEMENT_GROUPED) != 0) delta = BUBBLE_CREATION_NEAR_SPACE;
    else delta = BUBBLE_CREATION_SPACE;
 
-   if ((place & PLACEMENT_RIGHT) != 0) {
+   if (rel == null) {
+      x0 = r.x;
+      y0 = r.y;
+    }
+   else if ((place & PLACEMENT_RIGHT) != 0) {
       x0 = r.x + r.width + delta;
       y0 = r.y;
       if (relpt != null) y0 = relpt.y;
@@ -190,8 +198,8 @@ void placeBubble(BudaBubble bbl,BudaBubble rel,Point relpt,int place)
 	 ls.add(bbl);
        }
     }
-	
-   bubble_area.addBubble(bbl,x0,y0);
+
+   bubble_area.addBubble(bbl,pos,x0,y0);
 
    if ((place & PLACEMENT_MOVETO) != 0) {
       bubble_area.scrollBubbleVisible(bbl);

@@ -273,13 +273,9 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 						      boolean uselnk,boolean add, boolean marknew)
 {
    if (bl == null) return null;
-   BudaRoot root = BudaRoot.findBudaRoot(src);
-   BudaBubble obbl = BudaRoot.findBudaBubble(src);
-   Rectangle loc = BudaRoot.findBudaLocation(src);
 
-   int offset = (near ? BUBBLE_CREATION_NEAR_SPACE : BUBBLE_CREATION_SPACE);
-
-   if (root == null) return null;
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
 
    BaleFragmentEditor fed = null;
    switch (bl.getSymbolType()) {
@@ -316,21 +312,39 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 
    BaleEditorBubble bb = new BaleEditorBubble(fed);
    if (add) {
-      if (at != null) root.add(bb,new BudaConstraint(at));
+      int place = PLACEMENT_RIGHT | PLACEMENT_MOVETO;
+      if (near) place |= PLACEMENT_GROUPED;
+
+      BudaBubble obbl = BudaRoot.findBudaBubble(src);
+      // BudaRoot root = BudaRoot.findBudaRoot(src);
+      // int offset = (near ? BUBBLE_CREATION_NEAR_SPACE : BUBBLE_CREATION_SPACE);
+      Point lp = null;
       if (uselnk && obbl != null) {
 	 BudaConstants.LinkPort port0;
 	 if (p == null) port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
 	 else {
 	    port0 = new BaleLinePort(src,p,null);
-	    loc.y += port0.getLinkPoint(BudaRoot.findBudaBubble(src),
-					   BudaRoot.findBudaBubble(src).getLocation()).y;
+	    lp = port0.getLinkPoint(obbl,obbl.getLocation());
 	 }
-	 if (at == null) root.add(bb,new BudaConstraint(loc.x+loc.width+offset,loc.y));
+	 if (at == null) {
+	    bba.addBubble(bb,src,lp,place);
+	    // Rectangle loc = BudaRoot.findBudaLocation(src);
+	    // if (lp != null) loc.y = lp.y;
+	    // root.add(bb,new BudaConstraint(loc.x+loc.width+offset,loc.y));
+	  }
 	 BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
 	 BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
-	 root.addLink(lnk);
+	 bba.addLink(lnk);
        }
-      else if (at == null) root.add(bb,new BudaConstraint(loc.x+loc.width+offset,loc.y));
+      else if (at != null) {
+	 bba.addBubble(bb,null,at,PLACEMENT_MOVETO);
+	 // root.add(bb,new BudaConstraint(at));
+       }
+      else {
+	 bba.addBubble(bb,src,null,place);
+	 // root.add(bb,new BudaConstraint(loc.x+loc.width+offset,loc.y));
+       }
+
       if (marknew) bb.markBubbleAsNew();
     }
 

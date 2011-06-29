@@ -96,7 +96,7 @@ BgtaBuddy(String username,BgtaManager man,boolean hasbub)
 
 @Override public BudaBubble createPreviewBubble()
 {
-   return new BgtaBubble(connection_name,the_manager);
+   return new BgtaBubble(connection_name,the_manager,true);
 }
 
 

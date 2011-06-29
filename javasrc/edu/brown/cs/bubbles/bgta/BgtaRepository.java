@@ -140,7 +140,7 @@ void removeManager(BgtaManager bm)
    BassRepository newrep = original_rep;
    BgtaBuddyRepository toremove = null;
    for (BgtaBuddyRepository bbr : buddy_reps) {
-      if (!bbr.getManager().equals(bm))
+      if (!bbr.getManager().isEquivalent(bm.getUsername(), bm.getPassword(), bm.getServer()))
 	 newrep = new BassRepositoryMerge(bbr,newrep);
       else
 	 toremove = bbr;

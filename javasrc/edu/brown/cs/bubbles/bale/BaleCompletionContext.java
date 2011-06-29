@@ -794,29 +794,15 @@ private static class CompletionItemNewMethod extends CompletionItem implements
 
       BaleFactory.getFactory().createNewMethod(proj,class_name + "." + method_name,null,null,0,true,null,
 						  editor,link_point,true,true);
-
-      /*************
-      try {
-	 BudaBubble bbl = BudaRoot.findBudaBubble(editor);
-	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bbl);
-	 Rectangle r = editor.modelToView(editor.getCaretPosition());
-	 Point p0 = r.getLocation();
-	 p0 = SwingUtilities.convertPoint(editor,p0,bba);
-	 BuenoProperties props = new BuenoProperties();
-	 props.put(BuenoKey.KEY_NAME,method_name);
-	 props.put(BuenoKey.KEY_TYPE,class_name);
-	 BuenoLocation loc = BuenoFactory.getFactory().createLocation(proj,
-									 class_name,null,false);
-	 BuenoMethodDialog bmd = new BuenoMethodDialog(bbl,p0,props,loc,this);
-	 bmd.showDialog();
-       }
-      catch (BadLocationException e) { }
-      ***************/
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
       BudaBubble bb = BaleFactory.getFactory().createMethodBubble(proj,name);
-      if (bb != null) bba.add(bb,new BudaConstraint(p));
+      if (bb == null) return;
+
+      bba.addBubble(bb,null,p,PLACEMENT_MOVETO);
+      // bba.add(bb,new BudaConstraint(p));
+
       if (link_editor != null) {
 	 BudaBubble bbo = BudaRoot.findBudaBubble(link_editor);
 	 BudaRoot root = BudaRoot.findBudaRoot(bbo);

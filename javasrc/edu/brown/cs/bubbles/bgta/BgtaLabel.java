@@ -21,23 +21,21 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
+
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.BoxLayout;
-import javax.swing.Box;
 
 import java.awt.Cursor;
-import java.awt.Dimension;
 
 
 
-class BgtaLabel extends JPanel implements PacketListener {
+
+class BgtaLabel extends JLabel implements PacketListener {
 
 
 
@@ -47,9 +45,7 @@ class BgtaLabel extends JPanel implements PacketListener {
 /*										*/
 /********************************************************************************/
 
-private JLabel          my_label;
 private ImageIcon	my_icon;
-private JButton         my_button;
 private String		user_name;
 private Presence	my_presence;
 
@@ -64,51 +60,24 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaLabel(String username,String displayname)
+BgtaLabel(String username,BgtaRoster rost)
 {
-   super();
-   setLayout(new BoxLayout(this,BoxLayout.LINE_AXIS));
-   setOpaque(false);
-   my_label = new JLabel(displayname,BgtaManager.iconFor(new Presence(Presence.Type.available)),JLabel.LEFT);
-   my_presence = new Presence(Presence.Type.available);
-   my_icon = (ImageIcon) my_label.getIcon();
+   super(rost.getEntry(username).getName(),BgtaManager.iconFor(rost.getPresence(username)),JLabel.LEFT);
+   my_presence = rost.getPresence(username);
+   my_icon = (ImageIcon) getIcon();
    if (my_presence.getType() == Presence.Type.available && my_presence.getMode() != null) {
-      my_label.setToolTipText(my_presence.getMode().toString());
+      setToolTipText(my_presence.getMode().toString());
    }
    else if (my_presence.getType() == Presence.Type.unavailable) {
-       my_label.setToolTipText("Unavailable");
+      setToolTipText("Unavailable");
    }
    user_name = username;
-   my_label.setHorizontalTextPosition(JLabel.RIGHT);
-   my_label.setCursor(Cursor.getDefaultCursor());
-   my_label.createToolTip();
-   my_button = null;
-   
-   Dimension d = new Dimension(getSize().width,my_icon.getIconHeight());
-   setPreferredSize(d);
-   setSize(d);
-   
-   add(my_label);
+   setHorizontalTextPosition(JLabel.RIGHT);
+   setCursor(Cursor.getDefaultCursor());
+   createToolTip();
 }
 
-void setButton(JButton button)
-{
-    removeAll();
-    add(my_label);
-    my_button = button;
-    if (my_button != null) {
-       add(Box.createHorizontalGlue());
-       add(my_button);
-    }
-    repaint();
-}
 
-void setPresence(Presence p)
-{
-    my_presence = p;
-    my_icon = (ImageIcon) BgtaManager.iconFor(p);
-    my_label.setIcon(my_icon);
-}
 
 /********************************************************************************/
 /*										*/
@@ -125,21 +94,17 @@ void setPresence(Presence p)
 	 my_presence = pr;
 	 if (pr.getType() == Presence.Type.available) {
 	    my_icon = (ImageIcon) BgtaManager.iconFor(my_presence);
-	    my_label.setIcon(my_icon);
-            if (my_presence.getMode() != null)
-                my_label.setToolTipText(my_presence.getMode().toString());
+	    setIcon(my_icon);
+	    setToolTipText(my_presence.getMode().toString());
 	 }
 	 else if (pr.getType() == Presence.Type.unavailable) {
 	    my_icon = (ImageIcon) BgtaManager.iconFor(my_presence);
-	    my_label.setIcon(my_icon);
-	    my_label.setToolTipText("unavailable");
+	    setIcon(my_icon);
+	    setToolTipText("unavailable");
 	 }
       }
    }
 }
-
-
-
 
 
 

@@ -185,9 +185,22 @@ public void addBubble(BudaBubble bb,int x,int y)
 }
 
 
-public void addBubble(BudaBubble bb,BudaBubble rel,Point relpt,int placement)
+public void addBubble(BudaBubble bb,BudaBubblePosition pos,int x,int y)
 {
-   bubble_placer.placeBubble(bb,rel,relpt,placement);
+   add(bb,new BudaConstraint(pos,x,y));
+}
+
+
+public void addBubble(BudaBubble bb,Component rel,Point relpt,int placement)
+{
+   bubble_placer.placeBubble(bb,rel,relpt,placement,BudaBubblePosition.MOVABLE);
+}
+
+
+
+public void addBubble(BudaBubble bb,Component rel,Point relpt,int placement,BudaBubblePosition pos)
+{
+   bubble_placer.placeBubble(bb,rel,relpt,placement,pos);
 }
 
 
@@ -471,6 +484,10 @@ public void forceReroute(BudaBubble bb)
 
 public void addLink(BudaBubbleLink lnk)
 {
+   if (lnk == null) return;
+   BudaBubble src = lnk.getSource();
+   if (src.isFloating() || lnk.getTarget().isFloating()) return;
+
    synchronized (bubble_links) {
       bubble_links.add(lnk);
     }

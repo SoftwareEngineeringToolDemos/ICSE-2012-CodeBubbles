@@ -124,6 +124,7 @@ BaleLinePort(Component c,Position where,String desc)
    Rectangle r = bb.getBounds();
 
    int x0 = r.x;
+   y0 += r.y;
 
    if (tgt.getX() > r.x + r.width) x0 = r.x + r.width - 1;
 

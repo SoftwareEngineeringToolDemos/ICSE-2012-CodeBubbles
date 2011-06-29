@@ -1,23 +1,12 @@
 /********************************************************************************/
-/*                            */
-/*    BgtaAimManager.java                 */
-/*                            */
-/* Bubbles attribute and property management main setup routine      */
-/*                            */
+/*										*/
+/*		BgtaAimManager .java							*/
+/*										*/
+/*	description of class							*/
+/*										*/
+/*	Written by								*/
+/*										*/
 /********************************************************************************/
-/* Copyright 2011 Brown University -- Sumner Warren            */
-/*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
- * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
- ********************************************************************************/
-
 
 
 
@@ -44,6 +33,7 @@ import net.kano.joustsim.oscar.oscar.service.ssi.SsiService;
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
 
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPException;
 
@@ -51,8 +41,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-
-class BgtaAimManager extends BgtaManager {
+class BgtaAimManager extends BgtaManager
+{
 
 
 
@@ -62,9 +52,9 @@ class BgtaAimManager extends BgtaManager {
 /*										*/
 /********************************************************************************/
 
-private AimConnection	   the_connection;
+private AimConnection	       the_connection;
 private IcbmListener		   conversation_listener;
-private IcbmService the_service;
+
 
 
 
@@ -74,46 +64,21 @@ private IcbmService the_service;
 /*										*/
 /********************************************************************************/
 
-BgtaAimManager(String username,String password,ChatServer 
-server)
+BgtaAimManager(String username,String password,String server) throws XMPPException
 {
-    super(username,password,ChatServer.AIM);
-    if (!server.equals(ChatServer.AIM))
-        BoardLog.logE("BGTA","AIM manager created with ChatServer: " + server.server() + " instead of AIM.");
+   login(username, password);
+   user_name = username;
+   user_password = password;
+   user_server = server;
+   existing_bubbles = new Vector<BgtaBubble>();
+   existing_chats = new Vector<BgtaChat>();
+   being_saved = false;
 }
 
 
 
-/********************************************************************************/
-/*                                                                              */
-/*      Access Methods                                                          */
-/*                                                                              */
-/********************************************************************************/
-
-@Override boolean isLoggedIn()
+@Override void login(String username,String password) throws XMPPException
 {
-   return the_connection.getState() == State.ONLINE;
-}
-
-
-@Override BgtaRoster getRoster() { return the_roster; }
-
-
-
-/********************************************************************************/
-/*                                                                              */
-/*      Connection Methods                                                      */
-/*                                                                              */
-/********************************************************************************/
-
-@Override void login() throws XMPPException
-{
-   login(user_name, user_password,ChatServer.AIM);
-}
-
-@Override void login(String username,String password,ChatServer server) throws XMPPException
-{
-   BoardLog.logD("BGTA","Starting login process for " + username + " on server: login.messaging.aol.com");
    Screenname screenname = new Screenname(username);
    AimSession aimSession = new DefaultAppSession().openAimSession(screenname);
    AimConnectionProperties props = new AimConnectionProperties(screenname,password);
@@ -135,7 +100,7 @@ server)
    the_connection.connect();
    if (the_connection.getState() == State.FAILED) {
       BoardLog.logE("BGTA", "Error connecting to AIM via OSCAR protocol.");
-      throw new XMPPException("Error connecting to AIM via OSCAR protocol.");
+      throw new XMPPException("Error connecting to AIM server.");
     }
    try {
       Thread.sleep(2000);
@@ -143,8 +108,8 @@ server)
    catch (InterruptedException e) {
       //do nothing
     }
-   the_service = the_connection.getIcbmService();
-   if (the_service == null) {
+   IcbmService icbm = the_connection.getIcbmService();
+   if (icbm == null) {
       try {
 	 Thread.sleep(1000);
        }
@@ -152,17 +117,17 @@ server)
 	 //do nothing
        }
     }
-   if (the_service == null) {
+   if (icbm == null) {
       BoardLog.logE("BGTA", "Icbm service not available.");
       throw new XMPPException("Error connecting to AIM server.");
     }
-   if (!the_service.isReady()) {
+   if (!icbm.isReady()) {
       BoardLog.logE("BGTA", "Icbm service is not ready.");
       throw new XMPPException("Error connecting to AIM server.");
     }
-   the_service.removeIcbmListener(conversation_listener);
+   icbm.removeIcbmListener(conversation_listener);
    conversation_listener = new AIMServiceListener();
-   the_service.addIcbmListener(conversation_listener);
+   icbm.addIcbmListener(conversation_listener);
    OscarConnection con = the_connection.getInfoService().getOscarConnection();
    con.addGlobalServiceListener(
       new ServiceListener() {
@@ -184,89 +149,103 @@ server)
       throw new XMPPException("Error connecting to AIM server.");
     }
    the_roster = new BgtaAIMRoster(ssi.getBuddyList());
-   BoardLog.logD("BGTA","Successfully logged into login.messaging.aol.com with username: " + username + ".");
 }
+
+
 
 @Override void disconnect()
 {
    the_connection.disconnect();
+   for (BgtaBubble bub : existing_bubbles) {
+      bub.disposeBubble();
+    }
+   existing_bubbles.clear();
    existing_chats.clear();
 }
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Presence listener							*/
-/*										*/
-/********************************************************************************/
+@Override void removeChat(BgtaChat chat,MessageListener list) {
+   if (chat.close())
+      existing_chats.removeElement(chat);
+}
+
+
 
 @Override void addPresenceListener(PacketListener p) { }
 
 
-/********************************************************************************/
-/*                                                                              */
-/*      Chat Managers                                                           */
-/*                                                                              */
-/********************************************************************************/
 
-@Override BgtaChat startChat(String username,BgtaBubble using)
-{
-    BgtaChat chat = null;
-    if (!hasChat(username)) {
-        Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
-        String name = ((BgtaAIMRosterEntry) the_roster.getEntry(username)).getBuddy().getAlias();
-        chat = new BgtaChat(user_name,username,name,ChatServer.AIM,con,getExistingDoc(username));
-        existing_chats.put(username,chat);
-        existing_docs.put(username,chat.getDocument());
-     }
-    existing_bubbles.add(using);
-    return chat;
-}
+@Override BgtaRoster getRoster() { return the_roster; }
 
-@Override void removeChat(String username)
+
+
+@Override BgtaChat startChat(String username,MessageListener list,BgtaBubble using)
 {
-    if (!hasBubble(username)) {
-       BgtaChat chat = getExistingChat(username);
-       chat.close();
-     }
+   if (!hasChat(username)) {
+      Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
+      AIMConversationListener listener = new AIMConversationListener();
+      con.addConversationListener(listener);
+      existing_bubbles.add(using);
+      BgtaAIMChat chat = new BgtaAIMChat(con, listener);
+      existing_chats.add(chat);
+      return chat;
+    }
+   else
+      return getExistingChat(username);
 }
 
 
 
-/********************************************************************************/
-/*                                                                              */
-/*      Service Listener                                                        */
-/*                                                                              */
-/********************************************************************************/
-
-/**
- * A listener class for AIM Services. Only used to listen for new conversations.
- * 
- * @author Sumner Warren
- *
- */
 class AIMServiceListener implements IcbmListener {
 
    @Override public void buddyInfoUpdated(IcbmService service, Screenname sn,
 					     IcbmBuddyInfo arg2) { }
 
    @Override public void newConversation(IcbmService service, Conversation conv) {
-      if (!hasChat(conv.getBuddy().getFormatted()))
-        BgtaFactory.createReceivedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
+      if (!hasChat(conv.getBuddy().getFormatted())) {
+	 conv.addConversationListener(new AIMConversationListener());
+	 BgtaFactory.createRecievedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
+       }
     }
 
-      @Override public void sendAutomaticallyFailed(IcbmService service, Message message,
+   @Override public void sendAutomaticallyFailed(IcbmService service, Message message,
 						    Set<Conversation> conv) { }
 
-}  // end of inner class AIMServiceListener
+}	// end of inner class AIMServiceListener
 
 
-/********************************************************************************/
-/*                                                                              */
-/*      Roster Classes                                                          */
-/*                                                                              */
-/********************************************************************************/
+
+class AIMConversationListener implements ConversationListener {
+
+   @Override public void gotMessage(Conversation conv, MessageInfo minfo) {
+      BgtaBubble bubble = getExistingBubble(conv.getBuddy().getFormatted());
+      if (bubble == null) return;
+      bubble.recieveMessage(new BgtaAIMMessage(minfo.getMessage()));
+    }
+
+   @Override public void sentMessage(Conversation conv,MessageInfo minfo) {
+      //System.out.println("Message sent:" + minfo.getMessage().getMessageBody());
+    }
+
+   @Override
+      public void canSendMessageChanged(Conversation arg0, boolean arg1) { }
+
+   @Override
+      public void conversationClosed(Conversation arg0) { }
+
+   @Override
+      public void conversationOpened(Conversation arg0) { }
+
+   @Override
+      public void gotOtherEvent(Conversation arg0, ConversationEventInfo arg1) { }
+
+   @Override
+      public void sentOtherEvent(Conversation arg0, ConversationEventInfo arg1) { }
+
+}	// end of inner class AIMConversationAdapter
+
+
 
 class BgtaAIMRoster implements BgtaRoster {
 
@@ -306,7 +285,8 @@ class BgtaAIMRoster implements BgtaRoster {
        }
     }
 
-}  // end of inner class BgtaAIMRoster
+}	// end of inner class BgtaAIMRoster
+
 
 
 class BgtaAIMRosterEntry implements BgtaRosterEntry {
@@ -346,16 +326,103 @@ class BgtaAIMRosterEntry implements BgtaRosterEntry {
    Screenname getScreenname() {
       return the_entry.getScreenname();
     }
-   
-   Buddy getBuddy() {
-       return the_entry;
+
+}	// end of inner class BgtaAIMRosterEntry
+
+
+
+class BgtaAIMChat implements BgtaChat {
+
+   private Conversation 		the_chat;
+   private ConversationListener the_listener;
+   private int					current_uses;
+
+   BgtaAIMChat(Conversation con,ConversationListener list) {
+      the_chat = con;
+      the_listener = list;
+      current_uses = 1;
     }
 
-}  // end of inner class BgtaAIMRosterEntry
+   @Override public String getUser() {
+      return the_chat.getBuddy().getFormatted();
+    }
+
+   @Override public void sendMessage(String message) throws XMPPException {
+      the_chat.sendMessage(new SimpleMessage(makeHTML(message), false));
+    }
+
+   @Override public boolean close() {
+      if (--current_uses < 1) {
+	 current_uses = 0;
+	 the_chat.close();
+	 the_chat.removeConversationListener(the_listener);
+	 return true;
+       }
+      return false;
+    }
+
+   @Override public void increaseUseCount() { current_uses++; }
+
+   @Override public boolean isListener(Object list) {
+      return list.equals((ConversationListener) the_listener);
+    }
+
+   @Override public void exchangeListeners(Object list) {
+      ConversationListener listener = (ConversationListener) list;
+      the_chat.addConversationListener(listener);
+      the_chat.removeConversationListener(the_listener);
+      the_listener = listener;
+    }
+
+   Conversation getConversation() { return the_chat; }
+
+   private String replace(String input,String toreplace,String replacewith) {
+      String current = input;
+      int pos = current.indexOf(toreplace);
+      if (pos != -1) {
+	 current = current.substring(0,pos) + replacewith + replace(current.substring(pos + toreplace.length()),toreplace,replacewith);
+       }
+      return current;
+    }
+
+   private String makeHTML(String text) {
+      String temp = text;
+      temp = replace(temp,"&","&amp;");
+      temp = replace(temp,"<","&lt;");
+      temp = replace(temp,">","&gt;");
+      temp = replace(temp,"\"","&qout;");
+      temp = replace(temp,"\n","<br>");
+      return "<html><body>" + temp + "</body></html>";
+    }
+
+}	// end of inner class BgtaAIMChat
 
 
 
-}  // end of class BgtaAimManager
+class BgtaAIMMessage implements BgtaMessage {
+
+   private Message		   the_message;
+
+   BgtaAIMMessage(Message mess) { the_message = mess; }
+
+   @Override public String getBody() {
+      return stripHTML(the_message.getMessageBody());
+    }
+
+   @Override public String getFrom() { return ""; }
+
+   @Override public String getTo() { return ""; }
+
+   private String stripHTML(String text) {
+      // "<.*?>" is a regular expression which should match individual HTML tags
+      return text.replaceAll("<.*?>", "");
+    }
+
+}	// end of inner class BgtaAIMMessage
+
+
+
+}	// end of class BgtaAimManager
 
 
 

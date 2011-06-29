@@ -74,7 +74,6 @@ static {
 static void createInfoBubble(BaleEditorPane target,String elmtype,
 	 BaleInfoBubbleType type,Position sp)
 {
-   BudaRoot broot = BudaRoot.findBudaRoot(target);
    BaleInfoBubble bib = null;
    switch (type) {
       case DOC:
@@ -115,8 +114,14 @@ static void createInfoBubble(BaleEditorPane target,String elmtype,
 	 break;
     }
 
-   Rectangle loc = BudaRoot.findBudaLocation(target);
-   broot.add(bib, new BudaConstraint(loc.x + loc.width + 20,loc.y));
+   if (bib == null) return;
+   // Might want to use source position to compute y offset
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
+   bba.addBubble(bib,target,null,PLACEMENT_RIGHT|PLACEMENT_GROUPED);
+
+   // BudaRoot broot = BudaRoot.findBudaRoot(target);
+   // Rectangle loc = BudaRoot.findBudaLocation(target);
+   // broot.add(bib, new BudaConstraint(loc.x + loc.width + 20,loc.y));
 }
 
 

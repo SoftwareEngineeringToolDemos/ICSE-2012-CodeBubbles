@@ -253,7 +253,6 @@ private void makeTabMaps()
    tabs_to_strings.put(TabName.VISUALIZATIONS, VISUALIZATIONS_TAB_STRING);
    tabs_to_strings.put(TabName.SEARCH_OPTIONS, SEARCH_OPTIONS_STRING);
    tabs_to_strings.put(TabName.TEXT_EDITOR_OPTIONS, TEXT_EDITOR_STRING);
-   tabs_to_strings.put(TabName.CHAT_OPTIONS, CHAT_OPTIONS_STRING);
 
    strings_to_tabs.put(ALL_STRING, TabName.ALL);
    strings_to_tabs.put(BUBBLE_OPTIONS_STRING, TabName.BUBBLE_OPTIONS);
@@ -264,8 +263,9 @@ private void makeTabMaps()
    strings_to_tabs.put(SEARCH_STRING, TabName.SEARCH);
    strings_to_tabs.put(VISUALIZATIONS_TAB_STRING, TabName.VISUALIZATIONS);
    strings_to_tabs.put(SEARCH_OPTIONS_STRING, TabName.SEARCH_OPTIONS);
+
    strings_to_tabs.put(TEXT_EDITOR_STRING, TabName.TEXT_EDITOR_OPTIONS);
-   strings_to_tabs.put(CHAT_OPTIONS_STRING, TabName.CHAT_OPTIONS);
+
 }
 
 
@@ -713,8 +713,8 @@ private class SaveCloseListener implements ActionListener {
       JPanel p = (JPanel) ((JButton) arg0.getSource()).getParent().getParent();
       p.setVisible(false);
       for (int i = 0; i < option_list.size(); i++) {
-     BoppOption opt = option_list.get(i);
-     opt.setOption();
+	 BoppOption opt = option_list.get(i);
+	 opt.setOption();
        }
       refreshTabs();
     }

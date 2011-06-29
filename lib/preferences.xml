@@ -349,14 +349,11 @@
    </PACKAGE>
 
    <PACKAGE NAME="Bgta">
-      <OPT NAME="Chat Options" TYPE="DIVIDER">
-	 <TAB NAME="Chat Options"/>
+      <OPT NAME="Chat Visualization Options" TYPE="DIVIDER">
+	 <TAB NAME="Visualization Options"/>
       </OPT>
-      <OPT NAME="Bgta.altcolor" DESCRIPTION="When recieving new chats change color of bubble" TYPE="BOOLEAN">
-	 <TAB NAME="Chat Options"/>
-      </OPT>
-      <OPT NAME="Bgta.save.history" DESCRIPTION="Save chat histories" TYPE="BOOLEAN">
-         <TAB NAME="Chat Options"/>
+      <OPT NAME="Bgta.altcolor" DESCRIPTION="When recieving new chats show chat bubble differently" TYPE="BOOLEAN">
+	 <TAB NAME="Visualization Options"/>
       </OPT>
    </PACKAGE>
 

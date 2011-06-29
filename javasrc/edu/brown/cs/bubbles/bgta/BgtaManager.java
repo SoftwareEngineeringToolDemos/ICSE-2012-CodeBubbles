@@ -26,15 +26,12 @@ import edu.brown.cs.bubbles.board.BoardImage;
 import edu.brown.cs.bubbles.board.BoardLog;
 
 import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.filter.PacketIDFilter;
-import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.*;
-import org.jivesoftware.smackx.ServiceDiscoveryManager;
-import org.jivesoftware.smackx.packet.DiscoverInfo;
-import org.jivesoftware.smackx.packet.DiscoverItems;
+import org.jivesoftware.smack.filter.PacketTypeFilter;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.text.Document;
 
 import java.util.*;
 
@@ -53,19 +50,38 @@ class BgtaManager implements PacketListener {
 /*										*/
 /********************************************************************************/
 
-private XMPPConnection		the_connection;
-private static XMPPConnection	stat_con;
+private XMPPConnection             the_connection;
+private static XMPPConnection      stat_con;
+private RosterListener             roster_listener;
+private BgtaRepository             the_repository;
 
-protected String		user_name;
-protected String		user_password;
-protected String		user_server;
-protected boolean 		being_saved;
+protected String                   user_name;
+protected String                   user_password;
+protected ChatServer               user_server;
+protected boolean                  being_saved;
+protected Vector<BgtaBubble>       existing_bubbles;
+protected Map<String, BgtaChat>    existing_chats;
+protected Map<String, Document>    existing_docs;
+protected BgtaRoster               the_roster;
 
-protected Vector<BgtaBubble>	existing_bubbles;
-protected Vector<BgtaChat>		existing_chats;
-protected BgtaRoster			the_roster;
-private RosterListener		roster_listener;
-private BgtaRepository		the_repository;
+
+
+/********************************************************************************/
+/*										*/
+/*	Factory Method								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ * Returns the proper manager type depending on the ChatServer.
+ */
+static BgtaManager getManager(String username,String password,ChatServer server,BgtaRepository repo)
+{
+   if (server.equals(ChatServer.AIM))
+       return new BgtaAimManager(username,password,server);
+   else
+       return new BgtaManager(username,password,server,repo);
+}
 
 
 
@@ -75,70 +91,91 @@ private BgtaRepository		the_repository;
 /*										*/
 /********************************************************************************/
 
-BgtaManager(String username,String password,String server,BgtaRepository repo)
-	throws XMPPException
+BgtaManager(String username,String password,ChatServer 
+server,BgtaRepository repo)
 {
    this(username,password,server);
    the_repository = repo;
 }
 
-
-
-BgtaManager(String username,String password,String server) throws XMPPException
+BgtaManager(String username,String password,ChatServer server)
 {
-   login(username, password, server);
    user_name = username;
    user_password = password;
    user_server = server;
+   if (user_server == null)
+      user_server = ChatServer.GMAIL;
    existing_bubbles = new Vector<BgtaBubble>();
-   existing_chats = new Vector<BgtaChat>();
+   existing_chats = new HashMap<String, BgtaChat>();
+   existing_docs = new HashMap<String, Document>();
    being_saved = false;
    roster_listener = null;
 }
 
 
 
-BgtaManager(String username,String password) throws XMPPException
-{
-   login(username, password);
-   user_name = username;
-   user_password = password;
-   user_server = "";
-   existing_bubbles = new Vector<BgtaBubble>();
-   existing_chats = new Vector<BgtaChat>();
-   being_saved = false;
-   roster_listener = null;
-}
+/********************************************************************************/
+/*										*/
+/*	Access Methods								*/
+/*										*/
+/********************************************************************************/
 
-BgtaManager() { }
+BgtaRoster getRoster()			   { return the_roster; }
+
+String getUsername()				   { return user_name; }
+
+String getPassword()				   { return user_password; }
+
+ChatServer getServer()				   { return user_server; }
+
+boolean isBeingSaved()           { return being_saved; }
+
+void setBeingSaved(boolean bs)   { being_saved = bs; }
+
+boolean isLoggedIn()
+{
+   if (the_connection == null)
+       return false;
+   return the_connection.isConnected() && the_connection.isAuthenticated();
+}
 
 
 
 /********************************************************************************/
 /*										*/
-/*	Access methods								*/
+/*	Comparison methods							*/
 /*										*/
 /********************************************************************************/
 
-BgtaRoster getRoster()				{ return the_roster; }
-
-String getUsername()				{ return user_name; }
-
-String getPassword()				{ return user_password; }
-
-String getServer()				{ return user_server; }
-
-boolean isBeingSaved()				{ return being_saved; }
-
-
-void setBeingSaved(boolean bs)			{ being_saved = bs; }
-
-
-
-boolean isEquivalent(String un,String pa,String se)
+boolean propertiesMatch(String un,String se)
 {
-   return un.equals(user_name) && pa.equals(user_password) && se.equals(user_server);
+   return un.equals(user_name) && se.equals(user_server.server());
 }
+
+
+
+@Override public boolean equals(Object o)
+{
+   if (!(o instanceof BgtaManager)) return false;
+   BgtaManager man = (BgtaManager) o;
+	
+   return user_name.equals(man.getUsername()) && user_password.equals(man.getPassword()) && user_server.equals(man.getServer());
+}
+
+
+
+@Override public int hashCode()
+{
+   return user_name.hashCode() + user_password.hashCode() + user_server.hashCode();
+}
+
+
+
+@Override public String toString()
+{
+   return user_name + ", " + user_server;
+}
+
 
 
 /********************************************************************************/
@@ -157,43 +194,26 @@ void addPresenceListener(PacketListener p)
 
 /********************************************************************************/
 /*										*/
-/*	Login methods								*/
+/*	Connection methods							*/
 /*										*/
 /********************************************************************************/
 
-void login(String username,String password) throws XMPPException
-{
-   login(username, password, "gmail.com");
-}
-
-
 void login() throws XMPPException
 {
-   login("codebubbles4tester@gmail.com", "bubbles4");
+   login(user_name, user_password, user_server);
+//   login("codebubbles4tester@gmail.com", "bubbles4");
 }
 
 
-void login(String username,String password,String server) throws XMPPException
+void login(String username,String password,ChatServer server) throws XMPPException
 {
-   String serv, host;
-   if (server.equals("gmail.com")) {
-      serv = server;
-      host = "talk.google.com";
-    }
-   else if (server.equals("chat.facebook.com")) {
-      serv = server;
-      host = server;
-    }
-   else if (server.equals("jabber.org")) {
-      serv = server;
-      host = server;
-    }
-   else {
-      serv = "gmail.com";
-      host = "talk.google.com";
-    }
+   BoardLog.logD("BGTA", "Starting login process for " + username + " on server: " + server.server());
+   String serv = server.server();
+   String host = server.host();
+   
+   // Set up extra security for Facebook.
    ConnectionConfiguration config = null;
-   if (serv.equals("chat.facebook.com")) {
+   if (serv.equals(ChatServer.FACEBOOK.server())) {
       SASLAuthentication.registerSASLMechanism("DIGEST-MD5",
 						  BgtaSASLDigestMD5Mechanism.class);
       config = new ConnectionConfiguration(serv,5222);
@@ -206,153 +226,149 @@ void login(String username,String password,String server) throws XMPPException
    the_connection = new XMPPConnection(config);
    stat_con = the_connection;
 
-   the_connection.connect();
-   the_connection.login(username, password);
-   if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to server.");
+   // Make a connection and try to login.
+   // Disconnect if login fails.
+   try {
+   	the_connection.connect();
+   	the_connection.login(username, password);
+    } catch (XMPPException e) {
+       try {
+    	  if (the_connection.isConnected())
+    	     the_connection.disconnect();
+        } catch (Exception ex) {
+            BoardLog.logE("BGTA", "Error disconnecting: " + ex.getMessage());
+        }
+        BoardLog.logE("BGTA","Error connecting to " + server.server() + ": " + e.getMessage());
+   	throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
+    }
+    if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
 
+   // Add a listener for messages as well as for roster updates.
    Message m = new Message();
    the_connection.addPacketListener(this, new PacketTypeFilter(m.getClass()));
    roster_listener = new BgtaRosterListener();
    the_connection.getRoster().addRosterListener(roster_listener);
    the_roster = new BgtaXMPPRoster(the_connection.getRoster());
+   BoardLog.logD("BGTA","Successfully logged into " + server.server() + " with username: " + username + ".");
 }
 
 
-/********************************************************************************/
-/*										*/
-/*	Connection methods							*/
-/*										*/
-/********************************************************************************/
-
-BgtaChat startChat(String username,MessageListener list,BgtaBubble using)
+void disconnect()
 {
-   if (!hasChat(username)) {
-	  Chat ch = the_connection.getChatManager().createChat(username, list);
-	  existing_bubbles.add(using);
-	  BgtaXMPPChat chat = new BgtaXMPPChat(ch,list);
-	  existing_chats.add(chat);
-	  return chat;
-    }
-   else
-	  return getExistingChat(username);
+    BoardLog.logD("BGTA","Starting logout process for " + user_name + " on " + user_server.server());
+    the_connection.disconnect();
+    for (BgtaChat ch : existing_chats.values())
+        ch.close();
+    existing_chats.clear();
+    roster_listener = null;
+    BoardLog.logD("BGTA","Successful logout for " + user_name + " on " + user_server.server());
 }
 
 
+
+/********************************************************************************/
+/*										*/
+/*	Bubble, Chat, & Doc Managers      					*/
+/*										*/
+/********************************************************************************/
 
 void addDuplicateBubble(BgtaBubble dup)
 {
    existing_bubbles.add(dup);
-   return;
 }
-
-
-
-void updateBubble(BgtaBubble up)
-{
-//   if (hasBubble(up.getUsername())) {
-//      String text = null;
-//      Document doc = up.getLog().getDocument();
-//      try {
-//	 text = doc.getText(0, doc.getLength());
-//	 doc = getExistingBubble(up.getUsername()).getLog().getDocument();
-//	 String curr = doc.getText(0, doc.getLength());
-//	 if (curr.indexOf(text) < 0) {
-//	    doc.insertString(0, text, null);
-//	  }
-//       }
-//      catch (Throwable t) {
-//	 BoardLog.logE("BGTA", "problem updating chat bubble", t);
-//       }
-//      up.getLog().setDocument(doc);
-//    }
-   if (hasBubble(up.getUsername())) {
-	  if (!up.isListener())
-	 up.getLog().setDocument(getExistingBubble(up.getUsername()).getLog().getDocument());
-	  else {
-	 for (BgtaBubble bub : existing_bubbles) {
-		bub.getLog().setDocument(up.getLog().getDocument()); 
-	  }
-	   }
-    }
-   existing_bubbles.add(up);
-}
-
 
 
 boolean hasBubble(String username)
 {
-   for (BgtaBubble tbb : existing_bubbles) {
-      String s = tbb.getUsername();
-      if (s.equals(username)) return true;
-    }
-   return false;
-}
-
-
-
-BgtaBubble getExistingBubble(String username)
-{
-   for (BgtaBubble tbb : existing_bubbles) {
-      String s = tbb.getUsername();
-      if (s.equals(username)) return tbb;
-    }
-   return null;
-}
-
-
-
-void removeBubble(BgtaBubble bub)
-{
-   existing_bubbles.removeElement(bub);
-   return;
-}
-
-
-
-boolean hasChat(String username)
-{
-   for (BgtaChat chat : existing_chats) {
-	  if (chat.getUser().equals(username))
+   for (BgtaBubble bb : existing_bubbles) {
+	  if (bb.getUsername().equals(username))
 		 return true;
     }
    return false;
 }
 
 
-
-BgtaChat getExistingChat(String username)
+BgtaBubble getExistingBubble(String username)
 {
-   for (BgtaChat chat : existing_chats) {
-	  if (chat.getUser().equals(username))
-		 return chat;
+   for (BgtaBubble bb : existing_bubbles) {
+	  if (bb.getUsername().equals(username))
+		 return bb;
     }
    return null;
 }
 
 
-
-void removeChat(BgtaChat chat,MessageListener list)
+List<BgtaBubble> getExistingBubbles(String username)
 {
-   if (((BgtaXMPPChat) chat).isListener(list) && hasBubble(chat.getUser())) {
-	  BgtaBubble bub = getExistingBubble(chat.getUser());
-      ((BgtaXMPPChat) chat).exchangeListeners(bub.getLog());
-      bub.makeActive();
+   List<BgtaBubble> bubbles = new Vector<BgtaBubble>();
+   for (BgtaBubble bb : existing_bubbles) {
+	  if (bb.getUsername().equals(username))
+		 bubbles.add(bb); 
     }
-   if (chat.close())
-      existing_chats.removeElement(chat);
+   if (bubbles.size() == 0)
+	  return null;
+   return bubbles;
 }
 
 
-
-void disconnect()
+void removeBubble(BgtaBubble bub)
 {
-   the_connection.disconnect();
-//   for (BgtaBubble bub : existing_bubbles) {
-//	  bub.disposeBubble();
-//    }
-//   existing_bubbles.clear();
-   existing_chats.clear();
-   roster_listener = null;
+   existing_bubbles.remove(bub);
+   removeChat(bub.getUsername());
+}
+
+
+BgtaChat startChat(String username,BgtaBubble using)
+{
+    BgtaChat chat = null;
+    if (!hasChat(username)) {
+        Chat ch = the_connection.getChatManager().createChat(username,null);
+        String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
+        chat = new BgtaChat(user_name,username,name,user_server,ch,getExistingDoc(username));
+        existing_chats.put(username,chat);
+        existing_docs.put(username,chat.getDocument());
+     }
+    existing_bubbles.add(using);
+    return chat;
+}
+
+
+boolean hasChat(String username)
+{
+   if (existing_chats.get(username) == null)
+      return false;
+   return true;
+}
+
+
+BgtaChat getExistingChat(String username)
+{
+   return existing_chats.get(username);
+}
+
+
+void removeChat(String username)
+{
+   if (!hasBubble(username)) {
+      BgtaChat chat = getExistingChat(username);
+      if (chat != null)
+         chat.close();
+      existing_chats.remove(chat);
+    }
+}
+
+
+boolean hasExistingDoc(String username)
+{
+   if (existing_docs.get(username) == null)
+      return false;
+   return true;
+}
+
+
+Document getExistingDoc(String username)
+{
+   return existing_docs.get(username);
 }
 
 
@@ -368,8 +384,14 @@ static Presence getPresence(String conname)
    return stat_con.getRoster().getPresence(conname);
 }
 
-
-static Icon iconFor(Presence pres)
+/**
+ * Returns the proper Icon depending on the type of the Presence.
+ * 
+ * @param pres A Presence
+ * 
+ * @return an Icon dependent on the type of the Presence
+ */
+public static Icon iconFor(Presence pres)
 {
    if (pres == null) return new ImageIcon();
    if (pres.getType() == Presence.Type.available) {
@@ -406,147 +428,27 @@ static Icon iconFor(Presence pres)
 @Override public void processPacket(Packet pack)
 {
    if (pack instanceof Message) {
-      String with = pack.getFrom();
-      if (with.lastIndexOf("/") != -1) with = with.substring(0, with.lastIndexOf("/"));
-      if (with.equals(user_name)) return;
-      boolean receive = true;
-      for (BgtaBubble tbb : existing_bubbles) {
-	 if (with.equals(tbb.getUsername())) {
-	    if (!tbb.isPreview()) return;
-	    receive = false;
-	  }
+      if (((Message) pack).getBody() == null)
+           return;
+      if (((Message) pack).getBody().equals(""))
+           return;
+      String from = pack.getFrom();
+      if (from.lastIndexOf("/") != -1) from = from.substring(0, from.lastIndexOf("/"));
+      if (from.equals(user_name)) return;
+      BgtaChat chat = getExistingChat(from);
+      if (chat != null) {
+         chat.messageReceived(pack);
+         return;
        }
-      BgtaBubble bb = BgtaFactory.createRecievedChatBubble(with, this);
-      if (receive) bb.recieveMessage(new BgtaXMPPMessage((Message) pack));
-    }
-}
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Service methods 							*/
-/*										*/
-/********************************************************************************/
-@Deprecated
-private String getGateway(String service)
-{
-   try {
-      ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(the_connection);
-      // jabber.yeahnah.co.nz is a free server which provides gateways to several legacy
-      // IM services
-      DiscoverItems items = sdm.discoverItems("jabber.yeahnah.co.nz");
-      Iterator<DiscoverItems.Item> itemsIterator = items.getItems();
-      while (itemsIterator.hasNext()) {
-	 DiscoverItems.Item item = itemsIterator.next();
-	 DiscoverInfo info = sdm.discoverInfo(item.getEntityID(), item.getNode());
-	 if (info.containsFeature("jabber:iq:gateway")) {
-	    if (item.getEntityID().contains(service.toLowerCase())) {
-	       return item.getEntityID();
-	     }
-	  }
-       }
-      return null;
-    }
-   catch (Throwable t) {
-      BoardLog.logE("BGTA", "Failed to find gateway for legacy service: " + service, t);
-      return null;
-    }
-}
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Registration management 						*/
-/*										*/
-/********************************************************************************/
-@Deprecated
-void register(String username,String password,String service) throws XMPPException
-{
-   String gateway = getGateway(service);
-   Registration registration = new Registration();
-   registration.addExtension(new GatewayRegistrationExtension());
-   registration.setType(IQ.Type.SET);
-   registration.setTo(gateway);
-   registration.setFrom(the_connection.getUser());
-
-   Map<String, String> attributes = new HashMap<String, String>();
-   attributes.put("username", username);
-   attributes.put("password", password);
-   registration.setAttributes(attributes);
-
-   PacketCollector collector = the_connection.createPacketCollector(new PacketIDFilter(
-								       registration.getPacketID()));
-   the_connection.sendPacket(registration);
-
-   IQ response = (IQ) collector.nextResult(SmackConfiguration.getPacketReplyTimeout());
-   collector.cancel();
-   if (response == null) throw new XMPPException("Server timed out.");
-   if (response.getType() == IQ.Type.ERROR) throw new XMPPException(
-      "Error registering user",response.getError());
-   if (!the_connection.getRoster().contains(gateway)) the_connection.getRoster().createEntry(
-      gateway, gateway, null);
-
-   Presence pres = new Presence(Presence.Type.subscribe);
-   pres.setTo(gateway);
-   pres.setFrom(the_connection.getUser());
-   the_connection.sendPacket(pres);
-   pres.setType(Presence.Type.available);
-   the_connection.sendPacket(pres);
-}
-
-
-@Deprecated
-void unregister(String username,String service) throws XMPPException
-{
-   String gateway = getGateway(service);
-   Registration registration = new Registration();
-   registration.addExtension(new GatewayRegistrationExtension());
-   registration.setType(IQ.Type.SET);
-   registration.setTo(gateway);
-   registration.setFrom(the_connection.getUser());
-   Map<String, String> attributes = new HashMap<String, String>();
-   attributes.put("remove", null);
-   registration.setAttributes(attributes);
-
-   PacketCollector collector = the_connection.createPacketCollector(new PacketIDFilter(
-								       registration.getPacketID()));
-   the_connection.sendPacket(registration);
-   IQ response = (IQ) collector.nextResult(SmackConfiguration.getPacketReplyTimeout());
-   collector.cancel();
-   if (response == null) throw new XMPPException("Server timed out.");
-   if (response.getType() == IQ.Type.ERROR) throw new XMPPException(
-      "Error unregistering user",response.getError());
-   if (the_connection.getRoster().contains(gateway)) the_connection.getRoster().removeEntry(
-      the_connection.getRoster().getEntry(gateway));
-   Roster roster = the_connection.getRoster();
-   Collection<RosterEntry> buddies = roster.getEntries();
-   for (RosterEntry buddy : buddies) {
-      if (buddy.getUser().contains(gateway)) {
-	 roster.removeEntry(buddy);
+      else {
+         BgtaFactory.createReceivedChatBubble(from, this);
+         chat = getExistingChat(from);
+         if (chat != null)
+            chat.messageReceived(pack);
+         return;
        }
     }
 }
-
-
-@Deprecated
-private class GatewayRegistrationExtension implements PacketExtension {
-
-   @Override public String getElementName() {
-      return "x";
-    }
-
-   @Override public String getNamespace() {
-      return "jabber:iq:gateway:register";
-    }
-
-   @Override public String toXML() {
-      return "<" + getElementName() + " xmlns=\"" + getNamespace() + "\"/>";
-    }
-
-}	// end of inner class GatewayRegistrationExtension
-
 
 
 private class BgtaRosterListener implements RosterListener {
@@ -650,81 +552,7 @@ class BgtaXMPPRosterEntry implements BgtaRosterEntry {
 
 
 
-class BgtaXMPPChat implements BgtaChat {
-	
-   private Chat				the_chat;
-   private MessageListener  the_listener;
-   private int				current_uses;
-   
-   BgtaXMPPChat(Chat ch,MessageListener list) {
-	  the_chat = ch;
-	  the_listener = list;
-	  current_uses = 1;
-    }
-	
-   @Override public String getUser() {
-	  return the_chat.getParticipant();
-	}
-   
-   @Override public void sendMessage(String message) throws XMPPException {
-	  the_chat.sendMessage(message);
-    }
-   
-   @Override public boolean close() {
-	   if (--current_uses < 1) {
-		  current_uses = 0;
-		  the_chat.removeMessageListener(the_listener);
-		  return true;
-	   }
-	   return false;
-    }
-   
-   @Override public void increaseUseCount() { current_uses++; }
-   
-   @Override public boolean isListener(Object list) {
-	  return list.equals((MessageListener) the_listener);
-    }
-   
-   @Override public void exchangeListeners(Object list) {
-	  MessageListener listener = (MessageListener) list;
-	  the_chat.addMessageListener(listener);
-	  the_chat.removeMessageListener(the_listener);
-	  the_listener = listener;
-    }
-   
-   Chat getChat() { return the_chat; }
-   
-}   // end of inner class BgtaXMPPChat
-
-
-
-class BgtaXMPPMessage implements BgtaMessage {
-	
-   private Message			the_message;
-	
-   BgtaXMPPMessage(Message mess) { the_message = mess;	}
-	
-   @Override public String getBody() {
-	  return the_message.getBody();
-    }
-   
-   @Override public String getFrom() {
-	  return the_message.getFrom();
-    }
-   
-   @Override public String getTo() {
-	  return the_message.getTo();
-    }
-   
-   Message getMessage() {
-	  return the_message;
-    }
-   
-}   // end of inner class BgtaXMPPMessage
-
-
-
-}	// end of class BgtaManager
+}   // end of class BgtaManager
 
 
 

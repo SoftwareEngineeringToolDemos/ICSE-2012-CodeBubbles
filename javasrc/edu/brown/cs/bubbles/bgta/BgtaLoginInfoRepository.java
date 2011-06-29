@@ -52,7 +52,7 @@ BgtaLoginInfoRepository(Vector<BgtaManager> mans,BgtaRepository rep)
 {
    manager_list = mans;
    all_info = new HashSet<BgtaLoginName>();
-   all_info.add(new BgtaLoginName("Manage Google Talk Account(s)",manager_list,rep,
+   all_info.add(new BgtaLoginName("Manage Accounts",manager_list,rep,
 	    BGTA_GEN_ACCOUNT_PRIORITY));
 }
 

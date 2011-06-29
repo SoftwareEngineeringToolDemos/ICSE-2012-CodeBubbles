@@ -26,7 +26,6 @@ import edu.brown.cs.bubbles.bass.BassConstants;
 import java.awt.Color;
 import java.util.Collection;
 
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 
 
@@ -67,7 +66,7 @@ String	BGTA_PASSWORD_PREFIX	 = "Bgta.mans.password.";
 
 String	BGTA_SERVER_PREFIX	   = "Bgta.mans.server.";
 
-String	BGTA_ALT_COLOR_UPON_RECIEVE  = "Bgta.altcolor";
+String	BGTA_ALT_COLOR_UPON_RECEIVE  = "Bgta.altcolor";
 
 
 
@@ -107,18 +106,6 @@ boolean BGTA_INITIAL_REM_SETTING     = false;
 
 /********************************************************************************/
 /*										*/
-/*	Constants for metadata interpretation					*/
-/*										*/
-/********************************************************************************/
-
-String	BGTA_METADATA_START	  = "///({";
-
-String	BGTA_METADATA_FINISH	 = "})///";
-
-
-
-/********************************************************************************/
-/*										*/
 /*	Constants for Buddy List Prefices					*/
 /*										*/
 /********************************************************************************/
@@ -137,9 +124,9 @@ int	BGTA_LOG_WIDTH	       = 275;
 
 int	BGTA_LOG_HEIGHT       = (int) (0.75 * BGTA_LOG_WIDTH);
 
-int	BGTA_DATA_BUTTON_WIDTH	     = 5;
+int	BGTA_DATA_BUTTON_WIDTH	     = 110;
 
-int	BGTA_DATA_BUTTON_HEIGHT      = 3 * BGTA_DATA_BUTTON_WIDTH;
+int	BGTA_DATA_BUTTON_HEIGHT      = 15;
 
 
 
@@ -149,7 +136,69 @@ int	BGTA_DATA_BUTTON_HEIGHT      = 3 * BGTA_DATA_BUTTON_WIDTH;
 /*										*/
 /********************************************************************************/
 
-String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar and select \"Load Task\".\n";
+String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar and choose it from the list of tasks.\n";
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Enum for server values									*/
+/*										*/
+/********************************************************************************/
+enum ChatServer {
+	GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com", true),
+	BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com", true),
+	FACEBOOK("Facebook", "chat.facebook.com", " ", "", false),
+	JABBER("Jabber", "jabber.org", "@jabber.org", "", false),
+	AIM("AIM", "aim", " ", "", false);
+	
+	private String selector;
+	private String server;
+	private String display;
+	private String host;
+	private boolean ending;
+	
+	private ChatServer(String selector,String server,String display,String host, boolean ending) {
+		this.selector = selector;
+		this.server = server;
+		if (display.equals(""))
+			this.display = server;
+		else
+			this.display = display;
+		if (host.equals(""))
+			this.host = server;
+		else
+			this.host = host;
+		this.ending = ending;
+	}
+	
+	String selector() { return selector; }
+	
+	String server() { return server; }
+	
+	String display() { return display; }
+	
+	String host() { return host; }
+	
+	boolean hasEnding() {
+		return ending;
+	}
+	
+	String ending() {
+		if (ending)
+			return display;
+		return "";
+	}
+	
+	static ChatServer fromServer(String server) {
+	   for (ChatServer s : values())
+	      if (server.equals(s.server()))
+	         return s;
+	   return null;
+	}
+	
+	@Override public String toString() { return selector + " - " + display; }
+}
 
 
 
@@ -175,28 +224,6 @@ interface BgtaRosterEntry {
    String getUser();
    
 }   // end of inner interface BgtaRosterEntry
-
-
-
-interface BgtaChat {
-	
-	String getUser();
-	void sendMessage(String message) throws XMPPException;
-	boolean close();
-	void increaseUseCount();
-	boolean isListener(Object list);
-	void exchangeListeners(Object list);
-	
-}   // end of inner interface BgtaChat
-
-
-
-interface BgtaMessage {
-	
-	String getBody();
-	String getFrom();
-	String getTo();
-}
 
 
 

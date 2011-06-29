@@ -6,6 +6,7 @@
 /*										*/
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
+/* Copyright 2011 Brown University -- Sumner Warren            */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -26,10 +27,6 @@ package edu.brown.cs.bubbles.bgta;
 
 
 
-import org.jivesoftware.smack.XMPPException;
-
-import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
-
 import javax.swing.JTextArea;
 
 import java.awt.event.*;
@@ -46,7 +43,7 @@ class BgtaDraftingArea extends JTextArea {
 /*										*/
 /********************************************************************************/
 
-private BgtaChat		my_chat;
+private BgtaChat	my_chat;
 private BgtaLoggingArea my_log;
 private BgtaBubble	my_bubble;
 
@@ -60,10 +57,9 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaDraftingArea(BgtaChat ch,BgtaLoggingArea bla,BgtaBubble mybub)
+BgtaDraftingArea(BgtaLoggingArea bla,BgtaBubble mybub)
 {
    super(1,25);
-   my_chat = ch;
    my_log = bla;
    my_bubble = mybub;
    setLineWrap(true);
@@ -73,8 +69,14 @@ BgtaDraftingArea(BgtaChat ch,BgtaLoggingArea bla,BgtaBubble mybub)
    addFocusListener(new FocusForLogListener());
 }
 
-
-
+/********************************************************************************/
+/*										*/
+/*	Setters								*/
+/*										*/
+/********************************************************************************/
+void setChat(BgtaChat chat) {
+    my_chat = chat;
+}
 
 /********************************************************************************/
 /*										*/
@@ -84,31 +86,17 @@ BgtaDraftingArea(BgtaChat ch,BgtaLoggingArea bla,BgtaBubble mybub)
 
 void send()
 {
-   boolean sent = true;
-   try {
-      my_chat.sendMessage(getText());
-      my_log.logMessage(getText(), "Me: ");
-   }
-   catch (Exception e) {
-	  //System.out.println(e.getMessage());
-      sent = false;
-   }
-   if (sent) setText("");
-   else setText("Message was not sent");
+   send(getText());   
 }
-
 
 
 void send(String message)
 {
-   try {
-      my_chat.sendMessage(message);
-      my_log.logMessage(message, "Me: ");
-      my_log.setCaretPosition(my_log.getDocument().getLength());
-   }
-   catch (XMPPException e) {}
+   boolean sent = my_chat.sendMessage(message);
+   if (sent) setText("");
+   else
+       grabFocus();
 }
-
 
 
 
@@ -132,7 +120,6 @@ private class DraftingListener extends KeyAdapter {
 
 
 
-
 private class FocusForLogListener implements FocusListener {
 
    @Override public void focusGained(FocusEvent e) {
@@ -148,7 +135,6 @@ private class FocusForLogListener implements FocusListener {
     }
 
 }	// end of inner class FocusForLogListener
-
 
 
 

@@ -179,7 +179,7 @@
 	 <KEYWORD TEXT="underline"/>
 	 <KEYWORD TEXT="highlight"/>
       </OPT>
-      <OPT NAME="Bale.error.background" DESCRIPTION="Code bubble background color (if code contains an error)" TYPE="COLOR">
+      <OPT NAME="Bale.error.background" DESCRIPTION="Code bubble error background" TYPE="COLOR">
 	 <TAB NAME="Bubble Config"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>

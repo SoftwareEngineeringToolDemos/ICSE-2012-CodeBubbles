@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Adam M. Cook 			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -148,7 +148,7 @@ String NEW_FILE_BUTTON	    = "Bubbles.Text Editor.New File";
 /**
  * Name of the button for loading an existing file
  */
-String LOAD_FILE_BUTTON     = "Bubbles.Text Editor.Load File";
+String LOAD_FILE_BUTTON     = "Bubbles.Text Editor.Open File";
 
 /**
  * The default width of the text editor bubble

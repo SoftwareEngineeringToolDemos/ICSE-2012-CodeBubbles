@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -401,7 +401,7 @@ void addLinks(BudaBubble bb)
    BudaRoot root = BudaRoot.findBudaRoot(source_bubble);
    if (root == null) return;
    if (!source_bubble.isShowing()) return;
-   
+
    BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
    BudaBubbleLink lnk = new BudaBubbleLink(source_bubble,source_linkport,bb,port1);
    root.addLink(lnk);
@@ -546,6 +546,7 @@ private static class BussViewport extends JScrollPane implements BudaConstants.B
       buss_stack = bsb;
 
       JScrollBar jsb = new JScrollBar(JScrollBar.VERTICAL);
+
       Dimension d1 = jsb.getPreferredSize();
       int xtra = d1.width;	   // space for scroll bar
       Dimension d = buss_stack.getPreferredSize();
@@ -560,6 +561,8 @@ private static class BussViewport extends JScrollPane implements BudaConstants.B
       setViewportView(layeredPane);
       setPreferredSize(d);
       setSize(d);
+      JScrollBar xjsb = getVerticalScrollBar();
+      xjsb.setUnitIncrement(xjsb.getBlockIncrement());
     }
 
    @Override public String getConfigurator()		 { return "BUSS"; }
@@ -576,8 +579,7 @@ private static class BussViewport extends JScrollPane implements BudaConstants.B
       jsb.setValue(v);
     }
 
-
-}	// end of innter class BussViewport
+}	// end of inner class BussViewport
 
 
 

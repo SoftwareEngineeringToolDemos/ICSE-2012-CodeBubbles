@@ -549,6 +549,7 @@ private class StartDebug implements Runnable {
    @Override public void run() {
       bump_client.saveAll();
       BudaRoot br = BudaRoot.findBudaRoot(BddtLaunchControl.this);
+      if (br == null) return;
       br.handleSaveAllRequest();
       String id = "B_" + Integer.toString(((int)(Math.random() * 100000)));
       BumpProcess bp = bump_client.startDebug(launch_config,id);
@@ -741,35 +742,35 @@ private class RunEventHandler implements BumpRunEventHandler {
       BumpThread bt = evt.getThread();
       BumpThreadState ost = thread_states.get(bt);
       BumpThreadState nst = bt.getThreadState();
-   
+
       switch (evt.getEventType()) {
-         case THREAD_ADD :
-            nst = BumpThreadState.RUNNING;
-            //$FALL-THROUGH$
-         case THREAD_CHANGE :
-            thread_states.put(bt,nst);
-            if (bt.getThreadState() != ost) {
-               handleThreadStateChange(bt,ost);
-               if (bt.getThreadState().isStopped()) last_stopped = bt;
-               else if (last_stopped == bt) last_stopped = null;
-             }
-            break;
-         case THREAD_REMOVE :
-            removeExecutionAnnot(bt);
-            if (bt == last_stopped) last_stopped = null;
-            thread_states.remove(bt);
-            break;
-         case THREAD_TRACE :
-         case THREAD_HISTORY :
-            return;
+	 case THREAD_ADD :
+	    nst = BumpThreadState.RUNNING;
+	    //$FALL-THROUGH$
+	 case THREAD_CHANGE :
+	    thread_states.put(bt,nst);
+	    if (bt.getThreadState() != ost) {
+	       handleThreadStateChange(bt,ost);
+	       if (bt.getThreadState().isStopped()) last_stopped = bt;
+	       else if (last_stopped == bt) last_stopped = null;
+	     }
+	    break;
+	 case THREAD_REMOVE :
+	    removeExecutionAnnot(bt);
+	    if (bt == last_stopped) last_stopped = null;
+	    thread_states.remove(bt);
+	    break;
+	 case THREAD_TRACE :
+	 case THREAD_HISTORY :
+	    return;
        }
-   
+
       int tct = thread_states.size();
       int rct = 0;
       for (Map.Entry<BumpThread,BumpThreadState> ent : thread_states.entrySet()) {
-         BumpThreadState bts = ent.getValue();
-         if (bts.isStopped() && last_stopped == null) last_stopped = ent.getKey();
-         else if (bts.isRunning()) ++rct;
+	 BumpThreadState bts = ent.getValue();
+	 if (bts.isStopped() && last_stopped == null) last_stopped = ent.getKey();
+	 else if (bts.isRunning()) ++rct;
        }
       if (tct == 0) setLaunchState(LaunchState.TERMINATED);
       else if (rct == 0) setLaunchState(LaunchState.PAUSED);

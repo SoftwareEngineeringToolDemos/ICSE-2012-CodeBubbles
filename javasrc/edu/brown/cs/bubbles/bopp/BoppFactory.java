@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Alexander Hills		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -51,7 +51,7 @@ public class BoppFactory implements BoppConstants, BudaConstants {
 
 private static BoppFactory the_factory = new BoppFactory();
 private static BudaRoot    buda_root;
-
+private static BoppOptionSet option_set;
 
 
 /**
@@ -88,13 +88,16 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
+   buda_root = br;
+
    Icon chevron = BoardImage.getIcon("dropdown_chevron");
    chevron = BoardImage.resizeIcon(((ImageIcon) chevron).getImage(),
 				      BUDA_BUTTON_RESIZE_WIDTH, BUDA_BUTTON_RESIZE_HEIGHT);
+
+   option_set = new BoppOptionSet(br);
+
    JButton btn1 = new JButton("Options",chevron);
    btn1.setIconTextGap(0);
-
-   // JButton btn1 = new JButton("Options");
    btn1.setMargin(BOPP_BUTTON_INSETS);
    Font ft = btn1.getFont();
    ft = ft.deriveFont(10f);
@@ -104,9 +107,19 @@ public static void initialize(BudaRoot br)
    btn1.setBackground(new Color(0,true));
    btn1.addActionListener(new OptionsListener(br));
    btn1.setToolTipText("Options for Code Bubbles");
-
    br.addButtonPanelButton(btn1);
-   buda_root = br;
+
+   if (option_set.getTabNames().size() > 0) {
+      JButton btn2 = new JButton("NOpts",chevron);
+      btn2.setMargin(BOPP_BUTTON_INSETS);
+      btn2.setHorizontalTextPosition(AbstractButton.LEADING);
+      btn2.setFont(ft);
+      btn2.setOpaque(false);
+      btn2.setBackground(new Color(0,true));
+      btn2.addActionListener(new OptionsListenerNew(br));
+      btn2.setToolTipText("Options for Code Bubbles");
+      br.addButtonPanelButton(btn2);
+    }
 }
 
 
@@ -130,6 +143,13 @@ public static JPanel getBoppPanel(BudaBubbleArea area)
 {
    BoppPanelHandler b = new BoppPanelHandler(area);
    return b.getUIPanel();
+}
+
+
+public static BoppOptionPanel getBoppPanelNew(BudaBubbleArea area)
+{
+   BoppOptionPanel bopp = new BoppOptionPanel(option_set);
+   return bopp;
 }
 
 
@@ -212,6 +232,44 @@ private static class OptionsListener implements ActionListener {
       pnl.setSize(d);
       bba.add(pnl, bc, 0);
       pnl.setVisible(true);
+    }
+
+}	// end of inner class OptionsListener
+
+
+private static class OptionsListenerNew implements ActionListener {
+
+   private BudaRoot		       for_root;
+   private Map<BudaBubbleArea,BoppOptionPanel> options_panel;
+
+   OptionsListenerNew(BudaRoot br) {
+      for_root = br;
+      options_panel = new HashMap<BudaBubbleArea,BoppOptionPanel>();
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BudaBubbleArea bba = for_root.getCurrentBubbleArea();
+      if (bba == null) return;
+
+      BoppOptionPanel pnl = options_panel.get(bba);
+      if (pnl == null) {
+	 pnl = BoppFactory.getBoppPanelNew(bba);
+	 options_panel.put(bba,pnl);
+       }
+      else if (pnl.getPanel().getParent() != null &&
+	    pnl.getPanel().getParent().isVisible()) {
+	 pnl.getPanel().getParent().setVisible(false);
+	 return;
+       }
+
+      JPanel jp = pnl.getPanel();
+      Rectangle r = bba.getViewport();
+      Dimension d = jp.getPreferredSize();
+      BudaConstraint bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,r.x  + r.width - d.width,r.y);
+      jp.setSize(d);
+      BudaBubble xbb = pnl.getBubble();
+      bba.add(xbb, bc, 0);
+      jp.setVisible(true);
     }
 
 }	// end of inner class OptionsListener

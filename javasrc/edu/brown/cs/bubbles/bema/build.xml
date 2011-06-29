@@ -25,6 +25,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='jmf/**/*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
      </path>
       <path id='test.classpath'>
@@ -38,6 +39,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='javax.servlet.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
       </path>
    </target>
@@ -186,7 +188,9 @@
 	 <fileset dir='${BUBBLES}/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
    </target>
@@ -219,7 +223,9 @@
 	 <fileset dir='${BUBBLES}/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -256,7 +262,9 @@
 	 <fileset dir='${BUBBLES}/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -290,7 +298,9 @@
 	 <fileset dir='${BUBBLES}/lib' includes='LiLaConfiguration.ini' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
       </jar>
       <copy file='external/bubbles.jar' tofile='/pro/web/web/people/spr/bubbles.ext/bubbles.jar' />
       <copy file='external/version.xml' tofile='/pro/web/web/people/spr/bubbles.ext/version.xml' />

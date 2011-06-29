@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Alexander Hills		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -23,10 +23,14 @@ package edu.brown.cs.bubbles.bopp;
 
 import edu.brown.cs.bubbles.board.BoardFont;
 
+import edu.brown.cs.ivy.swing.*;
+
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
 import java.awt.*;
+import java.util.*;
+import java.util.regex.*;
 
 
 /**
@@ -51,6 +55,7 @@ public interface BoppConstants {
  * Enumeration for different types of preferences that can be set
  */
 enum OptionType {
+   NONE,
    COLOR,
    INTEGER,
    DOUBLE,
@@ -58,7 +63,8 @@ enum OptionType {
    BOOLEAN,
    FONT,
    DIVIDER,
-   COMBO
+   COMBO,
+   DIMENSION
 }
 
 
@@ -94,6 +100,7 @@ enum TabName {
  * Name of preferences xml
  */
 String	  PREFERENCES_XML_FILENAME	= "preferences.xml";
+String	  PREFERENCES_XML_FILENAME_NEW	= "preferences.new.xml";
 
 
 /**
@@ -420,6 +427,26 @@ Border	  TAB_PANEL_BORDER		   = BorderFactory.createMatteBorder(2, 0, 2,
 /********************************************************************************/
 
 Insets	  BOPP_BUTTON_INSETS		 = new Insets(0,8,0,8);
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Basic option								*/
+/*										*/
+/********************************************************************************/
+
+interface BoppOptionNew {
+
+   String getOptionName();
+   OptionType getOptionType();
+   Collection<String> getOptionTabs();
+
+   void addButton(SwingGridPanel pnl);
+   
+   boolean search(Pattern [] pat);
+
+}	// end of inner interface BoppOptionNew
 
 
 

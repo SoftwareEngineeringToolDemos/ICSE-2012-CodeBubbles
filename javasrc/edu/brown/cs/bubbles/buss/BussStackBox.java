@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -292,10 +292,10 @@ private void createAllBubbles()
 {
    Rectangle loc = BudaRoot.findBudaLocation(this);
    BudaRoot broot = BudaRoot.findBudaRoot(this);
-  
+
    BudaBubble bbl = BudaRoot.findBudaBubble(this);
    bbl.setVisible(false);
-   
+
    createAllBubbles((TreeNode) tree_model.getRoot(),broot,loc);
 }
 
@@ -323,14 +323,14 @@ private void createAllBubbles(TreeNode tn,BudaRoot br,Rectangle loc)
 private void createEntryBubble(BussEntry be,BudaRoot root,Rectangle loc)
 {
    BudaBubble bb = be.getBubble();
-   BussBubble bbl = (BussBubble) BudaRoot.findBudaBubble(this); 
-   
+   BussBubble bbl = (BussBubble) BudaRoot.findBudaBubble(this);
+
    BudaBubble sbb = bbl.getSourceBubble();
    if (sbb != null && sbb.getContentName() != null && sbb.getContentFile() != null &&
 	    sbb.getContentName().equals(bb.getContentName()) &&
-	    sbb.getContentFile().equals(bb.getContentFile())) 
+	    sbb.getContentFile().equals(bb.getContentFile()))
       return;
-   
+
    if (root != null && loc != null) {
       bb.setVisible(true);
       root.add(bb,new BudaConstraint(loc.x,loc.y));
@@ -353,6 +353,7 @@ private class ShowAllAction extends AbstractAction implements ActionListener {
     }
 
 }	// end of inner class EscapeHandler
+
 
 
 

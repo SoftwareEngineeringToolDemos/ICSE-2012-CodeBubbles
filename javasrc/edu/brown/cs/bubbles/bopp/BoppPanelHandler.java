@@ -834,8 +834,8 @@ private class SearchKeyListener extends KeyAdapter {
 
    @Override public void keyReleased(KeyEvent e) {
       if (((TabPanel) panel_tabs.getSelectedComponent()).getTabName() != TabName.SEARCH) {
-	 panel_tabs.setSelectedComponent(search_tab);
-	 changeToTab(search_tab);
+         panel_tabs.setSelectedComponent(search_tab);
+         changeToTab(search_tab);
        }
       search();
     }

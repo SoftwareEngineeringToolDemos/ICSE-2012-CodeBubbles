@@ -69,8 +69,6 @@ else
 	$temppath = $uploadpath . "WorkingSets/";
 	if (!file_exists($temppath))
 	{
-
-
 			mkdir($temppath);
 			chmod($temppath,0755);
 	}

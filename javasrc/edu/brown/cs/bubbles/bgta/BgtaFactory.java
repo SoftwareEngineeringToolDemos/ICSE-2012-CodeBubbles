@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
+import java.util.Iterator;
 import java.util.Collections;
 
 /**
@@ -74,6 +75,10 @@ static {
 /*										*/
 /********************************************************************************/
 
+/**
+ * Sets up a new repository and configurator. Also creates and logs into 
+ * any chat accounts for which the user has saved login information.
+ */
 public static void setup()
 {
    login_properties = BoardProperties.getProperties("Bgta");
@@ -96,12 +101,17 @@ public static void setup()
       BoardLog.logE("BGTA","Couldn't load account for " + username + " on " + server.server() + ":" + e.getMessage());
     }
    buddy_list = new BgtaRepository(chat_managers);
-   rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
+   rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECEIVE);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_PEOPLE, buddy_list);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, buddy_list);
    BudaRoot.addBubbleConfigurator("BGTA", new BgtaConfigurator());
 }
 
+/**
+ * Always returns the same instance of this class.
+ *
+ * @return a singleton instance of BgtaFactory
+ */
 public static synchronized BgtaFactory getFactory()
 {
    if (the_factory == null) {
@@ -110,6 +120,11 @@ public static synchronized BgtaFactory getFactory()
    return the_factory;
 }
 
+/**
+ * Initializes this package.
+ *
+ * @param br A BudaRoot
+ */
 public static void initialize(BudaRoot br)
 {
 	my_buda_root = br;
@@ -139,16 +154,16 @@ static void clearManagerProperties()
 {
 	login_properties.clear();
 	login_properties.setProperty(BGTA_NUM_ACCOUNTS,0);
-        login_properties.setProperty(BGTA_ALT_COLOR_UPON_RECIEVE,rec_dif_back);
+        login_properties.setProperty(BGTA_ALT_COLOR_UPON_RECEIVE,rec_dif_back);
 	try {
 		login_properties.save();
 	} catch (IOException e) {
 	}
 }
 
-static void altColorUponRecieve(boolean b)
+static void altColorUponReceive(boolean b)
 {
-	login_properties.setProperty(BGTA_ALT_COLOR_UPON_RECIEVE,b);
+	login_properties.setProperty(BGTA_ALT_COLOR_UPON_RECEIVE,b);
 	rec_dif_back = b;
 	try {
 		login_properties.save();
@@ -207,7 +222,7 @@ BudaBubble createChatBubble(String friendname,String myname,String password,
 	BgtaManager newman;
 	BgtaBubble bb = null;
 	try {
-		newman = new BgtaManager(myname,password,server,buddy_list);
+		newman = BgtaManager.getManager(myname,password,ChatServer.fromServer(server),buddy_list);
 		newman.login();
 		chat_managers.add(newman);
 		bb = new BgtaBubble(friendname,newman);
@@ -216,9 +231,24 @@ BudaBubble createChatBubble(String friendname,String myname,String password,
 	return bb;
 }
 
+/**
+ * Returns a List of names representing the users buddies.
+ *
+ * @return A List of String objects
+ */
 public static List<String> getChatters()
 {
 	return buddy_list.getAllBuddyNames();
+}
+
+/**
+ * Returns an Iterator of the existing managers.
+ * 
+ * @return an Iterator of the existing managers.
+ */
+public static Iterator<BgtaManager> getManagers()
+{
+    return chat_managers.iterator();
 }
 
 private BudaBubble createMetadataChatBubble(String friendname,String url)
@@ -242,11 +272,17 @@ private BudaBubble createMetadataChatBubble(String friendname,String url)
 	return bb;
 }
 
-static BgtaBubble createRecievedChatBubble(String username,BgtaManager man)
+/**
+ * Creates and returns a new BgtaBubble, with a non-standard gradient
+ * if the user has selected that option.
+ * 
+ * @return a BgtaBubble
+ */
+public static BgtaBubble createReceivedChatBubble(String username,BgtaManager man)
 {
 	BgtaBubble bb = new BgtaBubble(username,man);
 	if (bb != null) {
-		rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
+		rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECEIVE);
 		if (rec_dif_back) {
 			bb.setAltColorIsOn(true);
 		}
@@ -329,6 +365,7 @@ public void actionPerformed(ActionEvent e)
 		File f = my_buda_root.findCurrentWorkingSet().getDescription();
 		BoardUpload bup = new BoardUpload(f);
 		url = bup.getFileURL();
+                // getUploadURL()
 	} catch (IOException e1) {
 	}
 	createMetadataChatBubble(cmd,url);

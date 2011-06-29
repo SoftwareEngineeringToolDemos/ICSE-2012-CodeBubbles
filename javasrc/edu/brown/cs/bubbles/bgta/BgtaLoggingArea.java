@@ -22,18 +22,12 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.ivy.xml.IvyXml;
-
-import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.*;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 
 class BgtaLoggingArea extends JTextPane implements BgtaConstants {
@@ -46,10 +40,9 @@ class BgtaLoggingArea extends JTextPane implements BgtaConstants {
 /*										*/
 /********************************************************************************/
 
-private Document	my_doc;
 // private AttributeSet	is_bolded;
-private AttributeSet	is_unbolded;
-private AttributeSet	in_use;
+//private AttributeSet	is_unbolded;
+//private AttributeSet	in_use;
 // private int		last_focused_caret_pos;
 
 private static final long serialVersionUID = 1L;
@@ -82,11 +75,10 @@ BgtaLoggingArea(BgtaBubble bub)
    setCursor(new Cursor(Cursor.TEXT_CURSOR));
    setBorder(new EmptyBorder(0,5,0,0));
 
-   my_doc = getDocument();
-   StyleContext sc = StyleContext.getDefaultStyleContext();
-   is_unbolded = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Bold, false);
+//   StyleContext sc = StyleContext.getDefaultStyleContext();
+//   is_unbolded = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Bold, false);
    // is_bolded = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Bold, true);
-   in_use = null;// is_unbolded;
+//   in_use = null;// is_unbolded;
 }
 
 
@@ -100,13 +92,6 @@ BgtaLoggingArea(BgtaBubble bub)
 @Override public boolean getScrollableTracksViewportWidth()
 {
    return true;
-}
-
-
-@Override public void setDocument(Document doc)
-{
-   super.setDocument(doc);
-   my_doc = doc;
 }
 
 
@@ -127,7 +112,7 @@ void bold()
 void unbold()
 {
    // int len;
-   in_use = is_unbolded;
+//   in_use = is_unbolded;
    /*
       try{
       len = getDocument().getLength() - last_focused_caret_pos;

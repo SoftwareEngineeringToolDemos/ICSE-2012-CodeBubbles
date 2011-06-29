@@ -25,8 +25,6 @@ import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
 import edu.brown.cs.bubbles.board.BoardImage;
 import edu.brown.cs.bubbles.board.BoardLog;
 
-import org.apache.commons.collections15.MultiMap;
-import org.apache.commons.collections15.multimap.MultiHashMap;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.packet.*;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -61,7 +59,7 @@ protected String                   user_name;
 protected String                   user_password;
 protected ChatServer               user_server;
 protected boolean                  being_saved;
-protected MultiMap<String, BgtaBubble>       existing_bubbles;
+protected Vector<BgtaBubble>       existing_bubbles;
 protected Map<String, BgtaChat>    existing_chats;
 protected Map<String, Document>    existing_docs;
 protected BgtaRoster               the_roster;
@@ -93,12 +91,8 @@ static BgtaManager getManager(String username,String password,ChatServer server,
 /*										*/
 /********************************************************************************/
 
-BgtaManager(String username,String password,String server,BgtaRepository repo)
-{
-   this(username,password,ChatServer.fromServer(server),repo);
-}
-
-BgtaManager(String username,String password,ChatServer server,BgtaRepository repo)
+BgtaManager(String username,String password,ChatServer 
+server,BgtaRepository repo)
 {
    this(username,password,server);
    the_repository = repo;
@@ -111,28 +105,12 @@ BgtaManager(String username,String password,ChatServer server)
    user_server = server;
    if (user_server == null)
       user_server = ChatServer.GMAIL;
-   existing_bubbles = new MultiHashMap<String, BgtaBubble>();
+   existing_bubbles = new Vector<BgtaBubble>();
    existing_chats = new HashMap<String, BgtaChat>();
    existing_docs = new HashMap<String, Document>();
    being_saved = false;
    roster_listener = null;
 }
-
-BgtaManager(String username,String password)
-{
-   user_name = username;
-   user_password = password;
-   user_server = ChatServer.GMAIL;
-   existing_bubbles = new MultiHashMap<String, BgtaBubble>();
-   existing_chats = new HashMap<String, BgtaChat>();
-   existing_docs = new HashMap<String, Document>();
-   being_saved = false;
-   roster_listener = null;
-}
-
-
-
-BgtaManager() { }
 
 
 
@@ -220,12 +198,6 @@ void addPresenceListener(PacketListener p)
 /*										*/
 /********************************************************************************/
 
-void login(String username,String password) throws XMPPException
-{
-   login(username, password, ChatServer.GMAIL);
-}
-
-
 void login() throws XMPPException
 {
    login(user_name, user_password, user_server);
@@ -302,52 +274,62 @@ void disconnect()
 
 void addDuplicateBubble(BgtaBubble dup)
 {
-   existing_bubbles.put(dup.getUsername(), dup);
+   existing_bubbles.add(dup);
 }
 
 
 boolean hasBubble(String username)
 {
-   return existing_bubbles.get(username) != null;
+   for (BgtaBubble bb : existing_bubbles) {
+	  if (bb.getUsername().equals(username))
+		 return true;
+    }
+   return false;
 }
 
 
 BgtaBubble getExistingBubble(String username)
 {
-   List<BgtaBubble> bubbles = (List<BgtaBubble>) existing_bubbles.get(username);
-   if (bubbles != null)
-       return bubbles.get(0);
+   for (BgtaBubble bb : existing_bubbles) {
+	  if (bb.getUsername().equals(username))
+		 return bb;
+    }
    return null;
 }
 
 
 List<BgtaBubble> getExistingBubbles(String username)
 {
-    List<BgtaBubble> bubbles = (List<BgtaBubble>) existing_bubbles.get(username);
-    if (bubbles != null)
-        return new ArrayList<BgtaBubble>(bubbles);
-    return null;
+   List<BgtaBubble> bubbles = new Vector<BgtaBubble>();
+   for (BgtaBubble bb : existing_bubbles) {
+	  if (bb.getUsername().equals(username))
+		 bubbles.add(bb); 
+    }
+   if (bubbles.size() == 0)
+	  return null;
+   return bubbles;
 }
 
 
 void removeBubble(BgtaBubble bub)
 {
-   existing_bubbles.remove(bub.getUsername(), bub);
+   existing_bubbles.remove(bub);
    removeChat(bub.getUsername());
 }
 
 
-Document startChat(String username,BgtaBubble using)
+BgtaChat startChat(String username,BgtaBubble using)
 {
+    BgtaChat chat = null;
     if (!hasChat(username)) {
         Chat ch = the_connection.getChatManager().createChat(username,null);
         String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
-        BgtaChat chat = new BgtaChat(username,name,user_server,ch,getExistingDoc(username),this);
+        chat = new BgtaChat(user_name,username,name,user_server,ch,getExistingDoc(username));
         existing_chats.put(username,chat);
         existing_docs.put(username,chat.getDocument());
-    }
-    existing_bubbles.put(username,using);
-    return getExistingDoc(username);
+     }
+    existing_bubbles.add(using);
+    return chat;
 }
 
 
@@ -359,7 +341,7 @@ boolean hasChat(String username)
 }
 
 
-BgtaChat getChat(String username)
+BgtaChat getExistingChat(String username)
 {
    return existing_chats.get(username);
 }
@@ -368,7 +350,7 @@ BgtaChat getChat(String username)
 void removeChat(String username)
 {
    if (!hasBubble(username)) {
-      BgtaChat chat = getChat(username);
+      BgtaChat chat = getExistingChat(username);
       if (chat != null)
          chat.close();
       existing_chats.remove(chat);
@@ -402,8 +384,14 @@ static Presence getPresence(String conname)
    return stat_con.getRoster().getPresence(conname);
 }
 
-
-static Icon iconFor(Presence pres)
+/**
+ * Returns the proper Icon depending on the type of the Presence.
+ * 
+ * @param pres A Presence
+ * 
+ * @return an Icon dependent on the type of the Presence
+ */
+public static Icon iconFor(Presence pres)
 {
    if (pres == null) return new ImageIcon();
    if (pres.getType() == Presence.Type.available) {
@@ -444,18 +432,17 @@ static Icon iconFor(Presence pres)
            return;
       if (((Message) pack).getBody().equals(""))
            return;
-      //TODO: FIX THIS TO USE CHAT AND CHECK LAST MESSAGE
       String from = pack.getFrom();
       if (from.lastIndexOf("/") != -1) from = from.substring(0, from.lastIndexOf("/"));
       if (from.equals(user_name)) return;
-      BgtaChat chat = getChat(from);
+      BgtaChat chat = getExistingChat(from);
       if (chat != null) {
          chat.messageReceived(pack);
          return;
        }
       else {
-         BgtaFactory.createRecievedChatBubble(from, this);
-         chat = getChat(from);
+         BgtaFactory.createReceivedChatBubble(from, this);
+         chat = getExistingChat(from);
          if (chat != null)
             chat.messageReceived(pack);
          return;

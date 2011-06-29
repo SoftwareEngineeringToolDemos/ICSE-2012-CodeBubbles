@@ -57,10 +57,9 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaDraftingArea(/*BgtaConversation ch*/BgtaChat ch,BgtaLoggingArea bla,BgtaBubble mybub)
+BgtaDraftingArea(BgtaLoggingArea bla,BgtaBubble mybub)
 {
    super(1,25);
-   my_chat = ch;
    my_log = bla;
    my_bubble = mybub;
    setLineWrap(true);
@@ -70,7 +69,14 @@ BgtaDraftingArea(/*BgtaConversation ch*/BgtaChat ch,BgtaLoggingArea bla,BgtaBubb
    addFocusListener(new FocusForLogListener());
 }
 
-
+/********************************************************************************/
+/*										*/
+/*	Setters								*/
+/*										*/
+/********************************************************************************/
+void setChat(BgtaChat chat) {
+    my_chat = chat;
+}
 
 /********************************************************************************/
 /*										*/

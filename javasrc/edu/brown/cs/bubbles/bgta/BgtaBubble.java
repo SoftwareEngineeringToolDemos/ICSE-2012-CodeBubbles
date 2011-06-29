@@ -60,10 +60,18 @@ private BoardProperties   my_props;
 private BgtaLoggingArea   logging_area;
 private BgtaDraftingArea  draft_area;
 private BgtaLabel         bubble_label;
-private boolean 	  is_saved;
+private BgtaChat          my_chat;
+private JScrollPane       log_pane;
+private JSeparator        draft_sep;
+private JTextPane         history_area;
+private JScrollPane       history_pane;
+private JSeparator        history_sep;
+private Dimension         initial_size;
+private Dimension         previous_size;
 private boolean 	  alt_color;
 private boolean 	  alt_color_is_on;
-private boolean 	  is_preview;
+private boolean           history_visible;
+private boolean           history_loaded;
 
 private static final long serialVersionUID = 1L;
 
@@ -75,85 +83,125 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaBubble(String username,BgtaManager man)
+BgtaBubble(String username)
 {
-   this(username,man,false);
-}
-
-
-BgtaBubble(String username,BgtaManager man,boolean preview)
-{
-   the_manager = man;
-   is_saved = the_manager.isBeingSaved();
-   is_preview = preview;
+   history_visible = false;
+   history_loaded = false;
    chat_username = username;
    my_props = BgtaFactory.getBgtaProperties();
-   alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
+   alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECEIVE);
    alt_color_is_on = alt_color;
    ChatPanel pan = new ChatPanel();
-   GridBagLayout lay = (GridBagLayout) pan.getLayout();
    GridBagConstraints c = new GridBagConstraints();
-
-   Document doc = null;
+   
    logging_area = new BgtaLoggingArea(this);
-   if (!the_manager.hasChat(chat_username)) {
-      doc = the_manager.startChat(chat_username,this);
-      logging_area.setDocument(doc);
-    }
-   else {
-      doc = the_manager.getExistingDoc(chat_username);
-      if (doc != null) {
-         logging_area.setDocument(doc);
-         the_manager.addDuplicateBubble(this);
-       }
-    }
-
-   // Register bubble as document listener.
-   doc.addDocumentListener(this);
-   draft_area = new BgtaDraftingArea(the_manager.getChat(chat_username),logging_area,this);
-   JScrollPane log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-					     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
+   draft_area = new BgtaDraftingArea(logging_area,this);
+   log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+           JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+   
    log_pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
    log_pane.setOpaque(false);
    log_pane.getViewport().setOpaque(false);
    log_pane.setBorder(new EmptyBorder(0,0,0,0));
-
-   bubble_label = new BgtaLabel(chat_username,the_manager.getRoster());
-   the_manager.addPresenceListener(bubble_label);
-
+   
+   bubble_label = new BgtaLabel(chat_username,getName(chat_username));
+   JButton showHistoryButton = new JButton("Show History");
+   showHistoryButton.addActionListener(new ActionListener() {
+       @Override public void actionPerformed(ActionEvent e) {
+           if (!history_visible) {
+               showHistory();
+               ((JButton) e.getSource()).setText("Hide History");
+           }
+           else {
+               hideHistory();
+               ((JButton) e.getSource()).setText("Show History");
+           }
+           history_visible = !history_visible;
+       }
+   });
+   bubble_label.setButton(showHistoryButton);
+   
+   history_area = new JTextPane();
+   history_area.setOpaque(false);
+   history_pane = new JScrollPane(history_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+   history_pane.setOpaque(false);
+   history_pane.getViewport().setOpaque(false);
+   history_pane.setBorder(new EmptyBorder(0,0,0,0));
+   
    c.fill = GridBagConstraints.BOTH;
-   c.gridwidth = GridBagConstraints.REMAINDER;
+   c.gridwidth = 3;
+   c.gridx = 0;
+   c.gridy = 0;
    c.weighty = 0.0;
    c.weightx = 1.0;
-
-   lay.setConstraints(bubble_label, c);
-
+   pan.add(bubble_label, c);
+   
+   c.gridwidth = 1;
+   c.gridy = 1;
    c.weighty = 1.0;
-
-   lay.setConstraints(log_pane, c);
-
+   if (history_visible)
+       c.weightx = 0.5;
+   else
+       c.weightx = 0.0;
+   pan.add(log_pane, c);
+   
    c.weighty = 0.0;
-
-   JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
-   lay.setConstraints(sep, c);
-
-   lay.setConstraints(draft_area, c);
-
-   pan.add(bubble_label);
-   pan.add(log_pane);
-   pan.add(sep);
-   pan.add(draft_area);
-
+   c.gridy = 2;
+   draft_sep = new JSeparator(SwingConstants.HORIZONTAL);
+   pan.add(draft_sep, c);
+   
+   c.gridy = 3;
+   pan.add(draft_area, c);
+   
+   // Add history panel
+   c.weightx = 0.0;
+   c.weighty = 1.0;
+   c.gridheight = 3;
+   c.gridwidth = 1;
+   c.gridx = 1;
+   c.gridy = 1;
+   history_sep = new JSeparator(SwingConstants.VERTICAL);
+   pan.add(history_sep,c);
+   c.gridx = 2;
+   if (history_visible)
+       c.weightx = 1.0;
+   else
+       c.weightx = 1.0;
+   pan.add(history_pane,c);
+   history_sep.setVisible(false);
+   history_area.setVisible(false);
+   history_pane.setVisible(false);  
+   history_pane.getViewport().setVisible(false);
+   
    pan.setFocusable(true);
    pan.addMouseListener(new BudaConstants.FocusOnEntry(draft_area));
    logging_area.addMouseListener(new BudaConstants.FocusOnEntry(draft_area));
    draft_area.setFocusable(true);
    draft_area.addMouseListener(new BudaConstants.FocusOnEntry(draft_area));
-
+   
    setContentPane(pan, draft_area);
 }
 
+
+BgtaBubble(String username,BgtaManager man)
+{
+   this(username);
+   the_manager = man;
+   bubble_label.setPresence(man.getRoster().getPresence(chat_username));
+   the_manager.addPresenceListener(bubble_label);
+   
+   if (!the_manager.hasChat(chat_username)) {
+      setChat(the_manager.startChat(chat_username,this));
+    }
+   else {
+      setChat(the_manager.getExistingChat(chat_username));
+      if (my_chat != null) {
+         the_manager.addDuplicateBubble(this);
+       }
+    }
+
+   
+}
 
 @Override public void setVisible(boolean vis)
 {
@@ -178,11 +226,84 @@ String getUsername()				{ return chat_username; }
 
 BgtaLoggingArea getLog()			{ return logging_area; }
 
-boolean isPreview()				{ return is_preview; }
-
 BgtaManager getManager()			{ return the_manager; }
 
+/**
+ * Associates a chat object with this bubble.
+ * Also notifies the drafting and logging areas
+ * that the chat and Document have changed. Finally,
+ * it registers this bubble as a listener to the new
+ * chat's Document.
+ * 
+ * @param chat A BgtaChat this bubble connects with
+ */
+public void setChat(BgtaChat chat)
+{
+   if (chat == null)
+       return;
+   my_chat = chat;
+   Document doc = chat.getDocument();
+   logging_area.setDocument(doc);
+   draft_area.setChat(my_chat);
 
+   // Register bubble as document listener.
+   doc.addDocumentListener(this);
+}
+
+/********************************************************************************/
+/*                            */
+/* Helper methods                           */
+/*                            */
+/********************************************************************************/
+
+/**
+ * Creates a more displayable version of a username. This
+ * is accomplished by tearing off anything after an @, and replacing periods
+ * and underscores with spaces.
+ * 
+ * @param username The username to be transformed into just a name
+ * 
+ * @return The resulting String
+ */
+private String getName(String username)
+{
+    String name = username;
+    int idx = name.indexOf("@");
+    if (idx > 0)
+        name = name.substring(0, idx);
+    name = whiteSpaceAwareReplace(name,".");
+    name = whiteSpaceAwareReplace(name,"_");
+    return name;
+}
+
+/**
+ * Replaces all occurrences of toreplace with a space. This method checks
+ * to make sure that there isn't a space next to an occurrence of toreplace
+ * already before replacing it. If there is, it simply removes the occurrence
+ * of toreplace, leaving the already present space to fill the void.
+ * 
+ * @param input A String
+ * @param toreplace The String to replace
+ * 
+ * @return The resulting String
+ */
+private String whiteSpaceAwareReplace(String input,String toreplace)
+{
+    String current = new String(input);
+    while (current.indexOf(toreplace) != -1) {
+        if (current.charAt(current.indexOf(toreplace) + 1) != ' ') {
+            String back = current.substring(current.indexOf(toreplace) + 1);
+            String front = current.substring(0, current.indexOf(toreplace));
+            current = front + " " + back;
+        }
+        else {
+            String back = current.substring(current.indexOf(toreplace) + 1);
+            String front = current.substring(0, current.indexOf(toreplace));
+            current = front + back;
+        }   
+    }
+    return current;
+}
 
 /********************************************************************************/
 /*										*/
@@ -190,9 +311,17 @@ BgtaManager getManager()			{ return the_manager; }
 /*										*/
 /********************************************************************************/
 
-void sendMessage(String mess)
+/**
+ * Routes a message created elsewhere to the
+ * drafting area, which will actually send it
+ * to the participating user. Right now, this
+ * is only used for sending metadata.
+ * 
+ * @param msg A String
+ */
+void sendMessage(String msg)
 {
-   draft_area.send(mess);
+   draft_area.send(msg);
 }
 
 
@@ -248,6 +377,74 @@ private class XMLListener implements ActionListener {
     
 }	// end of private class XMLListener
 
+void showHistory()
+{
+   // Load this history if it hasn't been loaded yet.
+   if (!history_loaded) {
+      my_chat.loadHistory(history_area);
+      history_loaded = true;
+        }
+   
+   // Reset sizing policy
+   GridBagLayout lay = (GridBagLayout) ((ChatPanel) getContentPane()).getLayout();
+   GridBagConstraints c = new GridBagConstraints();
+   c.fill = GridBagConstraints.BOTH;
+   c.gridx = 0;
+   c.gridy = 1;
+   c.gridwidth = 1;
+   c.gridheight = 1;
+   c.weighty = 1.0;
+   c.weightx = 0.0;
+   lay.setConstraints(log_pane,c);
+   c.gridheight = 3;
+   c.gridx = 2;
+   c.weightx = 1.0;
+   lay.setConstraints(history_pane,c);
+   
+   // Show history pane
+   history_pane.setVisible(true);
+   history_sep.setVisible(true);
+   history_area.setVisible(true);
+   history_pane.getViewport().setVisible(true);
+   
+   // Widen the bubble
+   previous_size = getSize();
+   Dimension size = new Dimension(previous_size);
+   size.width += initial_size.width;
+   setSize(size);
+   setPreferredSize(size);
+   setMinimumSize(size);
+}
+
+void hideHistory()
+{
+   // Reset sizing policy
+   GridBagLayout lay = (GridBagLayout) ((ChatPanel) getContentPane()).getLayout();
+   GridBagConstraints c = new GridBagConstraints();
+   c.fill = GridBagConstraints.BOTH;
+   c.gridx = 0;
+   c.gridy = 1;
+   c.gridwidth = 1;
+   c.gridheight = 1;
+   c.weighty = 1.0;
+   c.weightx = 1.0;
+   lay.setConstraints(log_pane,c);
+   c.gridheight = 3;
+   c.gridx = 2;
+   c.weightx = 0.0;
+   lay.setConstraints(history_pane,c);
+
+   // Hide history pane
+   history_pane.setVisible(false);
+   history_sep.setVisible(false);
+   history_area.setVisible(false);
+   history_pane.getViewport().setVisible(false);
+   
+   // Narrow the bubble
+   setSize(previous_size);
+   setPreferredSize(previous_size);
+   setMinimumSize(previous_size);
+}
 
 
 /********************************************************************************/
@@ -266,7 +463,7 @@ void setAltColorIsOn(boolean ison)
 
 boolean reloadAltColor()
 {
-   alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECIEVE);
+   alt_color = my_props.getBoolean(BGTA_ALT_COLOR_UPON_RECEIVE);
    if (!alt_color) alt_color_is_on = false;
    return alt_color;
 }
@@ -329,8 +526,7 @@ boolean getAltColorIsOn()
 /*										*/
 /********************************************************************************/
 
-private class ChatPanel extends JPanel implements BgtaConstants,
-BudaConstants.BudaBubbleOutputer {
+private class ChatPanel extends JPanel implements BgtaConstants {
 
    private static final long serialVersionUID = 1L;
 
@@ -342,6 +538,8 @@ BudaConstants.BudaBubbleOutputer {
    @Override public void paintComponent(Graphics g) {
       Graphics2D g2 = (Graphics2D) g.create();
       Dimension sz = getSize();
+      if (initial_size == null)
+         initial_size = sz;
       Paint p;
       if (!alt_color_is_on) p = new GradientPaint(0f,0f,BGTA_BUBBLE_TOP_COLOR,0f,sz.height,
 						     BGTA_BUBBLE_BOTTOM_COLOR);
@@ -354,17 +552,6 @@ BudaConstants.BudaBubbleOutputer {
       g2.fill(r);
 
       super.paintComponent(g);
-    }
-
-   @Override public String getConfigurator()		{ return "BGTA"; }
-
-   @Override public void outputXml(BudaXmlWriter xw) {
-      if (!is_saved) return;
-      xw.field("TYPE", "CHAT");
-      xw.field("NAME", chat_username);
-      xw.field("USERNAME", the_manager.getUsername());
-      xw.field("PASSWORD", the_manager.getPassword());
-      xw.field("SERVER", the_manager.getServer().server());
     }
 
 }	// end of private class ChatPanel

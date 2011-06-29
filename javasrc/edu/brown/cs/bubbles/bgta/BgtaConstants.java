@@ -66,7 +66,7 @@ String	BGTA_PASSWORD_PREFIX	 = "Bgta.mans.password.";
 
 String	BGTA_SERVER_PREFIX	   = "Bgta.mans.server.";
 
-String	BGTA_ALT_COLOR_UPON_RECIEVE  = "Bgta.altcolor";
+String	BGTA_ALT_COLOR_UPON_RECEIVE  = "Bgta.altcolor";
 
 
 
@@ -101,18 +101,6 @@ int	BGTA_GEN_ACCOUNT_PRIORITY    = BASS_DEFAULT_SORT_PRIORITY - 1;
 /********************************************************************************/
 
 boolean BGTA_INITIAL_REM_SETTING     = false;
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Constants for metadata interpretation					*/
-/*										*/
-/********************************************************************************/
-
-String	BGTA_METADATA_START	  = "http://conifer.cs.brown.edu/bubbles/uploads/WorkingSets/";
-
-String	BGTA_METADATA_FINISH	 = ".xml";
 
 
 

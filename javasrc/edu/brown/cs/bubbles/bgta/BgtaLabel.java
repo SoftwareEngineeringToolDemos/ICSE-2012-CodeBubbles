@@ -21,8 +21,6 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
-
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
@@ -66,13 +64,13 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaLabel(String username,BgtaRoster rost)
+BgtaLabel(String username,String displayname)
 {
    super();
    setLayout(new BoxLayout(this,BoxLayout.LINE_AXIS));
    setOpaque(false);
-   my_label = new JLabel(rost.getEntry(username).getName(),BgtaManager.iconFor(rost.getPresence(username)),JLabel.LEFT);
-   my_presence = rost.getPresence(username);
+   my_label = new JLabel(displayname,BgtaManager.iconFor(new Presence(Presence.Type.available)),JLabel.LEFT);
+   my_presence = new Presence(Presence.Type.available);
    my_icon = (ImageIcon) my_label.getIcon();
    if (my_presence.getType() == Presence.Type.available && my_presence.getMode() != null) {
       my_label.setToolTipText(my_presence.getMode().toString());
@@ -91,8 +89,6 @@ BgtaLabel(String username,BgtaRoster rost)
    setSize(d);
    
    add(my_label);
-   // add(Box.createHorizontalGlue());
-   // add(my_button);
 }
 
 void setButton(JButton button)
@@ -107,7 +103,12 @@ void setButton(JButton button)
     repaint();
 }
 
-
+void setPresence(Presence p)
+{
+    my_presence = p;
+    my_icon = (ImageIcon) BgtaManager.iconFor(p);
+    my_label.setIcon(my_icon);
+}
 
 /********************************************************************************/
 /*										*/

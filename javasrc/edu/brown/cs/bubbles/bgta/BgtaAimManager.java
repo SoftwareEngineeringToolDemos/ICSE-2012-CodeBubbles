@@ -50,7 +50,6 @@ import org.jivesoftware.smack.XMPPException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.swing.text.Document;
 
 
 class BgtaAimManager extends BgtaManager {
@@ -75,13 +74,8 @@ private IcbmService the_service;
 /*										*/
 /********************************************************************************/
 
-BgtaAimManager(String username,String password)
-{
-   this(username,password,ChatServer.AIM);
-}
-
-
-BgtaAimManager(String username,String password,ChatServer server)
+BgtaAimManager(String username,String password,ChatServer 
+server)
 {
     super(username,password,ChatServer.AIM);
     if (!server.equals(ChatServer.AIM))
@@ -114,12 +108,7 @@ BgtaAimManager(String username,String password,ChatServer server)
 
 @Override void login() throws XMPPException
 {
-   login(user_name, user_password);
-}
-
-@Override void login(String username,String password) throws XMPPException
-{
-   login(username,password,ChatServer.AIM);
+   login(user_name, user_password,ChatServer.AIM);
 }
 
 @Override void login(String username,String password,ChatServer server) throws XMPPException
@@ -221,25 +210,26 @@ BgtaAimManager(String username,String password,ChatServer server)
 /*                                                                              */
 /********************************************************************************/
 
-@Override Document startChat(String username,BgtaBubble using)
+@Override BgtaChat startChat(String username,BgtaBubble using)
 {
+    BgtaChat chat = null;
     if (!hasChat(username)) {
         Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
         String name = ((BgtaAIMRosterEntry) the_roster.getEntry(username)).getBuddy().getAlias();
-        BgtaChat chat = new BgtaChat(username,name,ChatServer.AIM,con,getExistingDoc(username),this);
+        chat = new BgtaChat(user_name,username,name,ChatServer.AIM,con,getExistingDoc(username));
         existing_chats.put(username,chat);
         existing_docs.put(username,chat.getDocument());
      }
-    existing_bubbles.put(username,using);
-    return getExistingDoc(username);
+    existing_bubbles.add(using);
+    return chat;
 }
 
 @Override void removeChat(String username)
 {
     if (!hasBubble(username)) {
-        BgtaChat chat = getChat(username);
-        chat.close();
-    }
+       BgtaChat chat = getExistingChat(username);
+       chat.close();
+     }
 }
 
 
@@ -263,7 +253,7 @@ class AIMServiceListener implements IcbmListener {
 
    @Override public void newConversation(IcbmService service, Conversation conv) {
       if (!hasChat(conv.getBuddy().getFormatted()))
-        BgtaFactory.createRecievedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
+        BgtaFactory.createReceivedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
     }
 
       @Override public void sendAutomaticallyFailed(IcbmService service, Message message,

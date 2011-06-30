@@ -83,7 +83,7 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-BgtaBubble(String username)
+private BgtaBubble(String username)
 {
    history_visible = false;
    history_loaded = false;
@@ -182,6 +182,11 @@ BgtaBubble(String username)
    setContentPane(pan, draft_area);
 }
 
+public BgtaBubble(BgtaChat chat)
+{
+   this(chat.getUsername());
+   setChat(chat);
+}
 
 BgtaBubble(String username,BgtaManager man)
 {
@@ -226,8 +231,6 @@ String getUsername()				{ return chat_username; }
 
 BgtaLoggingArea getLog()			{ return logging_area; }
 
-BgtaManager getManager()			{ return the_manager; }
-
 /**
  * Associates a chat object with this bubble.
  * Also notifies the drafting and logging areas
@@ -237,7 +240,7 @@ BgtaManager getManager()			{ return the_manager; }
  * 
  * @param chat A BgtaChat this bubble connects with
  */
-public void setChat(BgtaChat chat)
+void setChat(BgtaChat chat)
 {
    if (chat == null)
        return;

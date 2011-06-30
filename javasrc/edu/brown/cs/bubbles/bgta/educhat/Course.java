@@ -46,7 +46,7 @@ abstract class Course extends BassNameBase {
       return new EduchatTicketSubmitBubble("andrewkova@gmail.com");
    }
    static class TACourse extends Course{
-         private String xmpp_password;
+            private String xmpp_password;
       private String xmpp_server;
      
       protected TACourse(String a_course_name, String a_jid, String a_password, String a_server) {
@@ -58,23 +58,24 @@ abstract class Course extends BassNameBase {
       @Override public BudaBubble createBubble()
       {
          System.out.println("Creating TA bubble");
-         TAXMPPClient client = null;
+         TAXMPPClient client = EduchatManager.getTAXMPPClientForCourse(this);
+        
       
          //TODO: maybe we want a bubble where the TA
          //can select a resource name, but then again
          //as its planned right now that wouldn't 
-         //appear on the other end 
+         //appear on the other end  
          try{
-            client = EduchatManager.startHoursForCourse(this, InetAddress.getLocalHost().getHostName());
+            if(!client.isLoggedIn())
+            {
+               client.connectAndLogin( InetAddress.getLocalHost().getHostName());
+            }
          }catch(UnknownHostException hostE)
          {
             hostE.printStackTrace();
          }catch(XMPPException xmppE)
          {
             xmppE.printStackTrace();
-         }catch(OperationNotSupportedException opE)
-         {
-            opE.printStackTrace();
          }
          
          return new EduchatTicketListBubble(client.getTickets());
@@ -105,7 +106,7 @@ abstract class Course extends BassNameBase {
    
       /*
       @Override public BudaBubble createBubble(){
-	 System.out.println("Creating student bubble");
+         System.out.println("Creating student bubble");
          return null;
       }
    */
@@ -116,6 +117,9 @@ abstract class Course extends BassNameBase {
       @Override public Icon getDisplayIcon(){
          return BoardImage.getIcon("question");
       }     
+
+
+
    }
 
 
@@ -128,4 +132,18 @@ public String getCourseName()
 {
    return course_name;
 } 
+
+
+@Override
+public boolean equals(Object o)
+{
+   if(o instanceof Course)
+   {            
+      Course c = (Course)o;
+      return (course_name == c.course_name &&
+              ta_chat_jid == c.ta_chat_jid);
+   }
+   else 
+      return false;
+}
 }

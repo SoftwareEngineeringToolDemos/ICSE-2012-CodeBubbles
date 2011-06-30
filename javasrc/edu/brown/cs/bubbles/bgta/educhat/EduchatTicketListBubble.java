@@ -13,6 +13,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import java.util.Date;
 
@@ -52,7 +53,8 @@ class EduchatTicketListBubble extends BudaBubble {
          ticket_list = list;
          setOpaque(false);
          setPreferredSize(DEFAULT_DIMENSION);
-      
+         JLabel l = new JLabel("Tickets submitted by students:");
+         add(l, BorderLayout.NORTH);
         table = new JTable(list);
         
          table.getColumnModel().getColumn(1).setPreferredWidth(50);

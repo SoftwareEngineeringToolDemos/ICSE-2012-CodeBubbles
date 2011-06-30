@@ -54,7 +54,7 @@ public class CourseRepository implements BassRepository {
          
          if(strRole.equals("TA")){
             String xmpp_password = bp.getProperty("Educhat.course." + courseName + ".xmpp_password");
-            String server = bp.getProperty("Educhat.course." + courseNames + ".server"); 
+            String server = bp.getProperty("Educhat.course." + courseName + ".server"); 
             
             c = new Course.TACourse(courseName, ta_jid, xmpp_password, server); 
          }

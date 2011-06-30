@@ -42,11 +42,14 @@ public class TAXMPPClient {
    private ConnectionConfiguration config;
    private XMPPConnection conn;
    
+   /*
    private String username;
-   private String resource_name; //this will be used to identify the TA uniquely
-   private String xmpp_password;
+    //this will be used to identify the TA uniquely
+   private String xmpp_password;*/
    private String cur_student_jid;
+   private String resource_name;
    private String service;
+   private Course.TACourse course;
    
    //using a LinkedHashMap so we can keep the tickets in order 
    //private LinkedHashMap<Integer, StudentTicket> ticket_map;
@@ -59,29 +62,32 @@ public class TAXMPPClient {
     * @param service
     * @param authPassword the password that TAs will use to register with the bot 
     */
-   public TAXMPPClient(String aUsername, String an_xmpp_password, String a_service, String a_resource_name)
+   public TAXMPPClient(Course.TACourse a_course)
    {
-      config = new ConnectionConfiguration("jabber.org");
+      course = a_course;
+      config = new ConnectionConfiguration(course.getXMPPServer());
       config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
       config.setSendPresence(true); 
       ticket_list = new TicketList();
       //ticket_map = new LinkedHashMap<Integer, StudentTicket>();
-   
-      username = aUsername;
-      xmpp_password = an_xmpp_password;
-      resource_name = a_resource_name;
-      service = a_service;
    }
    
+   public Course getCourse()
+   {
+      return course;
+   }
+
+      
    /**
     * Connect the bot to the xmpp service
     * @throws XMPPException
     */
-   public void connect() throws XMPPException
+   public void connectAndLogin(String name) throws XMPPException
    {
+      resource_name = name;
       conn = new XMPPConnection(config);
       conn.connect();
-      conn.login(username, xmpp_password, resource_name);
+      conn.login(course.getTAJID().split("@")[0], course.getXMPPPassword(), resource_name);
       conn.getChatManager().addChatListener(new ChatManagerListener(){
       @Override
       public void chatCreated(Chat c, boolean createdLocally) {
@@ -98,9 +104,15 @@ public class TAXMPPClient {
       //   conn.getRoster().createEntry(getMyBareJID(), "Me", null);
       //}
       System.out.println(conn.getRoster().getEntries());
-
+   
    }
    
+
+
+boolean isLoggedIn()
+{
+   return conn.isAuthenticated();
+}
    public void disconnect() throws XMPPException
    {
       conn.disconnect();

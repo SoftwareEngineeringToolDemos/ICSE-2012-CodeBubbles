@@ -46,15 +46,21 @@ abstract class Course extends BassNameBase {
       return new EduchatTicketSubmitBubble("andrewkova@gmail.com");
    }
    static class TACourse extends Course{
-            private String xmpp_password;
+      private TicketList ticket_list;
+      private String xmpp_password;
       private String xmpp_server;
      
       protected TACourse(String a_course_name, String a_jid, String a_password, String a_server) {
          super(a_course_name, a_jid);
+         ticket_list = new TicketList();
          xmpp_password = a_password;
          xmpp_server = a_server;
       }
       
+      public TicketList getTicketList()
+      {
+	 return ticket_list;
+      }
       @Override public BudaBubble createBubble()
       {
          System.out.println("Creating TA bubble");
@@ -68,7 +74,7 @@ abstract class Course extends BassNameBase {
          try{
             if(!client.isLoggedIn())
             {
-               client.connectAndLogin( InetAddress.getLocalHost().getHostName());
+               client.connectAndLogin(InetAddress.getLocalHost().getHostName());
             }
          }catch(UnknownHostException hostE)
          {

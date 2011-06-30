@@ -68,7 +68,9 @@ public class TAXMPPClient {
       config = new ConnectionConfiguration(course.getXMPPServer());
       config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
       config.setSendPresence(true); 
-      ticket_list = new TicketList();
+      ticket_list = course.getTicketList();
+      
+      conn = new XMPPConnection(config);
       //ticket_map = new LinkedHashMap<Integer, StudentTicket>();
    }
    
@@ -85,7 +87,6 @@ public class TAXMPPClient {
    public void connectAndLogin(String name) throws XMPPException
    {
       resource_name = name;
-      conn = new XMPPConnection(config);
       conn.connect();
       conn.login(course.getTAJID().split("@")[0], course.getXMPPPassword(), resource_name);
       conn.getChatManager().addChatListener(new ChatManagerListener(){

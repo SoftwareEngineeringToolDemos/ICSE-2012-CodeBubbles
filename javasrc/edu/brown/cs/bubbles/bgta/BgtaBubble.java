@@ -83,7 +83,7 @@ private static final long serialVersionUID = 1L;
 /*										*/
 /********************************************************************************/
 
-private BgtaBubble(String username)
+BgtaBubble(String username)
 {
    history_visible = false;
    history_loaded = false;
@@ -182,11 +182,6 @@ private BgtaBubble(String username)
    setContentPane(pan, draft_area);
 }
 
-public BgtaBubble(BgtaChat chat)
-{
-   this(chat.getUsername());
-   setChat(chat);
-}
 
 BgtaBubble(String username,BgtaManager man)
 {
@@ -242,7 +237,7 @@ BgtaManager getManager()			{ return the_manager; }
  * 
  * @param chat A BgtaChat this bubble connects with
  */
-void setChat(BgtaChat chat)
+public void setChat(BgtaChat chat)
 {
    if (chat == null)
        return;

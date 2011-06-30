@@ -112,7 +112,7 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-public BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
+BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
 { 
    // Fix display names so they don't have the server endings.
    this_user = username;

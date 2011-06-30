@@ -147,7 +147,7 @@ String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar
 /*	Enum for server values									*/
 /*										*/
 /********************************************************************************/
-public enum ChatServer {
+enum ChatServer {
 	GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com", true),
 	BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com", true),
 	FACEBOOK("Facebook", "chat.facebook.com", " ", "", false),
@@ -192,7 +192,7 @@ public enum ChatServer {
 		return "";
 	}
 	
-	public static ChatServer fromServer(String server) {
+	static ChatServer fromServer(String server) {
 	   for (ChatServer s : values())
 	      if (server.equals(s.server()))
 	         return s;

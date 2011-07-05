@@ -25,9 +25,11 @@ package edu.brown.cs.bubbles.bgta.educhat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 
@@ -45,16 +47,14 @@ public class TAXMPPClient {
    private ConnectionConfiguration config;
    private XMPPConnection conn;
    
-   
-   private String cur_student_jid;
    private String resource_name;
    private String service;
    private Course.TACourse course;
    private Map<String, Chat> chats; //maps bare jids to Chat objects 
+   private Set<Chat> active_chats;
    
-   //using a LinkedHashMap so we can keep the tickets in order 
-   //private LinkedHashMap<Integer, StudentTicket> ticket_map;
    private TicketList ticket_list;
+   
    /**
     *  Logs in with the given username/password at the XMPP service 
     * at service (i.e. "jabber.org")
@@ -66,6 +66,7 @@ public class TAXMPPClient {
    public TAXMPPClient(Course.TACourse a_course)
    {
       chats = new HashMap<String, Chat>();
+      active_chats = new HashSet<Chat>();
       course = a_course;
       config = new ConnectionConfiguration(course.getXMPPServer());
       config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
@@ -73,7 +74,6 @@ public class TAXMPPClient {
       ticket_list = course.getTicketList();
       
       conn = new XMPPConnection(config);
-      //ticket_map = new LinkedHashMap<Integer, StudentTicket>();
    }
    
    public Course getCourse()
@@ -94,14 +94,16 @@ public class TAXMPPClient {
       conn.getChatManager().addChatListener(new ChatManagerListener(){
       @Override
       public void chatCreated(Chat c, boolean createdLocally) {
-    	   //System.out.println("Chat created: " + c + " with " + c.getParticipant());
+    	  
            //TODO: figure out if excluding chats that are createdLocally is actually useful/correct
            if(!createdLocally)
            {
-        	 // if(chats.get(StringUtils.parseBareAddress(c.getParticipant())) == null) 
+                  String jid = StringUtils.parseBareAddress(c.getParticipant());
+        	  if(chats.get(jid) == null) 
         	  {
-        		  chats.put(StringUtils.parseBareAddress(c.getParticipant()), c);
-        		  c.addMessageListener(new StudentXMPPBotMessageListener());
+        	      System.out.println("Chat created: " + c + " with " + c.getParticipant());
+     		      chats.put(jid, conn.getChatManager().createChat(jid, new StudentXMPPBotMessageListener()));
+     		    //  c.addMessageListener();
         	  }
            }
          }
@@ -139,6 +141,16 @@ public class TAXMPPClient {
       conn.disconnect();
    }
    
+   /**
+    * End the current chat session with a student
+    * and ignore further messages from the student
+    * until another ticket is accepted
+    */
+   public void endChatSession(Chat c)
+   {
+      active_chats.remove(c);
+   }
+   
    public void acceptTicketAndAlertPeers(StudentTicket t)
    {
       //should i determine if the ticket is actually in the list?
@@ -148,7 +160,7 @@ public class TAXMPPClient {
       
       ticket_list.remove(t);
       
-      cur_student_jid = t.getStudentJID();
+      active_chats.add(chats.get(StringUtils.parseBareAddress(t.getStudentJID())));
       
       //now we need to open up a chat window or maybe this should be 
       //done on the outside, better figure that out and then this is called
@@ -221,7 +233,7 @@ public class TAXMPPClient {
               }
            }
         }
-        else if(StringUtils.parseBareAddress(c.getParticipant()).equals(StringUtils.parseBareAddress(cur_student_jid)))
+        else if(active_chats.contains(c))
         {
            //let the message go through to the UI
            System.out.println("Student message: " + c.getParticipant() + " : " + m.getBody());

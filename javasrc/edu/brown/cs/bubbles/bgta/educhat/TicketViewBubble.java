@@ -99,6 +99,7 @@ class TicketViewBubble extends BudaBubble {
 private class ChatStartListener implements ActionListener{
         private TicketViewBubble bubble;
         private TAXMPPClient client;
+        private EduchatBubble b;
         
         public ChatStartListener(TicketViewBubble a_bubble, TAXMPPClient a_client)
         {
@@ -110,7 +111,7 @@ private class ChatStartListener implements ActionListener{
         public void actionPerformed(ActionEvent e)
         {                                                
            client.acceptTicketAndAlertPeers(bubble.ticket);
-           BudaBubble chat_bub = new EduchatBubble(client.getConnection(), client.getChatForJID(bubble.ticket.getStudentJID()));
+           BudaBubble chat_bub = new EduchatBubble.TABubble(client, client.getChatForJID(bubble.ticket.getStudentJID()));
            BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
            bba.addBubble(chat_bub,bubble, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
         }

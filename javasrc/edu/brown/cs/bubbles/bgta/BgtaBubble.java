@@ -211,12 +211,15 @@ BgtaBubble(String username,BgtaManager man)
 @Override public void setVisible(boolean vis)
 {
    super.setVisible(vis);
-   if (!vis) {
-	  the_manager.removeBubble(this);
-    }
-   else {
-	  the_manager.addDuplicateBubble(this);
-    }
+   if(the_manager != null)
+   {
+      if (!vis) {
+   	  the_manager.removeBubble(this);
+       }
+      else {
+   	  the_manager.addDuplicateBubble(this);
+       }
+   }
 }
 
 

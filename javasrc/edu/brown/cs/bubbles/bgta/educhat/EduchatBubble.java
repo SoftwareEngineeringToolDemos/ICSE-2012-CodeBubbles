@@ -7,14 +7,27 @@ import org.jivesoftware.smack.XMPPConnection;
 
 import edu.brown.cs.bubbles.bgta.*;
 
-class EduchatBubble extends BgtaBubble{
-   EduchatBubble(XMPPConnection conn, Chat c)
+public class EduchatBubble extends BgtaBubble{
+   private EduchatBubble(XMPPConnection conn, Chat c)
    {
       super(BgtaUtil.bgtaChatForXMPPChat(conn, c));
    }
    
-   @Override public void setVisible(boolean vis)
-   {
-      ((JComponent)this).setVisible(vis);
+   public static class TABubble extends EduchatBubble {
+      private TAXMPPClient client;
+      private Chat chat;
+      
+      public TABubble(TAXMPPClient a_client, Chat a_chat)
+      {
+	 super(a_client.getConnection(), a_chat);
+	 client = a_client;
+	 chat = a_chat;
+      }
+      
+      @Override public void setVisible(boolean vis)
+      {
+          super.setVisible(vis);
+          client.endChatSession(chat);
+      }
    }
 }

@@ -137,13 +137,7 @@ BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,
       the_chat = (Chat) chat;
       System.out.println("2: " + chat);
       chat_listener = new XMPPChatListener();
-      the_chat.addMessageListener(new MessageListener()
-         {
-         public void processMessage(Chat c, Message m)
-         {
-            System.out.println(m.getBody());
-         }
-      });
+      the_chat.addMessageListener(chat_listener);
     }
    else {
       the_conversation = (Conversation) chat;

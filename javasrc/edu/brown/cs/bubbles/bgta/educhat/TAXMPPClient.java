@@ -24,8 +24,11 @@ package edu.brown.cs.bubbles.bgta.educhat;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 
 import org.jivesoftware.smack.Chat;
@@ -47,7 +50,7 @@ public class TAXMPPClient {
    private String resource_name;
    private String service;
    private Course.TACourse course;
-   private List<Chat> chats;
+   private Map<String, Chat> chats; //maps bare jids to Chat objects 
    
    //using a LinkedHashMap so we can keep the tickets in order 
    //private LinkedHashMap<Integer, StudentTicket> ticket_map;
@@ -62,7 +65,7 @@ public class TAXMPPClient {
     */
    public TAXMPPClient(Course.TACourse a_course)
    {
-      chats = new ArrayList<Chat>();
+      chats = new HashMap<String, Chat>();
       course = a_course;
       config = new ConnectionConfiguration(course.getXMPPServer());
       config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
@@ -91,10 +94,17 @@ public class TAXMPPClient {
       conn.getChatManager().addChatListener(new ChatManagerListener(){
       @Override
       public void chatCreated(Chat c, boolean createdLocally) {
+    	   //System.out.println("Chat created: " + c + " with " + c.getParticipant());
            //TODO: figure out if excluding chats that are createdLocally is actually useful/correct
-          // if(!createdLocally)
-              //c.addMessageListener(new StudentXMPPBotMessageListener());
+           if(!createdLocally)
+           {
+        	 // if(chats.get(StringUtils.parseBareAddress(c.getParticipant())) == null) 
+        	  {
+        		  chats.put(StringUtils.parseBareAddress(c.getParticipant()), c);
+        		  c.addMessageListener(new StudentXMPPBotMessageListener());
+        	  }
            }
+         }
       });
       
       conn.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
@@ -114,12 +124,7 @@ public class TAXMPPClient {
    
    Chat getChatForJID(String jid)
    {
-      Chat chat = null;
-      for(Chat c : chats){
-         if(StringUtils.parseBareAddress(c.getParticipant()).equals(StringUtils.parseBareAddress(jid))){
-            chat = c;
-         }
-      }
+      Chat chat = chats.get(StringUtils.parseBareAddress(jid));
       
       if(chat == null)
       {
@@ -187,7 +192,7 @@ public class TAXMPPClient {
    private class StudentXMPPBotMessageListener implements MessageListener {
       @Override
       public void processMessage(Chat c, Message m) {
-             System.out.println("TAClient received message: " + m.getBody());
+             System.out.println("TAClient received message: " + m.getBody() + " from " + c);
         String[] chat_args = m.getBody().split(":");
          
         String cmd = chat_args[0];

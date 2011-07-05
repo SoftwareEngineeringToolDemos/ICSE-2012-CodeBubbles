@@ -65,17 +65,17 @@ public class StudentTicket {
    @Override
    public boolean equals(Object obj) {
       if (this == obj)
-	 return true;
+         return true;
       if (obj == null)
-	 return false;
+         return false;
       if (getClass() != obj.getClass())
-	 return false;
+         return false;
       StudentTicket other = (StudentTicket) obj;
       if (text == null) {
-	 if (other.text != null)
-	    return false;
+         if (other.text != null)
+            return false;
       } else if (!text.equals(other.text))
-	 return false;
+         return false;
       return true;
    }
    

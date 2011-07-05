@@ -49,7 +49,8 @@ abstract class Course extends BassNameBase {
       private TicketList ticket_list;
       private String xmpp_password;
       private String xmpp_server;
-     
+      private TAXMPPClient client;
+      
       protected TACourse(String a_course_name, String a_jid, String a_password, String a_server) {
          super(a_course_name, a_jid);
          ticket_list = new TicketList();
@@ -64,7 +65,7 @@ abstract class Course extends BassNameBase {
       @Override public BudaBubble createBubble()
       {
          System.out.println("Creating TA bubble");
-         TAXMPPClient client = EduchatManager.getTAXMPPClientForCourse(this);
+         client = EduchatManager.getTAXMPPClientForCourse(this);
         
       
          //TODO: maybe we want a bubble where the TA
@@ -84,7 +85,7 @@ abstract class Course extends BassNameBase {
             xmppE.printStackTrace();
          }
          
-         return new EduchatTicketListBubble(client.getTickets());
+         return new EduchatTicketListBubble(client.getTickets(), client);
       }
    
       @Override protected String getSymbolName() {

@@ -112,7 +112,7 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-public BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
+BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
 { 
    // Fix display names so they don't have the server endings.
    this_user = username;
@@ -135,8 +135,15 @@ public BgtaChat(String username,String pUsername,String pDisplayname,ChatServer 
    if (!server.equals(ChatServer.AIM)) {
       is_xmpp = true;
       the_chat = (Chat) chat;
+      System.out.println("2: " + chat);
       chat_listener = new XMPPChatListener();
-      the_chat.addMessageListener(chat_listener);
+      the_chat.addMessageListener(new MessageListener()
+         {
+         public void processMessage(Chat c, Message m)
+         {
+            System.out.println(m.getBody());
+         }
+      });
     }
    else {
       the_conversation = (Conversation) chat;
@@ -155,7 +162,6 @@ public BgtaChat(String username,String pUsername,String pDisplayname,ChatServer 
    the_history = new ChatHistory();
    history_file = null;
 }
-
 
 
 /********************************************************************************/
@@ -612,6 +618,7 @@ void close()
 private class XMPPChatListener implements MessageListener {
 
    @Override public void processMessage(Chat ch,Message msg) {
+      System.out.println("3: " + ch);
       if (!ch.equals(the_chat))
          return;
       if (msg.getType() != Message.Type.chat)

@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
 
 
 
-class BgtaBubble extends BudaBubble implements BgtaConstants, DocumentListener {
+public class BgtaBubble extends BudaBubble implements BgtaConstants, DocumentListener {
 
 
 
@@ -182,7 +182,7 @@ private BgtaBubble(String username)
    setContentPane(pan, draft_area);
 }
 
-public BgtaBubble(BgtaChat chat)
+protected BgtaBubble(BgtaChat chat)
 {
    this(chat.getUsername());
    setChat(chat);

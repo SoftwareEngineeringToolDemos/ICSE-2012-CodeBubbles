@@ -31,15 +31,15 @@ class TicketViewBubble extends BudaBubble {
    
    private StudentTicket ticket;
    
-   public TicketViewBubble(StudentTicket t)
+   public TicketViewBubble(StudentTicket t, TAXMPPClient a_client)
    {
       ticket = t;
-      setContentPane(new TicketViewPanel(t, this));
+      setContentPane(new TicketViewPanel(t, this, new ChatStartListener(this, a_client)));
    }
    
    private class TicketViewPanel extends JPanel
    {
-      public TicketViewPanel(StudentTicket t, TicketViewBubble a_bubble)
+      public TicketViewPanel(StudentTicket t, TicketViewBubble a_bubble, ChatStartListener listener)
       {
          //add(new JLabel(t.getText()));
          setOpaque(false); 
@@ -81,7 +81,7 @@ class TicketViewBubble extends BudaBubble {
          add(scroll, c);
          
          JButton submit_button = new JButton("Chat with student");
-         submit_button.addActionListener(new ChatStartListener(a_bubble));
+         submit_button.addActionListener(listener);
          c.anchor = GridBagConstraints.PAGE_END;
          c.gridx = 1;
          c.gridy = 2;
@@ -98,20 +98,21 @@ class TicketViewBubble extends BudaBubble {
 
 private class ChatStartListener implements ActionListener{
         private TicketViewBubble bubble;
+        private TAXMPPClient client;
         
-        public ChatStartListener(TicketViewBubble a_bubble)
+        public ChatStartListener(TicketViewBubble a_bubble, TAXMPPClient a_client)
         {
            bubble = a_bubble;
+           client = a_client;
         }
         
         @Override
         public void actionPerformed(ActionEvent e)
-        {
-           /*
-           BgtaManager man = BgtaFactory.getFactory().getManagers().next();                                                  
-           BudaBubble chat_bub = BgtaFactory.createRecievedChatBubble("andrewkova@gmail.com", man);
+        {                                                
+           client.acceptTicketAndAlertPeers(bubble.ticket);
+           BudaBubble chat_bub = new EduchatBubble(client.getConnection(), client.getChatForJID(bubble.ticket.getStudentJID()));
            BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
-           bba.addBubble(chat_bub,bubble, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);*/
+           bba.addBubble(chat_bub,bubble, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
         }
 }
 }

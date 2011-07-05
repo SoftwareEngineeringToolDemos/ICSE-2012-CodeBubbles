@@ -24,8 +24,13 @@ package edu.brown.cs.bubbles.bgta;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Presence;
+
+import edu.brown.cs.bubbles.bgta.BgtaConstants.ChatServer;
 public class BgtaUtil {
 
    /**
@@ -44,4 +49,20 @@ public class BgtaUtil {
 
       return jids;   
    }
+   
+   /**
+    * Provides a 
+    * @param conn
+    * @param c
+    * @return
+    */
+   public static BgtaChat bgtaChatForXMPPChat(XMPPConnection conn, Chat c)
+   {
+      String realName = null;
+      //String realName = conn.getRoster().getEntry(c.getParticipant()).getName();
+     // if(realName == null) {realName = c.getParticipant();}
+      System.out.println("1: " + c);
+      return new BgtaChat(conn.getUser(), c.getParticipant(), realName, ChatServer.fromServer(conn.getServiceName()), c, null);
+   }
+
 }

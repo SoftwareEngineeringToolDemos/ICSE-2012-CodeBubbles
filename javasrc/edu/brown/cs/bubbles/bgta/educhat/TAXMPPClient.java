@@ -42,14 +42,12 @@ public class TAXMPPClient {
    private ConnectionConfiguration config;
    private XMPPConnection conn;
    
-   /*
-   private String username;
-    //this will be used to identify the TA uniquely
-   private String xmpp_password;*/
+   
    private String cur_student_jid;
    private String resource_name;
    private String service;
    private Course.TACourse course;
+   private List<Chat> chats;
    
    //using a LinkedHashMap so we can keep the tickets in order 
    //private LinkedHashMap<Integer, StudentTicket> ticket_map;
@@ -64,6 +62,7 @@ public class TAXMPPClient {
     */
    public TAXMPPClient(Course.TACourse a_course)
    {
+      chats = new ArrayList<Chat>();
       course = a_course;
       config = new ConnectionConfiguration(course.getXMPPServer());
       config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
@@ -93,27 +92,43 @@ public class TAXMPPClient {
       @Override
       public void chatCreated(Chat c, boolean createdLocally) {
            //TODO: figure out if excluding chats that are createdLocally is actually useful/correct
-           if(!createdLocally)
-              c.addMessageListener(new StudentXMPPBotMessageListener());
+          // if(!createdLocally)
+              //c.addMessageListener(new StudentXMPPBotMessageListener());
            }
       });
       
       conn.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
       System.out.println(conn.getRoster().getEntries());
+      
       //if(!conn.getRoster().contains(getMyBareJID()))
       //{
       //   conn.getRoster().createEntry(getMyBareJID(), "Me", null);
       //}
-      System.out.println(conn.getRoster().getEntries());
    
    }
+  
+   boolean isLoggedIn()
+   {
+      return conn.isAuthenticated();
+   }
    
-
-
-boolean isLoggedIn()
-{
-   return conn.isAuthenticated();
-}
+   Chat getChatForJID(String jid)
+   {
+      Chat chat = null;
+      for(Chat c : chats){
+         if(StringUtils.parseBareAddress(c.getParticipant()).equals(StringUtils.parseBareAddress(jid))){
+            chat = c;
+         }
+      }
+      
+      if(chat == null)
+      {
+        chat = conn.getChatManager().createChat(jid, null);
+      }
+      
+      return chat;
+   }
+   
    public void disconnect() throws XMPPException
    {
       conn.disconnect();
@@ -139,7 +154,10 @@ boolean isLoggedIn()
    {
      return ticket_list;
    }
-   
+   XMPPConnection getConnection()
+   {
+      return conn;
+   }
    private void sendMessageToOtherResources(String msg)
    {
       for(String full_jid : BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID()))
@@ -151,13 +169,13 @@ boolean isLoggedIn()
                //do nothing
             }
            });
-
+   
          try {
-	       other_ta_chat.sendMessage(msg);
-	    } catch (XMPPException e) {
-	       // TODO Auto-generated catch block
-	       e.printStackTrace();
-	    }
+               other_ta_chat.sendMessage(msg);
+            } catch (XMPPException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
       }
    }
    
@@ -171,7 +189,7 @@ boolean isLoggedIn()
       public void processMessage(Chat c, Message m) {
              System.out.println("TAClient received message: " + m.getBody());
         String[] chat_args = m.getBody().split(":");
-   
+         
         String cmd = chat_args[0];
         if(cmd.equals("TICKET"))
         {

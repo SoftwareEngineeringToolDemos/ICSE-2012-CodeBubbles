@@ -33,30 +33,31 @@ class EduchatTicketListBubble extends BudaBubble {
    private static Color GRADIENT_TOP_COLOR = new Color(0x33,0x00,0x99);
    private static Dimension DEFAULT_DIMENSION = new Dimension(200, 200);
    
-   
-   public EduchatTicketListBubble(TicketList list)
+   public EduchatTicketListBubble(TicketList list, TAXMPPClient a_ta_client)
    {
-      TicketListPanel p = new TicketListPanel(list, this);
+      TicketListPanel p = new TicketListPanel(list, this, a_ta_client);
       setContentPane(p);
    }
    
    private class TicketListPanel extends JPanel implements MouseListener
    {
-            private JTable table;
+               private JTable table;
       private TicketList ticket_list; 
       private BudaBubble parent;
-      public TicketListPanel(TicketList list, BudaBubble a_parent)
+      private TAXMPPClient ta_client;
+      
+      public TicketListPanel(TicketList list, BudaBubble a_parent, TAXMPPClient a_ta_client)
       {
          super(new BorderLayout());
          parent = a_parent;
-         
+         ta_client = a_ta_client;
          ticket_list = list;
          setOpaque(false);
          setPreferredSize(DEFAULT_DIMENSION);
          JLabel l = new JLabel("Tickets submitted by students:");
          add(l, BorderLayout.NORTH);
         table = new JTable(list);
-        
+         
          table.getColumnModel().getColumn(1).setPreferredWidth(50);
          
          table.getColumnModel().getColumn(0).setPreferredWidth(150);
@@ -79,7 +80,7 @@ class EduchatTicketListBubble extends BudaBubble {
                if(table.rowAtPoint(e.getPoint()) != -1)
                {
                   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-                  BudaBubble ticket_view_bubble = new TicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint())));
+                  BudaBubble ticket_view_bubble = new TicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint())), ta_client);
                      bba.addBubble(ticket_view_bubble,parent, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
                }
             } 

@@ -22,6 +22,8 @@ import javax.swing.JTextPane;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,13 +40,15 @@ class EduchatTicketSubmitBubble extends BudaBubble {
    private static Color GRADIENT_BOTTOM_COLOR = Color.white;
    private static Color GRADIENT_TOP_COLOR = new Color(0xC4,0x32,0x1F);
    private static Dimension DEFAULT_DIMENSION = new Dimension(250, 200);
-   private TicketPanel panel;
+   private static final String NEW_LOGIN_STR = "Log in to an XMPP account";
+
    
    private static final long serialVersionUID = 1L;
-   
-   public EduchatTicketSubmitBubble(String ta_jid)
+
+   private TicketPanel panel;
+   private String ta_jid;
+   public EduchatTicketSubmitBubble(String a_jid)
    {
-      SubmitListener l = new SubmitListener(ta_jid, this);
       HashMap<String, BgtaManager> chat_logins = new HashMap<String, BgtaManager>();
       for(Iterator<BgtaManager> it = BgtaFactory.getManagers(); it.hasNext();)
       {
@@ -52,17 +56,18 @@ class EduchatTicketSubmitBubble extends BudaBubble {
     	  chat_logins.put(man.getUsername(), man);
       }
       
-      panel = new TicketPanel(chat_logins, l);
+      ta_jid = a_jid;
+      panel = new TicketPanel(chat_logins);
       setContentPane(panel);
    }
 
-   private class TicketPanel extends JPanel
+   private class TicketPanel extends JPanel implements ItemListener, ActionListener
    {
 	  private Map<String, BgtaManager> chat_logins;
 	  private JComboBox login_box;
 	  private JTextArea ticket_area;
 	  
-      private TicketPanel(Map<String, BgtaManager> some_chat_logins, ActionListener submit_listener)
+      private TicketPanel(Map<String, BgtaManager> some_chat_logins)
       {
          setOpaque(false); 
          chat_logins = some_chat_logins;
@@ -79,7 +84,9 @@ class EduchatTicketSubmitBubble extends BudaBubble {
          add(l, c);
         
          login_box = new JComboBox(chat_logins.keySet().toArray(new String[1]));
-
+         login_box.addItem(NEW_LOGIN_STR);
+         login_box.addItemListener(this);
+         
          c.gridx = 1;
          c.gridy = 0;
          c.fill = GridBagConstraints.NONE;
@@ -119,7 +126,7 @@ class EduchatTicketSubmitBubble extends BudaBubble {
          add(scroll, c);
          
          JButton submit_button = new JButton("Submit");
-         submit_button.addActionListener(submit_listener);
+         submit_button.addActionListener(this);
          c.anchor = GridBagConstraints.PAGE_END;
          c.gridx = 1;
          c.gridy = 3;
@@ -144,27 +151,25 @@ class EduchatTicketSubmitBubble extends BudaBubble {
       
          super.paintComponent(g);
       }
-   }
-private class SubmitListener implements ActionListener{
-   private String ta_jid;
-   private EduchatTicketSubmitBubble bubble;
-   
-   public SubmitListener(String jid, EduchatTicketSubmitBubble a_bubble)
-   {
-       bubble = a_bubble;
-       ta_jid = jid;
-   }
-   
-   @Override public void actionPerformed(ActionEvent e)
-   {
-      BgtaManager man = panel.chat_logins.get(panel.login_box.getSelectedItem());
-      
-      BgtaBubble chat_b = BgtaFactory.createReceivedChatBubble(ta_jid, man);
-      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
-      chat_b.sendMessage("TICKET:" + panel.ticket_area.getText());
-      bba.addBubble(chat_b, bubble, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-   }
 
-}
-  
+      @Override
+      public void itemStateChanged(ItemEvent e) {
+	 if(e.getItem() instanceof String && ((String)(e.getItem())).equals(NEW_LOGIN_STR))
+	 {
+	    //TODO: figure out how to pull up login bubble, which is tricky
+	    //because it has a package-private constructor with a lot of 
+	    //bgta-internal required args
+	 }
+      }
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+	  BgtaManager man = panel.chat_logins.get(panel.login_box.getSelectedItem());
+	      
+	  BgtaBubble chat_b = BgtaFactory.createReceivedChatBubble(ta_jid, man);
+	  BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(EduchatTicketSubmitBubble.this);
+	  chat_b.sendMessage("TICKET:" + panel.ticket_area.getText());
+	  bba.addBubble(chat_b, EduchatTicketSubmitBubble.this, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+      }
+   }
 }

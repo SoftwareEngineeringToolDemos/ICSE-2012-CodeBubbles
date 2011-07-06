@@ -17,7 +17,7 @@
  *                                                                               *
  ********************************************************************************/
 
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.Scanner;
 
@@ -36,9 +36,10 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 
-public class TAXMPPClientTest{
-   private static TAXMPPClient ta_client;
-   private static TAXMPPClient ta_client2;
+
+public class BeduTAXMPPClientTest{
+   private static BeduTAXMPPClient ta_client;
+   private static BeduTAXMPPClient ta_client2;
    private static XMPPConnection student_conn1;
    
    
@@ -50,10 +51,10 @@ public class TAXMPPClientTest{
    public static void setUpOnce() throws XMPPException
    {
       System.out.println("Setting up once");
-      ta_client = new TAXMPPClient(ta_login,"brownbears","jabber.org","TA1");
+      ta_client = new BeduTAXMPPClient(ta_login,"brownbears","jabber.org","TA1");
       ta_client.connect();
       
-      ta_client2 = new TAXMPPClient(ta_login, "brownbears", "jabber.org", "TA2");
+      ta_client2 = new BeduTAXMPPClient(ta_login, "brownbears", "jabber.org", "TA2");
       ta_client2.connect();
 
       XMPPConnection.DEBUG_ENABLED = true;
@@ -105,7 +106,7 @@ public class TAXMPPClientTest{
       }
       
       assertTrue(ta_client.getTickets().size() == 1);
-      StudentTicket t = ta_client.getTickets().get(0);
+      BeduStudentTicket t = ta_client.getTickets().get(0);
       assertEquals(t.getText(), "this is a ticket");
       assertEquals(t.getStudentJID(), student_login + "@jabber.org/Smack");
    } 
@@ -119,7 +120,7 @@ public class TAXMPPClientTest{
    @Test
    public void teastTicketForward() throws Exception
    {
-      TAXMPPClient ta_client2 = new TAXMPPClient(ta_login, "brownbears", "jabber.org", "TA2");
+      BeduTAXMPPClient ta_client2 = new BeduTAXMPPClient(ta_login, "brownbears", "jabber.org", "TA2");
    
       ta_client2.connect();
       Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", new MessageListener(){

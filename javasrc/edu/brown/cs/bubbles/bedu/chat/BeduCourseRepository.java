@@ -1,4 +1,4 @@
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +11,11 @@ import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.board.BoardProperties;
 
-public class CourseRepository implements BassRepository {
-   private static List<Course> courses;
-   private static CourseRepository instance;
+public class BeduCourseRepository implements BassRepository {
+   private static List<BeduCourse> courses;
+   private static BeduCourseRepository instance;
    
-   public static CourseRepository getInstance()
+   public static BeduCourseRepository getInstance()
    {
       if(instance == null)
         setup();
@@ -23,8 +23,8 @@ public class CourseRepository implements BassRepository {
    }
    public static void setup()
    {
-      instance = new CourseRepository();
-      courses = new ArrayList<Course>();
+      instance = new BeduCourseRepository();
+      courses = new ArrayList<BeduCourse>();
       
       //grab courses out of the props file 
       BoardProperties bp = BoardProperties.getProperties("Educhat");
@@ -43,20 +43,20 @@ public class CourseRepository implements BassRepository {
    
       for(String courseName : courseNames)
       {
-         Course c = null;
+         BeduCourse c = null;
          String strRole = bp.getProperty("Educhat.course." + courseName + ".role");
          
          String ta_jid = bp.getProperty("Educhat.course." + courseName + ".ta_jid");
          
          if(strRole.equals("STUDENT")){
-            c = new Course.StudentCourse(courseName, ta_jid);      
+            c = new BeduCourse.StudentCourse(courseName, ta_jid);      
          }
          
          if(strRole.equals("TA")){
             String xmpp_password = bp.getProperty("Educhat.course." + courseName + ".xmpp_password");
             String server = bp.getProperty("Educhat.course." + courseName + ".server"); 
             
-            c = new Course.TACourse(courseName, ta_jid, xmpp_password, server); 
+            c = new BeduCourse.TACourse(courseName, ta_jid, xmpp_password, server); 
          }
          
          if(c != null)
@@ -77,16 +77,16 @@ public class CourseRepository implements BassRepository {
       return false;
    }
    
-   public void addCourse(Course c)
+   public void addCourse(BeduCourse c)
    {
        BoardProperties bp = BoardProperties.getProperties("Educhat");
        courses.add(c);
        bp.setProperty("Educhat.course." + c.getName() + ".ta_jid", c.getTAJID());
-       if(c instanceof Course.StudentCourse){
+       if(c instanceof BeduCourse.StudentCourse){
          bp.setProperty("Educhat.course." + c.getName() + ".role", "Student");   
        }
-       if(c instanceof Course.TACourse){
-         Course.TACourse tc = (Course.TACourse)c;
+       if(c instanceof BeduCourse.TACourse){
+         BeduCourse.TACourse tc = (BeduCourse.TACourse)c;
          bp.setProperty("Educhat.course." + c.getName() + ".role", "TA");   
          bp.setProperty("Educhat.course." + c.getName() + ".xmpp_password", tc.getXMPPPassword());
          bp.setProperty("Educhat.course." + c.getName() + ".server", tc.getXMPPServer());

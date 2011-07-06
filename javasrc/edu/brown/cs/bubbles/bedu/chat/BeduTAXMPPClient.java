@@ -20,7 +20,7 @@
  *                                                                               *
  ********************************************************************************/
 
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,17 +43,17 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
-public class TAXMPPClient {
+public class BeduTAXMPPClient {
    private ConnectionConfiguration config;
    private XMPPConnection conn;
    
    private String resource_name;
    private String service;
-   private Course.TACourse course;
+   private BeduCourse.TACourse course;
    private Map<String, Chat> chats; //maps bare jids to Chat objects 
    private Set<Chat> active_chats;
    
-   private TicketList ticket_list;
+   private BeduTATicketList ticket_list;
    
    /**
     *  Logs in with the given username/password at the XMPP service 
@@ -63,7 +63,7 @@ public class TAXMPPClient {
     * @param service
     * @param authPassword the password that TAs will use to register with the bot 
     */
-   public TAXMPPClient(Course.TACourse a_course)
+   public BeduTAXMPPClient(BeduCourse.TACourse a_course)
    {
       chats = new HashMap<String, Chat>();
       active_chats = new HashSet<Chat>();
@@ -76,7 +76,7 @@ public class TAXMPPClient {
       conn = new XMPPConnection(config);
    }
    
-   public Course getCourse()
+   public BeduCourse getCourse()
    {
       return course;
    }
@@ -151,7 +151,7 @@ public class TAXMPPClient {
       active_chats.remove(c);
    }
    
-   public void acceptTicketAndAlertPeers(StudentTicket t)
+   public void acceptTicketAndAlertPeers(BeduStudentTicket t)
    {
       //should i determine if the ticket is actually in the list?
       
@@ -167,7 +167,7 @@ public class TAXMPPClient {
    }
 
 
-   public TicketList getTickets()
+   public BeduTATicketList getTickets()
    {
      return ticket_list;
    }
@@ -211,21 +211,21 @@ public class TAXMPPClient {
         if(cmd.equals("TICKET"))
         {
            //comes in the form "TICKET:<message>"
-           StudentTicket t = new StudentTicket(chat_args[1], new Date(System.currentTimeMillis()), m.getFrom());
+           BeduStudentTicket t = new BeduStudentTicket(chat_args[1], new Date(System.currentTimeMillis()), m.getFrom());
            ticket_list.add(t);
            sendMessageToOtherResources("TICKET-FORWARD:" + m.getFrom() + ":" + chat_args[1]);
         }
         else if(StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("TICKET-FORWARD"))
         {
            //comes in the form "TICKET-FORWARD:<student-jid>:<message>"
-           StudentTicket t = new StudentTicket(chat_args[2], new Date(System.currentTimeMillis()), chat_args[1]);
+           BeduStudentTicket t = new BeduStudentTicket(chat_args[2], new Date(System.currentTimeMillis()), chat_args[1]);
            ticket_list.add(t);
         }
         else if(StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("ACCEPTING"))
         {
            //form: "ACCEPTING:<string hash>"
            int hash = Integer.valueOf(chat_args[1]);
-           for(StudentTicket t : ticket_list)
+           for(BeduStudentTicket t : ticket_list)
            {
               if(t.hashCode() == hash)
               {

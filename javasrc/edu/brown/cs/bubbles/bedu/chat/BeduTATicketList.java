@@ -1,4 +1,4 @@
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,10 +6,10 @@ import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-class TicketList extends ArrayList<StudentTicket> implements TableModel {
+class BeduTATicketList extends ArrayList<BeduStudentTicket> implements TableModel {
         List<TableModelListener> listeners;
 
-        public TicketList()
+        public BeduTATicketList()
         {
            listeners = new ArrayList<TableModelListener>();
         }
@@ -57,7 +57,7 @@ class TicketList extends ArrayList<StudentTicket> implements TableModel {
         @Override
         public String getValueAt(int rowIdx, int colIdx)
         {
-           StudentTicket t = get(rowIdx);
+           BeduStudentTicket t = get(rowIdx);
            if(t == null)
               throw new IndexOutOfBoundsException("No such row " + rowIdx);
            switch(colIdx)
@@ -93,7 +93,7 @@ class TicketList extends ArrayList<StudentTicket> implements TableModel {
 
         //ArrayList methods which now fire TableModelEvents
         @Override
-        public boolean add(StudentTicket t)
+        public boolean add(BeduStudentTicket t)
         {
            boolean ret = super.add(t);
            for(TableModelListener l : listeners)
@@ -105,7 +105,7 @@ class TicketList extends ArrayList<StudentTicket> implements TableModel {
         }
 
         @Override 
-        public void add(int i, StudentTicket t)
+        public void add(int i, BeduStudentTicket t)
         {
            super.add(i ,t);
            for(TableModelListener l : listeners)
@@ -115,9 +115,9 @@ class TicketList extends ArrayList<StudentTicket> implements TableModel {
         }
 
         @Override
-        public StudentTicket remove(int i)
+        public BeduStudentTicket remove(int i)
         {
-           StudentTicket t = super.remove(i);
+           BeduStudentTicket t = super.remove(i);
            for(TableModelListener l : listeners)
            {
               l.tableChanged(new TableModelEvent(this));

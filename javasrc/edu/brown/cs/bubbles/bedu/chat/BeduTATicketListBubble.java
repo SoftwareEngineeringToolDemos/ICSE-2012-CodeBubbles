@@ -1,4 +1,4 @@
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -28,12 +28,12 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
  * @author akovacs
  *
  */
-class EduchatTicketListBubble extends BudaBubble {
+class BeduTATicketListBubble extends BudaBubble {
    private static Color GRADIENT_BOTTOM_COLOR = Color.white;
    private static Color GRADIENT_TOP_COLOR = new Color(0x33,0x00,0x99);
    private static Dimension DEFAULT_DIMENSION = new Dimension(200, 200);
    
-   public EduchatTicketListBubble(TicketList list, TAXMPPClient a_ta_client)
+   public BeduTATicketListBubble(BeduTATicketList list, BeduTAXMPPClient a_ta_client)
    {
       TicketListPanel p = new TicketListPanel(list, this, a_ta_client);
       setContentPane(p);
@@ -41,12 +41,12 @@ class EduchatTicketListBubble extends BudaBubble {
    
    private class TicketListPanel extends JPanel implements MouseListener
    {
-               private JTable table;
-      private TicketList ticket_list; 
+      private JTable table;
+      private BeduTATicketList ticket_list; 
       private BudaBubble parent;
-      private TAXMPPClient ta_client;
+      private BeduTAXMPPClient ta_client;
       
-      public TicketListPanel(TicketList list, BudaBubble a_parent, TAXMPPClient a_ta_client)
+      public TicketListPanel(BeduTATicketList list, BudaBubble a_parent, BeduTAXMPPClient a_ta_client)
       {
          super(new BorderLayout());
          parent = a_parent;
@@ -80,7 +80,7 @@ class EduchatTicketListBubble extends BudaBubble {
                if(table.rowAtPoint(e.getPoint()) != -1)
                {
                   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-                  BudaBubble ticket_view_bubble = new TicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint())), ta_client);
+                  BudaBubble ticket_view_bubble = new BeduTATicketViewBubble(ticket_list.get(table.rowAtPoint(e.getPoint())), ta_client);
                      bba.addBubble(ticket_view_bubble,parent, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
                }
             } 

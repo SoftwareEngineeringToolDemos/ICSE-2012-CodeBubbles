@@ -1,4 +1,4 @@
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -24,14 +24,14 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 
-class TicketViewBubble extends BudaBubble {
+class BeduTATicketViewBubble extends BudaBubble {
    private static Color GRADIENT_BOTTOM_COLOR = Color.white;
    private static Color GRADIENT_TOP_COLOR = new Color(0x33,0x00,0x99);
    private static Dimension DEFAULT_DIMENSION = new Dimension(150, 150);
    
-   private StudentTicket ticket;
+   private BeduStudentTicket ticket;
    
-   public TicketViewBubble(StudentTicket t, TAXMPPClient a_client)
+   public BeduTATicketViewBubble(BeduStudentTicket t, BeduTAXMPPClient a_client)
    {
       ticket = t;
       setContentPane(new TicketViewPanel(t, this, new ChatStartListener(this, a_client)));
@@ -39,7 +39,7 @@ class TicketViewBubble extends BudaBubble {
    
    private class TicketViewPanel extends JPanel
    {
-      public TicketViewPanel(StudentTicket t, TicketViewBubble a_bubble, ChatStartListener listener)
+      public TicketViewPanel(BeduStudentTicket t, BeduTATicketViewBubble a_bubble, ChatStartListener listener)
       {
          //add(new JLabel(t.getText()));
          setOpaque(false); 
@@ -97,11 +97,11 @@ class TicketViewBubble extends BudaBubble {
 
 
 private class ChatStartListener implements ActionListener{
-        private TicketViewBubble bubble;
-        private TAXMPPClient client;
-        private EduchatBubble b;
+        private BeduTATicketViewBubble bubble;
+        private BeduTAXMPPClient client;
+        private BeduChatBubble b;
         
-        public ChatStartListener(TicketViewBubble a_bubble, TAXMPPClient a_client)
+        public ChatStartListener(BeduTATicketViewBubble a_bubble, BeduTAXMPPClient a_client)
         {
            bubble = a_bubble;
            client = a_client;
@@ -111,7 +111,7 @@ private class ChatStartListener implements ActionListener{
         public void actionPerformed(ActionEvent e)
         {                                                
            client.acceptTicketAndAlertPeers(bubble.ticket);
-           BudaBubble chat_bub = new EduchatBubble.TABubble(client, client.getChatForJID(bubble.ticket.getStudentJID()));
+           BudaBubble chat_bub = new BeduChatBubble.TABubble(client, client.getChatForJID(bubble.ticket.getStudentJID()));
            BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
            bba.addBubble(chat_bub,bubble, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
         }

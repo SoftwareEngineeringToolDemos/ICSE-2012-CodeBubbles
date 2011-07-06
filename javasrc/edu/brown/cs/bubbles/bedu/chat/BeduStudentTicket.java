@@ -18,16 +18,16 @@
  *                                                                               *
  ********************************************************************************/
 
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.Date;
 
-public class StudentTicket {
+public class BeduStudentTicket {
    private String text;
    private Date timestamp;
    private String studentJID;
    
-   public StudentTicket(String txt, Date time, String jid)
+   public BeduStudentTicket(String txt, Date time, String jid)
    {
       text = txt;
       timestamp = time;
@@ -70,7 +70,7 @@ public class StudentTicket {
          return false;
       if (getClass() != obj.getClass())
          return false;
-      StudentTicket other = (StudentTicket) obj;
+      BeduStudentTicket other = (BeduStudentTicket) obj;
       if (text == null) {
          if (other.text != null)
             return false;

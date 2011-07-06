@@ -1,4 +1,4 @@
-package edu.brown.cs.bubbles.bgta.educhat;
+package edu.brown.cs.bubbles.bedu.chat;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -36,7 +36,7 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 
-class EduchatTicketSubmitBubble extends BudaBubble {
+class BeduStudentTicketSubmitBubble extends BudaBubble {
    private static Color GRADIENT_BOTTOM_COLOR = Color.white;
    private static Color GRADIENT_TOP_COLOR = new Color(0xC4,0x32,0x1F);
    private static Dimension DEFAULT_DIMENSION = new Dimension(250, 200);
@@ -47,7 +47,7 @@ class EduchatTicketSubmitBubble extends BudaBubble {
 
    private TicketPanel panel;
    private String ta_jid;
-   public EduchatTicketSubmitBubble(String a_jid)
+   public BeduStudentTicketSubmitBubble(String a_jid)
    {
       HashMap<String, BgtaManager> chat_logins = new HashMap<String, BgtaManager>();
       for(Iterator<BgtaManager> it = BgtaFactory.getManagers(); it.hasNext();)
@@ -63,9 +63,9 @@ class EduchatTicketSubmitBubble extends BudaBubble {
 
    private class TicketPanel extends JPanel implements ItemListener, ActionListener
    {
-	  private Map<String, BgtaManager> chat_logins;
-	  private JComboBox login_box;
-	  private JTextArea ticket_area;
+      private Map<String, BgtaManager> chat_logins;
+      private JComboBox login_box;
+      private JTextArea ticket_area;
 	  
       private TicketPanel(Map<String, BgtaManager> some_chat_logins)
       {
@@ -167,9 +167,9 @@ class EduchatTicketSubmitBubble extends BudaBubble {
 	  BgtaManager man = panel.chat_logins.get(panel.login_box.getSelectedItem());
 	      
 	  BgtaBubble chat_b = BgtaFactory.createReceivedChatBubble(ta_jid, man);
-	  BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(EduchatTicketSubmitBubble.this);
+	  BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BeduStudentTicketSubmitBubble.this);
 	  chat_b.sendMessage("TICKET:" + panel.ticket_area.getText());
-	  bba.addBubble(chat_b, EduchatTicketSubmitBubble.this, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	  bba.addBubble(chat_b, BeduStudentTicketSubmitBubble.this, null, PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
       }
    }
 }

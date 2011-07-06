@@ -123,7 +123,7 @@ BgtaManager(String username,String password,ChatServer server)
 
 BgtaRoster getRoster()			   { return the_roster; }
 
-String getUsername()				   { return user_name; }
+public String getUsername()				   { return user_name; }
 
 String getPassword()				   { return user_password; }
 

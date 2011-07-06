@@ -62,7 +62,6 @@ public class CourseRepository implements BassRepository {
          if(c != null)
             courses.add(c);
       } 
-      courses.add(new Course.StudentCourse("CS324", "codebubbles2@jabber.org"));
       BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, instance);
       BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_COURSES, instance);
    }

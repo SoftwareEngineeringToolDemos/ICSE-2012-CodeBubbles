@@ -58,11 +58,7 @@ public class BgtaUtil {
     */
    public static BgtaChat bgtaChatForXMPPChat(XMPPConnection conn, Chat c)
    {
-      String realName = null;
-      //String realName = conn.getRoster().getEntry(c.getParticipant()).getName();
-     // if(realName == null) {realName = c.getParticipant();}
-      System.out.println("1: " + c);
-      return new BgtaChat(conn.getUser(), c.getParticipant(), realName, ChatServer.fromServer(conn.getServiceName()), c, null);
+      return new BgtaChat(conn.getUser(), c.getParticipant(), null, ChatServer.fromServer(conn.getServiceName()), c, null);
    }
 
 }

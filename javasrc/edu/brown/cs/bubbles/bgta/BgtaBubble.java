@@ -325,7 +325,7 @@ private String whiteSpaceAwareReplace(String input,String toreplace)
  * 
  * @param msg A String
  */
-void sendMessage(String msg)
+public void sendMessage(String msg)
 {
    draft_area.send(msg);
 }

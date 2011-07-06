@@ -40,11 +40,6 @@ abstract class Course extends BassNameBase {
          return course_name;
    }
 
-   @Override
-   public BudaBubble createBubble()
-   {
-      return new EduchatTicketSubmitBubble("andrewkova@gmail.com");
-   }
    static class TACourse extends Course{
       private TicketList ticket_list;
       private String xmpp_password;
@@ -107,16 +102,18 @@ abstract class Course extends BassNameBase {
 
    static class StudentCourse extends Course
    {
+	  private String ta_chat_jid;
       public StudentCourse(String a_course_name, String a_jid) {
          super(a_course_name, a_jid);
+         ta_chat_jid = a_jid;
       }
    
-      /*
+     
       @Override public BudaBubble createBubble(){
-         System.out.println("Creating student bubble");
-         return null;
+          return new EduchatTicketSubmitBubble(ta_chat_jid);
+
       }
-   */
+  
       @Override protected String getSymbolName(){
          return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + getCourseName() + " help";
       }
@@ -124,11 +121,7 @@ abstract class Course extends BassNameBase {
       @Override public Icon getDisplayIcon(){
          return BoardImage.getIcon("question");
       }     
-
-
-
    }
-
 
 public String getTAJID()
 {

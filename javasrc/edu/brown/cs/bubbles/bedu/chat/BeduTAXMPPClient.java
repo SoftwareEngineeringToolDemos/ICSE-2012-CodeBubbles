@@ -227,7 +227,8 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 		// comes in the form "TICKET-FORWARD:<student-jid>:<message>"
 		BeduStudentTicket t = new BeduStudentTicket(chat_args[2], new Date(
 				System.currentTimeMillis()), chat_args[1]);
-		ticket_list.add(t);
+		if(!ticket_list.contains(t))
+			ticket_list.add(t);
 	}
 	
 	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(

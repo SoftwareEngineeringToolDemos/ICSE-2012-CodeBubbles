@@ -1,12 +1,12 @@
 /********************************************************************************/
-/*                         						 											  */
-/*    		BeduCourse.java     	            											  */
-/*                            																  */
-/* 	Bubbles for Education   																  */
-/* 	Represents a school course		 	      											  */
-/* 				               																  */
+/*                         						 								*/
+/*    		BeduCourse.java     	            								*/
+/*                            													*/
+/* 	Bubbles for Education   													*/
+/* 	Represents a school course		 	      									*/
+/* 				               													*/
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         					  */
+/* 	Copyright 2011 Brown University -- Andrew Kovacs         					*/
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -164,66 +164,67 @@ static class TACourse extends BeduCourse
 
 static class StudentCourse extends BeduCourse
 {
-   private String ta_chat_jid;
-   
-   
-   
-   public StudentCourse(String a_course_name, String a_jid)
-   {
-   	super(a_course_name, a_jid);
-   	ta_chat_jid = a_jid;
-   }
-   
-   
-   
-   @Override
-   public BudaBubble createBubble()
-   {
-   	return new BeduStudentTicketSubmitBubble(ta_chat_jid);
-   
-   }
-   
-   
-   
-   @Override
-   protected String getSymbolName()
-   {
-   	return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + getCourseName()
-   			+ " help";
-   }
-   
-   
-   
-   @Override
-   public Icon getDisplayIcon()
-   {
-   	return BoardImage.getIcon("question");
-   }
-   }
-   
-   
-   
-   public String getTAJID()
-   {
-   	return ta_chat_jid;
-   }
-   
-   
-   
-   public String getCourseName()
-   {
-   	return course_name;
-   }
-   
-   
-   
-   @Override
-   public boolean equals(Object o)
-   {
-   	if (o instanceof BeduCourse) {
-   		BeduCourse c = (BeduCourse) o;
-   		return (course_name == c.course_name && ta_chat_jid == c.ta_chat_jid);
-   	} else
-   		return false;
-   }
+
+private String ta_chat_jid;
+
+
+
+public StudentCourse(String a_course_name, String a_jid)
+{
+	super(a_course_name, a_jid);
+	ta_chat_jid = a_jid;
+}
+
+
+
+@Override
+public BudaBubble createBubble()
+{
+	return new BeduStudentTicketSubmitBubble(ta_chat_jid);
+
+}
+
+
+
+@Override
+protected String getSymbolName()
+{
+	return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + getCourseName()
+			+ " help";
+}
+
+
+
+@Override
+public Icon getDisplayIcon()
+{
+	return BoardImage.getIcon("question");
+}
+}
+
+
+
+public String getTAJID()
+{
+	return ta_chat_jid;
+}
+
+
+
+public String getCourseName()
+{
+	return course_name;
+}
+
+
+
+@Override
+public boolean equals(Object o)
+{
+	if (o instanceof BeduCourse) {
+		BeduCourse c = (BeduCourse) o;
+		return (course_name == c.course_name && ta_chat_jid == c.ta_chat_jid);
+	} else
+		return false;
+}
 }

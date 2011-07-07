@@ -181,7 +181,7 @@ boolean propertiesMatch(String un,String se)
 
 /********************************************************************************/
 /*										*/
-/*	Presence listener							*/
+/*	Presence methods							*/
 /*										*/
 /********************************************************************************/
 
@@ -191,7 +191,12 @@ void addPresenceListener(PacketListener p)
    the_connection.addPacketListener(p, new PacketTypeFilter(pr.getClass()));
 }
 
-
+public void subscribeToUser(String jid)
+{
+   Packet p = new Presence(Presence.Type.subscribe);
+   p.setTo(jid);
+   the_connection.sendPacket(p);
+}
 
 /********************************************************************************/
 /*										*/

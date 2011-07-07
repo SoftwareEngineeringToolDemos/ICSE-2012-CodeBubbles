@@ -189,6 +189,7 @@ private class TicketPanel extends JPanel implements ItemListener, ActionListener
    @Override public void actionPerformed(ActionEvent e) {
    	BgtaManager man = panel.chat_logins.get(panel.login_box.getSelectedItem());
    
+   	man.subscribeToUser(ta_jid);
    	BgtaBubble chat_b = BgtaFactory.createReceivedChatBubble(ta_jid, man);
    	BudaBubbleArea bba = BudaRoot
    			.findBudaBubbleArea(BeduStudentTicketSubmitBubble.this);

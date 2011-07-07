@@ -1,5 +1,5 @@
 /********************************************************************************/
-/*                         						 								*/
+/*                         						 											  */
 /*    		BeduChatBubble.java                 								*/
 /*                            													*/
 /* 	Bubbles for Education   													*/
@@ -29,38 +29,31 @@ import org.jivesoftware.smack.XMPPConnection;
 
 import edu.brown.cs.bubbles.bgta.*;
 
-class BeduChatBubble extends BgtaBubble
-{
+class BeduChatBubble extends BgtaBubble {
 
-
-
-private BeduChatBubble(XMPPConnection conn, Chat c)
-{
+private BeduChatBubble(XMPPConnection conn, Chat c) {
 	super(BgtaUtil.bgtaChatForXMPPChat(conn, c));
 }
 
+static class TABubble extends BeduChatBubble {
 
-
-static class TABubble extends BeduChatBubble
-{
-
-	private BeduTAXMPPClient client;
-	private Chat chat;
-
-	TABubble(BeduTAXMPPClient a_client, Chat a_chat)
-	{
-		super(a_client.getConnection(), a_chat);
-		client = a_client;
-		chat = a_chat;
-	}
-	
-	
-	
-	@Override
-	public void setVisible(boolean vis)
-	{
-		super.setVisible(vis);
-		client.endChatSession(chat);
-	}
+   private BeduTAXMPPClient client;
+   private Chat				 chat;
+   
+   
+   
+   TABubble(BeduTAXMPPClient a_client, Chat a_chat) {
+   	super(a_client.getConnection(), a_chat);
+   	client = a_client;
+   	chat = a_chat;
+   }
+   
+   
+   
+   @Override
+   public void setVisible(boolean vis) {
+   	super.setVisible(vis);
+   	client.endChatSession(chat);
+   }
 }
 }

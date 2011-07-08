@@ -100,11 +100,10 @@ public void connectAndLogin(String name) throws XMPPException {
 				if (chats.get(jid) == null) {
 					System.out.println("Chat created: " + c + " with "
 							+ c.getParticipant());
-					chats.put(
-							jid,
-							conn.getChatManager().createChat(jid,
-									new StudentXMPPBotMessageListener()));
-					// c.addMessageListener();
+					StudentXMPPBotMessageListener l = new StudentXMPPBotMessageListener();
+					Chat new_chat = conn.getChatManager().createChat(jid, l);
+					c.addMessageListener(l);
+					chats.put(jid, new_chat);
 				}
 			}
 		}

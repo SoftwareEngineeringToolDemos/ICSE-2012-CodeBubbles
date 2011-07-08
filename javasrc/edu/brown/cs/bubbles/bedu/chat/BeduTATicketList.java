@@ -22,6 +22,7 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
@@ -156,5 +157,10 @@ BeduTATicketList() {
 		}
 	}
 	return ret;
+}
+
+@Override public Iterator<BeduStudentTicket> iterator()
+{
+	return super.iterator();
 }
 }

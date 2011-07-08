@@ -50,16 +50,16 @@ private XMPPConnection			  conn;
 
 private String						  resource_name;
 private BeduCourse.TACourse	  course;
-private Map<String, MessageListener>		  conversations;		  // maps bare jids to Chat objects
-private Set<String>					  permitted_jids;
+private Map<String, Chat>		  chats;		  // maps bare jids to Chat objects
+private Set<Chat>					  active_chats;
 
 private BeduTATicketList		  ticket_list;
 
 
 
 BeduTAXMPPClient(BeduCourse.TACourse a_course) {
-	conversations = new HashMap<String, MessageListener>();
-	permitted_jids = new HashSet<String>();
+	chats = new HashMap<String, Chat>();
+	active_chats = new HashSet<Chat>();
 	course = a_course;
 	config = new ConnectionConfiguration(course.getXMPPServer());
 	config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
@@ -97,17 +97,13 @@ public void connectAndLogin(String name) throws XMPPException {
 			// actually useful/correct
 			if (!createdLocally) {
 				String jid = StringUtils.parseBareAddress(c.getParticipant());
-				if (conversations.get(jid) == null) {
+				if (chats.get(jid) == null) {
 					System.out.println("Chat created: " + c + " with "
 							+ c.getParticipant());
 					StudentXMPPBotMessageListener l = new StudentXMPPBotMessageListener();
-					//Chat new_chat = conn.getChatManager().createChat(jid, l);
+					Chat new_chat = conn.getChatManager().createChat(jid, l);
 					c.addMessageListener(l);
-					conversations.put(jid, l);
-				}
-				else
-				{
-					c.addMessageListener(conversations.get(jid));
+					chats.put(jid, new_chat);
 				}
 			}
 		}
@@ -132,15 +128,11 @@ boolean isLoggedIn() {
 
 
 Chat getChatForJID(String jid) {
-	Chat chat = conn.getChatManager().createChat(jid, null);
-	MessageListener l = null;
-	
-	if(conversations.containsKey(StringUtils.parseBareAddress(jid)))
-		l = conversations.get(StringUtils.parseBareAddress(jid));
-	else
-		l = new StudentXMPPBotMessageListener();
-	chat.addMessageListener(l);
+	Chat chat = chats.get(StringUtils.parseBareAddress(jid));
 
+	if (chat == null) {
+		chat = conn.getChatManager().createChat(jid, null);
+	}
 
 	return chat;
 }
@@ -158,7 +150,7 @@ void disconnect() throws XMPPException {
  * the student until another ticket is accepted
  */
 void endChatSession(Chat c) {
-	permitted_jids.remove(StringUtils.parseBareAddress(c.getParticipant()));
+	active_chats.remove(c);
 }
 
 
@@ -171,7 +163,7 @@ void acceptTicketAndAlertPeers(BeduStudentTicket t) {
 
 	ticket_list.remove(t);
 
-	permitted_jids.add(StringUtils.parseBareAddress(t.getStudentJID()));
+	active_chats.add(chats.get(StringUtils.parseBareAddress(t.getStudentJID())));
 }
 
 
@@ -249,29 +241,8 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 			}
 		}
 	}
-	else if(cmd.equals("REQUEST-TICKETS"))
-	{
-		//Chat outc = conn.getChatManager().createChat(c.getParticipant(), null);
-		
-		for(BeduStudentTicket t : ticket_list)
-		{
-			try {
-				c.sendMessage("TICKET-FORWARD:" + t.getStudentJID() + ":"
-						+ t.getText());
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} catch (XMPPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
 	
-	else if (permitted_jids.contains(StringUtils.parseBareAddress(c.getParticipant()))) {
+	else if (active_chats.contains(c)) {
 		// let the message go through to the UI
 		System.out.println("Student message: " + c.getParticipant() + " : "
 				+ m.getBody());

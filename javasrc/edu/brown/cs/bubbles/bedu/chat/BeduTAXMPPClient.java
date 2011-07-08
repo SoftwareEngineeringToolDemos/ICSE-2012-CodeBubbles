@@ -51,7 +51,7 @@ private XMPPConnection			  conn;
 private String						  resource_name;
 private BeduCourse.TACourse	  course;
 private Map<String, Chat>		  chats;		  // maps bare jids to Chat objects
-private Set<Chat>					  active_chats;
+private Set<String>					  permitted_jids;
 
 private BeduTATicketList		  ticket_list;
 
@@ -59,7 +59,7 @@ private BeduTATicketList		  ticket_list;
 
 BeduTAXMPPClient(BeduCourse.TACourse a_course) {
 	chats = new HashMap<String, Chat>();
-	active_chats = new HashSet<Chat>();
+	permitted_jids = new HashSet<String>();
 	course = a_course;
 	config = new ConnectionConfiguration(course.getXMPPServer());
 	config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
@@ -92,18 +92,17 @@ public void connectAndLogin(String name) throws XMPPException {
 	conn.sendPacket(avail_p);
 	conn.getChatManager().addChatListener(new ChatManagerListener() {
 		@Override public void chatCreated(Chat c, boolean createdLocally) {
-
-			// TODO: figure out if excluding chats that are createdLocally is
-			// actually useful/correct
 			if (!createdLocally) {
 				String jid = StringUtils.parseBareAddress(c.getParticipant());
 				if (chats.get(jid) == null) {
-					System.out.println("Chat created: " + c + " with "
-							+ c.getParticipant());
+					System.out.println("Chat created: " + c + " with " + c.getParticipant());
 					StudentXMPPBotMessageListener l = new StudentXMPPBotMessageListener();
 					Chat new_chat = conn.getChatManager().createChat(jid, l);
 					c.addMessageListener(l);
-					chats.put(jid, new_chat);
+				}
+				else
+				{
+				   c.addMessageListener(chats.get(jid).getListeners().iterator().next());
 				}
 			}
 		}
@@ -150,7 +149,7 @@ void disconnect() throws XMPPException {
  * the student until another ticket is accepted
  */
 void endChatSession(Chat c) {
-	active_chats.remove(c);
+	permitted_jids.remove(StringUtils.parseBareAddress(c.getParticipant()));
 }
 
 
@@ -163,7 +162,7 @@ void acceptTicketAndAlertPeers(BeduStudentTicket t) {
 
 	ticket_list.remove(t);
 
-	active_chats.add(chats.get(StringUtils.parseBareAddress(t.getStudentJID())));
+	permitted_jids.add(StringUtils.parseBareAddress(t.getStudentJID()));
 }
 
 
@@ -212,6 +211,7 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 
 	String cmd = chat_args[0];
 	if (cmd.equals("TICKET")) {
+      chats.put(StringUtils.parseBareAddress(c.getParticipant()), c);
 		// comes in the form "TICKET:<message>"
 		BeduStudentTicket t = new BeduStudentTicket(chat_args[1], new Date(
 				System.currentTimeMillis()), m.getFrom());
@@ -242,7 +242,7 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 		}
 	}
 	
-	else if (active_chats.contains(c)) {
+	else if (permitted_jids.contains(StringUtils.parseBareAddress(c.getParticipant()))) {
 		// let the message go through to the UI
 		System.out.println("Student message: " + c.getParticipant() + " : "
 				+ m.getBody());

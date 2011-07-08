@@ -110,11 +110,27 @@ public void connectAndLogin(String name) throws XMPPException {
 
 	conn.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
 	System.out.println(conn.getRoster().getEntries());
-
+	
 	//if(!conn.getRoster().contains(getMyBareJID()))
 	//{
 	// conn.getRoster().createEntry(getMyBareJID(), "Me", null);
 	//}
+	
+	/*List<String> my_full_jids = BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
+	if(my_full_jids.size() > 1)
+	{
+	   for(String full_jid : my_full_jids)
+	   {
+	      if(!full_jid.split("/")[1].equals(name))
+	      {
+	         conn.getChatManager().createChat(full_jid, new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
+	         break;
+	      }
+	   }
+	   
+	} */
+	
+	//conn.getChatManager().createChat(conn.getUser(), new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
 
 }
 
@@ -170,7 +186,6 @@ void acceptTicketAndAlertPeers(BeduStudentTicket t) {
 public BeduTATicketList getTickets() {
 	return ticket_list;
 }
-
 
 
 XMPPConnection getConnection() {
@@ -241,6 +256,24 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 			}
 		}
 	}
+	
+	 else if (cmd.equals("REQUEST-TICKETS")) {
+      for (BeduStudentTicket t : ticket_list) {
+         try {
+            c.sendMessage("TICKET-FORWARD:" + t.getStudentJID() + ":"
+                  + t.getText());
+            try {
+               Thread.sleep(1000);
+            } catch (InterruptedException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
+         } catch (XMPPException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+      }
+   }
 	
 	else if (permitted_jids.contains(StringUtils.parseBareAddress(c.getParticipant()))) {
 		// let the message go through to the UI

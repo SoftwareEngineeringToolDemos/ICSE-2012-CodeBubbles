@@ -36,24 +36,27 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 
+import edu.brown.cs.bubbles.bedu.chat.BeduCourse.TACourse;
+
 public class BeduTAXMPPClientTest {
 private static BeduTAXMPPClient ta_client;
 private static BeduTAXMPPClient ta_client2;
 private static XMPPConnection	student_conn1;
 
 // login names
-private static String			  ta_login		= "codebubbles";
+private static String			  ta_login		= "codebubbles@jabber.org";
 private static String			  student_login = "codebubbles2";
 
 
 
 @BeforeClass public static void setUpOnce() throws XMPPException {
 	System.out.println("Setting up once");
-	ta_client = new BeduTAXMPPClient(ta_login, "brownbears", "jabber.org", "TA1");
-	ta_client.connect();
+	BeduCourse.TACourse c = new TACourse("testcourse", ta_login, "brownbears", "jabber.org");
+	ta_client = new BeduTAXMPPClient(c);
+	ta_client.connectAndLogin("TA1");
 
-	ta_client2 = new BeduTAXMPPClient(ta_login, "brownbears", "jabber.org", "TA2");
-	ta_client2.connect();
+	ta_client2 = new BeduTAXMPPClient(c);
+	//ta_client2.connectAndLogin("TA2");
 
 	XMPPConnection.DEBUG_ENABLED = true;
 	ConnectionConfiguration config = new ConnectionConfiguration("jabber.org", 5222);
@@ -68,8 +71,9 @@ private static String			  student_login = "codebubbles2";
 
 
 @AfterClass public static void staticTearDown() throws XMPPException {
-	// student_conn1.disconnect();
-	// ta_client.disconnect();
+	 student_conn1.disconnect();
+	 ta_client.disconnect();
+	 ta_client2.disconnect();
 }
 
 
@@ -78,9 +82,9 @@ private static String			  student_login = "codebubbles2";
  * Tests the ability to receive a ticket via chat and store it as a
  * StudentTicket
  */
-@Test public void testTicketReceive() throws XMPPException {
+@Test public void testTicketReceiveAndAccept() throws XMPPException {
 	System.out.println("Testing ticket receipt");
-	Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org", new MessageListener() {
+	Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", new MessageListener() {
 		@Override public void processMessage(Chat c, Message m) {
 
 		}
@@ -105,47 +109,31 @@ private static String			  student_login = "codebubbles2";
 	BeduStudentTicket t = ta_client.getTickets().get(0);
 	assertEquals(t.getText(), "this is a ticket");
 	assertEquals(t.getStudentJID(), student_login + "@jabber.org/Smack");
+	
+	ta_client.acceptTicketAndAlertPeers(t);
+	assertTrue(ta_client.getTickets().size() == 0);
+}
+
+@Test public void testTicketForwardAndAccept() throws XMPPException, InterruptedException
+{
+   Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
+   ta_client2.connectAndLogin("TA2");
+   
+   assertTrue(ta_client.getTickets().size() == 0);
+   assertTrue(ta_client2.getTickets().size() == 0);
+   
+   c.sendMessage("TICKET:derp");
+   Thread.sleep(1000);
+   assertTrue(ta_client.getTickets().size() == 1);
+   assertTrue(ta_client2.getTickets().size() == 1);
+   assertEquals(ta_client.getTickets().get(0),ta_client2.getTickets().get(0));
+   
+   ta_client2.acceptTicketAndAlertPeers(ta_client2.getTickets().get(0));
+   Thread.sleep(1000);
+   assertTrue(ta_client.getTickets().size() == 0);
+   assertTrue(ta_client2.getTickets().size() == 0);
 }
 
 
 
-/**
- * Tests the ability for another TA to get a ticket that was originally sent to
- * some arbitrary TA choice
- */
-@Test public void teastTicketForward() throws Exception {
-	BeduTAXMPPClient ta_client2 = new BeduTAXMPPClient(ta_login, "brownbears", "jabber.org", "TA2");
-
-	ta_client2.connect();
-	Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", new MessageListener() {
-		@Override public void processMessage(Chat c1, Message m) {
-			// ...
-		}
-	});
-
-	assertTrue(ta_client.getTickets().size() == 1);
-	assertTrue(ta_client2.getTickets().size() == 0);
-	c.sendMessage("TICKET:ticket");
-	Thread.sleep(1000);
-
-	assertTrue(ta_client.getTickets().size() == 2);
-	assertTrue(ta_client2.getTickets().size() == 1);
-
-	assertEquals(StringUtils.parseBareAddress(ta_client.getTickets().get(0).getStudentJID()), "codebubbles2@jabber.org");
-	assertEquals(ta_client.getTickets().get(0).getText(), "ticket");
-
-	assertEquals(StringUtils.parseBareAddress(ta_client.getTickets().get(0).getStudentJID()), "codebubbles2@jabber.org");
-	assertEquals(ta_client.getTickets().get(0).getText(), "ticket");
-}
-
-
-
-/**
- * Tests the ability for a TA to accept a ticket and have it disappear from t
- * the lists of others
- */
-@Test public void testTicketAccept() throws Exception {
-	Scanner s = new Scanner(System.in);
-	s.nextLine();
-}
 }

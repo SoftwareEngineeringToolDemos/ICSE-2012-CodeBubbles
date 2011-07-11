@@ -21,11 +21,17 @@ package edu.brown.cs.bubbles.bedu.chat;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -59,7 +65,7 @@ BeduTATicketViewBubble(BeduStudentTicket t, BeduTAXMPPClient a_client) {
 private class TicketViewPanel extends JPanel 
 {
    private TicketViewPanel(BeduStudentTicket t, BeduTATicketViewBubble a_bubble,
-   		ChatStartListener listener) {
+      ChatStartListener listener) {
    	// add(new JLabel(t.getText()));
    	setOpaque(false);
    
@@ -109,6 +115,21 @@ private class TicketViewPanel extends JPanel
    	c.weighty = 0;
    	c.fill = GridBagConstraints.NONE;
    	add(submit_button, c);
+   }
+   
+   @Override public void paintComponent(Graphics g) {
+      Graphics2D g2 = (Graphics2D) g.create();
+      Dimension sz = getSize();
+      Paint p = new GradientPaint(0f, 0f, GRADIENT_BOTTOM_COLOR, 0f, sz.height,
+            GRADIENT_TOP_COLOR);
+   
+      Shape r = new Rectangle2D.Float(0, 0, sz.width, sz.height);
+      g2.setColor(Color.orange);
+      g2.fill(r);
+      g2.setPaint(p);
+      g2.fill(r);
+   
+      super.paintComponent(g);
    }
 }
 

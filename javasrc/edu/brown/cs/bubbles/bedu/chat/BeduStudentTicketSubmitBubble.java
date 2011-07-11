@@ -195,7 +195,7 @@ private class TicketPanel extends JPanel implements ItemListener, ActionListener
    			.findBudaBubbleArea(BeduStudentTicketSubmitBubble.this);
    	chat_b.sendMessage("TICKET:" + panel.ticket_area.getText());
    	bba.addBubble(chat_b, BeduStudentTicketSubmitBubble.this, null,
-   			PLACEMENT_LOGICAL | PLACEMENT_MOVETO);
+   			PLACEMENT_LOGICAL | PLACEMENT_GROUPED);
    }
 }
 }

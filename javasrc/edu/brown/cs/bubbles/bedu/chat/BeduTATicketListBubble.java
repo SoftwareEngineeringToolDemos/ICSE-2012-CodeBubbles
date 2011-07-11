@@ -97,7 +97,7 @@ private class TicketListPanel extends JPanel implements MouseListener {
    			BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
    			BudaBubble ticket_view_bubble = new BeduTATicketViewBubble((BeduStudentTicket)ticket_list.get(table.rowAtPoint(e.getPoint())), ta_client);
    			bba.addBubble(ticket_view_bubble, parent, null, PLACEMENT_LOGICAL
-   					| PLACEMENT_MOVETO);
+   					| PLACEMENT_GROUPED);
    		}
    	}
    }

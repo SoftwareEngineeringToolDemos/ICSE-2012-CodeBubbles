@@ -133,7 +133,7 @@ private class ChatStartListener implements ActionListener
    	BudaBubble chat_bub = new BeduChatBubble.TABubble(client,
    			client.getChatForJID(bubble.ticket.getStudentJID()));
    	BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
-   	bba.addBubble(chat_bub, bubble, null, PLACEMENT_LOGICAL | PLACEMENT_MOVETO);
+   	bba.addBubble(chat_bub, bubble, null, PLACEMENT_LOGICAL | PLACEMENT_GROUPED);
    }
 }
 }

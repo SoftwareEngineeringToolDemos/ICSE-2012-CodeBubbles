@@ -44,7 +44,7 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 class BeduTATicketViewBubble extends BudaBubble {
 private static Color		GRADIENT_BOTTOM_COLOR = Color.white;
 private static Color		GRADIENT_TOP_COLOR	 = new Color(0x33, 0x00, 0x99);
-private static Dimension  DEFAULT_DIMENSION	 = new Dimension(150, 150);
+private static Dimension  DEFAULT_DIMENSION	 = new Dimension(250, 200);
 
 private BeduStudentTicket ticket;
 
@@ -61,6 +61,7 @@ private class TicketViewPanel extends JPanel
    private TicketViewPanel(BeduStudentTicket t, BeduTATicketViewBubble a_bubble,
    		ChatStartListener listener) {
    	// add(new JLabel(t.getText()));
+
    	setOpaque(false);
    
    	setPreferredSize(DEFAULT_DIMENSION);
@@ -76,7 +77,7 @@ private class TicketViewPanel extends JPanel
    	c.weightx = 0;
    	c.anchor = GridBagConstraints.PAGE_START;
    	c.insets = new Insets(0, 0, 10, 0);
-   	// c.fill = GridBagConstraints.HORIZONTAL;
+   	//c.fill = GridBagConstraints.HORIZONTAL;
    	add(ticket_area_label, c);
    	c.insets = new Insets(0, 0, 0, 0);
    
@@ -87,7 +88,7 @@ private class TicketViewPanel extends JPanel
    	JScrollPane scroll = new JScrollPane(ticket_pane);
    	scroll.setOpaque(false);
    	scroll.getViewport().setOpaque(false);
-   	// scroll.setBorder(null);
+   	//scroll.setBorder(null);
    	c.anchor = GridBagConstraints.PAGE_START;
    	c.gridx = 0;
    	c.gridy = 1;

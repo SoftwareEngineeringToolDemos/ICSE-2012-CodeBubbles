@@ -58,7 +58,7 @@ class BeduStudentTicketSubmitBubble extends BudaBubble {
 private static Color		  GRADIENT_BOTTOM_COLOR = Color.white;
 private static Color		  GRADIENT_TOP_COLOR	   = new Color(0xC4, 0x32, 0x1F);
 private static Dimension	 DEFAULT_DIMENSION	= new Dimension(250, 200);
-private static final String NEW_LOGIN_STR			= "Log in to an XMPP account";
+private static final String NEW_LOGIN_STR			= "XMPP Log in...";
 
 private static final long	serialVersionUID		= 1L;
 
@@ -127,7 +127,6 @@ private class TicketPanel extends JPanel implements ItemListener, ActionListener
    
    	ticket_area = new JTextArea();
    	ticket_area.setOpaque(false);
-   	ticket_area.setText("Blah blah");
    	ticket_area.setLineWrap(true);
    	JScrollPane scroll = new JScrollPane(ticket_area);
    	scroll.setOpaque(false);

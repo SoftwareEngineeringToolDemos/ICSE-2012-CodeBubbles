@@ -51,7 +51,7 @@ private XMPPConnection			  conn;
 private String						  resource_name;
 private BeduCourse.TACourse	  course;
 private Map<String, Chat>		  chats;		  // maps bare jids to Chat objects
-private Set<String>					  permitted_jids;
+private Set<String>				  permitted_jids;
 
 private BeduTATicketList		  ticket_list;
 
@@ -87,6 +87,7 @@ public void connectAndLogin(String name) throws XMPPException {
 	conn.connect();
 	conn.login(course.getTAJID().split("@")[0], course.getXMPPPassword(),
 			resource_name);
+
 	Presence avail_p = new Presence(Presence.Type.available);
 	avail_p.setPriority(128);
 	conn.sendPacket(avail_p);
@@ -129,8 +130,8 @@ public void connectAndLogin(String name) throws XMPPException {
 	   }
 	   
 	} */
-	
-	//conn.getChatManager().createChat(conn.getUser(), new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
+	BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
+	conn.getChatManager().createChat("codebubbles2@jabber.org", new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
 
 }
 
@@ -175,7 +176,6 @@ void acceptTicketAndAlertPeers(BeduStudentTicket t) {
 
 	// we need to alert all the other TAs that we're accepting this ticket
 	sendMessageToOtherResources("ACCEPTING:" + t.textHash());
-
 	ticket_list.remove(t);
 
 	permitted_jids.add(StringUtils.parseBareAddress(t.getStudentJID()));
@@ -220,8 +220,7 @@ private String getMyBareJID() {
 
 private class StudentXMPPBotMessageListener implements MessageListener {
 @Override public void processMessage(Chat c, Message m) {
-	System.out.println("TAClient received message: " + m.getBody() + " from "
-			+ c);
+	System.out.println(conn.getUser() + "  received message: " + m.getBody() + " from " + c);
 	String[] chat_args = m.getBody().split(":");
 
 	String cmd = chat_args[0];
@@ -231,6 +230,12 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 		BeduStudentTicket t = new BeduStudentTicket(chat_args[1], new Date(
 				System.currentTimeMillis()), m.getFrom());
 		ticket_list.add(t);
+		try {
+         c.sendMessage("Ticket received. A TA will respond soon.");
+      } catch (XMPPException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
 		sendMessageToOtherResources("TICKET-FORWARD:" + m.getFrom() + ":"
 				+ chat_args[1]);
 	} 
@@ -249,9 +254,10 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 			getMyBareJID())
 			&& cmd.equals("ACCEPTING")) {
 		// form: "ACCEPTING:<string hash>"
+	   
 		int hash = Integer.valueOf(chat_args[1]);
 		for (BeduStudentTicket t : ticket_list) {
-			if (t.hashCode() == hash) {
+			if (t.textHash() == hash) {
 				ticket_list.remove(t);
 			}
 		}

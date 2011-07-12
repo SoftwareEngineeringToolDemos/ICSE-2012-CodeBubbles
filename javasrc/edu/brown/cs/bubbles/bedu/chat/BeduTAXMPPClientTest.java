@@ -41,6 +41,7 @@ import edu.brown.cs.bubbles.bedu.chat.BeduCourse.TACourse;
 public class BeduTAXMPPClientTest {
 private static BeduTAXMPPClient ta_client;
 private static BeduTAXMPPClient ta_client2;
+private static BeduTAXMPPClient ta_client3;
 private static XMPPConnection	student_conn1;
 
 // login names
@@ -51,11 +52,11 @@ private static String			  student_login = "codebubbles2";
 
 @BeforeClass public static void setUpOnce() throws XMPPException {
 	System.out.println("Setting up once");
-	BeduCourse.TACourse c = new TACourse("testcourse", ta_login, "brownbears", "jabber.org");
-	ta_client = new BeduTAXMPPClient(c);
+	//BeduCourse.TACourse c = new TACourse("testcourse", ta_login, "brownbears", "jabber.org");
+	ta_client = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
 	ta_client.connectAndLogin("TA1");
 
-	ta_client2 = new BeduTAXMPPClient(c);
+	ta_client2 = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
 	//ta_client2.connectAndLogin("TA2");
 
 	XMPPConnection.DEBUG_ENABLED = true;
@@ -74,6 +75,7 @@ private static String			  student_login = "codebubbles2";
 	 student_conn1.disconnect();
 	 ta_client.disconnect();
 	 ta_client2.disconnect();
+	 ta_client3.disconnect();
 }
 
 
@@ -108,7 +110,7 @@ private static String			  student_login = "codebubbles2";
 	assertTrue(ta_client.getTickets().size() == 1);
 	BeduStudentTicket t = ta_client.getTickets().get(0);
 	assertEquals(t.getText(), "this is a ticket");
-	assertEquals(t.getStudentJID(), student_login + "@jabber.org/Smack");
+	//assertEquals(t.getStudentJID(), student_login + "@jabber.org/Smack");
 	
 	ta_client.acceptTicketAndAlertPeers(t);
 	assertTrue(ta_client.getTickets().size() == 0);
@@ -123,17 +125,44 @@ private static String			  student_login = "codebubbles2";
    assertTrue(ta_client2.getTickets().size() == 0);
    
    c.sendMessage("TICKET:derp");
-   Thread.sleep(1000);
+   Thread.sleep(5000);
    assertTrue(ta_client.getTickets().size() == 1);
    assertTrue(ta_client2.getTickets().size() == 1);
    assertEquals(ta_client.getTickets().get(0),ta_client2.getTickets().get(0));
    
    ta_client2.acceptTicketAndAlertPeers(ta_client2.getTickets().get(0));
-   Thread.sleep(1000);
+   Thread.sleep(5000);
    assertTrue(ta_client.getTickets().size() == 0);
    assertTrue(ta_client2.getTickets().size() == 0);
+
 }
 
+@Test public void testInitialTicketForwards() throws XMPPException, InterruptedException
+{
+   System.out.println("Testing initial ticket forwarding...");
+   ta_client3 = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
+   Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
+
+   assertTrue(ta_client.getTickets().size() == 0);
+   assertTrue(ta_client3.getTickets().size() == 0);
+   c.sendMessage("TICKET:1");
+   c.sendMessage("TICKET:2");
+   
+   Thread.sleep(1000);
+   assertTrue(ta_client.getTickets().size() == 2);
+   assertTrue(ta_client3.getTickets().size() == 0);
+   
+   ta_client3.connectAndLogin("TA3");
+   Thread.sleep(3000);
+   assertTrue(ta_client.getTickets().size() == 2);
+   assertTrue(ta_client3.getTickets().size() == 2);
+   ta_client.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
+   ta_client3.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
+   Thread.sleep(2000);
+   assertTrue(ta_client.getTickets().size() == 0);
+   assertTrue(ta_client3.getTickets().size() == 0);
+   
+}
 
 
 }

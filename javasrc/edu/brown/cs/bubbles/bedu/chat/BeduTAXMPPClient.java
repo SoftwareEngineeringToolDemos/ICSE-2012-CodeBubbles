@@ -251,7 +251,7 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 		// form: "ACCEPTING:<string hash>"
 		int hash = Integer.valueOf(chat_args[1]);
 		for (BeduStudentTicket t : ticket_list) {
-			if (t.textHash() == hash) {
+			if (t.hashCode() == hash) {
 				ticket_list.remove(t);
 			}
 		}

@@ -176,7 +176,6 @@ void acceptTicketAndAlertPeers(BeduStudentTicket t) {
 
 	// we need to alert all the other TAs that we're accepting this ticket
 	sendMessageToOtherResources("ACCEPTING:" + t.textHash());
-
 	ticket_list.remove(t);
 
 	permitted_jids.add(StringUtils.parseBareAddress(t.getStudentJID()));
@@ -221,8 +220,7 @@ private String getMyBareJID() {
 
 private class StudentXMPPBotMessageListener implements MessageListener {
 @Override public void processMessage(Chat c, Message m) {
-	System.out.println(conn.getUser() + "  received message: " + m.getBody() + " from "
-			+ c);
+	System.out.println(conn.getUser() + "  received message: " + m.getBody() + " from " + c);
 	String[] chat_args = m.getBody().split(":");
 
 	String cmd = chat_args[0];
@@ -256,9 +254,10 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 			getMyBareJID())
 			&& cmd.equals("ACCEPTING")) {
 		// form: "ACCEPTING:<string hash>"
+	   
 		int hash = Integer.valueOf(chat_args[1]);
 		for (BeduStudentTicket t : ticket_list) {
-			if (t.hashCode() == hash) {
+			if (t.textHash() == hash) {
 				ticket_list.remove(t);
 			}
 		}

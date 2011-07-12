@@ -41,13 +41,10 @@ public class BgtaUtil {
    {
       ArrayList<String> jids = new ArrayList<String>();
       Iterator<Presence> it = r.getPresences(bare_jid);
-      System.out.println("===");
       while(it.hasNext()){
          Presence p = it.next();
          jids.add(p.getFrom());
-         System.out.println(p.getFrom());
       }
-      System.out.println("===");
       return jids;   
    }
    

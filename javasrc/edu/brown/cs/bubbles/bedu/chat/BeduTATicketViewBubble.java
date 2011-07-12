@@ -42,8 +42,8 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 
 class BeduTATicketViewBubble extends BudaBubble {
-private static Color		GRADIENT_BOTTOM_COLOR = Color.white;
-private static Color		GRADIENT_TOP_COLOR	 = new Color(0x33, 0x00, 0x99);
+private static Color		  GRADIENT_BOTTOM_COLOR = Color.white;
+private static Color		  GRADIENT_TOP_COLOR	 = new Color(0x33, 0x00, 0x99);
 private static Dimension  DEFAULT_DIMENSION	 = new Dimension(250, 200);
 
 private BeduStudentTicket ticket;

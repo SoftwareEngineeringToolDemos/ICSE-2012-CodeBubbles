@@ -148,12 +148,12 @@ private static String			  student_login = "codebubbles2";
    c.sendMessage("TICKET:1");
    c.sendMessage("TICKET:2");
    
-   Thread.sleep(1000);
+   Thread.sleep(3000);
    assertTrue(ta_client.getTickets().size() == 2);
    assertTrue(ta_client3.getTickets().size() == 0);
    
    ta_client3.connectAndLogin("TA3");
-   Thread.sleep(3000);
+   Thread.sleep(2000);
    assertTrue(ta_client.getTickets().size() == 2);
    assertTrue(ta_client3.getTickets().size() == 2);
    ta_client.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));

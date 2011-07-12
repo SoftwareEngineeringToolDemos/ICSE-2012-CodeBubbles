@@ -58,6 +58,7 @@ private BeduTATicketList		  ticket_list;
 
 
 BeduTAXMPPClient(BeduCourse.TACourse a_course) {
+   XMPPConnection.DEBUG_ENABLED = true;
 	chats = new HashMap<String, Chat>();
 	permitted_jids = new HashSet<String>();
 	course = a_course;
@@ -71,7 +72,7 @@ BeduTAXMPPClient(BeduCourse.TACourse a_course) {
 
 
 
-public BeduCourse getCourse() {
+BeduCourse getCourse() {
 	return course;
 }
 
@@ -82,7 +83,7 @@ public BeduCourse getCourse() {
  * with the given name as the resource name 
  * @throws XMPPException
  */
-public void connectAndLogin(String name) throws XMPPException {
+void connectAndLogin(String name) throws XMPPException {
 	resource_name = name;
 	conn.connect();
 	conn.login(course.getTAJID().split("@")[0], course.getXMPPPassword(),
@@ -117,21 +118,26 @@ public void connectAndLogin(String name) throws XMPPException {
 	// conn.getRoster().createEntry(getMyBareJID(), "Me", null);
 	//}
 	
-	/*List<String> my_full_jids = BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
+	List<String> my_full_jids = BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
 	if(my_full_jids.size() > 1)
 	{
+	   boolean foundFull = false;
 	   for(String full_jid : my_full_jids)
 	   {
-	      if(!full_jid.split("/")[1].equals(name))
+	      if(StringUtils.parseResource(full_jid).equals(name))
 	      {
 	         conn.getChatManager().createChat(full_jid, new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
+	         foundFull = true;
 	         break;
 	      }
 	   }
-	   
-	} */
-	BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
-	conn.getChatManager().createChat("codebubbles2@jabber.org", new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
+	} 
+	else
+	{
+	   conn.getChatManager().createChat(
+	         StringUtils.parseBareAddress(conn.getUser()), new StudentXMPPBotMessageListener()
+	         ).sendMessage("REQUEST-TICKETS");
+	}
 
 }
 

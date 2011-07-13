@@ -22,6 +22,8 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.jivesoftware.smack.XMPPException;
 
@@ -30,11 +32,17 @@ import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassNameBase;
 import edu.brown.cs.bubbles.bass.BassConstants.BassNameType;
 import edu.brown.cs.bubbles.bgta.BgtaFactory;
+import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.board.BoardImage;
 
 import javax.naming.OperationNotSupportedException;
+
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -175,7 +183,57 @@ static class StudentCourse extends BeduCourse
    @Override
    public BudaBubble createBubble()
    {
-   	return new BeduStudentTicketSubmitBubble(ta_chat_jid);
+      if(BgtaUtil.getXMPPManagers().size() == 0)
+      {
+         BudaBubble b = BgtaUtil.getLoginBubble();
+        // b.add(new JLabel("Please log into an XMPP account"));
+         b.addComponentListener(new ComponentListener(){
+   
+            @Override
+            public void componentHidden(ComponentEvent e)
+            {
+               BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((BudaBubble)e.getComponent());
+             //this is called when the login window has exited 
+               if(BgtaUtil.getXMPPManagers().size() > 0)
+               {
+                  bba.addBubble(new BeduStudentTicketSubmitBubble(ta_chat_jid),e.getComponent().getX() - 100, e.getComponent().getY());
+               }
+               else
+               {
+                  
+                  bba.addBubble(createBubble(),e.getComponent().getX(), e.getComponent().getY());
+               }
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e)
+            {
+               // TODO Auto-generated method stub
+               
+            }
+
+            @Override
+            public void componentResized(ComponentEvent e)
+            {
+               // TODO Auto-generated method stub
+               
+            }
+
+            @Override
+            public void componentShown(ComponentEvent e)
+            {
+               // TODO Auto-generated method stub
+               
+            }
+            
+         });
+         
+         return b;
+         }
+      
+      else
+         return new BeduStudentTicketSubmitBubble(ta_chat_jid);
+
    }
    
    

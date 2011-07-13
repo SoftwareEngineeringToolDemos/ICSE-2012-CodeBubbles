@@ -69,7 +69,7 @@ private String				   ta_jid;
 
 public BeduStudentTicketSubmitBubble(String a_jid) {
 	HashMap<String, BgtaManager> chat_logins = new HashMap<String, BgtaManager>();
-	for (Iterator<BgtaManager> it = BgtaFactory.getManagers(); it.hasNext();) {
+	for (Iterator<BgtaManager> it = BgtaUtil.getXMPPManagers().iterator(); it.hasNext();) {
 		BgtaManager man = it.next();
 		chat_logins.put(man.getUsername(), man);
 	}

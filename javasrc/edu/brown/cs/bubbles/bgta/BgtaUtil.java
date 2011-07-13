@@ -21,6 +21,7 @@
 package edu.brown.cs.bubbles.bgta;
 
 
+import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,8 +31,14 @@ import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Presence;
 
+import edu.brown.cs.bubbles.bass.BassConstants;
+import edu.brown.cs.bubbles.bass.BassFactory;
+import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bgta.BgtaConstants.ChatServer;
-public class BgtaUtil {
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaConstants;
+
+public class BgtaUtil implements BassConstants{
 
    /**
     * Returns a list of XMPP resources that are logged into the bare JID
@@ -58,5 +65,32 @@ public class BgtaUtil {
    {
       return new BgtaChat(conn.getUser(), c.getParticipant(), null, ChatServer.fromServer(conn.getServiceName()), c, null);
    }
+   
+   public static BudaBubble getLoginBubble()
+   {
+      for(BassName n : BassFactory.getRepository(BudaConstants.SearchType.SEARCH_PEOPLE).getAllNames())
+      {
+         if(n.getNameType() == BassNameType.CHAT_LOGIN)
+         {
+            return n.createBubble();
+         }
+      }
+      
+      return null;
+   }
+   
+   public static Collection<BgtaManager> getXMPPManagers()
+   {
+      ArrayList<BgtaManager> l = new ArrayList<BgtaManager>();
+      for(Iterator<BgtaManager> it = BgtaFactory.getManagers(); it.hasNext();)
+      {
+         BgtaManager man = it.next();
+         if(man.getServer() != ChatServer.AIM)
+            l.add(man);
+      }
+      
+      return l;
+   }
+   
 
 }

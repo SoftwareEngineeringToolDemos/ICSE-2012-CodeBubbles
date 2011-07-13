@@ -32,6 +32,7 @@ import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassNameBase;
 import edu.brown.cs.bubbles.bass.BassConstants.BassNameType;
 import edu.brown.cs.bubbles.bgta.BgtaFactory;
+import edu.brown.cs.bubbles.bgta.BgtaLoginBubble;
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
@@ -41,6 +42,7 @@ import edu.brown.cs.bubbles.board.BoardImage;
 
 import javax.naming.OperationNotSupportedException;
 
+import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.net.InetAddress;
@@ -185,15 +187,16 @@ static class StudentCourse extends BeduCourse
    {
       if(BgtaUtil.getXMPPManagers().size() == 0)
       {
-         BudaBubble b = BgtaUtil.getLoginBubble();
-        // b.add(new JLabel("Please log into an XMPP account"));
+         BgtaLoginBubble b = (BgtaLoginBubble)BgtaUtil.getLoginBubble();
+         b.setErrorMessage("Login to GMail/Brown/Jabber");
+         
          b.addComponentListener(new ComponentListener(){
    
             @Override
             public void componentHidden(ComponentEvent e)
             {
                BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((BudaBubble)e.getComponent());
-             //this is called when the login window has exited 
+               //this is called when the login window has exited 
                if(BgtaUtil.getXMPPManagers().size() > 0)
                {
                   bba.addBubble(new BeduStudentTicketSubmitBubble(ta_chat_jid),e.getComponent().getX() - 100, e.getComponent().getY());

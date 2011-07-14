@@ -21,6 +21,7 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ import java.util.HashSet;
 
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bass.BassName;
+import edu.brown.cs.bubbles.bass.BassRepositoryMerge;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.board.BoardProperties;
@@ -35,7 +37,7 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 public class BeduCourseRepository implements BassRepository {
 private static List<BeduCourse>     courses;
 private static BeduCourseRepository instance;
-
+private static String PROP_PREFIX = "Educhat.course.";
 
 
 static BeduCourseRepository getInstance() {
@@ -71,19 +73,19 @@ public static void setup() {
 
    for (String courseName : courseNames) {
       BeduCourse c = null;
-      String strRole = bp.getProperty("Educhat.course." + courseName + ".role");
+      String strRole = bp.getProperty(PROP_PREFIX + courseName + ".role");
 
       String ta_jid = bp
-            .getProperty("Educhat.course." + courseName + ".ta_jid");
+            .getProperty(PROP_PREFIX + courseName + ".ta_jid");
 
       if (strRole.equals("STUDENT")) {
          c = new BeduCourse.StudentCourse(courseName, ta_jid);
       }
 
       if (strRole.equals("TA")) {
-         String xmpp_password = bp.getProperty("Educhat.course." + courseName
+         String xmpp_password = bp.getProperty(PROP_PREFIX + courseName
                + ".xmpp_password");
-         String server = bp.getProperty("Educhat.course." + courseName
+         String server = bp.getProperty(PROP_PREFIX + courseName
                + ".server");
 
          c = new BeduCourse.TACourse(courseName, ta_jid, xmpp_password, server);
@@ -92,10 +94,12 @@ public static void setup() {
       if (c != null)
          courses.add(c);
    }
+   
+   BassRepositoryMerge fullRepo = new BassRepositoryMerge(new BeduAddCoursesRepository(), instance);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,
-         instance);
+         fullRepo);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_COURSES,
-         instance);
+         fullRepo);
 }
 
 
@@ -111,22 +115,45 @@ public static void setup() {
    return false;
 }
 
-
+private String coursePrefix(BeduCourse c)
+{
+   return PROP_PREFIX + c.getName() + ".";
+}
 
 void addCourse(BeduCourse c) {
    BoardProperties bp = BoardProperties.getProperties("Educhat");
    courses.add(c);
-   bp.setProperty("Educhat.course." + c.getName() + ".ta_jid", c.getTAJID());
+   bp.setProperty(coursePrefix(c) + "ta_jid", c.getTAJID());
    if (c instanceof BeduCourse.StudentCourse) {
-      bp.setProperty("Educhat.course." + c.getName() + ".role", "Student");
+      bp.setProperty(coursePrefix(c)+"role", "Student");
    }
    if (c instanceof BeduCourse.TACourse) {
       BeduCourse.TACourse tc = (BeduCourse.TACourse) c;
-      bp.setProperty("Educhat.course." + c.getName() + ".role", "TA");
-      bp.setProperty("Educhat.course." + c.getName() + ".xmpp_password",
+      bp.setProperty(coursePrefix(c) + "role", "TA");
+      bp.setProperty(coursePrefix(c) + "xmpp_password",
             tc.getXMPPPassword());
-      bp.setProperty("Educhat.course." + c.getName() + ".server",
+      bp.setProperty(coursePrefix(c) + "server",
             tc.getXMPPServer());
+   }
+}
+
+void removeCourse(BeduCourse c) throws IOException
+{
+   BoardProperties bp = BoardProperties.getProperties("Educhat");
+   bp.remove(coursePrefix(c) + "ta_jid");
+   bp.remove(coursePrefix(c) + "role");
+   if(c instanceof BeduCourse.TACourse)
+   {
+      bp.remove(coursePrefix(c) + "xmpp_password");
+      bp.remove(coursePrefix(c) + "server");
+   }
+   
+   try {
+      bp.save();
+   } catch (IOException e) {
+      //The save didnt work so undo the removal 
+      addCourse(c);
+      throw e;
    }
 }
 }

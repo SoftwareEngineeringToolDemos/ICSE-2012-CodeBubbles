@@ -58,7 +58,6 @@ class BeduStudentTicketSubmitBubble extends BudaBubble {
 private static Color		  GRADIENT_BOTTOM_COLOR = Color.white;
 private static Color		  GRADIENT_TOP_COLOR	   = new Color(0xC4, 0x32, 0x1F);
 private static Dimension	 DEFAULT_DIMENSION	= new Dimension(250, 200);
-private static final String NEW_LOGIN_STR			= "XMPP Log in...";
 
 private static final long	serialVersionUID		= 1L;
 
@@ -79,7 +78,7 @@ public BeduStudentTicketSubmitBubble(String a_jid) {
 	setContentPane(panel);
 }
 
-private class TicketPanel extends JPanel implements ItemListener, ActionListener 
+private class TicketPanel extends JPanel implements ActionListener 
 {
    private Map<String, BgtaManager> chat_logins;
    private JComboBox					 login_box;
@@ -103,9 +102,7 @@ private class TicketPanel extends JPanel implements ItemListener, ActionListener
    	add(l, c);
    
    	login_box = new JComboBox(chat_logins.keySet().toArray(new String[1]));
-   	login_box.addItem(NEW_LOGIN_STR);
-   	login_box.addItemListener(this);
-   
+   	
    	c.gridx = 1;
    	c.gridy = 0;
    	c.fill = GridBagConstraints.NONE;
@@ -171,18 +168,6 @@ private class TicketPanel extends JPanel implements ItemListener, ActionListener
    
    	super.paintComponent(g);
    }
-   
-   
-   
-   @Override public void itemStateChanged(ItemEvent e) {
-   	if (e.getItem() instanceof String
-   			&& ((String) (e.getItem())).equals(NEW_LOGIN_STR)) {
-   		// TODO: figure out how to pull up login bubble, which is tricky
-   		// because it has a package-private constructor with a lot of
-   		// bgta-internal required args
-   	}
-   }
-   
    
    
    @Override public void actionPerformed(ActionEvent e) {

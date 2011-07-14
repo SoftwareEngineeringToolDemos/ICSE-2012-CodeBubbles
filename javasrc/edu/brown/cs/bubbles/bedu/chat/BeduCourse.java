@@ -86,6 +86,11 @@ protected String getKey()
 	return course_name;
 }
 
+@Override
+public String toString()
+{
+   return course_name;
+}
 
 
 static class TACourse extends BeduCourse

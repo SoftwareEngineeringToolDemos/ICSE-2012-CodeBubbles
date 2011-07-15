@@ -27,8 +27,10 @@ import edu.brown.cs.bubbles.buda.BudaConstants;
 
 class BeduManageCoursesBubble extends BudaBubble
 {
+	private JComboBox combo;
+	
    private static final long serialVersionUID = 1L;
-   private static final Dimension DEFAULT_DIMENSION = new Dimension(300, 300);
+   private static final Dimension DEFAULT_DIMENSION = new Dimension(400, 200);
    private static final String ADD_STUDENT_STR = "Add course as student";
    private static final String ADD_TA_STR = "Add course as TA";
    BeduManageCoursesBubble()
@@ -39,7 +41,7 @@ class BeduManageCoursesBubble extends BudaBubble
 
    private class ContentPane extends JPanel implements ItemListener
    {
-      private JComboBox combo;
+
       private ConfigPane cur_config_pane;
       
       private ContentPane()
@@ -49,16 +51,17 @@ class BeduManageCoursesBubble extends BudaBubble
          setLayout(new BorderLayout());
          combo = new JComboBox();
          combo.addItemListener(this);
+         combo.addItem(ADD_STUDENT_STR);
+         combo.addItem(ADD_TA_STR);
+         
          add(combo, BorderLayout.PAGE_START); 
          
          for(BassName n : course_repo.getAllNames())
          {
-            if(n.toString().charAt(0) != '@')
+            if(n.toString().length() >= 0 && n.toString().charAt(0) != '@')
                combo.addItem(n);
          }
          
-         combo.addItem(ADD_COURSE_STR);
-
       }
       
       @Override
@@ -66,7 +69,19 @@ class BeduManageCoursesBubble extends BudaBubble
       {
          if(cur_config_pane != null)
             remove(cur_config_pane);
-         cur_config_pane = new ConfigPane((BeduCourse)e.getItem());
+         if(e.getItem() instanceof String)
+         {
+         	if(((String)e.getItem()).equals(ADD_STUDENT_STR))
+         	{
+         		cur_config_pane = new ConfigPane(new BeduCourse.StudentCourse("", ""));
+         	}
+         	else if(((String)e.getItem()).equals(ADD_TA_STR))
+         	{
+         		cur_config_pane = new ConfigPane(new BeduCourse.TACourse("", "", "", ""));
+         	}
+         }
+         else
+         	cur_config_pane = new ConfigPane((BeduCourse)e.getItem());
          add(cur_config_pane, BorderLayout.CENTER);
       }
    }
@@ -200,8 +215,8 @@ class BeduManageCoursesBubble extends BudaBubble
             gbc.gridy = 4;
             gbc.gridx = 0;
             gbc.anchor = GridBagConstraints.WEST;
-            add(deleteButton, gbc);
-            
+            add(saveButton, gbc);
+                       
             gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.9;
@@ -209,7 +224,7 @@ class BeduManageCoursesBubble extends BudaBubble
             gbc.gridy = 4;
             gbc.gridx = 1;
             gbc.anchor = GridBagConstraints.EAST;
-            add(saveButton, gbc);
+            add(deleteButton, gbc);
          }
       }
 
@@ -232,11 +247,15 @@ class BeduManageCoursesBubble extends BudaBubble
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				r.addCourse(course);
+				r.addCourse(new_course);
+				BeduManageCoursesBubble.this.combo.addItem(new_course);
+				BeduManageCoursesBubble.this.combo.setSelectedItem(new_course);
 			}
 			else if(e.getActionCommand().equals(delete_action)){
 				try {
 					r.removeCourse(course);
+					BeduManageCoursesBubble.this.combo.removeItem(course);
+					BeduManageCoursesBubble.this.combo.setSelectedIndex(0);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

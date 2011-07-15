@@ -22,8 +22,6 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import javax.swing.JComponent;
-
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.XMPPConnection;
 
@@ -32,6 +30,7 @@ import edu.brown.cs.bubbles.bgta.*;
 
 class BeduChatBubble extends BgtaBubble
 {
+private static final long serialVersionUID = 1L;
 
 
 
@@ -44,6 +43,7 @@ private BeduChatBubble(XMPPConnection conn, Chat c)
 
 static class TABubble extends BeduChatBubble
 {
+	private static final long serialVersionUID = 1L;
 
 	private BeduTAXMPPClient client;
 	private Chat chat;

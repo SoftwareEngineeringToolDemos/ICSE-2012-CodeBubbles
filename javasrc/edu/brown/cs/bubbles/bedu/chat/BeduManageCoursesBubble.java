@@ -1,7 +1,6 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,8 +15,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bass.BassName;
@@ -41,8 +38,8 @@ class BeduManageCoursesBubble extends BudaBubble
 
    private class ContentPane extends JPanel implements ItemListener
    {
-
-      private ConfigPane cur_config_pane;
+		private static final long serialVersionUID = 1L;
+		private ConfigPane cur_config_pane;
       
       private ContentPane()
       {
@@ -88,7 +85,8 @@ class BeduManageCoursesBubble extends BudaBubble
 
    private class ConfigPane extends JPanel implements ActionListener
    {
-   	private final String delete_action = "delete";
+		private static final long serialVersionUID = 1L;
+		private final String delete_action = "delete";
    	private final String save_action = "save";
    	
       private JTextField name_field;

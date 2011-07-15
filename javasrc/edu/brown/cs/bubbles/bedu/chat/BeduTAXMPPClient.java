@@ -22,11 +22,9 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,7 +97,6 @@ void connectAndLogin(String name) throws XMPPException {
 				if (chats.get(jid) == null) {
 					System.out.println("Chat created: " + c + " with " + c.getParticipant());
 					StudentXMPPBotMessageListener l = new StudentXMPPBotMessageListener();
-					Chat new_chat = conn.getChatManager().createChat(jid, l);
 					c.addMessageListener(l);
 				}
 				else
@@ -118,10 +115,10 @@ void connectAndLogin(String name) throws XMPPException {
 	// conn.getRoster().createEntry(getMyBareJID(), "Me", null);
 	//}
 	
-	List<String> my_full_jids = BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
+	@SuppressWarnings("unchecked") List<String> my_full_jids = BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
 	if(my_full_jids.size() > 1)
 	{
-	   boolean foundFull = false;
+	   @SuppressWarnings("unused") boolean foundFull = false;
 	   for(String full_jid : my_full_jids)
 	   {
 	      if(StringUtils.parseResource(full_jid).equals(name))

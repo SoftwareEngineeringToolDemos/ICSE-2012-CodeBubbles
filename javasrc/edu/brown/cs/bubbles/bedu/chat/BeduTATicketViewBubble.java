@@ -34,20 +34,18 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import edu.brown.cs.bubbles.bgta.BgtaFactory;
-import edu.brown.cs.bubbles.bgta.BgtaManager;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 
 class BeduTATicketViewBubble extends BudaBubble {
+private static final long serialVersionUID = 1L;
 private static Color		  GRADIENT_BOTTOM_COLOR = Color.white;
 private static Color		  GRADIENT_TOP_COLOR	 = new Color(0x33, 0x00, 0x99);
 private static Dimension  DEFAULT_DIMENSION	 = new Dimension(250, 200);
@@ -64,7 +62,9 @@ BeduTATicketViewBubble(BeduStudentTicket t, BeduTAXMPPClient a_client) {
 
 private class TicketViewPanel extends JPanel 
 {
-   private TicketViewPanel(BeduStudentTicket t, BeduTATicketViewBubble a_bubble,
+	private static final long serialVersionUID = 1L;
+
+	private TicketViewPanel(BeduStudentTicket t, BeduTATicketViewBubble a_bubble,
       ChatStartListener listener) {
    	// add(new JLabel(t.getText()));
 
@@ -138,7 +138,6 @@ private class ChatStartListener implements ActionListener
 {
    private BeduTATicketViewBubble bubble;
    private BeduTAXMPPClient		 client;
-   private BeduChatBubble			b;
    
    
    

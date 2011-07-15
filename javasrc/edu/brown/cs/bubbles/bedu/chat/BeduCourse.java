@@ -1,12 +1,12 @@
 /********************************************************************************/
-/*                         						 								*/
-/*    		BeduCourse.java     	            								*/
-/*                            													*/
-/* 	Bubbles for Education   													*/
-/* 	Represents a school course		 	      									*/
-/* 				               													*/
+/*                         						 											  */
+/*    		BeduCourse.java     	            											  */
+/*                            													    		  */
+/* 	Bubbles for Education   																  */
+/* 	Represents a school course		 	      											  */
+/* 				               															  	  */
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         					*/
+/* 	Copyright 2011 Brown University -- Andrew Kovacs         					  */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -22,29 +22,20 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 
 import edu.brown.cs.bubbles.bass.BassConstants;
-import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassNameBase;
-import edu.brown.cs.bubbles.bass.BassConstants.BassNameType;
-import edu.brown.cs.bubbles.bgta.BgtaFactory;
 import edu.brown.cs.bubbles.bgta.BgtaLoginBubble;
 import edu.brown.cs.bubbles.bgta.BgtaManager;
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
-import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.board.BoardImage;
 
-import javax.naming.OperationNotSupportedException;
-
-import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.net.InetAddress;

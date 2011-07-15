@@ -29,6 +29,8 @@ import javax.swing.event.TableModelListener;
 
 class BeduTATicketList extends ArrayList<BeduStudentTicket> implements
 		TableModel {
+
+private static final long serialVersionUID = 1L;
 List<TableModelListener> listeners;
 
 
@@ -47,7 +49,7 @@ BeduTATicketList() {
 
 
 
-@Override public Class getColumnClass(int columnIndex) {
+@SuppressWarnings({ "rawtypes", "unchecked" }) @Override public Class getColumnClass(int columnIndex) {
 	return String.class;
 }
 

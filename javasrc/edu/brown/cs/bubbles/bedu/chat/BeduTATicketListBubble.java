@@ -34,13 +34,13 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
-import java.util.Date;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 
 class BeduTATicketListBubble extends BudaBubble {
+private static final long serialVersionUID = 1L;
 private static Color	  GRADIENT_BOTTOM_COLOR  = Color.white;
 private static Color	  GRADIENT_TOP_COLOR	 	 = new Color(0x33, 0x00, 0x99);
 private static Dimension DEFAULT_DIMENSION    = new Dimension(200, 200);
@@ -53,7 +53,8 @@ BeduTATicketListBubble(BeduTATicketList list, BeduTAXMPPClient a_ta_client) {
 }
 
 private class TicketListPanel extends JPanel implements MouseListener {
-   private JTable			    table;
+	private static final long serialVersionUID = 1L;
+	private JTable			    table;
    private BeduTATicketList ticket_list;
    private BudaBubble		 parent;
    private BeduTAXMPPClient ta_client;

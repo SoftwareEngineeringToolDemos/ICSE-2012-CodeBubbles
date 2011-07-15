@@ -1,12 +1,12 @@
 /********************************************************************************/
-/*                         						 								*/
-/*    		BeduCourse.java     	            								*/
-/*                            													*/
-/* 	Bubbles for Education   													*/
-/* 	Represents a school course		 	      									*/
-/* 				               													*/
+/*                         						 											  */
+/*    		BeduCourse.java     	            											  */
+/*                            																  */
+/* 	Bubbles for Education   																  */
+/* 	Represents a school course		 	      											  */
+/* 				               																  */
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         					*/
+/* 	Copyright 2011 Brown University -- Andrew Kovacs         					  */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -95,7 +95,7 @@ public static void setup() {
          courses.add(c);
    }
    
-   BassRepositoryMerge fullRepo = new BassRepositoryMerge(new BeduAddCoursesRepository(), instance);
+   BassRepositoryMerge fullRepo = new BassRepositoryMerge(new BeduManageCoursesRepository(), instance);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,
          fullRepo);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_COURSES,
@@ -103,7 +103,7 @@ public static void setup() {
 }
 
 
-
+@SuppressWarnings(value = "unchecked")
 @Override public Iterable<BassName> getAllNames() {
    return (List<BassName>) (List<?>) courses;
 }
@@ -126,7 +126,7 @@ void addCourse(BeduCourse c) {
    if (c instanceof BeduCourse.StudentCourse) {
       bp.setProperty(coursePrefix(c)+"role", "Student");
    }
-   String d = coursePrefix(c);
+
    if (c instanceof BeduCourse.TACourse) {
       BeduCourse.TACourse tc = (BeduCourse.TACourse) c;
       bp.setProperty(coursePrefix(c) + "role", "TA");

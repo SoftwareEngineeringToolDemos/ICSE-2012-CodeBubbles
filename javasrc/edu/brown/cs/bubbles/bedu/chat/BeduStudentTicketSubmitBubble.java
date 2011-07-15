@@ -42,12 +42,8 @@ import org.jivesoftware.smack.packet.Presence;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import edu.brown.cs.bubbles.bgta.*;
@@ -83,7 +79,8 @@ public BeduStudentTicketSubmitBubble(String a_jid) {
 	}
 	else
 	{
-   	for (Iterator<BgtaManager> it = BgtaUtil.getXMPPManagers().iterator(); it.hasNext();) {
+   	@SuppressWarnings("unchecked") Iterator<BgtaManager> iterator = BgtaUtil.getXMPPManagers().iterator();
+		for (Iterator<BgtaManager> it = iterator; it.hasNext();) {
    		BgtaManager man = it.next();
    		chat_logins.put(man.getUsername(), man);
    	}
@@ -96,7 +93,8 @@ public BeduStudentTicketSubmitBubble(String a_jid) {
 
 private class TicketPanel extends JPanel implements ActionListener 
 {
-   private Map<String, BgtaManager> chat_logins;
+	private static final long serialVersionUID = 1L;
+	private Map<String, BgtaManager> chat_logins;
    private JComboBox					 login_box;
    private JTextArea					 ticket_area;
    

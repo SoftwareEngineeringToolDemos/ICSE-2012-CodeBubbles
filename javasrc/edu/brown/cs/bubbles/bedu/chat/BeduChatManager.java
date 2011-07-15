@@ -23,14 +23,11 @@ package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.List;
 
-import javax.naming.OperationNotSupportedException;
-import org.jivesoftware.smack.XMPPException;
 import java.util.ArrayList;
 
 public class BeduChatManager
 {
 private static List<BeduTAXMPPClient> ta_sessions;
-private static BeduCourseRepository course_repository;
 
 static {
 	ta_sessions = new ArrayList<BeduTAXMPPClient>();

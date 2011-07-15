@@ -91,27 +91,37 @@ BudaPlacement(BudaBubbleArea bba)
 void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubblePosition pos)
 {
    BudaBubble rel = null;
+   BudaBubble grpb = null;
    if (rcom != null) rel = BudaRoot.findBudaBubble(rcom);
+
 
    Rectangle r = new Rectangle();
    if (rel != null) {
       r = BudaRoot.findBudaLocation(rel);
+      grpb = rel;
     }
    else if (relpt != null) {
       r.setLocation(relpt);
     }
    else if (last_focus != null) {
       r = BudaRoot.findBudaLocation(last_focus);
+      grpb = last_focus;
     }
    else if (last_placement != null) {
       r = BudaRoot.findBudaLocation(last_placement);
+      grpb = last_placement;
     }
+
+   if ((place & PLACEMENT_ADJACENT) == 0) {
+      expandForGroup(r,grpb);
+    }
+
 
    Rectangle r1 = null;
    if (rel != null) {
       synchronized (related_bubbles) {
 	 List<BudaBubble> ls = related_bubbles.get(rel);
-	 if (ls != null) {
+	 if (ls != null && !ls.isEmpty()) {
 	    BudaBubble bbx = ls.get(ls.size()-1);
 	    r1 = BudaRoot.findBudaLocation(bbx);
 	  }
@@ -206,6 +216,61 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
     }
 }
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Methods for dealing with groups 					*/
+/*										*/
+/********************************************************************************/
+
+private static final int	GROUP_SPACE = 100;
+private static final int	GROUP_LEEWAY = 40;
+
+
+private void expandForGroup(Rectangle r,BudaBubble grpb)
+{
+   if (grpb == null) return;
+
+   Set<BudaBubble> used = new HashSet<BudaBubble>();
+   used.add(grpb);
+
+   BudaBubbleGroup grp = grpb.getGroup();
+   if (grp == null) return;
+
+   boolean chng = true;
+   while (chng) {
+      chng = false;
+      Rectangle rhor = new Rectangle(r.x - GROUP_SPACE,r.y + GROUP_LEEWAY,
+					r.width + 2*GROUP_SPACE,r.height - 2*GROUP_LEEWAY);
+      Rectangle rver = new Rectangle(r.x + GROUP_LEEWAY,r.y - GROUP_SPACE,
+					r.width - 2*GROUP_LEEWAY,r.height + 2*GROUP_SPACE);
+
+      for (BudaBubble gb : grp.getBubbles()) {
+	 if (used.contains(gb)) continue;
+	 Rectangle r1 = BudaRoot.findBudaLocation(gb);
+	 if (r1.intersects(rhor)) {
+	    int lx = Math.min(r.x,r1.x);
+	    int rx = Math.max(r.x + r.width, r1.x + r1.width);
+	    r.x = lx;
+	    r.width = rx-lx;
+	    chng = true;
+	    used.add(gb);
+	    break;
+	  }
+	 else if (r1.intersects(rver)) {
+	    int ty = Math.min(r.y,r1.y);
+	    int by = Math.max(r.y + r.height, r1.y + r1.height);
+	    r.y = ty;
+	    r.height = by-ty;
+	    chng = true;
+	    used.add(gb);
+	    break;
+	  }
+       }
+    }
+}
 
 
 

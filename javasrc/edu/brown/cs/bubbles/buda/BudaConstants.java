@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -583,7 +583,8 @@ int	PLACEMENT_BELOW = 0x4;
 int	PLACEMENT_ABOVE = 0x8;
 int	PLACEMENT_MOVETO = 0x10;	// force visible
 int	PLACEMENT_GROUPED = 0x20;
-int     PLACEMENT_LOGICAL = 0x40;
+int	PLACEMENT_LOGICAL = 0x40;
+int	PLACEMENT_ADJACENT = 0x80;	// adjacent to window, not group
 
 
 
@@ -911,7 +912,7 @@ interface NoBubble { }
 
 
 /**
- * 	A Bubble implementing this will not use a freeze pane
+ *	A Bubble implementing this will not use a freeze pane
  **/
 
 interface NoFreeze { }

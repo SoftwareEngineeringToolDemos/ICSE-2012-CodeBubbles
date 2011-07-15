@@ -502,6 +502,7 @@ protected abstract class AbstractNode implements ValueTreeNode, TreeNode {
 
    @Override public TreeNode getChildAt(int idx) {
       computeChildren();
+      if (idx < 0 || idx >= child_nodes.size()) return null;
       return child_nodes.get(idx);
     }
 

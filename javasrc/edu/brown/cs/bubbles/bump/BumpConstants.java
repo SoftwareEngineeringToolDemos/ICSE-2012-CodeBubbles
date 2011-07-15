@@ -559,6 +559,7 @@ enum BumpThreadStateDetail {
    STEP_INTO,
    STEP_OVER,
    STEP_RETURN,
+   CONTENT
 }
 
 

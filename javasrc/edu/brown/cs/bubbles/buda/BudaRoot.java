@@ -1808,6 +1808,8 @@ public void addTask(Element xml)
 
 void addTask(BudaTask t)
 {
+   if (t == null) return;
+
    synchronized (task_shelf) {
       task_shelf.add(t);
     }
@@ -1817,6 +1819,8 @@ void addTask(BudaTask t)
 
 void removeTask(BudaTask t)
 {
+   if (t == null) return;
+
    synchronized (task_shelf) {
       task_shelf.remove(t);
     }

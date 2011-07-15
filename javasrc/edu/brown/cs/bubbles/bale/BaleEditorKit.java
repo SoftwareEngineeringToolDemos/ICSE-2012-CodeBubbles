@@ -1454,14 +1454,13 @@ private static class SaveAllAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      BumpClient bc = BumpClient.getBump();
       BaleEditorPane target = getBaleEditor(e);
       if (target == null) return;
       BudaRoot br = BudaRoot.findBudaRoot(target);
 
       BowiFactory.startTask(BowiTaskType.SAVE);
       try {
-	 bc.saveAll();
+	 // bc.saveAll();
 	 br.handleSaveAllRequest();
 	 try {
 	    br.saveConfiguration(null);

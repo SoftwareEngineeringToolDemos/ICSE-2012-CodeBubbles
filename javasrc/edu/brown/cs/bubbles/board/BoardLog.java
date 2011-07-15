@@ -97,19 +97,26 @@ private void setupLogger()
    is_setup = true;
 
    // at this point the various system parameters are valid
-
    BoardProperties bp = BoardProperties.getProperties("System");
 
    String jar = bp.getProperty(BOARD_PROP_JAR_DIR);
    use_stderr = bp.getBoolean(BOARD_PROP_USE_STDERR,(jar == null));
 
-   String wsn = bp.getProperty(BOARD_PROP_ECLIPSE_WS);
-   System.err.println("BOARD: " + jar + " " + use_stderr + " " + wsn);
    File wsd = null;
-   if (wsn == null) {
-      use_stderr = true;
-    }
-   else wsd = new File(wsn);
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case CLIENT :
+         File f1 = BoardSetup.getPropertyBase();
+         File f2 = new File(f1,"logs");
+         f2.mkdirs();
+         wsd = f2;
+         break;
+      case NORMAL :
+      case SERVER :
+         String wsn = bp.getProperty(BOARD_PROP_ECLIPSE_WS);
+         if (wsn != null) wsd = new File(wsn);
+         break;
+    } 
+   if (wsd == null) use_stderr = true;
 
    String id = "";
    if (use_stderr && wsd != null) {
@@ -134,7 +141,6 @@ private void setupLogger()
       monitor_log = new File(wsd,"monitor_log.log");
     }
 
-   // TODO: This should be in the plugin subdirectory
    if (wsd != null) {
       if (use_stderr) {
 	 // doing debugging: use a single file and keep it around

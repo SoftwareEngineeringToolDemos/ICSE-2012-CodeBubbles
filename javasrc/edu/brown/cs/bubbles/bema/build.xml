@@ -160,8 +160,21 @@
       <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
 	 <classpath refid='test.classpath' />
 	 <jvmarg value="-Xmx1024m" />
+	 <arg value="-C" />
 	 <arg value="-m" />
 	 <arg value="BUBBLES_DEBUG_spr" />
+      </java>
+   </target>
+
+   <target name='testserver' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <jvmarg value="-Xmx1024m" />
+	 <arg value="-S" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/fait' />
       </java>
    </target>
 

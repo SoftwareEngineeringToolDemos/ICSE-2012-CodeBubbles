@@ -1302,7 +1302,13 @@ public String getHashId()
    String s1 = getContentProject();
    File f2 = getContentFile();
    String s3 = getContentName();
-   if (s1 == null && f2 == null && s3 == null) return null;
+   if (s1 == null && f2 == null && s3 == null) {
+      Component c = content_pane;
+      if (c != null) return c.getClass().getName();
+      else {
+	 return "BX" + Integer.toString(System.identityHashCode(this));
+       }
+    }
 
    byte [] drslt;
 

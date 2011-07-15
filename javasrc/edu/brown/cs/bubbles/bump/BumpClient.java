@@ -31,7 +31,7 @@ import edu.brown.cs.ivy.exec.IvyExec;
 import edu.brown.cs.ivy.exec.IvyExecQuery;
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import org.w3c.dom.Element;
@@ -156,6 +156,12 @@ private BumpClient()
    source_id = "BUBBLES_" + IvyExecQuery.getHostName() + "_" + IvyExecQuery.getProcessId();
 
    mint_control.register("<BEDROCK SOURCE='ECLIPSE' TYPE='_VAR_0' />",new EclipseHandler());
+
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case SERVER :
+	 mint_control.register("<BUMP TYPE='FILEGET'/>",new FileGetServerHandler());
+	 break;
+    }
 }
 
 
@@ -563,6 +569,134 @@ public Element revertAll()
 
    return getXmlReply("COMMIT",null,flds,null,0);
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Remote file methods							*/
+/*										*/
+/********************************************************************************/
+
+public File getRemoteFile(File lcl,String kind,File rem)
+{
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case NORMAL :
+      case SERVER :
+	 if (rem == null) return lcl;
+	 return rem;
+    }
+
+   String id = source_id + "_" + (++collect_id);
+   String msg = "<BUMP TYPE='FILEGET' ID='" + id + "'";
+   if (kind != null) msg += " KIND='" + kind + "'";
+   if (rem != null) msg += " FILE='" + rem.getPath() + "'";
+   FileGetClientHandler ch = new FileGetClientHandler(lcl);
+   mint_control.register("<BUMPFILE ID='" + id + "' />",ch);
+   MintDefaultReply mr = new MintDefaultReply();
+   mint_control.send(msg,mr,MINT_MSG_FIRST_NON_NULL);
+   String sts = mr.waitForString();
+   if (!ch.isOkay()) sts = "FAIL";
+   mint_control.unregister(ch);
+   if (sts == null || !sts.equals("OK")) {
+      lcl.delete();
+      return null;
+    }
+   return lcl;
+
+}
+
+
+
+
+private class FileGetServerHandler implements MintHandler {
+
+   @Override public void receive(MintMessage msg,MintArguments args) {
+      Element xml = msg.getXml();
+      String kind = IvyXml.getAttrString(xml,"KIND");
+      String filenm = IvyXml.getAttrString(xml,"FILE");
+      String id = IvyXml.getAttrString(xml,"ID");
+      File f = null;
+      if (kind != null && kind.equals("BDOC")) f = BoardSetup.getDocumentationFile();
+      else if (kind != null && kind.equals("NOTE")) {
+         File f1 = BoardSetup.getBubblesPluginDirectory();
+         File f2 = new File(filenm);
+         f = new File(f1,f2.getName());
+       }
+      else f = new File(filenm);
+        
+      try {
+         FileInputStream fr = new FileInputStream(f);
+         long len = f.length();
+         int pos = 0;
+         byte [] buf = new byte[40960];
+         while (pos < len) {
+            int ct = fr.read(buf,0,buf.length);
+            MintDefaultReply mr = new MintDefaultReply();
+            IvyXmlWriter xw = new IvyXmlWriter();
+            xw.begin("BUMPFILE");
+            xw.field("ID",id);
+            xw.field("POS",pos);
+            xw.field("LEN",len);
+            xw.field("CT",ct);
+            xw.bytesElement("CNTS",buf,0,ct);
+            xw.end("BUMPFILE");
+            mint_control.send(xw.toString(),mr,MintConstants.MINT_MSG_FIRST_NON_NULL);
+            mr.waitFor();
+            pos += ct;
+          }
+         fr.close();
+         msg.replyTo("OK");
+       }
+      catch (IOException e) {
+         msg.replyTo("FAIL");
+       }
+   
+    }
+
+}	// end of inner class FileGetServerHandler
+
+
+
+
+private class FileGetClientHandler implements MintHandler {
+
+   private FileOutputStream file_writer;
+   private boolean is_okay;
+
+   FileGetClientHandler(File f) {
+      file_writer = null;
+      is_okay = false;
+      try {
+	 file_writer = new FileOutputStream(f);
+       }
+      catch (IOException e) { }
+    }
+
+   boolean isOkay()				{ return is_okay; }
+
+   @Override public void receive(MintMessage msg,MintArguments args) {
+      Element xml = msg.getXml();
+      byte [] buf = IvyXml.getBytesElement(xml,"CNTS");
+      int ct = IvyXml.getAttrInt(xml,"CT");
+      int pos = IvyXml.getAttrInt(xml,"POS");
+      int len = IvyXml.getAttrInt(xml,"LEN");
+      try {
+	 if (file_writer != null) {
+	    file_writer.write(buf,0,ct);
+	    if (ct + pos >= len) file_writer.close();
+	    is_okay = true;
+	  }
+       }
+      catch (IOException e) {
+	 file_writer = null;
+	 is_okay = false;
+       }
+      msg.replyTo("OK");
+    }
+
+}	// end of inner class FileGetClientHandler
+
 
 
 

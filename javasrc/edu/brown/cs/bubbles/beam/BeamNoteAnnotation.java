@@ -61,7 +61,7 @@ class BeamNoteAnnotation implements BaleConstants.BaleAnnotation {
 /********************************************************************************/
 
 private File for_file;
-private File annotation_file;
+private String note_name;
 private Position note_position;
 
 
@@ -84,8 +84,8 @@ static {
 BeamNoteAnnotation(File file,BaleFileOverview doc,int off)
 {
    for_file = file;
+   note_name = null;
    note_position = null;
-   annotation_file = null;
 
    try {
       note_position = doc.createPosition(off);
@@ -98,11 +98,8 @@ BeamNoteAnnotation(File file,BaleFileOverview doc,int off)
 BeamNoteAnnotation(Element xml)
 {
    for_file = new File(IvyXml.getAttrString(xml,"FILE"));
+   note_name = IvyXml.getAttrString(xml,"NAME");
    note_position = null;
-
-   String afnm = IvyXml.getAttrString(xml,"ANNOTFILE");
-   if (afnm == null) annotation_file = null;
-   else annotation_file = new File(afnm);
 
    Element lim = IvyXml.getChild(xml,"LIMBO");
    if (lim != null) {
@@ -166,9 +163,9 @@ BeamNoteAnnotation(Element xml)
 /*										*/
 /********************************************************************************/
 
-void setAnnotationFile(File f)
+void setAnnotationFile(String name)
 {
-   annotation_file = f;
+   note_name = name;
 }
 
 
@@ -190,7 +187,7 @@ void saveAnnotation(BudaXmlWriter xw)
 
    xw.begin("ANNOT");
    xw.field("FILE",for_file);
-   xw.field("ANNOTFILE",annotation_file);
+   xw.field("NAME",note_name);
    xw.field("LINE",lno);
    xw.field("OFFSET",lst);
    ll.writeXml(xw);
@@ -214,9 +211,8 @@ private class NoteAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      if (annotation_file == null) return;
-      BeamNoteBubble nb = new BeamNoteBubble(annotation_file.getPath(),
-	    null,BeamNoteAnnotation.this);
+      if (note_name == null) return;
+      BeamNoteBubble nb = new BeamNoteBubble(note_name,null,BeamNoteAnnotation.this);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((Component) e.getSource());
       Rectangle r1 = BudaRoot.findBudaLocation((Component) e.getSource());
       Rectangle r2 = nb.getBounds();

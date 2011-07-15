@@ -74,7 +74,7 @@ public BeduStudentTicketSubmitBubble(String a_jid) {
 	BgtaManager a_man = (BgtaManager) BgtaUtil.getXMPPManagers().iterator().next();
 	a_man.subscribeToUser(a_jid);
 	System.out.println(BgtaManager.getPresence(a_jid));
-	if(BgtaManager.getPresence(a_jid).getType() != Presence.Type.available)
+	if(BgtaManager.getPresence(a_jid).getType() == Presence.Type.unavailable)
 	{
 		JPanel fail_panel = new JPanel();
 		fail_panel.add(new JLabel("TAs are currently not online. Try again later."));

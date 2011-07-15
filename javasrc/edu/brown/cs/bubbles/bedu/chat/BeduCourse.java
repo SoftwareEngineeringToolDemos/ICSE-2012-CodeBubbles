@@ -26,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Presence;
 
 import edu.brown.cs.bubbles.bass.BassConstants;
 import edu.brown.cs.bubbles.bass.BassName;
@@ -33,6 +34,7 @@ import edu.brown.cs.bubbles.bass.BassNameBase;
 import edu.brown.cs.bubbles.bass.BassConstants.BassNameType;
 import edu.brown.cs.bubbles.bgta.BgtaFactory;
 import edu.brown.cs.bubbles.bgta.BgtaLoginBubble;
+import edu.brown.cs.bubbles.bgta.BgtaManager;
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
@@ -258,6 +260,17 @@ static class StudentCourse extends BeduCourse
    @Override
    public Icon getDisplayIcon()
    {
+   	if(BgtaUtil.getXMPPManagers().size() >= 0)
+   	{
+      	Presence p = BgtaManager.getPresence(ta_chat_jid);
+      	if(p != null)
+      	{
+      		if(p.getType() == Presence.Type.available)
+      			return BgtaManager.iconFor(new Presence(Presence.Type.available));
+      		else
+      			return BgtaManager.iconFor(new Presence(Presence.Type.unavailable));
+      	}
+   	}
    	return BoardImage.getIcon("question");
    }
    }

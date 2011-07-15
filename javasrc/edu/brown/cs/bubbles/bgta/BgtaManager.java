@@ -387,7 +387,10 @@ Document getExistingDoc(String username)
 
 public static Presence getPresence(String conname)
 {
-   return stat_con.getRoster().getPresence(conname);
+	if(stat_con != null)
+		return stat_con.getRoster().getPresence(conname);
+	else
+		return null;
 }
 
 /**

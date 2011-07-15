@@ -38,6 +38,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 
+import org.jivesoftware.smack.packet.Presence;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -68,14 +70,28 @@ private String				   ta_jid;
 
 public BeduStudentTicketSubmitBubble(String a_jid) {
 	HashMap<String, BgtaManager> chat_logins = new HashMap<String, BgtaManager>();
-	for (Iterator<BgtaManager> it = BgtaUtil.getXMPPManagers().iterator(); it.hasNext();) {
-		BgtaManager man = it.next();
-		chat_logins.put(man.getUsername(), man);
+	
+	BgtaManager a_man = (BgtaManager) BgtaUtil.getXMPPManagers().iterator().next();
+	a_man.subscribeToUser(a_jid);
+	System.out.println(BgtaManager.getPresence(a_jid));
+	if(BgtaManager.getPresence(a_jid).getType() != Presence.Type.available)
+	{
+		JPanel fail_panel = new JPanel();
+		fail_panel.add(new JLabel("TAs are currently not online. Try again later."));
+		setContentPane(fail_panel);
+		setPreferredSize(new Dimension(150, 35));
 	}
-
-	ta_jid = a_jid;
-	panel = new TicketPanel(chat_logins);
-	setContentPane(panel);
+	else
+	{
+   	for (Iterator<BgtaManager> it = BgtaUtil.getXMPPManagers().iterator(); it.hasNext();) {
+   		BgtaManager man = it.next();
+   		chat_logins.put(man.getUsername(), man);
+   	}
+   
+   	ta_jid = a_jid;
+   	panel = new TicketPanel(chat_logins);
+   	setContentPane(panel);
+	}
 }
 
 private class TicketPanel extends JPanel implements ActionListener 

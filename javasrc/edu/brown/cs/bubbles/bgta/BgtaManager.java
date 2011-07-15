@@ -385,7 +385,7 @@ Document getExistingDoc(String username)
 /*										*/
 /********************************************************************************/
 
-static Presence getPresence(String conname)
+public static Presence getPresence(String conname)
 {
    return stat_con.getRoster().getPresence(conname);
 }

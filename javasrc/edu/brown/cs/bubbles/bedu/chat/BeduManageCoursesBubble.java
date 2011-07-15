@@ -28,8 +28,9 @@ import edu.brown.cs.bubbles.buda.BudaConstants;
 class BeduManageCoursesBubble extends BudaBubble
 {
    private static final long serialVersionUID = 1L;
-   private static final Dimension DEFAULT_DIMENSION = new Dimension(200, 300);
-   private static final String ADD_COURSE_STR = "Add course";
+   private static final Dimension DEFAULT_DIMENSION = new Dimension(300, 300);
+   private static final String ADD_STUDENT_STR = "Add course as student";
+   private static final String ADD_TA_STR = "Add course as TA";
    BeduManageCoursesBubble()
    {
      setContentPane(new ContentPane()); 
@@ -86,10 +87,11 @@ class BeduManageCoursesBubble extends BudaBubble
       	course = c;
       	JButton deleteButton = new JButton("Delete");
       	deleteButton.setActionCommand(delete_action);
-
+      	deleteButton.addActionListener(this);
+      	
       	JButton saveButton = new JButton("Save");
       	saveButton.setActionCommand(save_action);
-      	
+      	saveButton.addActionListener(this);
          setLayout(new GridBagLayout());
          GridBagConstraints gbc = new GridBagConstraints();
          gbc.gridx = 0;
@@ -107,7 +109,7 @@ class BeduManageCoursesBubble extends BudaBubble
          gbc.weightx = .9;
          gbc.weighty = 0.5;
          gbc.gridy = 0;
-         name_field.setText(c.getTAJID());
+         name_field.setText(c.getCourseName());
          add(name_field, gbc);
          
          gbc = new GridBagConstraints();
@@ -177,7 +179,7 @@ class BeduManageCoursesBubble extends BudaBubble
             gbc.gridy = 4;
             gbc.gridx = 0;
             gbc.anchor = GridBagConstraints.WEST;
-            add(new JButton("Save"), gbc);
+            add(saveButton, gbc);
             
             gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -187,7 +189,7 @@ class BeduManageCoursesBubble extends BudaBubble
             gbc.gridx = 1;
             gbc.anchor = GridBagConstraints.EAST;
             
-            add(new JButton("Delete"), gbc);
+            add(deleteButton, gbc);
          }
          else 
          {
@@ -198,7 +200,7 @@ class BeduManageCoursesBubble extends BudaBubble
             gbc.gridy = 4;
             gbc.gridx = 0;
             gbc.anchor = GridBagConstraints.WEST;
-            add(new JButton("Save"), gbc);
+            add(deleteButton, gbc);
             
             gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -207,7 +209,7 @@ class BeduManageCoursesBubble extends BudaBubble
             gbc.gridy = 4;
             gbc.gridx = 1;
             gbc.anchor = GridBagConstraints.EAST;
-            add(new JButton("Delete"), gbc);
+            add(saveButton, gbc);
          }
       }
 

@@ -147,7 +147,7 @@ private static String			  student_login = "codebubbles2";
    assertTrue(ta_client3.getTickets().size() == 0);
    c.sendMessage("TICKET:1");
    c.sendMessage("TICKET:2");
-   
+
    Thread.sleep(3000);
    assertTrue(ta_client.getTickets().size() == 2);
    assertTrue(ta_client3.getTickets().size() == 0);

@@ -99,7 +99,7 @@ public static void setup() {
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER,
          fullRepo);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_COURSES,
-         fullRepo);
+         instance);
 }
 
 
@@ -111,13 +111,12 @@ public static void setup() {
 
 
 @Override public boolean includesRepository(BassRepository br) {
-   // TODO Auto-generated method stub
-   return false;
+   return (br == this);
 }
 
 private String coursePrefix(BeduCourse c)
 {
-   return PROP_PREFIX + c.getName() + ".";
+   return PROP_PREFIX + c.getCourseName() + ".";
 }
 
 void addCourse(BeduCourse c) {
@@ -127,6 +126,7 @@ void addCourse(BeduCourse c) {
    if (c instanceof BeduCourse.StudentCourse) {
       bp.setProperty(coursePrefix(c)+"role", "Student");
    }
+   String d = coursePrefix(c);
    if (c instanceof BeduCourse.TACourse) {
       BeduCourse.TACourse tc = (BeduCourse.TACourse) c;
       bp.setProperty(coursePrefix(c) + "role", "TA");
@@ -135,6 +135,16 @@ void addCourse(BeduCourse c) {
       bp.setProperty(coursePrefix(c) + "server",
             tc.getXMPPServer());
    }
+   
+   try {
+      bp.save();
+   } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+   }
+   
+   BassFactory.reloadRepository(instance);
+
 }
 
 void removeCourse(BeduCourse c) throws IOException
@@ -142,6 +152,7 @@ void removeCourse(BeduCourse c) throws IOException
    BoardProperties bp = BoardProperties.getProperties("Educhat");
    bp.remove(coursePrefix(c) + "ta_jid");
    bp.remove(coursePrefix(c) + "role");
+   courses.remove(c);
    if(c instanceof BeduCourse.TACourse)
    {
       bp.remove(coursePrefix(c) + "xmpp_password");
@@ -155,5 +166,8 @@ void removeCourse(BeduCourse c) throws IOException
       addCourse(c);
       throw e;
    }
+   
+   BassFactory.reloadRepository(instance);
+   
 }
 }

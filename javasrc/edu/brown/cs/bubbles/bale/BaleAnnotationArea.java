@@ -490,7 +490,8 @@ private boolean checkElement(BaleElement be)
        }
       catch (BadLocationException e) { return chng; }
       int lno = for_document.findLineNumber(off)-start_line;
-      if (line_data[lno] == null) {
+      if (lno < 0 || lno >= line_data.length) ;
+      else if (line_data[lno] == null) {
 	 line_data[lno] = new LineData(start_line+lno,r.y,y0);//-1);
 	 chng = true;
        }

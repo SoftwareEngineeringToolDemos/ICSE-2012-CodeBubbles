@@ -701,7 +701,8 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	     }
 	    else if (val instanceof IJavaObject) {
 	       IJavaObject ovl = (IJavaObject) val;
-	       val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
+	       if (!ovl.isNull())
+		  val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
 	     }
 	  }
 

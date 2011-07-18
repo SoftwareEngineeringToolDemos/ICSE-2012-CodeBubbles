@@ -116,7 +116,7 @@ static class TACourse extends BeduCourse
 	@Override
 	public BudaBubble createBubble()
 	{
-		client = BeduChatManager.getTAXMPPClientForCourse(this);
+		client = BeduChatFactory.getTAXMPPClientForCourse(this);
 	
 		try {
 			if (!client.isLoggedIn()) {
@@ -205,21 +205,21 @@ static class StudentCourse extends BeduCourse
                   bba.addBubble(createBubble(),e.getComponent().getX(), e.getComponent().getY());
                }
             }
-
+   
             @Override
             public void componentMoved(ComponentEvent e)
             {
                // TODO Auto-generated method stub
                
             }
-
+   
             @Override
             public void componentResized(ComponentEvent e)
             {
                // TODO Auto-generated method stub
                
             }
-
+   
             @Override
             public void componentShown(ComponentEvent e)
             {
@@ -234,7 +234,7 @@ static class StudentCourse extends BeduCourse
       
       else
          return new BeduStudentTicketSubmitBubble(ta_chat_jid);
-
+   
    }
    
    

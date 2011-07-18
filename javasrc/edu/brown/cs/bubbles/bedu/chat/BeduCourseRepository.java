@@ -34,7 +34,7 @@ import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.board.BoardProperties;
 
-public class BeduCourseRepository implements BassRepository {
+class BeduCourseRepository implements BassRepository {
 private static List<BeduCourse>     courses;
 private static BeduCourseRepository instance;
 private static String PROP_PREFIX = "Educhat.course.";
@@ -42,7 +42,7 @@ private static String PROP_PREFIX = "Educhat.course.";
 
 static BeduCourseRepository getInstance() {
    if (instance == null)
-      setup();
+      initialize();
    return instance;
 }
 
@@ -53,7 +53,7 @@ static BeduCourseRepository getInstance() {
  * and registering itself for display in the 
  * package explorer 
  */
-public static void setup() {
+static void initialize() {
    instance = new BeduCourseRepository();
    courses = new ArrayList<BeduCourse>();
 
@@ -63,8 +63,6 @@ public static void setup() {
 
    // gather course names
    for (String s : bp.stringPropertyNames()) {
-      System.out.println(s.split("\\.")[2]);
-
       // Property name should be in the form
       // Educhat.course.CS15.ta_jid
       if (s.startsWith("Educhat.course."))

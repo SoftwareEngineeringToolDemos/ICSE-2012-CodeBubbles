@@ -21,7 +21,6 @@
 package edu.brown.cs.bubbles.bgta;
 
 import edu.brown.cs.bubbles.bass.BassFactory;
-import edu.brown.cs.bubbles.bedu.chat.BeduCourseRepository;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 
@@ -107,7 +106,6 @@ public static void setup()
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, buddy_list);
    BudaRoot.addBubbleConfigurator("BGTA", new BgtaConfigurator());
    
-   BeduCourseRepository.setup();
 }
 
 /**

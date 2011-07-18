@@ -49,7 +49,7 @@ BeduTATicketList() {
 
 
 
-@SuppressWarnings({ "rawtypes", "unchecked" }) @Override public Class getColumnClass(int columnIndex) {
+@SuppressWarnings("unchecked") @Override public Class getColumnClass(int columnIndex) {
 	return String.class;
 }
 

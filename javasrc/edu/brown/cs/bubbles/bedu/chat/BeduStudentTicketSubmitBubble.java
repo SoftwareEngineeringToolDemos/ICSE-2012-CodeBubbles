@@ -36,7 +36,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 
 import org.jivesoftware.smack.packet.Presence;
 
@@ -55,7 +54,7 @@ import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 class BeduStudentTicketSubmitBubble extends BudaBubble {
 private static Color		  GRADIENT_BOTTOM_COLOR = Color.white;
 private static Color		  GRADIENT_TOP_COLOR	   = new Color(0xC4, 0x32, 0x1F);
-private static Dimension	 DEFAULT_DIMENSION	= new Dimension(250, 200);
+private static Dimension	 DEFAULT_DIMENSION	= new Dimension(275, 200);
 
 private static final long	serialVersionUID		= 1L;
 
@@ -64,12 +63,11 @@ private String				   ta_jid;
 
 
 
-public BeduStudentTicketSubmitBubble(String a_jid) {
+BeduStudentTicketSubmitBubble(String a_jid) {
 	HashMap<String, BgtaManager> chat_logins = new HashMap<String, BgtaManager>();
 	
 	BgtaManager a_man = (BgtaManager) BgtaUtil.getXMPPManagers().iterator().next();
 	a_man.subscribeToUser(a_jid);
-	System.out.println(BgtaManager.getPresence(a_jid));
 	if(BgtaManager.getPresence(a_jid).getType() == Presence.Type.unavailable)
 	{
 		JPanel fail_panel = new JPanel();
@@ -79,7 +77,7 @@ public BeduStudentTicketSubmitBubble(String a_jid) {
 	}
 	else
 	{
-   	@SuppressWarnings("unchecked") Iterator<BgtaManager> iterator = BgtaUtil.getXMPPManagers().iterator();
+   	Iterator<BgtaManager> iterator = BgtaUtil.getXMPPManagers().iterator();
 		for (Iterator<BgtaManager> it = iterator; it.hasNext();) {
    		BgtaManager man = it.next();
    		chat_logins.put(man.getUsername(), man);
@@ -107,7 +105,7 @@ private class TicketPanel extends JPanel implements ActionListener
    	setLayout(new GridBagLayout());
    
    	GridBagConstraints c = new GridBagConstraints();
-   	JLabel l = new JLabel("Choose a chat login: ");
+   	JLabel l = new JLabel("Choose a login: ");
    	c.gridx = 0;
    	c.gridy = 0;
    	c.fill = GridBagConstraints.NONE;
@@ -132,7 +130,6 @@ private class TicketPanel extends JPanel implements ActionListener
    	c.weightx = 0;
    	c.anchor = GridBagConstraints.PAGE_START;
    	c.insets = new Insets(0, 0, 10, 0);
-   	// c.fill = GridBagConstraints.HORIZONTAL;
    	add(ticket_area_label, c);
    	c.insets = new Insets(0, 0, 0, 0);
    
@@ -142,7 +139,7 @@ private class TicketPanel extends JPanel implements ActionListener
    	JScrollPane scroll = new JScrollPane(ticket_area);
    	scroll.setOpaque(false);
    	scroll.getViewport().setOpaque(false);
-   	// scroll.setBorder(null);
+
    	c.anchor = GridBagConstraints.PAGE_START;
    	c.gridx = 0;
    	c.gridy = 2;

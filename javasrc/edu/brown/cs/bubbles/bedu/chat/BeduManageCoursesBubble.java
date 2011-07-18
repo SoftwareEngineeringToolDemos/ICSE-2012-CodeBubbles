@@ -95,7 +95,7 @@ class BeduManageCoursesBubble extends BudaBubble
       private JTextField server_field;
       private BeduCourse course;
       
-      public ConfigPane(BeduCourse c)
+      private ConfigPane(BeduCourse c)
       {
       	course = c;
       	JButton deleteButton = new JButton("Delete");

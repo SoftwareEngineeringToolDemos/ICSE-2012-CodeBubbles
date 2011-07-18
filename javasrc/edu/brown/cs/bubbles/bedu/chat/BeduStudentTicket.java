@@ -22,14 +22,14 @@ package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.Date;
 
-public class BeduStudentTicket {
+class BeduStudentTicket {
 private String text;
 private Date   timestamp;
 private String studentJID;
 
 
 
-public BeduStudentTicket(String txt, Date time, String jid) {
+BeduStudentTicket(String txt, Date time, String jid) {
    text = txt;
    timestamp = time;
    studentJID = jid;
@@ -45,8 +45,7 @@ int textHash() {
 }
 
 
-
-public String getText() {
+String getText() {
    return text;
 }
 
@@ -55,7 +54,7 @@ public String getText() {
  * The time the ticket was received 
  * @return
  */
-public Date getTimestamp() {
+Date getTimestamp() {
    return timestamp;
 }
 

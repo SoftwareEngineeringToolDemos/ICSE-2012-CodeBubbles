@@ -919,6 +919,12 @@ private static void outputJavaElementImpl(IJavaElement elt,Set<String> files,boo
 	 catch (JavaModelException e) { }
 	 break;
       case IJavaElement.JAVA_PROJECT :
+	 IJavaProject ijp = (IJavaProject) elt;
+	 try {
+	    outputNameDetails(ijp,xw);
+	  }
+	 catch (JavaModelException e) { }
+	 break;
       case IJavaElement.JAVA_MODEL :
       case IJavaElement.IMPORT_CONTAINER :
       case IJavaElement.IMPORT_DECLARATION :
@@ -1066,6 +1072,13 @@ private static void outputNameDetails(IPackageFragmentRoot pkg,IvyXmlWriter xw) 
 private static void outputNameDetails(ILocalVariable lcl,IvyXmlWriter xw) throws JavaModelException
 {
    outputSymbol(lcl,"Local",lcl.getElementName(),null,xw);
+}
+
+
+
+private static void outputNameDetails(IJavaProject ijp,IvyXmlWriter xw) throws JavaModelException
+{
+   outputSymbol(ijp,"Project",ijp.getElementName(),null,xw);
 }
 
 

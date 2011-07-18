@@ -76,6 +76,9 @@ BassNameLocation(BumpLocation bl)
    location_set.add(bl);
 
    switch (bl.getSymbolType()) {
+      case PROJECT :
+	 name_type = BassNameType.PROJECT;
+	 break;
       case PACKAGE :
 	 name_type = BassNameType.PACKAGE;
 	 break;
@@ -301,6 +304,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 @Override public BudaBubble createPreviewBubble()
 {
    switch (name_type) {
+      case PROJECT :
       case PACKAGE :
       case FILE :
       default :

@@ -103,6 +103,7 @@ enum BumpSymbolType {
    CONSTRUCTOR,
    STATIC_INITIALIZER,
    PACKAGE,
+   PROJECT,
    LOCAL
 }
 

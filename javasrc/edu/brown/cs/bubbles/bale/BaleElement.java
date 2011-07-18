@@ -822,7 +822,7 @@ static class Leaf extends BaleElement {
        }
       catch (BadLocationException e) {
 	 start_pos = end_pos = null;
-	 throw new Error("Can't create position references for leaf element");
+	 throw new Error("Can't create position references for leaf element " + start_pos + " " + end_pos);
        }
     }
 

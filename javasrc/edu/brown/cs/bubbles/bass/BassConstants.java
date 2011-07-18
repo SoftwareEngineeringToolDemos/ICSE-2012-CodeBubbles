@@ -72,6 +72,7 @@ static final BoardProperties bass_properties = BoardProperties.getProperties("Ba
 
 enum BassNameType {
    NONE,
+   PROJECT,
    PACKAGE,
    METHOD,
    CONSTRUCTOR,

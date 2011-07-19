@@ -129,6 +129,7 @@ private void update()
 	     }
 
 	    if (KEY_COMPRESS) sins = new InflaterInputStream(sins);
+	    System.err.println("BVCR: Work on : " + user_id + " " + repo_id + " " + len);
 	    Element e = IvyXml.loadXmlFromStream(sins);
 	    addChanges(e);
 	  }
@@ -189,16 +190,30 @@ private static class SubInputStream extends FilterInputStream {
 
    @Override public int read() throws IOException {
       if (sub_ptr >= sub_length) return -1;
-      return super.read();
+      int rslt = super.read();
+      if (rslt >= 0) ++sub_ptr;
+      System.err.println("BVCR READ " + rslt);
+      return rslt;
     }
 
    @Override public int read(byte [] b,int off,int len) throws IOException {
       if (sub_ptr >= sub_length) return -1;
       if (sub_ptr + len > sub_length) len = sub_length - sub_ptr;
       int ct = super.read(b,off,len);
-
+      sub_ptr += ct;
+      System.err.println("BVCR READ " + off + " " + len + " " + ct);
       return ct;
     }
+
+   @Override public int available() throws IOException {
+      return sub_length - sub_ptr;
+    }
+
+   @Override public void close() {		
+      sub_length = sub_ptr = 0;
+    }
+
+   @Override public boolean markSupported()		{ return false; }
 
 }	// end of inner class SubInputStream
 

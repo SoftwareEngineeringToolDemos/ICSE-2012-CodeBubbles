@@ -1783,15 +1783,22 @@ static File getFileForPath(File f,IProject proj)
    if (!f.exists() && proj != null) {
       Stack<File> pars = new Stack<File>();
       for (File f1 = f; f1 != null; f1 = f1.getParentFile()) pars.push(f1);
-      pars.pop();		// /
-      pars.pop();		// /project
-      IFolder lnk = proj.getFolder(pars.pop().getName());
-      if (lnk != null && lnk.getLocation() != null) {
-	 File f0 = lnk.getLocation().toFile();
-	 while (!pars.empty()) {
-	    f0 = new File(f0,pars.pop().getName());
+      if (pars.size() >= 3) {
+	 pars.pop();		   // /
+	 pars.pop();		   // /project
+	 IFolder lnk = proj.getFolder(pars.pop().getName());
+	 if (lnk != null && lnk.getLocation() != null) {
+	    File f0 = lnk.getLocation().toFile();
+	    while (!pars.empty()) {
+	       f0 = new File(f0,pars.pop().getName());
+	     }
+	    if (f0.exists()) f = f0;
 	  }
-	 if (f0.exists()) f = f0;
+       }
+      else if (pars.size() == 2) {
+	 IPath ip = proj.getLocation();
+	 File f1 = ip.toFile();
+	 if (f1.exists()) f = f1;
        }
     }
 

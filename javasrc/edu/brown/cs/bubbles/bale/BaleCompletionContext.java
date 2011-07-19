@@ -336,23 +336,26 @@ private synchronized void handleShow()
    try {
       int soff = be.getCaretPosition();
       Rectangle r = be.modelToView(soff);
-      Window w = null;
-      for (Component c = be; c != null; c = c.getParent()) {
-	 if (w == null && c instanceof Window) {
-	    w = (Window) c;
-	    break;
-	  }
-       }
+      Window w = SwingUtilities.windowForComponent(be);
       cur_menu = new JDialog(w);
       cur_menu.setFocusable(false);
       cur_menu.setFocusableWindowState(false);
-      cur_menu.setTitle("1");
+      cur_menu.setTitle("Completions");
       cur_menu.setUndecorated(true);
       cur_menu.setContentPane(the_panel);
       Point p0 = be.getLocationOnScreen();
       the_panel.setSize();
-      cur_menu.setLocation(p0.x + r.x + X_DELTA,p0.y + r.y + r.height + Y_DELTA);
+      // cur_menu.setLocation(p0.x + r.x + X_DELTA,p0.y + r.y + r.height + Y_DELTA);
       cur_menu.pack();
+      Dimension d1 = cur_menu.getSize();
+      GraphicsConfiguration gc = be.getGraphicsConfiguration();
+      Rectangle r2 = gc.getBounds();
+      int x = p0.x + r.x + X_DELTA;
+      if (x + d1.width >= r2.width) x = p0.x + r.x - X_DELTA - d1.width;
+      int y = p0.y + r.y + r.height + Y_DELTA;
+      if (y + d1.height >= r2.height) y = p0.y + r.y - d1.height - Y_DELTA;
+      cur_menu.setLocation(x,y);
+      
       cur_menu.setVisible(true);
       the_panel.setCurrentIndex(0);
       be.grabFocus();

@@ -2763,7 +2763,7 @@ private class EclipseHandler implements MintHandler {
 	    msg.replyTo();
 	  }
 	 else if (cmd.equals("NAMES") && name_collects != null) {
-	    BoardLog.logD("BUMP","NAMES: " + IvyXml.convertXmlToString(e));
+	    // BoardLog.logD("BUMP","NAMES: " + IvyXml.convertXmlToString(e));
 	    String nid = IvyXml.getAttrString(e,"NID");
 	    NameCollector nc = name_collects.get(nid);
 	    if (nc != null) {

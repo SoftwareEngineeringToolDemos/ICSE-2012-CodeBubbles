@@ -43,6 +43,7 @@ import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.bgta.BgtaChat;
 
 class BeduTATicketViewBubble extends BudaBubble {
 private static final long serialVersionUID = 1L;
@@ -150,9 +151,8 @@ private class ChatStartListener implements ActionListener
    
    
    @Override public void actionPerformed(ActionEvent e) {
-   	client.acceptTicketAndAlertPeers(bubble.ticket);
-   	BudaBubble chat_bub = new BeduChatBubble.TABubble(client,
-   			client.getChatForJID(bubble.ticket.getStudentJID()));
+   	BgtaChat c = client.acceptTicketAndAlertPeers(bubble.ticket);
+   	BudaBubble chat_bub = new BeduChatBubble.TABubble(client,c);
    	BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
    	bba.addBubble(chat_bub, bubble, null, PLACEMENT_LOGICAL | PLACEMENT_GROUPED);
    }

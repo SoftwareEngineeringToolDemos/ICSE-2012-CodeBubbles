@@ -34,9 +34,9 @@ private static final long serialVersionUID = 1L;
 
 
 
-private BeduChatBubble(XMPPConnection conn, Chat c)
+private BeduChatBubble(BgtaChat c)
 {
-	super(BgtaUtil.bgtaChatForXMPPChat(conn, c));
+	super(c);
 }
 
 
@@ -44,15 +44,16 @@ private BeduChatBubble(XMPPConnection conn, Chat c)
 static class TABubble extends BeduChatBubble
 {
 	private static final long serialVersionUID = 1L;
-
+        
 	private BeduTAXMPPClient client;
-	private Chat chat;
+	private BgtaChat chat;
+       // private String student_jid;
 
-	TABubble(BeduTAXMPPClient a_client, Chat a_chat)
+	TABubble(BeduTAXMPPClient a_client, BgtaChat a_chat)
 	{
-		super(a_client.getConnection(), a_chat);
+		super(a_chat);
 		client = a_client;
-		chat = a_chat;
+                chat = a_chat;
 	}
 	
 	
@@ -61,7 +62,7 @@ static class TABubble extends BeduChatBubble
 	public void setVisible(boolean vis)
 	{
 		super.setVisible(vis);
-		client.endChatSession(chat);
+
 	}
 }
 }

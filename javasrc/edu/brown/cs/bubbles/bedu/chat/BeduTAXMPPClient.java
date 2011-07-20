@@ -136,7 +136,7 @@ void connectAndLogin(String name) throws XMPPException {
      // System.out.println(conn.getRoster().getPresence(full_jid).getPriority());
       if(!StringUtils.parseResource(full_jid).equals(name))
       {
-         conn.getChatManager().createChat(full_jid, new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
+         conn.getChatManager().createChat(full_jid, new StudentXMPPBotMessageListener()).sendMessage("REQUEST-STATE");
          foundFull = true;
          break;
       }
@@ -144,7 +144,7 @@ void connectAndLogin(String name) throws XMPPException {
 	 
 	if(!foundFull)
 	{
-	   conn.getChatManager().createChat(getMyBareJID(), new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
+	   conn.getChatManager().createChat(getMyBareJID(), new StudentXMPPBotMessageListener()).sendMessage("REQUEST-STATE");
 	}
 	
 }
@@ -229,80 +229,85 @@ private String getMyBareJID() {
 	return StringUtils.parseBareAddress(conn.getUser());
 }
 
-private class StudentXMPPBotMessageListener implements MessageListener {
-@Override public void processMessage(Chat c, Message m) {
-   if(BeduChatFactory.DEBUG)
-      System.out.println(conn.getUser() + "  received message: " + m.getBody() + " from " + c.getParticipant());
-   
-	String[] chat_args = m.getBody().split(":");
-	String cmd = chat_args[0];
-	
-	if (cmd.equals("TICKET")) {
-		// comes in the form "TICKET:<message>"
-		BeduStudentTicket t = new BeduStudentTicket(chat_args[1], new Date(
-				System.currentTimeMillis()), m.getFrom());
-		ticket_list.add(t);
-		try {
+
+
+private class StudentXMPPBotMessageListener implements MessageListener
+{
+@Override
+public void processMessage(Chat c, Message m)
+{
+   if (BeduChatFactory.DEBUG)
+      System.out.println(conn.getUser() + "  received message: " + m.getBody()
+            + " from " + c.getParticipant());
+
+   String[] chat_args = m.getBody().split(":");
+   String cmd = chat_args[0];
+
+   if (cmd.equals("TICKET")) {
+      // comes in the form "TICKET:<message>"
+      BeduStudentTicket t = new BeduStudentTicket(chat_args[1], new Date(System
+            .currentTimeMillis()), m.getFrom());
+      ticket_list.add(t);
+      try {
          c.sendMessage("Ticket received. A TA will respond soon.");
       } catch (XMPPException e) {
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-		sendMessageToOtherResources("TICKET-FORWARD:" + m.getFrom() + ":"
-				+ chat_args[1]);
-	} 
-	
-	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
-			getMyBareJID())
-			&& cmd.equals("TICKET-FORWARD")) {
-		// comes in the form "TICKET-FORWARD:<student-jid>:<message>"
-		BeduStudentTicket t = new BeduStudentTicket(chat_args[2], new Date(
-				System.currentTimeMillis()), chat_args[1]);
-		if(!ticket_list.contains(t))
-			ticket_list.add(t);
-	}
-	
-	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
-			getMyBareJID())
-			&& cmd.equals("ACCEPTING")) {
-		// form: "ACCEPTING:<string hash>"
+      sendMessageToOtherResources("TICKET-FORWARD:" + m.getFrom() + ":"
+            + chat_args[1]);
+   }
+
+   else if (StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("TICKET-FORWARD")) {
+      // comes in the form "TICKET-FORWARD:<student-jid>:<message>"
+      BeduStudentTicket t = new BeduStudentTicket(chat_args[2], new Date(System
+            .currentTimeMillis()), chat_args[1]);
+      if (!ticket_list.contains(t))
+         ticket_list.add(t);
+   }
+
+   else if (StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("SESSION-FORWARD")) {
+      // comes in the form "SESSION-FORWARD:<student jid>:<ta jid>"
+      ta_sessions.put(chat_args[1], chat_args[2]);
+   }
+   
+   else if (StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("ACCEPTING")) {
+      // form: "ACCEPTING:<string hash>"
 
       int hash = Integer.valueOf(chat_args[1]);
       for (BeduStudentTicket t : ticket_list) {
-              if (t.textHash() == hash) {
+         if (t.textHash() == hash) {
             ta_sessions.put(t.getStudentJID(), c.getParticipant());
-                      ticket_list.remove(t);
+            ticket_list.remove(t);
             break;
-              }
-      }	
-	}
-	
-	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
-         getMyBareJID())
-         && cmd.equals("MSG-FORWARD")) {
-      // form: "ACCEPTING:<string hash>"
+         }
+      }
+   }
+
+   else if (StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("MSG-FORWARD")) {
+      // form: "MSG-FORWARD:<string hash>"
 
       String jid = chat_args[1];
       String msg = chat_args[2];
-      
+
       chats.get(jid).logOutsideMessage(msg);
    }
-	
-	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
+
+   else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
          getMyBareJID())
          && cmd.equals("COMPLETED")) {
       // form: "COMPLETED:<student this ta is done talking to >"
-
+      
       String jid = chat_args[1];
 
       ta_sessions.remove(jid);
    }
-	
-	 else if (cmd.equals("REQUEST-TICKETS")) {
-      for (BeduStudentTicket t : ticket_list) {
+
+   else if (cmd.equals("REQUEST-STATE")) {
+      for(String s_jid : ta_sessions.keySet())
+      {
          try {
-            c.sendMessage("TICKET-FORWARD:" + t.getStudentJID() + ":"
-                  + t.getText());
+            c.sendMessage("SESSIONS-FORWARD:" + s_jid + ":" + ta_sessions.get(s_jid));
             try {
                Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -313,30 +318,41 @@ private class StudentXMPPBotMessageListener implements MessageListener {
             e.printStackTrace();
          }
       }
-   }
-	else if (permitted_jids.contains(c.getParticipant())) {
-	   chats.get(c.getParticipant()).logOutsideMessage(m.getBody());
-	   if(BeduChatFactory.DEBUG)
-	      System.err.println("BEDU: Student message: " + c.getParticipant() + " : "+ m.getBody());
-	}
-	else if(ta_sessions.keySet().contains(c.getParticipant()))
-	{
-	   try {
-         conn.getChatManager().createChat(ta_sessions.get(c.getParticipant()), null)
-         .sendMessage("MSG-FORWARD:" + c.getParticipant() + ":" + m.getBody());
+      for (BeduStudentTicket t : ticket_list) {
+         try {
+            c.sendMessage("TICKET-FORWARD:" + t.getStudentJID() + ":" + t.getText());
+            try {
+               Thread.sleep(100);
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+            }
+         } catch (XMPPException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+      }
+   } else if (permitted_jids.contains(c.getParticipant())) {
+      chats.get(c.getParticipant()).logOutsideMessage(m.getBody());
+      if (BeduChatFactory.DEBUG)
+         System.err.println("BEDU: Student message: " + c.getParticipant()
+               + " : " + m.getBody());
+   } else if (ta_sessions.keySet().contains(c.getParticipant())) {
+      try {
+         conn.getChatManager().createChat(ta_sessions.get(c.getParticipant()),
+               null).sendMessage(
+               "MSG-FORWARD:" + c.getParticipant() + ":" + m.getBody());
       } catch (XMPPException e) {
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-	}
-	else {
-		try {
-			c.sendMessage("Please submit a ticket to chat with a TA");
-		} catch (XMPPException e) {
-			// this exception doesn't really matter because this
-			// person shouldn't be chatting with us anyway
-		}	
-	}
+   } else {
+      try {
+         c.sendMessage("Please submit a ticket to chat with a TA");
+      } catch (XMPPException e) {
+         // this exception doesn't really matter because this
+         // person shouldn't be chatting with us anyway
+      }
+   }
 }
 }
 

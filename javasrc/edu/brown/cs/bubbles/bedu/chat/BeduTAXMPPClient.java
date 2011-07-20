@@ -50,7 +50,7 @@ private XMPPConnection			  conn;
 
 private String						  resource_name;
 private BeduCourse.TACourse	  course;
-private Map<String, BeduProxyChat>		  chats;		  // maps bare jids to Chat objects
+private Map<String, BeduTAChat> chats;		  // maps bare jids to Chat objects
 private Map<String, String>     ta_sessions; //maps student jids to ta jids for active sessions this instance knows about 
 private Set<String>				  permitted_jids;
 
@@ -61,7 +61,7 @@ private BeduTATicketList		  ticket_list;
 BeduTAXMPPClient(BeduCourse.TACourse a_course) {
    if(BeduChatFactory.DEBUG)
       XMPPConnection.DEBUG_ENABLED = true;
-	chats = new HashMap<String, BeduProxyChat>();
+	chats = new HashMap<String, BeduTAChat>();
 	permitted_jids = new HashSet<String>();
 	ta_sessions = new HashMap<String, String>();
 	course = a_course;
@@ -174,18 +174,16 @@ void disconnect() throws XMPPException {
  * the student until another ticket is accepted
  */
 void endChatSession(BgtaChat c) {
-	permitted_jids.remove(c);
+	permitted_jids.remove(c.getUsername());
 }
 
 
 
 BgtaChat acceptTicketAndAlertPeers(BeduStudentTicket t) {
-	// should i determine if the ticket is actually in the list?
-
-	// we need to alert all the other TAs that we're accepting this ticket
+	//TODO: should i determine if the ticket is actually in the list?
 	sendMessageToOtherResources("ACCEPTING:" + t.textHash());
 	ticket_list.remove(t);
-        BeduProxyChat c = new BeduProxyChat(conn, conn.getChatManager().createChat(t.getStudentJID(), null));
+        BeduTAChat c = new BeduTAChat(conn, conn.getChatManager().createChat(t.getStudentJID(), null));
         chats.put(t.getStudentJID(), c);
 	permitted_jids.add(t.getStudentJID());
         return c;
@@ -234,13 +232,11 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 @Override public void processMessage(Chat c, Message m) {
    if(BeduChatFactory.DEBUG)
       System.out.println(conn.getUser() + "  received message: " + m.getBody() + " from " + c.getParticipant());
+   
 	String[] chat_args = m.getBody().split(":");
-
-	if(m.getBody().equals("s1toT2"))
-	   System.out.println();
 	String cmd = chat_args[0];
+	
 	if (cmd.equals("TICKET")) {
-
 		// comes in the form "TICKET:<message>"
 		BeduStudentTicket t = new BeduStudentTicket(chat_args[1], new Date(
 				System.currentTimeMillis()), m.getFrom());
@@ -277,9 +273,7 @@ private class StudentXMPPBotMessageListener implements MessageListener {
                       ticket_list.remove(t);
             break;
               }
-      }
-
-		
+      }	
 	}
 	
 	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
@@ -291,7 +285,6 @@ private class StudentXMPPBotMessageListener implements MessageListener {
       String msg = chat_args[2];
       
       chats.get(jid).logOutsideMessage(msg);
-
    }
 	
 	 else if (cmd.equals("REQUEST-TICKETS")) {
@@ -331,10 +324,26 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 		} catch (XMPPException e) {
 			// this exception doesn't really matter because this
 			// person shouldn't be chatting with us anyway
-		}
-		
+		}	
 	}
-	
 }
 }
+
+private class BeduTAChat extends BgtaChat
+{
+   private String newest_msg;
+   
+   public BeduTAChat(XMPPConnection conn, Chat c)
+   {
+      super(conn.getUser(), c.getParticipant(), null, ChatServer.fromServer(conn.getServiceName()), c, null);
+      newest_msg = "";
+   }
+   
+   void logOutsideMessage(String msg)
+   {
+      if(!msg.equals(newest_msg))
+         logMessage(msg);
+   }
+}
+
 }

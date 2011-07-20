@@ -112,7 +112,7 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-protected BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
+public BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
 { 
    // Fix display names so they don't have the server endings.
    this_user = username;
@@ -169,7 +169,7 @@ protected BgtaChat(String username,String pUsername,String pDisplayname,ChatServ
  * 
  * @return the name of the participant in this chat.
  */
-String getUsername()    { return user_name; }
+public String getUsername()    { return user_name; }
 
 
 /**
@@ -295,7 +295,7 @@ void messageReceived(Object msg)
  * 
  * @param msg A String
  */
-protected void logMessage(String msg)
+public void logMessage(String msg)
 {
    logMessage(msg,user_display);
 }

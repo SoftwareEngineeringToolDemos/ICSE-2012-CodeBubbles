@@ -22,8 +22,6 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.XMPPConnection;
 
 import edu.brown.cs.bubbles.bgta.*;
 
@@ -32,37 +30,22 @@ class BeduChatBubble extends BgtaBubble
 {
 private static final long serialVersionUID = 1L;
 
+private BeduTAXMPPClient client;
+private BgtaChat chat;
 
-
-private BeduChatBubble(BgtaChat c)
+BeduChatBubble(BeduTAXMPPClient a_client, BgtaChat a_chat)
 {
-	super(c);
+   super(a_chat);
+   client = a_client;
+   chat = a_chat;
 }
 
 
-
-static class TABubble extends BeduChatBubble
+@Override
+public void setVisible(boolean vis)
 {
-	private static final long serialVersionUID = 1L;
-        
-	private BeduTAXMPPClient client;
-	private BgtaChat chat;
-       // private String student_jid;
-
-	TABubble(BeduTAXMPPClient a_client, BgtaChat a_chat)
-	{
-		super(a_chat);
-		client = a_client;
-                chat = a_chat;
-	}
-	
-	
-	
-	@Override
-	public void setVisible(boolean vis)
-	{
-		super.setVisible(vis);
-
-	}
+   super.setVisible(vis);
+   client.endChatSession(chat);
 }
 }
+

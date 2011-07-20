@@ -175,6 +175,7 @@ void disconnect() throws XMPPException {
  */
 void endChatSession(BgtaChat c) {
 	permitted_jids.remove(c.getUsername());
+	sendMessageToOtherResources("COMPLETED:" + c.getUsername());
 }
 
 
@@ -285,6 +286,16 @@ private class StudentXMPPBotMessageListener implements MessageListener {
       String msg = chat_args[2];
       
       chats.get(jid).logOutsideMessage(msg);
+   }
+	
+	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
+         getMyBareJID())
+         && cmd.equals("COMPLETED")) {
+      // form: "COMPLETED:<student this ta is done talking to >"
+
+      String jid = chat_args[1];
+
+      ta_sessions.remove(jid);
    }
 	
 	 else if (cmd.equals("REQUEST-TICKETS")) {

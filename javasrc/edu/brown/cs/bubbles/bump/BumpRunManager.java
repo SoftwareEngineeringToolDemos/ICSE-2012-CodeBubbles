@@ -810,6 +810,8 @@ private void handleTargetEvent(Element xml,long when)
    if (pd == null) return;
    String nm = IvyXml.getAttrString(tgt,"NAME");
    if (nm != null) pd.setProcessName(nm);
+   
+   if (dtl == BumpThreadStateDetail.CONTENT) return;
 
    for (BumpThread bt : pd.getThreads()) {
       ThreadData td = (ThreadData) bt;

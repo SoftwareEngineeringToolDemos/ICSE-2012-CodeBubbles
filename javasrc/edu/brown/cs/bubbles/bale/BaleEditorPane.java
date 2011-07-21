@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss, Hsu-Sheng Ko      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -32,8 +32,7 @@ package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardMetrics;
-import edu.brown.cs.bubbles.buda.BudaBubble;
-import edu.brown.cs.bubbles.buda.BudaRoot;
+import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
@@ -994,8 +993,8 @@ void clearRegions(Rectangle r)
       if (r == null || ar.intersects(r)) it.remove();
     }
 }
-      
-      
+
+
 
 
 void addActiveRegion(int x,int y,int w,int h,RegionAction act)
@@ -1151,65 +1150,10 @@ private class ContextData implements BaleContextConfig {
 
 @Override public JToolTip createToolTip()
 {
-   BaleToolTip btt = new BaleToolTip();
+   BudaToolTip btt = new BudaToolTip();
    btt.setComponent(this);
    return btt;
 }
-
-
-
-private static final int TIP_WIDTH = 800;
-
-
-
-private static class BaleToolTip extends JToolTip
-{
-
-   private static final long serialVersionUID = 1;
-
-
-   @Override public Dimension getPreferredSize() {
-      String txt = getTipText();
-
-      if (txt == null || txt.length() == 0) return super.getPreferredSize();
-      if (!txt.startsWith("<html>")) return super.getPreferredSize();
-
-      JLabel lbl = new JLabel();
-      lbl.setFont(getFont());
-      lbl.setText(txt);
-      Dimension d0 = lbl.getPreferredSize();
-      if (d0.width < TIP_WIDTH) return super.getPreferredSize();
-
-      View v = (View) lbl.getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey);
-      int w0 = TIP_WIDTH;
-      v.setSize(w0,0);
-      float w = v.getPreferredSpan(View.X_AXIS);
-      float h = v.getPreferredSpan(View.Y_AXIS);
-
-      float wmin = v.getMinimumSpan(View.X_AXIS);
-      float wmax = w;
-      while (wmax - wmin > 16) {
-	 w = (wmin + wmax) / 2;
-	 v.setSize(w,0);
-	 float h1 = v.getPreferredSpan(View.Y_AXIS);
-	 if (h1 <= h) {
-	    wmax = w;
-	 }
-	 else {
-	    wmin = w;
-	 }
-      }
-      w = Math.round(wmax);
-
-      // w = v.getMinimumSpan(View.X_AXIS)+16;
-
-      Dimension d = new Dimension((int) Math.ceil(w+5),(int) Math.ceil(h+5));
-
-      return d;
-    }
-
-}	// end of inner class BaleToolTip
-
 
 
 

@@ -92,7 +92,12 @@ BassCreator()
 
    // TODO: if forname == null and it represents an inner class, create alternatives for before/after the inner class
 
-   if (forname == null) {
+   if (forname != null && forname.getNameType() == BassNameType.PROJECT) {
+      forname = null;
+      BuenoLocation dfltloc = BuenoFactory.getFactory().createLocation(fullname,null,null,true);
+      menu.add(new NewPackageAction(dfltloc));
+    }
+   else if (forname == null) {
       String proj = null;
       int idx = fullname.indexOf(":");
       if (idx > 0) {

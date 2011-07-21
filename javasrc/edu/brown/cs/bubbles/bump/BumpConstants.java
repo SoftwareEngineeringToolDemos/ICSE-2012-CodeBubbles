@@ -103,6 +103,7 @@ enum BumpSymbolType {
    CONSTRUCTOR,
    STATIC_INITIALIZER,
    PACKAGE,
+   PROJECT,
    LOCAL
 }
 
@@ -559,6 +560,7 @@ enum BumpThreadStateDetail {
    STEP_INTO,
    STEP_OVER,
    STEP_RETURN,
+   CONTENT
 }
 
 

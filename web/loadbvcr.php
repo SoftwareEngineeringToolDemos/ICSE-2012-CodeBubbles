@@ -18,9 +18,9 @@ else {
    chmod($uploadpath.$tdir,0755);
 }
 
-$user = $_POST["U"];
-$repo = $_POST["R"];
-$dlm = $_POST["D"];
+$user = $_REQUEST["U"];
+$repo = $_REQUEST["R"];
+$dlm = $_REQUEST["D"];
 
 if ($dlm == "") $dlm = 0;
 

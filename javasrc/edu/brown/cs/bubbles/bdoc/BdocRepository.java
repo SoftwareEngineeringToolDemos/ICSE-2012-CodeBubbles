@@ -112,7 +112,9 @@ BdocRepository()
 	 String nm = bp.getProperty(s);
 	 if (nm != null) bdoc_props.add(s);
        }
-    }	
+    }
+
+   handleRemoteAccess();
 
    File f = BoardSetup.getDocumentationFile();
 
@@ -126,7 +128,7 @@ BdocRepository()
    for (String s : bdoc_props) {
       String nm = bp.getProperty(s);
       if (nm != null) addJavadoc(nm);
-    }	
+    }
 
    noteSearcherDone();
 }
@@ -579,7 +581,6 @@ private void outputXml(File f)
    catch (IOException e) {
       BoardProperties bpx = BoardProperties.getProperties("System");
       BoardLog.logE("BDOC","Problem outputing repository: " + f + " " +
-		       BoardSetup.getDocumentationFile() + " " +
 		       BoardSetup.getPropertyBase() + " " +
 		       bpx.getProperty("edu.brown.cs.bubbles.workspace") + " " +
 		       bpx.getProperty("edu.brown.cs.bubbles.install"),e);
@@ -663,6 +664,30 @@ private boolean loadXml(File f)
 
    return ldr.isValid();
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle retmoe access of documentation file							    */
+/*										*/
+/********************************************************************************/
+
+private void handleRemoteAccess()
+{
+   BoardSetup bs = BoardSetup.getSetup();
+
+   switch (bs.getRunMode()) {
+      case CLIENT :
+	 BumpClient bc = BumpClient.getBump();
+	 File f = BoardSetup.getDocumentationFile();
+	 bc.getRemoteFile(f,"BDOC",null);
+	 // ignore failures -- we'll just load the doc ourselves
+	 break;
+    }
+}
+
+
 
 
 

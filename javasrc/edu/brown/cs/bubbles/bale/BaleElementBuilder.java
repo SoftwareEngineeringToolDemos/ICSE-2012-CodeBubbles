@@ -539,6 +539,8 @@ private void addElementNode(BaleElement nbe,int prior)
 
 private BaleAstNode getAstChild(BaleElement be)
 {
+   if (cur_ast == null) return null;
+
    return cur_ast.getChildNode(be.getDocumentStartOffset(),be.getDocumentEndOffset());
 }
 

@@ -58,14 +58,14 @@ class BeamConfigurator implements BeamConstants, BudaConstants.BubbleConfigurato
 
    if (typ.equals("NOTE")) {
       String cnts = IvyXml.getTextElement(cnt,"TEXT");
-      String file = IvyXml.getAttrString(cnt,"FILE");
+      String name = IvyXml.getAttrString(cnt,"NAME");
       BeamNoteAnnotation annot = null;
       Element anx = IvyXml.getChild(cnt,"ANNOT");
       if (anx != null) {
 	 annot = new BeamNoteAnnotation(anx);
 	 if (annot.getDocumentOffset() < 0) annot = null;
        }
-      bb = new BeamNoteBubble(file,cnts,annot);
+      bb = new BeamNoteBubble(name,cnts,annot);
     }
    else if (typ.equals("FLAG")) {
       String path = IvyXml.getTextElement(cnt,"IMGPATH");

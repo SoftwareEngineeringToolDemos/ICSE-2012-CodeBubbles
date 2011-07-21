@@ -35,6 +35,7 @@ import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bdoc.BdocFactory;
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardConstants.RunMode;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bump.BumpClient;
 
@@ -43,10 +44,11 @@ import edu.brown.cs.ivy.xml.IvyXml;
 import org.w3c.dom.Element;
 
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.util.*;
 
 
 
@@ -80,7 +82,7 @@ public static void main(String [] args)
 	 System.err.println("BEMA: Problem setting l&f: " + t);
        }
     }
-   
+
    bm.start();
 }
 
@@ -103,6 +105,7 @@ private boolean 	use_web;
 private String		use_workspace;
 private Element 	load_config;
 private String []	java_args;
+private RunMode 	run_mode;
 
 
 
@@ -125,6 +128,7 @@ private BemaMain(String [] args)
    use_web = false;
    java_args = args;
    use_lila = false;
+   run_mode = RunMode.NORMAL;
 
    scanArgs(args);
 }
@@ -182,6 +186,16 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-lila")) {
 	    use_lila = true;
 	  }
+	 else if (args[i].startsWith("-C")) {                   // -Client
+	    run_mode = RunMode.CLIENT;
+	  }
+	 else if (args[i].startsWith("-S")) {                   // -Server
+	    run_mode = RunMode.SERVER;
+	    skip_splash = true;
+	    use_lila = false;
+	    restore_session = false;
+	    save_session = false;
+	  }
 	 else badArgs();
        }
       else badArgs();
@@ -217,6 +231,7 @@ private void start()
    if (allow_debug) bs.setAllowDebug();
    if (use_lila) bs.setUseLila();
    if (use_workspace != null) bs.setDefaultWorkspace(use_workspace);
+   if (run_mode != null) bs.setRunMode(run_mode);
    bs.setJavaArgs(java_args);
    bs.doSetup();
 
@@ -278,13 +293,12 @@ private void start()
    bs.setSplashTask("Loading Project Symbols");
    BassFactory.waitForNames();
 
-   for (String s : bp.stringPropertyNames()) {
-      if (s.startsWith("Bema.plugin.")) {
-	 String nm = bp.getProperty(s);
-	 String ld = bp.getProperty(s + ".load");
-	 if (nm != null) setupPackage(nm,ld);
-       }
+   for (String s : getSetupPackageProperties()) {
+      String nm = bp.getProperty(s);
+      String ld = bp.getProperty(s + ".load");
+      if (nm != null) setupPackage(nm,ld);
     }
+
    String pinf = bp.getProperty("Bema.pluginfolder");
    if (pinf != null) {
       //TODO: Load items in plugins folder
@@ -311,21 +325,25 @@ private void start()
    initializePackage("edu.brown.cs.bubbles.bale.BaleFactory",root);
    initializePackage("edu.brown.cs.bubbles.bass.BassFactory",root);
 
-   for (int i = 0; ; ++i) {
-      String nm = bp.getProperty("Bema.plugin." + i);
-      if (nm != null) initializePackage(nm,root);
-      else if (i >= 10) break;
+   for (String s : getSetupPackageProperties()) {
+      String nm = bp.getProperty(s);
+      initializePackage(nm,root);
     }
 
-   root.pack();
+   if (bs.getRunMode() != RunMode.SERVER) {
+      root.pack();
+      root.restoreConfiguration(load_config);
+      root.setVisible(true);
+    }
 
-   root.restoreConfiguration(load_config);
-
-   root.setVisible(true);
    bs.removeSplash();
 
    if (save_session) {
       Runtime.getRuntime().addShutdownHook(new SaveSession(root));
+    }
+
+   if (bs.getRunMode() == RunMode.SERVER) {
+       waitForServerExit(root);
     }
 }
 
@@ -372,6 +390,61 @@ private void initializePackage(String nm,BudaRoot br)
     }
 }
 
+
+
+private Collection<String> getSetupPackageProperties()
+{
+   Map<Integer,String> loads = new TreeMap<Integer,String>();
+   BoardProperties bp = BoardProperties.getProperties("Bema");
+   BoardSetup bs = BoardSetup.getSetup();
+
+   for (String s : bp.stringPropertyNames()) {
+      boolean use = false;
+      if (s.startsWith("Bema.plugin.")) use = true;
+      switch (bs.getRunMode()) {
+	 case NORMAL :
+	    if (s.startsWith("Bema.plugin.normal.")) use = true;
+	    break;
+	 case CLIENT :
+	    if (s.startsWith("Bema.plugin.client.")) use = true;
+	    break;
+	 case SERVER :
+	    if (s.startsWith("Beam.plugin.server.")) use = true;
+	    break;
+       }
+      if (use) {
+	 int idx = s.lastIndexOf(".");
+	 try {
+	    int v = Integer.parseInt(s.substring(idx+1));
+	    loads.put(v,s);
+	  }
+	 catch (NumberFormatException e) { }
+       }
+    }
+
+   return loads.values();
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Server mode dialog							*/
+/*										*/
+/********************************************************************************/
+
+private void waitForServerExit(BudaRoot root)
+{
+   JOptionPane.showConfirmDialog(root,"Exit from Code Bubbles Server",
+	    "Exit When Done",
+	    JOptionPane.OK_OPTION,
+	    JOptionPane.QUESTION_MESSAGE);
+
+   root.handleSaveAllRequest();
+
+   System.exit(0);
+}
 
 
 

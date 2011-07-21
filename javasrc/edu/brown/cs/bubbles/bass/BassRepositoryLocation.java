@@ -224,6 +224,9 @@ private void addLocation(BumpLocation bl,Map<String,BassNameLocation> fieldmap,
 	  }
 	 bn = new BassNameLocation(bl,BassNameType.HEADER);
 	 break;
+      case PROJECT :
+	 // if (all_names.size() != 0) bn = null;
+	 break;
     }
 
    if (bn != null) all_names.add(bn);

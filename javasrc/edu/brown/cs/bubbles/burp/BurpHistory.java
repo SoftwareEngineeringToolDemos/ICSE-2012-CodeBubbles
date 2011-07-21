@@ -321,7 +321,7 @@ synchronized void handleNewEdit(BurpEditorData ed,UndoableEdit ue,boolean evt,bo
 {
    UndoableEdit bed = getBaseEdit(ue);
 
-   BoardMetrics.noteCommand("BURP",getEditCommandName(ue));
+   BoardMetrics.noteCommand("BURP",getEditCommandName(ed,ue));
 
    BurpChangeData cd = change_map.get(bed);
    if (cd == null) {
@@ -389,9 +389,13 @@ private void removeAll(BurpEditorData ed)
 **************************/
 
 
-private String getEditCommandName(UndoableEdit ed)
-{
-   String rslt = "edit" + ed.getPresentationName();
+private String getEditCommandName(BurpEditorData be,UndoableEdit ed)
+{						
+   String rslt = "edit_" + ed.getPresentationName();
+   if (be != null) {
+      String id = be.getBubbleId();
+      if (id != null) rslt += "_" + id;
+    }
 
    if (ed instanceof DocumentEvent) {
       DocumentEvent de = (DocumentEvent) ed;

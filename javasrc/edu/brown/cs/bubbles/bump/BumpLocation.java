@@ -84,6 +84,7 @@ static {
    symbol_map.put("Constructor",BumpSymbolType.CONSTRUCTOR);
    symbol_map.put("StaticInitializer",BumpSymbolType.STATIC_INITIALIZER);
    symbol_map.put("Package",BumpSymbolType.PACKAGE);
+   symbol_map.put("Project",BumpSymbolType.PROJECT);
    symbol_map.put("Local",BumpSymbolType.LOCAL);
 }
 

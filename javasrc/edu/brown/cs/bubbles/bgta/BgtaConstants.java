@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -144,87 +144,83 @@ String	BGTA_TASK_DESCRIPTION	= "To open the new data, right click on the top bar
 
 /********************************************************************************/
 /*										*/
-/*	Enum for server values									*/
+/*	Enum for chat_server values						*/
 /*										*/
 /********************************************************************************/
-public enum ChatServer {
-	GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com", true),
-	BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com", true),
-	FACEBOOK("Facebook", "chat.facebook.com", " ", "", false),
-	JABBER("Jabber", "jabber.org", "@jabber.org", "", false),
-	AIM("AIM", "aim", " ", "", false);
-	
-	private String selector;
-	private String server;
-	private String display;
-	private String host;
-	private boolean ending;
-	
-	private ChatServer(String selector,String server,String display,String host, boolean ending) {
-		this.selector = selector;
-		this.server = server;
-		if (display.equals(""))
-			this.display = server;
-		else
-			this.display = display;
-		if (host.equals(""))
-			this.host = server;
-		else
-			this.host = host;
-		this.ending = ending;
-	}
-	
-	String selector() { return selector; }
-	
-	String server() { return server; }
-	
-	String display() { return display; }
-	
-	String host() { return host; }
-	
-	boolean hasEnding() {
-		return ending;
-	}
-	
-	String ending() {
-		if (ending)
-			return display;
-		return "";
-	}
-	
-	public static ChatServer fromServer(String server) {
-	   for (ChatServer s : values())
-	      if (server.equals(s.server()))
-	         return s;
-	   return null;
-	}
-	
-	@Override public String toString() { return selector + " - " + display; }
-}
 
+enum ChatServer {
+
+   GMAIL("Gmail", "gmail.com", "@gmail.com", "talk.google.com", true),
+   BROWN("Brown Gmail", "gmail.com", "@brown.edu", "talk.google.com", true),
+   FACEBOOK("Facebook", "chat.facebook.com", " ", "", false),
+   JABBER("Jabber", "jabber.org", "@jabber.org", "", false),
+   AIM("AIM", "aim", " ", "", false);
+
+   private String chat_selector;
+   private String chat_server;
+   private String chat_display;
+   private String chat_host;
+   private boolean chat_ending;
+
+   private ChatServer(String selector,String server,String display,String host, boolean ending) {
+      chat_selector = selector;
+      chat_server = server;
+      if (display.equals(""))
+	 chat_display = server;
+      else
+	 chat_display = display;
+      if (host.equals(""))
+	 chat_host = server;
+      else
+	 chat_host = host;
+      chat_ending = ending;
+    }
+
+   String selector()				{ return chat_selector; }
+   String server()				{ return chat_server; }
+   String display()				{ return chat_display; }
+   String host()				{ return chat_host; }
+
+   boolean hasEnding()				{ return chat_ending; }
+
+   String ending() {
+      if (chat_ending) return chat_display;
+      return "";
+    }
+
+   static ChatServer fromServer(String server) {
+      for (ChatServer s : values()) {
+	 if (server.equals(s.server())) return s;
+       }
+      return null;
+    }
+
+   @Override public String toString() { return chat_selector + " - " + chat_display; }
+
+}	// end of enum ChatServer
 
 
 /********************************************************************************/
 /*										*/
-/*	Interfaces for XMPP and OSCAR compatibility						*/
+/*	Interfaces for XMPP and OSCAR compatibility				*/
 /*										*/
 /********************************************************************************/
 
 interface BgtaRoster {
-	
+
    BgtaRosterEntry getEntry(String username);
    Collection<? extends BgtaRosterEntry> getEntries();
    Presence getPresence(String username);
-   
+
 }   // end of inner interface BgtaRoster
 
 
 
 interface BgtaRosterEntry {
-	
+
    String getName();
    String getUser();
-   
+
 }   // end of inner interface BgtaRosterEntry
 
 

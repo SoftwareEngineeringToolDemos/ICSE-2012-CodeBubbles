@@ -144,6 +144,7 @@ private class NameThread extends Thread {
 	    catch (JavaModelException e) { }
 	    break;
 	 case IJavaElement.PACKAGE_FRAGMENT :
+	 case IJavaElement.JAVA_PROJECT :
 	    dochld = true;
 	    doelt = true;
 	    break;
@@ -152,7 +153,6 @@ private class NameThread extends Thread {
 	 case IJavaElement.IMPORT_DECLARATION :
 	 case IJavaElement.TYPE_PARAMETER :
 	 case IJavaElement.PACKAGE_DECLARATION :
-	 case IJavaElement.JAVA_PROJECT :
 	 default :
 	    dochld = true;
 	    break;

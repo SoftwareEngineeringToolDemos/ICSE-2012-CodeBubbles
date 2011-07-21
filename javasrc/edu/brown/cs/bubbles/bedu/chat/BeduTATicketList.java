@@ -21,6 +21,7 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.TableModel;
@@ -31,12 +32,15 @@ class BeduTATicketList extends ArrayList<BeduStudentTicket> implements
 		TableModel {
 
 private static final long serialVersionUID = 1L;
-List<TableModelListener> listeners;
+private static final String DATE_FORMAT_STR = "h:mm a";
 
+private List<TableModelListener> listeners;
+private SimpleDateFormat date_format;
 
 
 BeduTATicketList() {
 	listeners = new ArrayList<TableModelListener>();
+	date_format = new SimpleDateFormat(DATE_FORMAT_STR);
 }
 
 
@@ -88,7 +92,7 @@ BeduTATicketList() {
 	case 0:
 		return t.getText();
 	case 1:
-		return t.getTimestamp().toString(); // fix this so it'll look better
+	   return date_format.format(t.getTimestamp());
 	default:
 		throw new IndexOutOfBoundsException("No such column " + colIdx);
 	}

@@ -251,9 +251,12 @@ public String getNameHead()
       buf.append(p);
       buf.append(":.");
     }
-   buf.append(getNameHead());
-   buf.append(".");
-   buf.append(getLocalName());
+   String nh = getNameHead();
+   if (nh != null) {
+      buf.append(nh);
+      buf.append(".");
+      buf.append(getLocalName());
+    }
    String nm = buf.toString();
 
    String [] nms = nm.split(SPLIT_PATTERN);

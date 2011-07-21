@@ -1135,6 +1135,15 @@ public boolean handleQuitRequest()
 
 
 
+public void handlePropertyChange()
+{
+   for (BudaFileHandler bfh : file_handlers) {
+      bfh.handlePropertyChange();
+    }
+}
+
+
+
 public void handleSaveAllRequest()
 {
    // handle all bubbles
@@ -1401,6 +1410,8 @@ private class PanHandler extends AbstractAction implements ActionListener {
 
 public void saveConfiguration(File f) throws IOException
 {
+   if (BoardSetup.getSetup().isServerMode()) return;
+
    File hf = BoardSetup.getHistoryFile();
    if (f == null) f = BoardSetup.getConfigurationFile();
 
@@ -1808,6 +1819,8 @@ public void addTask(Element xml)
 
 void addTask(BudaTask t)
 {
+   if (t == null) return;
+
    synchronized (task_shelf) {
       task_shelf.add(t);
     }
@@ -1817,6 +1830,8 @@ void addTask(BudaTask t)
 
 void removeTask(BudaTask t)
 {
+   if (t == null) return;
+
    synchronized (task_shelf) {
       task_shelf.remove(t);
     }

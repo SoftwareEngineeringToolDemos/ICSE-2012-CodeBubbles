@@ -1454,14 +1454,13 @@ private static class SaveAllAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      BumpClient bc = BumpClient.getBump();
       BaleEditorPane target = getBaleEditor(e);
       if (target == null) return;
       BudaRoot br = BudaRoot.findBudaRoot(target);
 
       BowiFactory.startTask(BowiTaskType.SAVE);
       try {
-	 bc.saveAll();
+	 // bc.saveAll();
 	 br.handleSaveAllRequest();
 	 try {
 	    br.saveConfiguration(null);
@@ -1913,7 +1912,7 @@ private static class GotoImplementationAction extends TextAction {
 	  }
 
 	 if (locs == null || locs.size() == 0) {
-	    if(e.getActionCommand()==null){
+	    if (e.getActionCommand() == null) {
 	       e = new ActionEvent(target,e.getID(),"GotoImplementationAction",e.getWhen(),e.getModifiers());
 	     }
 	    goto_doc_action.actionPerformed(e);
@@ -2037,7 +2036,7 @@ private static class GotoDocAction extends TextAction {
 	 if (bb != null) {
 	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
 	    BudaBubble obbl = BudaRoot.findBudaBubble(target);
-	    
+
 	    Point lp = null;
 	    BudaConstants.LinkPort port0 = null;
 	    if (sp != null) {

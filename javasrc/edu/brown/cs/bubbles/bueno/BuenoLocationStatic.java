@@ -71,7 +71,7 @@ BuenoLocationStatic(String proj,String nm,String ins,boolean after)
    insert_after = after;
 
    List<BumpLocation> locs = null;
-   if (nm.indexOf("<") < 0) locs = bcc.findPackage(proj,nm);
+   if (nm != null && nm.indexOf("<") < 0) locs = bcc.findPackage(proj,nm);
    if (locs != null && locs.size() > 0) {
       BumpLocation loc = locs.get(0);
       if (loc.getProject() != null) project_name = loc.getProject();
@@ -79,7 +79,7 @@ BuenoLocationStatic(String proj,String nm,String ins,boolean after)
       class_name = null;
       package_name = nm;
     }
-   else {
+   else if (nm != null) {
       locs = bcc.findClassDefinition(proj,nm);
       if (locs != null && locs.size() > 0) {
 	 BumpLocation loc = locs.get(0);	// Is this always correct?

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -47,6 +47,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.eclipse.ui.actions.NewProjectAction;
+
+import org.w3c.dom.*;
 
 import java.io.*;
 import java.util.*;
@@ -1129,7 +1131,7 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
 /*										*/
 /********************************************************************************/
 
-public void resourceChanged(IResourceChangeEvent evt)
+@Override public void resourceChanged(IResourceChangeEvent evt)
 {
    /*********************
    BedrockPlugin.logD("Resource Change: " + evt.getBuildKind() + " " + evt.getType());
@@ -1181,6 +1183,40 @@ private void dumpDelta(int lvl,IResourceDelta drd)
     }
 }
 ********************/
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Project editing methods 						*/
+/*										*/
+/********************************************************************************/
+
+void setProjectClassPath(String proj,Element desc)
+{
+   // List<IClasspathEntry> class_paths = new ArrayList<IClasspathEntry>();
+}
+
+
+void setProjectOutputPath(String proj,String path)
+{
+}
+
+
+
+void setProjectOption(String proj,String name,String value)
+{
+}
+
+
+void setProjectDescription(String proj,Element desc)
+{
+}
+
+
+void createProject(String proj,Element desc)
+{
+}
 
 
 

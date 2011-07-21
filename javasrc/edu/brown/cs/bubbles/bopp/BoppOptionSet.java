@@ -195,7 +195,10 @@ void noteChange(String pkg,String prop)
 
 void finishChanges()
 { 
-   if (buda_root != null) buda_root.repaint();
+   if (buda_root != null) {
+      buda_root.handlePropertyChange();
+      buda_root.repaint();
+    }
 }
 
 

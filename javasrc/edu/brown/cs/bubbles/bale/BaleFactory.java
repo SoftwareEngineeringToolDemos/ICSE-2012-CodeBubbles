@@ -734,6 +734,8 @@ BaleDocumentIde getDocument(String proj,File f)
 }
 
 
+@Override public void handlePropertyChange()                    { }
+
 
 /********************************************************************************/
 /*										*/

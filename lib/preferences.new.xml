@@ -4,12 +4,10 @@
 
       <OPT NAME="Note Bubble Options" TYPE="DIVIDER">
 	 <TAB NAME="Popular Options"/>
-	 <TAB NAME="Bubble Config"/>
       </OPT>
       <OPT NAME="Beam.note.width" DESCRIPTION="Default note bubble size" TYPE="DIMENSION">
 	 <PROPERTIES WIDTH="Beam.note.width" HEIGHT="Beam.not.height" />
 	 <TAB NAME="Popular Options"></TAB>
-	 <TAB NAME="Bubble Config"></TAB>
 	 <TAB NAME='Note Options'/>
 	 <EXAMPLE TEXT="Width in pixels"></EXAMPLE>
 	 <KEYWORD TEXT="Size"/>
@@ -35,13 +33,8 @@
 	 <KEYWORD TEXT="Font" />
       </OPT>
 
-      <OPT NAME="Problem/TODO Bubble Options" TYPE="DIVIDER">
-	 <TAB NAME="Popular Options"/>
-	 <TAB NAME="Bubble Config"/>
-      </OPT>
       <OPT NAME="Beam.problem.width" DESCRIPTION="Default problem bubble size" TYPE="DIMENSION">
 	 <PROPERTIES WIDTH='Beam.problem.width' HEIGHT='Beam.problem.height' />
-	 <TAB NAME="Bubble Config"></TAB>
 	 <TAB NAME='Note and Problem Bubbles' />
 	 <EXAMPLE TEXT="Width in pixels"></EXAMPLE>
 	 <KEYWORD TEXT="Bubble"/>
@@ -102,14 +95,9 @@
    </PACKAGE>
 
 
-
-
    <PACKAGE NAME="Bale">
-      <OPT NAME="Code Highlight Options" TYPE="DIVIDER">
-	 <TAB NAME="Bubble Config"/>
-      </OPT>
       <OPT NAME="Bale.identifier.highlight.color" DESCRIPTION="Color for highlighting uses" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="color"/>
@@ -119,7 +107,7 @@
 	 <KEYWORD TEXT="highlight"/>
       </OPT>
       <OPT NAME="Bale.identifier.write.highlight.color" DESCRIPTION="Color for highlighting writes" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="color"/>
@@ -130,7 +118,7 @@
 	 <KEYWORD TEXT="highlight"/>
       </OPT>
       <OPT NAME="Bale.identifier.define.highlight.color" DESCRIPTION="Color for highlighting definitions" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="color"/>
@@ -141,7 +129,7 @@
 	 <KEYWORD TEXT="highlight"/>
       </OPT>
       <OPT NAME="Bale.bracket.highlight.color" DESCRIPTION="Bracket highlight color" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="bracket"/>
@@ -149,7 +137,7 @@
 	 <KEYWORD TEXT="highlight"/>
       </OPT>
       <OPT NAME="Bale.error.color" DESCRIPTION="Error underline color" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="error"/>
@@ -157,7 +145,7 @@
 	 <KEYWORD TEXT="highlight"/>
       </OPT>
       <OPT NAME="Bale.warning.color" DESCRIPTION="Warning underline color" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="error"/>
@@ -166,7 +154,7 @@
 	 <KEYWORD TEXT="highlight"/>
       </OPT>
       <OPT NAME="Bale.error.background" DESCRIPTION="Code bubble error background" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="error"/>
@@ -175,14 +163,14 @@
 	 <KEYWORD TEXT="Color"/>
       </OPT>
       <OPT NAME="Bale.editor.top.color" DESCRIPTION="Code bubble top color" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="Color"/>
 	 <KEYWORD TEXT="Top"/>
       </OPT>
       <OPT NAME="Bale.editor.bottom.color" DESCRIPTION="Code bubble bottom color" TYPE="COLOR">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="Bubble"/>
 	 <KEYWORD TEXT="Code"/>
 	 <KEYWORD TEXT="error"/>
@@ -269,32 +257,29 @@
 	 <KEYWORD TEXT="gradient"/>
 	 <KEYWORD TEXT="direction"/>
       </OPT>
-      <OPT NAME="Code Bubble Options" TYPE="DIVIDER">
-	 <TAB NAME="Bubble Config"/>
-      </OPT>
       <OPT NAME="Bale.comment.wrapping" DESCRIPTION="Comment Wrapping" TYPE="BOOLEAN">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <TAB NAME="Popular Options"/>
 	 <WARNING TEXT="Requires restart"/>
       </OPT>
       <OPT NAME="Bale.autocomplete.delay" DESCRIPTION="Autocomplete Delay" TYPE="INTEGER">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="autocomplete"/>
 	 <KEYWORD TEXT="delay"/>
       </OPT>
       <OPT NAME="Bale.crumb.showmethod" DESCRIPTION="Show method name in breadcrumb bar" TYPE="BOOLEAN">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="breadcrumb"/>
 	 <KEYWORD TEXT="method"/>
       </OPT>
       <OPT NAME="Bale.editor.no.elision" DESCRIPTION="Shouldn't do code ellisions" TYPE="BOOLEAN">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="elision"/>
 	 <KEYWORD TEXT="elide"/>
 	 <KEYWORD TEXT="code"/>
       </OPT>
       <OPT NAME="Bale.preview.enable" DESCRIPTION="Show Bubble when Hovering" TYPE="BOOLEAN">
-	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME="Code Editor Options"/>
 	 <EXAMPLE TEXT="Show preview bubble when hovering on java element(method)"></EXAMPLE>
 	 <KEYWORD TEXT="preview"/>
 	 <KEYWORD TEXT="hover"/>
@@ -372,6 +357,22 @@
        <OPT NAME='Buda.group.draw.background.gradient' DESCRIPTION='Draw groups with gradients' TYPE='BOOLEAN'>
 	 <TAB NAME='Bubble Config' />
        </OPT>
+      <OPT NAME="Bubble Placement ptions" TYPE="DIVIDER">
+	 <TAB NAME="Bubble Config"/>
+      </OPT>
+      <OPT NAME='Buda.placement.default' DESCRIPTION='Window placement method' TYPE='COMBO'>
+	 <TAB NAME="Bubble Config"/>
+	 <COMBO TEXT="User reposition new windows" VALUE="USER"/>
+	 <COMBO TEXT="Outside of Group" VALUE="GROUP"/>
+	 <COMBO TEXT="Outside of Window" VALUE="WINDOW"/>
+	 <COMBO TEXT="User reposition w/ Group" VALUE="USER GROUP"/>
+      </OPT>
+      <OPT NAME='Buda.placement.user.initial' DESCRIPTION='Initial Delay on Placement' TYPE='INTEGER' MIN='0' MAX='5000'>
+	 <TAB NAME='Bubble Config' />
+       </OPT>
+      <OPT NAME='Buda.placement.user.movedl' DESCRIPTION='Placement delay after move' TYPE='INTEGER' MIN='0' MAX='5000'>
+	 <TAB NAME='Bubble Config' />
+      </OPT>
    </PACKAGE>
 
    <PACKAGE NAME="Bgta">

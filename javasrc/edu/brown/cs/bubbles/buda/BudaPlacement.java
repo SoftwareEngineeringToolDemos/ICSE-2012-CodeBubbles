@@ -33,8 +33,11 @@ package edu.brown.cs.bubbles.buda;
 
 
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import javax.swing.Timer;
+
 
 
 /**
@@ -84,7 +87,7 @@ BudaPlacement(BudaBubbleArea bba)
 
 /********************************************************************************/
 /*										*/
-/*	Actually placement routines							     */
+/*	Actually placement routines						*/
 /*										*/
 /********************************************************************************/
 
@@ -94,6 +97,17 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
    BudaBubble grpb = null;
    if (rcom != null) rel = BudaRoot.findBudaBubble(rcom);
 
+   if ((place & PLACEMENT_EXPLICIT) == 0) {
+      int dflt = 0;
+      String pnm = BUDA_PROPERTIES.getProperty("Buda.placement.default");
+      if (pnm.contains("USER")) dflt |= PLACEMENT_USER;
+      if (pnm.contains("GROUP")) dflt |= PLACEMENT_ADGROUP;
+      if (pnm.contains("WINDOW")) dflt |= PLACEMENT_ADJACENT;
+      if (dflt == 0) dflt = PLACEMENT_USER | PLACEMENT_ADJACENT;
+      if (dflt == PLACEMENT_USER) dflt = PLACEMENT_USER | PLACEMENT_ADJACENT;
+      if ((place & (PLACEMENT_ADJACENT | PLACEMENT_ADGROUP)) == 0) place |= dflt;
+      else if ((dflt & PLACEMENT_USER) != 0) place |= PLACEMENT_USER;
+    }
 
    Rectangle r = new Rectangle();
    if (rel != null) {
@@ -112,10 +126,11 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
       grpb = last_placement;
     }
 
-   if ((place & PLACEMENT_ADJACENT) == 0) {
+   Rectangle r0 = new Rectangle(r);
+
+   if ((place & PLACEMENT_ADGROUP) != 0) {
       expandForGroup(r,grpb);
     }
-
 
    Rectangle r1 = null;
    if (rel != null) {
@@ -163,27 +178,27 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
     }
    else if ((place & PLACEMENT_RIGHT) != 0) {
       x0 = r.x + r.width + delta;
-      y0 = r.y;
+      y0 = r0.y;
       if (relpt != null) y0 = relpt.y;
     }
    else if ((place & PLACEMENT_LEFT) != 0) {
       x0 = r.x - sz.width - delta;
-      y0 = r.y;
+      y0 = r0.y;
       if (relpt != null) y0 = relpt.y;
     }
    else if ((place & PLACEMENT_BELOW) != 0) {
-      x0 = r.x;
+      x0 = r0.x;
       y0 = r.y + r.height + delta;
       if (relpt != null) x0 = relpt.x;
     }
    else if ((place & PLACEMENT_ABOVE) != 0) {
-      x0 = r.x;
+      x0 = r0.x;
       y0 = r.y - sz.height - delta;
       if (relpt != null) x0 = relpt.x;
     }
    else {
       x0 = r.x + r.width + delta;
-      y0 = r.y;
+      y0 = r0.y;
       if (relpt != null) y0 = relpt.y;
     }
 
@@ -209,11 +224,21 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
        }
     }
 
+
+   UserUpdater uu = null;
+   if ((place & PLACEMENT_USER) != 0) {
+      uu = new UserUpdater(bbl);
+      pos = BudaBubblePosition.USERPOS;
+      bbl.setUserPos(true);
+    }
+
    bubble_area.addBubble(bbl,pos,x0,y0);
 
    if ((place & PLACEMENT_MOVETO) != 0) {
       bubble_area.scrollBubbleVisible(bbl);
     }
+
+   if (uu != null) uu.start();
 }
 
 
@@ -304,6 +329,72 @@ private void expandForGroup(Rectangle r,BudaBubble grpb)
     }
 }
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Routine to handle user bubble positions 				*/
+/*										*/
+/********************************************************************************/
+
+private static final int USER_POSITION_UPDATE_TIME = 1500;
+private static final int USER_POSITION_RESTART_TIME = 500;
+
+
+private static class UserUpdater implements ActionListener, ComponentListener {
+
+   private BudaBubble for_bubble;
+   private Timer swing_timer;
+   private int move_count;
+   
+   UserUpdater(BudaBubble bb) {
+      for_bubble = bb;
+      move_count = 0;
+      int t0 = BUDA_PROPERTIES.getInt("Buda.placement.user.initial",USER_POSITION_UPDATE_TIME);
+      swing_timer = new Timer(t0,this);
+      // System.err.println("UPDATE: START " + t0);
+      swing_timer.setRepeats(false);
+      bb.addComponentListener(this);
+    }
+
+   void start() {
+      swing_timer.start();
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      // System.err.println("UPDATE: DONE");
+      for_bubble.removeComponentListener(this);
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(for_bubble);
+      if (bba != null) bba.setBubbleFloating(for_bubble,false);
+    }
+
+   @Override public void componentHidden(ComponentEvent e) {
+      // System.err.println("UPDATE: HIDE");
+      for_bubble.removeComponentListener(this);
+      swing_timer.stop();
+    }
+
+   @Override public void componentMoved(ComponentEvent e) {
+      // System.err.println("UPDATE: MOVE");
+      if (move_count++ < 2) {
+	 int t1 = BUDA_PROPERTIES.getInt("Buda.placement.user.moved",USER_POSITION_RESTART_TIME);
+	 // System.err.println("UPDATE: RESTART " + t1);
+	 swing_timer.setInitialDelay(t1);
+       }
+      swing_timer.restart();
+    }
+
+   @Override public void componentResized(ComponentEvent e) {
+      // System.err.println("UPDATE: RESIZE");
+      swing_timer.restart();
+    }
+
+   @Override public void componentShown(ComponentEvent e) {
+      // System.err.println("UPDATE: SHOW");
+    }
+
+}	// end of inner class UserUpdater
 
 
 

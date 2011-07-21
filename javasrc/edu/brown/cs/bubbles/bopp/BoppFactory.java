@@ -105,21 +105,16 @@ public static void initialize(BudaRoot br)
    btn1.setFont(ft);
    btn1.setOpaque(false);
    btn1.setBackground(new Color(0,true));
-   btn1.addActionListener(new OptionsListener(br));
    btn1.setToolTipText("Options for Code Bubbles");
-   br.addButtonPanelButton(btn1);
 
-   if (option_set.getTabNames().size() > 0) {
-      JButton btn2 = new JButton("NOpts",chevron);
-      btn2.setMargin(BOPP_BUTTON_INSETS);
-      btn2.setHorizontalTextPosition(AbstractButton.LEADING);
-      btn2.setFont(ft);
-      btn2.setOpaque(false);
-      btn2.setBackground(new Color(0,true));
-      btn2.addActionListener(new OptionsListenerNew(br));
-      btn2.setToolTipText("Options for Code Bubbles");
-      br.addButtonPanelButton(btn2);
+   if (option_set.getTabNames().size() == 0) {
+      btn1.addActionListener(new OptionsListener(br));
     }
+   else {
+      btn1.addActionListener(new OptionsListenerNew(br));
+    }
+
+   br.addButtonPanelButton(btn1);
 }
 
 

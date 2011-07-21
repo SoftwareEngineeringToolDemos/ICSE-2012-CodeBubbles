@@ -14,5 +14,6 @@
 <entry key="Buda.tooltip.background">ffffffc0</entry>
 <entry key="Buda.tooltip.foreground">ff000000</entry>
 <entry key="Buda.tooltip.font">Monospaced/0/9</entry>
+<entry key="Buda.placement.default">USER</entry>
 </properties>
 

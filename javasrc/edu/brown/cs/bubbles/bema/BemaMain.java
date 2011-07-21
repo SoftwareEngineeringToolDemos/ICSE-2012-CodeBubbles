@@ -44,7 +44,7 @@ import edu.brown.cs.ivy.xml.IvyXml;
 import org.w3c.dom.Element;
 
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
+import javax.swing.*;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -341,6 +341,10 @@ private void start()
    if (save_session) {
       Runtime.getRuntime().addShutdownHook(new SaveSession(root));
     }
+
+   if (bs.getRunMode() == RunMode.SERVER) {
+       waitForServerExit(root);
+    }
 }
 
 
@@ -426,6 +430,26 @@ private Collection<String> getSetupPackageProperties()
 
 /********************************************************************************/
 /*										*/
+/*	Server mode dialog							*/
+/*										*/
+/********************************************************************************/
+
+private void waitForServerExit(BudaRoot root)
+{
+   JOptionPane.showConfirmDialog(root,"Exit from Code Bubbles Server",
+	    "Exit When Done",
+	    JOptionPane.OK_OPTION,
+	    JOptionPane.QUESTION_MESSAGE);
+
+   root.handleSaveAllRequest();
+
+   System.exit(0);
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Methods to save session at the end					*/
 /*										*/
 /********************************************************************************/
@@ -442,12 +466,12 @@ private static class SaveSession extends Thread {
    @Override public void run() {
       File cf = BoardSetup.getConfigurationFile();
       try {
-         // for_root.handleSaveAllRequest();
-         for_root.handleCheckpointAllRequest();
-         for_root.saveConfiguration(cf);
+	 // for_root.handleSaveAllRequest();
+	 for_root.handleCheckpointAllRequest();
+	 for_root.saveConfiguration(cf);
        }
       catch (IOException e) {
-         BoardLog.logE("BEMA","Problem saving session: " + e);
+	 BoardLog.logE("BEMA","Problem saving session: " + e);
        }
     }
 

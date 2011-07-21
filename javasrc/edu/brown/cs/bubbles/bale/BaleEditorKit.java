@@ -1912,7 +1912,7 @@ private static class GotoImplementationAction extends TextAction {
 	  }
 
 	 if (locs == null || locs.size() == 0) {
-	    if(e.getActionCommand()==null){
+	    if (e.getActionCommand() == null) {
 	       e = new ActionEvent(target,e.getID(),"GotoImplementationAction",e.getWhen(),e.getModifiers());
 	     }
 	    goto_doc_action.actionPerformed(e);
@@ -2036,7 +2036,7 @@ private static class GotoDocAction extends TextAction {
 	 if (bb != null) {
 	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
 	    BudaBubble obbl = BudaRoot.findBudaBubble(target);
-	    
+
 	    Point lp = null;
 	    BudaConstants.LinkPort port0 = null;
 	    if (sp != null) {

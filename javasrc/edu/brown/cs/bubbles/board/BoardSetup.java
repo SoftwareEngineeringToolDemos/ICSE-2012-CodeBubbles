@@ -107,7 +107,7 @@ private List<String>	java_args;
 private BoardSplash	splash_screen;
 private long		run_size;
 private String		update_proxy;
-private RunMode         run_mode;
+private RunMode 	run_mode;
 
 
 private static String	       prop_base;
@@ -250,12 +250,12 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-p") && i+1 < args.length) {      // -prop <propdir>
 	    BoardProperties.setPropertyDirectory(args[++i]);
 	  }
-         else if (args[i].startsWith("-C")) {                           // -Client
-            run_mode = RunMode.CLIENT;
-          }
-         else if (args[i].startsWith("-S")) {                           // -Server
-            run_mode = RunMode.SERVER;
-          }
+	 else if (args[i].startsWith("-C")) {                           // -Client
+	    run_mode = RunMode.CLIENT;
+	  }
+	 else if (args[i].startsWith("-S")) {                           // -Server
+	    run_mode = RunMode.SERVER;
+	  }
 	 else if (args[i].startsWith("-X")) {                           // -X <run args...>
 	    javaargs = new ArrayList<String>();
 	  }
@@ -386,7 +386,7 @@ public void setJavaArgs(String [] args)
 public static File getConfigurationFile()
 {
    BoardSetup bs = getSetup();
-   
+
    File f1 = BoardSetup.getPropertyBase();
    String wsname = bs.default_workspace;
    wsname = wsname.replaceAll("\\W","_");
@@ -396,7 +396,7 @@ public static File getConfigurationFile()
 
    File wsd = new File(bs.default_workspace);
    File f4 = new File(wsd,BOARD_CONFIGURATION_FILE);
-   
+
    if (!f3.exists() && f4.exists()) return f4;
    f2.mkdirs();
 
@@ -421,13 +421,13 @@ public static File getHistoryFile()
    wsname += "_";
    File f2 = new File(f1,"configurations");
    File f3 = new File(f2,wsname + BOARD_HISTORY_FILE);
-   
-   File wsd = new File(bs.default_workspace);  
+
+   File wsd = new File(bs.default_workspace);
    File f4 = new File(wsd,BOARD_HISTORY_FILE);
-   
+
    if (!f3.exists() && f4.exists()) return f4;
    f2.mkdirs();
-   
+
    return f3;
 }
 
@@ -442,7 +442,7 @@ public static File getHistoryFile()
 public static File getDocumentationFile()
 {
    BoardSetup bs = getSetup();
-   
+
    if (bs.getRunMode() == RunMode.CLIENT) {
       File f1 = BoardSetup.getPropertyBase();
       File f2 = new File(f1,"documentation");
@@ -592,14 +592,16 @@ public void removeSplash()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Methods to handle client-server modes                                   */
-/*                                                                              */
+/*										*/
+/*	Methods to handle client-server modes					*/
+/*										*/
 /********************************************************************************/
 
-public RunMode getRunMode()                     { return run_mode; }
+public RunMode getRunMode()			{ return run_mode; }
+public boolean isServerMode()			{ return run_mode == RunMode.SERVER; }
+public boolean isClientMode()			{ return run_mode == RunMode.CLIENT; }
 
-public void setRunMode(RunMode rm)              { run_mode = rm; }
+public void setRunMode(RunMode rm)		{ run_mode = rm; }
 
 
 
@@ -1644,32 +1646,32 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 
    WorkspaceDialog() {
       SwingGridPanel pnl = new SwingGridPanel();
-   
+
       pnl.beginLayout();
       pnl.addBannerLabel("Bubbles Workspace Setup");
-   
+
       pnl.addSeparator();
-   
+
       JTextField textfield = pnl.addFileField("Eclipse Workspace",default_workspace,JFileChooser.DIRECTORIES_ONLY,
-               new WorkspaceDirectoryFilter(),this,null);
-   
+	       new WorkspaceDirectoryFilter(),this,null);
+
       textfield.addKeyListener(this);
-   
+
       workspace_warning = new JLabel("Warning");//added by amc6
       workspace_warning.setToolTipText("Not a vaid Eclipse Workspace");
       workspace_warning.setForeground(WARNING_COLOR);
-   
+
       pnl.add(workspace_warning);
-   
+
       pnl.addSeparator();
-   
+
       pnl.addBoolean("Always Ask for Workspace",ask_workspace,this);
-   
+
       pnl.addSeparator();
       accept_button = pnl.addBottomButton("OK","OK",this);
       pnl.addBottomButton("CANCEL","CANCEL",this);
       pnl.addBottomButtons();
-   
+
       working_dialog = new JDialog((JFrame) null,"Bubbles Workspace Setup",true);
       working_dialog.setContentPane(pnl);
       working_dialog.pack();

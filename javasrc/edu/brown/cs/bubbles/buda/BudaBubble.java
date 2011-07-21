@@ -87,6 +87,7 @@ private BudaBubbleGroup bubble_group;
 private boolean 	is_fixed;
 private boolean 	is_float;
 private boolean 	is_docked;
+private boolean 	is_userpos;
 private BudaMovement	spacer_movement;
 private double		zoom_factor;
 private boolean 	has_focus;
@@ -202,6 +203,7 @@ protected BudaBubble(Component c,BudaBorder bdr)
 
    border_shape = null;
    is_fixed = false;
+   is_userpos = false;
    spacer_movement = BudaMovement.ANY;
    zoom_factor = 1.0;
    has_focus = false;
@@ -368,6 +370,7 @@ public boolean isFloating()			{ return is_float; }
 
 boolean isFixed()				{ return is_fixed; }
 boolean isDocked()				{ return is_docked; }
+boolean isUserPos()				{ return is_userpos; }
 
 /**
  *	Indicate that the bubble is fixed (i.e. should not be considered by the
@@ -390,6 +393,7 @@ public void setFixed(boolean fg)
 void setFloating(boolean fg)
 {
    is_float = fg;
+   is_userpos = false;
    if (fg) {
       setGroup(null);
     }
@@ -408,6 +412,12 @@ public void setDocked(boolean fg)
    if (fg) {
       setGroup(null);
     }
+}
+
+
+void setUserPos(boolean fg)
+{
+   is_userpos = fg;
 }
 
 
@@ -688,7 +698,14 @@ public void handleSaveRequest() 			{ }
  *	later recovery of files, contents, etc.
  **/
 
-public void handleCheckpointRequest()			{ }
+@Override public void handleCheckpointRequest() 	{ }
+
+
+/**
+ *	Called when user changes properties
+ **/
+
+@Override public void handlePropertyChange()		{ }
 
 
 

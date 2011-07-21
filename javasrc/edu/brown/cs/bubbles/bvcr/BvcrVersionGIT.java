@@ -68,18 +68,21 @@ BvcrVersionGIT(BvcrProject bp)
    super(bp);
 
    git_command = bvcr_properties.getProperty("bvcr.git.command","git");
-   origin_name = "";
+   origin_name = bvcr_properties.getProperty("bvcr.git." + bp.getName() + ".origin");
 
    findGitRoot();
 
-   String cmd = git_command + "-branch -all";
-   StringCommand sc = new StringCommand(cmd);
-   String vers = sc.getContent();
-   StringTokenizer tok = new StringTokenizer(vers," \r\n\t*");
-   while (tok.hasMoreTokens()) {
-      String v = tok.nextToken();
-      System.err.println("BVCR: FOUND BRANCH " + v);
-      if (v.equals("origin")) origin_name = "origin";
+   if (origin_name == null) {
+      origin_name = "";
+      String cmd = git_command + "-branch -all";
+      StringCommand sc = new StringCommand(cmd);
+      String vers = sc.getContent();
+      StringTokenizer tok = new StringTokenizer(vers," \r\n\t*");
+      while (tok.hasMoreTokens()) {
+	 String v = tok.nextToken();
+	 System.err.println("BVCR: FOUND BRANCH " + v);
+	 if (v.equals("origin")) origin_name = "origin";
+       }
     }
 }
 

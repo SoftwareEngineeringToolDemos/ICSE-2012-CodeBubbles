@@ -1135,6 +1135,15 @@ public boolean handleQuitRequest()
 
 
 
+public void handlePropertyChange()
+{
+   for (BudaFileHandler bfh : file_handlers) {
+      bfh.handlePropertyChange();
+    }
+}
+
+
+
 public void handleSaveAllRequest()
 {
    // handle all bubbles
@@ -1401,6 +1410,8 @@ private class PanHandler extends AbstractAction implements ActionListener {
 
 public void saveConfiguration(File f) throws IOException
 {
+   if (BoardSetup.getSetup().isServerMode()) return;
+
    File hf = BoardSetup.getHistoryFile();
    if (f == null) f = BoardSetup.getConfigurationFile();
 

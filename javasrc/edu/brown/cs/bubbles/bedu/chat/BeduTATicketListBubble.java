@@ -85,9 +85,9 @@ private class TicketListPanel extends JPanel implements MouseListener {
    	add(l, BorderLayout.NORTH);
    	table = new JTable(list);
    
-   	table.getColumnModel().getColumn(1).setPreferredWidth(50);
+   	table.getColumnModel().getColumn(1).setPreferredWidth(75);
    
-   	table.getColumnModel().getColumn(0).setPreferredWidth(150);
+   	table.getColumnModel().getColumn(0).setPreferredWidth(125);
    
    	table.setFillsViewportHeight(true);
    	JScrollPane p = new JScrollPane(table);

@@ -112,7 +112,7 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-public BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
+protected BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
 { 
    // Fix display names so they don't have the server endings.
    this_user = username;
@@ -184,8 +184,8 @@ ChatServer getServer()  { return user_server; }
  * Returns the Document associated with this chat.
  * 
  * @return the Document associated with this chat.
- */
-Document getDocument()  { return user_document; }
+ public */
+public Document getDocument()  { return user_document; }
 
 
 /**
@@ -337,7 +337,7 @@ void logMessage(String msg,String from)
  * 
  * @return true if the message sent successfully; false otherwise.
  */
-boolean sendMessage(String msg)
+public boolean sendMessage(String msg)
 {
    boolean sent = true;
    try {

@@ -156,13 +156,6 @@ boolean isLoggedIn() {
 }
 
 
-
-Chat getChatForJID(String jid) {
-	return null;
-}
-
-
-
 void disconnect() throws XMPPException {
 	conn.disconnect();
 }
@@ -285,11 +278,11 @@ public void processMessage(Chat c, Message m)
    }
 
    else if (StringUtils.parseBareAddress(c.getParticipant()).equals(getMyBareJID()) && cmd.equals("MSG-FORWARD")) {
-      // form: "MSG-FORWARD:<string hash>"
-
+      // form: "MSG-FORWARD:<string hash>"   
       String jid = chat_args[1];
       String msg = chat_args[2];
-
+      if (BeduChatFactory.DEBUG)
+         System.err.println("BEDU:" + conn.getUser() + ":Student message:" + jid + ":" + msg);
       chats.get(jid).logOutsideMessage(msg);
    }
 
@@ -334,12 +327,11 @@ public void processMessage(Chat c, Message m)
    } else if (permitted_jids.contains(c.getParticipant())) {
       chats.get(c.getParticipant()).logOutsideMessage(m.getBody());
       if (BeduChatFactory.DEBUG)
-         System.err.println("BEDU: Student message: " + c.getParticipant()
-               + " : " + m.getBody());
+         System.err.println("BEDU:" + conn.getUser() + ":Student message:" + c.getParticipant()
+               + ":" + m.getBody());
    } else if (ta_sessions.keySet().contains(c.getParticipant())) {
       try {
-         conn.getChatManager().createChat(ta_sessions.get(c.getParticipant()),
-               null).sendMessage(
+         conn.getChatManager().createChat(ta_sessions.get(c.getParticipant()),null).sendMessage(
                "MSG-FORWARD:" + c.getParticipant() + ":" + m.getBody());
       } catch (XMPPException e) {
          // TODO Auto-generated catch block
@@ -370,6 +362,8 @@ private class BeduTAChat extends BgtaChat
    {
       if(!msg.equals(newest_msg))
          logMessage(msg);
+      
+      newest_msg = msg;
    }
 }
 

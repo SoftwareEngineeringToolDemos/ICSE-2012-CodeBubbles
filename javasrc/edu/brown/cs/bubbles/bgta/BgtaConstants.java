@@ -188,7 +188,7 @@ enum ChatServer {
       return "";
     }
 
-   static ChatServer fromServer(String server) {
+   public static ChatServer fromServer(String server) {
       for (ChatServer s : values()) {
 	 if (server.equals(s.server())) return s;
        }

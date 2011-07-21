@@ -149,7 +149,6 @@ private class ChatStartListener implements ActionListener
    }
    
    
-   
    @Override public void actionPerformed(ActionEvent e) {
    	BgtaChat c = client.acceptTicketAndAlertPeers(bubble.ticket);
    	BudaBubble chat_bub = new BeduChatBubble(client,c);

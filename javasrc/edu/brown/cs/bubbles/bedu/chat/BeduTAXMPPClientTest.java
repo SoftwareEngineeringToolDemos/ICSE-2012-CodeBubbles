@@ -22,7 +22,14 @@ package edu.brown.cs.bubbles.bedu.chat;
 
 import static junit.framework.Assert.*;
 
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.util.Date;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -35,6 +42,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import edu.brown.cs.bubbles.bedu.chat.BeduCourse.TACourse;
+import edu.brown.cs.bubbles.bgta.BgtaChat;
 
 public class BeduTAXMPPClientTest {
 private static BeduTAXMPPClient ta_client;
@@ -117,7 +125,8 @@ private boolean s2ToT1Received = false;
 	BeduStudentTicket t = ta_client.getTickets().get(0);
 	assertEquals(t.getText(), "this is a ticket");
 	
-	ta_client.acceptTicketAndAlertPeers(t);
+	BgtaChat bc = ta_client.acceptTicketAndAlertPeers(t);
+	ta_client.endChatSession(bc);
 	assertTrue(ta_client.getTickets().size() == 0);
 }
 
@@ -136,10 +145,11 @@ private boolean s2ToT1Received = false;
    assertTrue(ta_client2.getTickets().size() == 1);
    assertEquals(ta_client.getTickets().get(0),ta_client2.getTickets().get(0));
    
-   ta_client2.acceptTicketAndAlertPeers(ta_client2.getTickets().get(0));
+   BgtaChat bc = ta_client2.acceptTicketAndAlertPeers(ta_client2.getTickets().get(0));
    Thread.sleep(5000);
    assertTrue(ta_client.getTickets().size() == 0);
    assertTrue(ta_client2.getTickets().size() == 0);
+   ta_client2.endChatSession(bc);
 
 }
 
@@ -162,15 +172,17 @@ private boolean s2ToT1Received = false;
    Thread.sleep(3000);
    assertTrue(ta_client.getTickets().size() == 2);
    assertTrue(ta_client3.getTickets().size() == 2);
-   ta_client.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
-   ta_client3.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
+   BgtaChat bc1 = ta_client.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
+   BgtaChat bc3 = ta_client3.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
    Thread.sleep(3000);
    assertTrue(ta_client.getTickets().size() == 0);
    assertTrue(ta_client3.getTickets().size() == 0);
+   ta_client.endChatSession(bc1);
+   ta_client3.endChatSession(bc3);
    
 }
 
-@Test public void testMessageRouting() throws XMPPException, InterruptedException
+@Test public void testMessageRouting() throws Exception
 {
    /**
     * With 2 TAs and 2 student connections have the two students
@@ -220,45 +232,33 @@ private boolean s2ToT1Received = false;
    assertTrue(ta_client.getTickets().size() == 2);
    assertTrue(ta_client2.getTickets().size() == 2);
    
-   ta_client.acceptTicketAndAlertPeers(new BeduStudentTicket("s2ToT1", new Date(), student2_login + "@jabber.org"));
+   BgtaChat t1ToS2 = ta_client.acceptTicketAndAlertPeers(new BeduStudentTicket("s2ToT1", new Date(), student2_login + "@jabber.org"));   
+   BgtaChat t2ToS1 = ta_client2.acceptTicketAndAlertPeers(new BeduStudentTicket("s1ToT2", new Date(), student_login + "@jabber.org"));
    
-   ta_client2.acceptTicketAndAlertPeers(new BeduStudentTicket("s1ToT2", new Date(), student_login + "@jabber.org"));
    Thread.sleep(3000);
    assertTrue(ta_client.getTickets().size() == 0);
    assertTrue(ta_client2.getTickets().size() == 0);
    
-   Chat t1ToS2 = ta_client.getChatForJID(student2_login + "@jabber.org");
-   Chat t2ToS1 = ta_client2.getChatForJID(student_login + "@jabber.org");
+   PipedOutputStream pipeErr = new PipedOutputStream();
+   PipedInputStream pipeIn = new PipedInputStream(pipeErr);
+   System.setErr(new PrintStream(pipeErr));
+
    
-   t1ToS2.addMessageListener(new MessageListener() {
-     @Override
-      public void processMessage(Chat c, Message m)
-      {
-         if(c.getParticipant().equals(student2_login + "@jabber.org"))
-            s2ToT1Received = true;
-      } 
-   });
-   
-   t2ToS1.addMessageListener(new MessageListener() {
-      @Override
-      public void processMessage(Chat c, Message m)
-      {
-         if(c.getParticipant().equals(student_login + "@jabber.org"))
-            s1ToT2Received = true;
-      } 
-   });
-   
+   t2ToS1.sendMessage("t2ToS1");
+   Thread.sleep(1000);
+   t1ToS2.sendMessage("t1ToS2");
+   Thread.sleep(1000);
    s1ToT2.sendMessage("s1toT2");
    Thread.sleep(1000);
    s2ToT1.sendMessage("s2toT1");
    Thread.sleep(1000);
-   t2ToS1.sendMessage("t2ToS1");
-   Thread.sleep(1000);
-   t1ToS2.sendMessage("t1ToS2");
-   Thread.sleep(10000);
    
-   assertTrue(s1ToT2Received);
-   assertTrue(s2ToT1Received);
+   byte[] errbuf = new byte[300];
+   pipeIn.read(errbuf);
+   
+   assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org/Smack:s1toT2\n"
+       + "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1",
+       new String(errbuf).trim());
    assertTrue(t2ToS1Received);
    assertTrue(t1ToS2Received);
 }

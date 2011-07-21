@@ -35,6 +35,8 @@ import javax.swing.JTable;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
+import org.jivesoftware.smack.XMPPException;
+
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
@@ -44,28 +46,38 @@ private static final long serialVersionUID = 1L;
 private static Color	  GRADIENT_BOTTOM_COLOR  = Color.white;
 private static Color	  GRADIENT_TOP_COLOR	 	 = new Color(0x33, 0x00, 0x99);
 private static Dimension DEFAULT_DIMENSION    = new Dimension(200, 200);
-
+private BeduTAXMPPClient ta_client;
 
 
 BeduTATicketListBubble(BeduTATicketList list, BeduTAXMPPClient a_ta_client) {
-	TicketListPanel p = new TicketListPanel(list, this, a_ta_client);
+	TicketListPanel p = new TicketListPanel(list, this);
+	ta_client = a_ta_client;
 	setContentPane(p);
 }
-
+@Override public void setVisible(boolean vis)
+{
+   if(vis == false)
+   {
+      try {
+         ta_client.disconnect();
+      } catch (XMPPException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
+}
 private class TicketListPanel extends JPanel implements MouseListener {
 	private static final long serialVersionUID = 1L;
 	private JTable			    table;
    private BeduTATicketList ticket_list;
    private BudaBubble		 parent;
-   private BeduTAXMPPClient ta_client;
    
    
    
-   TicketListPanel(BeduTATicketList list, BudaBubble a_parent,
-   		BeduTAXMPPClient a_ta_client) {
+   TicketListPanel(BeduTATicketList list, BudaBubble a_parent) {
    	super(new BorderLayout());
    	parent = a_parent;
-   	ta_client = a_ta_client;
+   	
    	ticket_list = list;
    	setOpaque(false);
    	setPreferredSize(DEFAULT_DIMENSION);

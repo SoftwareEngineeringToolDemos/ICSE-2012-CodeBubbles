@@ -701,7 +701,8 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	     }
 	    else if (val instanceof IJavaObject) {
 	       IJavaObject ovl = (IJavaObject) val;
-	       val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
+	       if (!ovl.isNull())
+		  val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
 	     }
 	  }
 
@@ -1084,7 +1085,9 @@ public void launchConfigurationRemoved(ILaunchConfiguration cfg)
 /********************************************************************************/
 
 @Override public void hotCodeReplaceFailed(IJavaDebugTarget tgt,DebugException e)
-{ }
+{
+   BedrockPlugin.logD("Hot code replace failed " + tgt + " " + e);
+}
 
 
 @Override public void hotCodeReplaceSucceeded(IJavaDebugTarget tgt)
@@ -1092,7 +1095,9 @@ public void launchConfigurationRemoved(ILaunchConfiguration cfg)
 
 
 @Override public void obsoleteMethods(IJavaDebugTarget tgt)
-{ }
+{
+   BedrockPlugin.logD("Hot code replace obsolete methods " + tgt);
+}
 
 
 

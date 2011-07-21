@@ -643,7 +643,19 @@ private class ThreadsTable extends JTable implements BudaConstants.BudaBubbleOut
 	 buf.append(frm.getFrameClass());
 	 buf.append("</td></tr>");
 	 buf.append("<tr><td>In Method:</td><td>");
-	 buf.append(frm.getMethod());
+	 String mnm = frm.getMethod();
+	 int idx1 = mnm.lastIndexOf(".");
+	 if (idx1 > 0) mnm = mnm.substring(idx1+1);
+	 if (mnm.equals("<clinit>")) mnm = "Static Initializer";
+	 else if (mnm.equals("<init>")) {
+	    String cls = frm.getFrameClass();
+	    idx1 = cls.lastIndexOf(".");
+	    if (idx1 >= 0) cls = cls.substring(idx1+1);
+	    idx1 = cls.lastIndexOf("$");
+	    if (idx1 > 0) cls = cls.substring(idx1+1);
+	    mnm = cls;
+	  }
+	 buf.append(mnm);
 	 buf.append(frm.getSignature());
 	 buf.append("</td></tr>");
 	 if (frm.getLineNumber() > 0) {

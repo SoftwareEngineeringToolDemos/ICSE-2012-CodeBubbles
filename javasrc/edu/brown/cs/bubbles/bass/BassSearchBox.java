@@ -169,7 +169,7 @@ BassSearchBox(BassTreeModel mdl,boolean common)
    active_options.setCellRenderer(renderer);
    active_options.setBorder(null);
 
-   if (is_common) {
+   if (is_common && search_text != null) {
       setDefaultText(search_text);
       input_field.selectAll();
       useExpandedNodes();
@@ -275,6 +275,8 @@ static void setDefault(String proj,String pfx)
 
 void setDefaultText(String text)
 {
+   if (text == null) text = "";
+
    input_field.setText(text);
 
    if (text.equals(old_text)) return;

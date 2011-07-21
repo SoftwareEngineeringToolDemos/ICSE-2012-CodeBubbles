@@ -223,21 +223,25 @@ private class EclipseHandler implements MintHandler {
 		}
 	     }
 	    String proj = IvyXml.getAttrString(e,"PROJECT");
-	    handleFileError(proj,IvyXml.getAttrString(e,"FILE"),haserrs);
+	    synchronized (this) {
+	       handleFileError(proj,IvyXml.getAttrString(e,"FILE"),haserrs);
+	     }
 	  }
 	 else if (cmd.equals("LAUNCHCONFIGEVENT")) {
 	    // handle changes to saved launch configurations
 	  }
 	 else if (cmd.equals("RESOURCE")) {
-	    for (Element re : IvyXml.children(e,"DELTA")) {
-	       String rtyp = IvyXml.getAttrString(re,"TYPE");
-	       if (rtyp != null && rtyp.equals("FILE")) {
-		  String fp = IvyXml.getAttrString(re,"LOCATION");
-		  String proj = IvyXml.getAttrString(re,"PROJECT");
-		  handleFileChanged(proj,fp);
+	    synchronized (this) {
+	       for (Element re : IvyXml.children(e,"DELTA")) {
+		  String rtyp = IvyXml.getAttrString(re,"TYPE");
+		  if (rtyp != null && rtyp.equals("FILE")) {
+		     String fp = IvyXml.getAttrString(re,"LOCATION");
+		     String proj = IvyXml.getAttrString(re,"PROJECT");
+		     handleFileChanged(proj,fp);
+		   }
 		}
+	       handleEndUpdate();
 	     }
-	    handleEndUpdate();
 	  }
 	 else if (cmd.equals("STOP")) {
 	    serverDone();
@@ -283,18 +287,22 @@ private class CommandHandler implements MintHandler {
       try {
 	 if (cmd == null) return;
 	 else if (cmd.equals("FINDCHANGES")) {
-	    String proj = IvyXml.getAttrString(e,"PROJECT");
-	    String file = IvyXml.getAttrString(e,"FILE");
-	    IvyXmlWriter xw = new IvyXmlWriter();
-	    findChanges(proj,file,xw);
-	    rply = xw.toString();
+	    synchronized (this) {
+	       String proj = IvyXml.getAttrString(e,"PROJECT");
+	       String file = IvyXml.getAttrString(e,"FILE");
+	       IvyXmlWriter xw = new IvyXmlWriter();
+	       findChanges(proj,file,xw);
+	       rply = xw.toString();
+	     }
 	  }
 	 else if (cmd.equals("HISTORY")) {
-	    String proj = IvyXml.getAttrString(e,"PROJECT");
-	    String file = IvyXml.getAttrString(e,"FILE");
-	    IvyXmlWriter xw = new IvyXmlWriter();
-	    findHistory(proj,file,xw);
-	    rply = xw.toString();
+	    synchronized (this) {
+	       String proj = IvyXml.getAttrString(e,"PROJECT");
+	       String file = IvyXml.getAttrString(e,"FILE");
+	       IvyXmlWriter xw = new IvyXmlWriter();
+	       findHistory(proj,file,xw);
+	       rply = xw.toString();
+	     }
 	  }
 	 else if (cmd.equals("PING")) {
 	    rply = "PONG";

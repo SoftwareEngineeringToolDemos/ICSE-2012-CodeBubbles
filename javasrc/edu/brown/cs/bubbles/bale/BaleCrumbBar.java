@@ -154,7 +154,7 @@ String getFragmentName()			{ return fragment_name; }
 
 @Override public void paint(Graphics g)
 {
-   if (fragment_name == null) checkNames();
+   checkNames();
 
    if (recent_width == 0) handleResize();
 
@@ -164,7 +164,7 @@ String getFragmentName()			{ return fragment_name; }
       show_method_name = smfg;
       SwingUtilities.invokeLater(new CheckNames());
       recent_width = getWidth();
-   }
+    }
 
    setBackground(BALE_PROPERTIES.getColor(BALE_EDITOR_TOP_COLOR));
 

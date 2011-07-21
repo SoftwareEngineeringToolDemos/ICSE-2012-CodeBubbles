@@ -139,7 +139,6 @@ void createUserStackBubble(BubbleData bd)
 
 private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ,boolean frc)
 {
-   // TODO: handle system and class files here
    setupBubbleArea();
 
    if (stk == null) return null;
@@ -221,7 +220,6 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    if (xpos < 0) xpos = 0;
 
    String proj = launch_control.getProject();
-   // TODO: The project might be wrong: the file might be fron a sub project
    BudaBubble bb = null;
    if (frame.getFile() != null && frame.getFile().exists()) {
       String mid = frame.getMethod() + frame.getSignature();

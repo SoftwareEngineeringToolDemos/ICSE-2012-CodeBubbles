@@ -67,10 +67,10 @@ static BvcrVersionManager createVersionManager(BvcrProject bp)
 
    System.err.println("BVCR: check repository for " + f);
 
+   if (bvm == null) bvm = BvcrVersionGIT.getRepository(bp,f);
    if (bvm == null) bvm = BvcrVersionSVN.getRepository(bp,f);
    if (bvm == null) bvm = BvcrVersionCVS.getRepository(bp,f);
    // handle HG
-   if (bvm == null) bvm = BvcrVersionGIT.getRepository(bp,f);
 
    return bvm;
 }

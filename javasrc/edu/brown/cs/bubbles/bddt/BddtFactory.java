@@ -549,7 +549,7 @@ private class BuildButton implements ActionListener, Runnable
       BoardMetrics.noteCommand("BDDT","Build");
       BowiFactory.startTask(BowiTaskType.BUILD);
       BumpClient bc = BumpClient.getBump();
-      bc.compile(true, false, false);
+      bc.compile(false, true, false);
       BowiFactory.stopTask(BowiTaskType.BUILD);
    }
 

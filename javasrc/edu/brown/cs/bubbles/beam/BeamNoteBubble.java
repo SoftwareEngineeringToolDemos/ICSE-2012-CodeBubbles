@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -34,8 +34,11 @@ import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.burp.BurpHistory;
+import edu.brown.cs.bubbles.bump.*;
 
 import edu.brown.cs.ivy.swing.SwingText;
+import edu.brown.cs.ivy.mint.*;
+import edu.brown.cs.ivy.xml.*;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -62,7 +65,7 @@ class BeamNoteBubble extends BudaBubble implements BeamConstants,
 /********************************************************************************/
 
 private NoteArea		note_area;
-private File			note_file;
+private String                  note_name;
 private BeamNoteAnnotation	note_annot;
 
 private static BoardProperties	beam_properties = BoardProperties.getProperties("Beam");
@@ -147,45 +150,31 @@ BeamNoteBubble()
 }
 
 
-BeamNoteBubble(String file,String cnts,BeamNoteAnnotation annot)
+BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 {
    super(null,BudaBorder.RECTANGLE);
 
-   if (file != null) {
-      try {
-	 FileReader fr = new FileReader(file);
-	 StringBuffer cbuf = new StringBuffer();
-	 char [] buf = new char[1024];
-	 for ( ; ; ) {
-	    int ln = fr.read(buf);
-	    if (ln < 0) break;
-	    cbuf.append(buf,0,ln);
-	  }
-	 cnts = cbuf.toString();
-       }
-      catch (IOException e) {
-	 BoardLog.logE("BEAM","Problem reading note file",e);
-	 file = null;
-       }
-    }
-
    Document d = null;
-   if (file != null) d = file_documents.get(file);
+   if (name != null) d = file_documents.get(name);
 
-   note_area = null;
-   if (d != null) note_area = new NoteArea(d);
-   else note_area = new NoteArea(cnts);
-
-   if (file != null) note_file = new File(file);
+   if (name != null) note_name = name;
    else createFileName();
-
-   if (note_file != null) file_documents.put(note_file.getPath(),note_area.getDocument());
+   
+   note_area = null;
+   if (d != null) {
+      note_area = new NoteArea(d);
+      file_documents.put(note_name,note_area.getDocument());
+    }
+   else {
+      note_area = new NoteArea(cnts);
+      loadNote(false);
+    }
 
    if (annot != null && annot.getDocumentOffset() < 0) annot = null;
    note_annot = annot;
    if (annot != null) {
       BaleFactory.getFactory().addAnnotation(annot);
-      annot.setAnnotationFile(note_file);
+      annot.setAnnotationFile(note_name);
     }
 
    // if contents are null, then set the header part of the html with information about
@@ -198,10 +187,10 @@ BeamNoteBubble(String file,String cnts,BeamNoteAnnotation annot)
 
 @Override protected void localDispose()
 {
-   if (note_file != null) {
-      if (note_area.getText().length() == 0 || note_annot == null) note_file.delete();
-      note_file = null;
+   if (note_name != null) {
+      if (note_area.getText().length() == 0 || note_annot == null) deleteNote();
       note_annot = null;
+      note_name = null;
     }
 }
 
@@ -262,48 +251,155 @@ BeamNoteBubble(String file,String cnts,BeamNoteAnnotation annot)
 
 
 
-private synchronized void saveNote()
-{
-   if (note_file == null) createFileName();
-   if (note_file == null) return;
+/********************************************************************************/
+/*                                                                              */
+/*      Methods for loading and saving notes                                    */
+/*                                                                              */
+/********************************************************************************/
 
+static void updateNote(String name,String cnts)
+{
+   Document d = file_documents.get(name);
+   if (d == null) return;
+   
+   int len = d.getLength();
    try {
-      FileWriter fw = new FileWriter(note_file);
-      String txt = note_area.getText();
-      fw.write(txt);
-      fw.close();
+      String txt = d.getText(0,len);
+      if (txt.equals(cnts)) return;
+      d.remove(0,len);
+      d.insertString(0,cnts,null);
+    }
+   catch (BadLocationException e) {
+      BoardLog.logE("BEAM","Problem updating note",e);
+    }
+}
+
+
+
+
+private synchronized void loadNote(boolean force)
+{
+   if (note_name == null) createFileName();
+   
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case CLIENT :
+         BumpClient bc = BumpClient.getBump();
+         try {
+            File tmp = File.createTempFile("BUBBLES_NOTE_",".html");
+            File f = bc.getRemoteFile(tmp,"NOTE",new File(note_name));
+            if (f != null) loadNoteFromFile(f,force);
+            tmp.delete();
+          }
+         catch (IOException e) { }
+         break;
+      case SERVER :
+      case NORMAL :
+         loadNoteFromFile(getNoteFile(),force);
+         break;
+    }
+}
+
+   
+   
+private void loadNoteFromFile(File f,boolean force)
+{
+   String cnts = "";
+ 
+   try {
+      FileReader fr = new FileReader(getNoteFile());
+      StringBuffer cbuf = new StringBuffer();
+      char [] buf = new char[1024];
+      for ( ; ; ) {
+         int ln = fr.read(buf);
+         if (ln < 0) break;
+         cbuf.append(buf,0,ln);
+       }
+      cnts = cbuf.toString();
     }
    catch (IOException e) {
-      BoardLog.logE("BEAM","Problem writing note file",e);
-      note_file = null;
+      if (force) BoardLog.logE("BEAM","Problem reading note file",e);
+      else return;
     }
+   Document d = note_area.getDocument();
+   int len = d.getLength();
+   try {
+      d.remove(0,len);
+      d.insertString(0,cnts,null);
+    }
+   catch (BadLocationException e) {
+      BoardLog.logE("BEAM","Problem replacing note contents",e);
+    }
+}
+
+
+private synchronized void saveNote()
+{
+   if (note_name == null) createFileName();
+   
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case CLIENT :
+         break;
+      case SERVER :
+      case NORMAL :
+         try {
+            FileWriter fw = new FileWriter(getNoteFile());
+            String txt = note_area.getText();
+            fw.write(txt);
+            fw.close();
+          }
+         catch (IOException e) {
+            BoardLog.logE("BEAM","Problem writing note file",e);
+          }
+         break;
+    }
+   
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case CLIENT :
+      case NORMAL :
+         BumpClient bc = BumpClient.getBump();
+         MintControl mc = bc.getMintControl();
+         IvyXmlWriter xw = new IvyXmlWriter();
+         xw.begin("BEAM");
+         xw.field("TYPE","NOTE");
+         xw.field("NAME",note_name);
+         xw.cdataElement("TEXT",note_area.getText());
+         xw.end("BEAM");
+         mc.send(xw.toString());
+         break;
+      case SERVER :
+         break;
+    }
+}
+
+
+private synchronized void deleteNote()
+{
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case CLIENT :
+         break;
+      case SERVER :
+      case NORMAL :
+         File f = getNoteFile();
+         f.delete();
+         break;
+    }
+}
+
+
+private File getNoteFile()
+{
+   File dir = BoardSetup.getBubblesPluginDirectory();
+   return new File(dir,note_name);
 }
 
 
 private void createFileName()
 {
-   if (note_file != null) return;
+   if (note_name != null) return;
 
-   File dir = BoardSetup.getBubblesPluginDirectory();
-   if (dir != null) {
-      try {
-	 for (int i = 0; i < 5; ++i) {
-	    String fnm = "Note_" + file_dateformat.format(new Date()) + ".html";
-	    File f = new File(dir,fnm);
-	    if (f.createNewFile()) {
-	       note_file = f;
-	       break;
-	     }
-	    try {
-	       Thread.sleep(1000);
-	     }
-	    catch (InterruptedException e) { }
-	  }
-       }
-      catch (IOException e) {
-	 BoardLog.logE("BEAM","Problem creating note file",e);
-       }
-    }
+   String rid = Integer.toString((int)(Math.random() * 10000));
+   String fnm = "Note_" + file_dateformat.format(new Date()) + "_" + rid + ".html";
+   note_name = fnm;
 }
 
 
@@ -320,7 +416,7 @@ private void createFileName()
 @Override public void outputXml(BudaXmlWriter xw)
 {
    xw.field("TYPE","NOTE");
-   if (note_file != null) xw.field("FILE",note_file);
+   if (note_name != null) xw.field("NAME",note_name);
    xw.cdataElement("TEXT",note_area.getText());
    if (note_annot != null) note_annot.saveAnnotation(xw);
 }

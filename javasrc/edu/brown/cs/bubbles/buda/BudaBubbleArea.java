@@ -335,6 +335,10 @@ void removeCurrentBubble(MouseEvent e)
 	 bb.setFloating(true);
 	 setLayer(bb,MODAL_LAYER);
        }
+      else if (bc.getPositionType() == BudaBubblePosition.USERPOS) {
+	 fixed = true;
+	 setLayer(bb,MODAL_LAYER+4);
+       }
       else if (bc.getPositionType() == BudaBubblePosition.DIALOG) {
 	 floating_bubbles.put(bb,floc);
 	 loc = setFloatingLocation(bb);
@@ -673,7 +677,7 @@ void moveBubble(BudaBubble bb,Point loc)
 
 void fixupBubble(BudaBubble bb)
 {
-   if (bb.isFixed() || bb.isFloating()) return;
+   if (bb.isFixed() || bb.isFloating() || bb.isUserPos()) return;
 
    BudaSpacer bs = new BudaSpacer(this,bb);
 
@@ -1399,17 +1403,20 @@ public boolean setBubbleFloating(BudaBubble bb, boolean fg)
       if(!active_bubbles.contains(bb)) return false;
     }
 
-   if (bb.isFloating() == fg) return false;
+   if (bb.isFloating() == fg && !bb.isUserPos()) return false;
 
    if (!fg) {
       bb.setGroup(bb.getNewGroup());
       bb.getGroup().addBubble(bb);
       addBubbleGroup(bb.getGroup());
-      checkGroup(bb.getGroup());
       floating_bubbles.remove(bb);
       bb.setFloating(false);
+      bb.setUserPos(false);
+      bb.setFixed(false);
       setLayer(bb,DEFAULT_LAYER);
+      checkGroup(bb.getGroup());
       fixupBubble(bb);
+      fixupGroups(bb);
     }
    else {
       BudaBubbleGroup bbg = bb.getGroup();
@@ -1691,7 +1698,7 @@ private void handleMouseEvent(MouseEvent e)
       if (mr.getBubble() != null){
 	 BudaBubble bubble = mr.getBubble();
 	 bubble = bubble.getActualBubble(e.getX(),e.getY(), true);
-	 if(!bubble.isFixed()) mouse_context = new BubbleMoveContext(bubble,e);
+	 if (!bubble.isFixed() || bubble.isUserPos()) mouse_context = new BubbleMoveContext(bubble,e);
       }
       else if (mr.getGroup() != null) mouse_context = new GroupMoveContext(mr.getGroup(),e);
       else mouse_context = new AreaMoveContext(e);

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -141,20 +141,20 @@ private static class FileChange {
       int dct = 0;
       for (Element ce : IvyXml.children(e,"DELETE")) ++dct;
       if (dct > 0) {
-         delete_lines = new String[dct];
-         int i = 0;
-         for (Element ce : IvyXml.children(e,"DELETE")) {
-            delete_lines[i++] = IvyXml.getText(ce);
-          }
+	 delete_lines = new String[dct];
+	 int i = 0;
+	 for (Element ce : IvyXml.children(e,"DELETE")) {
+	    delete_lines[i++] = IvyXml.getText(ce);
+	  }
        }
       int act = 0;
       for (Element ce : IvyXml.children(e,"INSERT")) ++act;
       if (act > 0) {
-         add_lines = new String[act];
-         int i = 0;
-         for (Element ce : IvyXml.children(e,"INSERT")) {
-            add_lines[i++] = IvyXml.getText(ce);
-          }
+	 add_lines = new String[act];
+	 int i = 0;
+	 for (Element ce : IvyXml.children(e,"INSERT")) {
+	    add_lines[i++] = IvyXml.getText(ce);
+	  }
        }
     }
 

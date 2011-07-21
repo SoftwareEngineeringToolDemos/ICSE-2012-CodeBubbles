@@ -107,6 +107,7 @@ private List<String>	java_args;
 private BoardSplash	splash_screen;
 private long		run_size;
 private String		update_proxy;
+private RunMode 	run_mode;
 
 
 private static String	       prop_base;
@@ -171,6 +172,7 @@ private BoardSetup()
    splash_screen = null;
    allow_debug = false;
    use_lila = false;
+   run_mode = RunMode.NORMAL;
 
    eclipse_directory = system_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    default_workspace = system_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
@@ -247,6 +249,12 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-p") && i+1 < args.length) {      // -prop <propdir>
 	    BoardProperties.setPropertyDirectory(args[++i]);
+	  }
+	 else if (args[i].startsWith("-C")) {                           // -Client
+	    run_mode = RunMode.CLIENT;
+	  }
+	 else if (args[i].startsWith("-S")) {                           // -Server
+	    run_mode = RunMode.SERVER;
 	  }
 	 else if (args[i].startsWith("-X")) {                           // -X <run args...>
 	    javaargs = new ArrayList<String>();
@@ -379,11 +387,20 @@ public static File getConfigurationFile()
 {
    BoardSetup bs = getSetup();
 
+   File f1 = BoardSetup.getPropertyBase();
+   String wsname = bs.default_workspace;
+   wsname = wsname.replaceAll("\\W","_");
+   wsname += "_";
+   File f2 = new File(f1,"configurations");
+   File f3 = new File(f2,wsname + BOARD_CONFIGURATION_FILE);
+
    File wsd = new File(bs.default_workspace);
+   File f4 = new File(wsd,BOARD_CONFIGURATION_FILE);
 
-   // TODO: This should be in the plugin subdirectory
+   if (!f3.exists() && f4.exists()) return f4;
+   f2.mkdirs();
 
-   return new File(wsd,BOARD_CONFIGURATION_FILE);
+   return f3;
 }
 
 
@@ -398,13 +415,20 @@ public static File getHistoryFile()
 {
    BoardSetup bs = getSetup();
 
+   File f1 = BoardSetup.getPropertyBase();
+   String wsname = bs.default_workspace;
+   wsname = wsname.replaceAll("\\W","_");
+   wsname += "_";
+   File f2 = new File(f1,"configurations");
+   File f3 = new File(f2,wsname + BOARD_HISTORY_FILE);
+
    File wsd = new File(bs.default_workspace);
+   File f4 = new File(wsd,BOARD_HISTORY_FILE);
 
-   // If null is returned, history is kept with the configuration
+   if (!f3.exists() && f4.exists()) return f4;
+   f2.mkdirs();
 
-   // TODO: This should be in the plugin subdirectory
-
-   return new File(wsd,BOARD_HISTORY_FILE);
+   return f3;
 }
 
 
@@ -418,6 +442,14 @@ public static File getHistoryFile()
 public static File getDocumentationFile()
 {
    BoardSetup bs = getSetup();
+
+   if (bs.getRunMode() == RunMode.CLIENT) {
+      File f1 = BoardSetup.getPropertyBase();
+      File f2 = new File(f1,"documentation");
+      f2.mkdirs();
+      File f3 = new File(f2,BOARD_DOCUMENTATION_FILE);
+      return f3;
+    }
 
    File wsd = new File(bs.default_workspace);
 
@@ -556,6 +588,20 @@ public void removeSplash()
       splash_screen = null;
     }
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Methods to handle client-server modes					*/
+/*										*/
+/********************************************************************************/
+
+public RunMode getRunMode()			{ return run_mode; }
+public boolean isServerMode()			{ return run_mode == RunMode.SERVER; }
+public boolean isClientMode()			{ return run_mode == RunMode.CLIENT; }
+
+public void setRunMode(RunMode rm)		{ run_mode = rm; }
 
 
 

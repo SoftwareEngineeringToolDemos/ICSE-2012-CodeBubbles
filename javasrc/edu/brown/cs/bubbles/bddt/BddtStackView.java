@@ -352,7 +352,7 @@ private class SourceAction extends AbstractAction {
       // Ideally, would like a method bubble here -- can we fake that
       // need to search for method location in system code, not just project
       // so add a new Bale method createSystemMethodBubble(proj,mid,file)
-      
+
       if (frm.getFile() != null && frm.getFile().exists()) {
 	 String proj = frm.getThread().getLaunch().getConfiguration().getProject();
 	 String mid = frm.getMethod() + frm.getSignature();
@@ -467,6 +467,12 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
 
    @Override public void outputXml(BudaXmlWriter xw)	{ }
 
+   @Override public JToolTip createToolTip() {
+      BudaToolTip btt = new BudaToolTip();
+      btt.setComponent(this);
+      return btt;
+    }
+
    @Override public String getToolTipText(MouseEvent evt) {
       int row = value_component.rowAtPoint(evt.getPoint());
       Object v0 = value_component.getValueAt(row,-1);
@@ -477,7 +483,7 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
 	 buf.append("<html>");
 	 Object vobj = tn.getValue();
 	 String what = tn.getKey();
-	 what = what.replace('?','.');
+	 if (what == null) return null;
 	 if (vobj == null) return what;
 	 buf.append(what);
 	 buf.append(" = ");

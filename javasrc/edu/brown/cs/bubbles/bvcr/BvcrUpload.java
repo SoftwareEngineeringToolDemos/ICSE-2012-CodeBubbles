@@ -181,12 +181,15 @@ private void processUpload(String data,String uid,String rid,SecretKey key) thro
 private InputStream processDownload(String uid,String rid,long dlm) throws IOException
 {
    String url = getRepoUrl() + "loadbvcr.php";
+
    setupConnection(url);
    output_stream = url_connection.getOutputStream();
 
    setParameter("U",uid);
    setParameter("R",rid);
    setParameter("D",Long.toString(dlm));
+
+   System.err.println("BVCR: URL = " + url + "?U=" + uid + "&R=" + rid + "&D=" + Long.toString(dlm));
 
    InputStream ins = post();
 

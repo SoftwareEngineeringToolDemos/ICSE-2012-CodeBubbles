@@ -450,6 +450,20 @@ long	BOARD_POOL_KEEP_ALIVE_TIME = 10*60*1000;
 
 
 /********************************************************************************/
+/*                                                                              */
+/*      Definitions for running front end remotely                              */
+/*                                                                              */
+/********************************************************************************/
+
+enum RunMode {
+   NORMAL,                      // front end and eclipse on same host
+   SERVER,                      // running bubbles/eclipse without a front end
+   CLIENT                       // running front end without eclipse/backend
+}
+
+
+
+/********************************************************************************/
 /*										*/
 /*	Metrics definitions							*/
 /*										*/

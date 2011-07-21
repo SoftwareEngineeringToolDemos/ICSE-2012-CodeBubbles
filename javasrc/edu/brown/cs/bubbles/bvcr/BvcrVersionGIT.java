@@ -47,6 +47,7 @@ class BvcrVersionGIT extends BvcrVersionManager implements BvcrConstants
 private File		git_root;
 private String		git_command;
 private String		git_name;
+private String		origin_name;
 
 private static BoardProperties bvcr_properties = BoardProperties.getProperties("Bvcr");
 
@@ -67,8 +68,22 @@ BvcrVersionGIT(BvcrProject bp)
    super(bp);
 
    git_command = bvcr_properties.getProperty("bvcr.git.command","git");
+   origin_name = bvcr_properties.getProperty("bvcr.git." + bp.getName() + ".origin");
 
    findGitRoot();
+
+   if (origin_name == null) {
+      origin_name = "";
+      String cmd = git_command + "-branch -all";
+      StringCommand sc = new StringCommand(cmd);
+      String vers = sc.getContent();
+      StringTokenizer tok = new StringTokenizer(vers," \r\n\t*");
+      while (tok.hasMoreTokens()) {
+	 String v = tok.nextToken();
+	 System.err.println("BVCR: FOUND BRANCH " + v);
+	 if (v.equals("origin")) origin_name = "origin";
+       }
+    }
 }
 
 
@@ -117,7 +132,7 @@ String getRepositoryName()
 
 void getDifferences(BvcrDifferenceSet ds)
 {
-   String cmd = git_command  + "-diff -r -- ";
+   String cmd = git_command  + "-diff " + origin_name + " -r -- ";
 
    List<File> diffs = ds.getFilesToCompute();
    if (diffs == null) {

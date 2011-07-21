@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -556,6 +556,7 @@ enum BudaBubblePosition {
    FLOAT,				// fixed in viewport, floats with viewport
    DIALOG,				// floating, but on top of statics
    DOCKED,				// floating on top, docked to one side of the window
+   USERPOS,				// temporarily floating to let user position
    HOVER				// fixed but on top of statics
 }
 
@@ -583,7 +584,12 @@ int	PLACEMENT_BELOW = 0x4;
 int	PLACEMENT_ABOVE = 0x8;
 int	PLACEMENT_MOVETO = 0x10;	// force visible
 int	PLACEMENT_GROUPED = 0x20;
-int     PLACEMENT_LOGICAL = 0x40;
+int	PLACEMENT_LOGICAL = 0x40;
+
+int	PLACEMENT_ADJACENT = 0x80;	// adjacent to window, not group
+int	PLACEMENT_ADGROUP  = 0x100;	// adjacent to group, not window
+int	PLACEMENT_USER = 0x200; 	// give user time to place the window
+int	PLACEMENT_EXPLICIT = 0x10000;	// no default placements
 
 
 
@@ -911,7 +917,7 @@ interface NoBubble { }
 
 
 /**
- * 	A Bubble implementing this will not use a freeze pane
+ *	A Bubble implementing this will not use a freeze pane
  **/
 
 interface NoFreeze { }
@@ -1148,6 +1154,11 @@ interface BudaFileHandler extends EventListener {
  *	exit attempt will be aborted.
  **/
    boolean handleQuitRequest();
+
+/**
+ *	Invoked when properties have changed.
+ **/
+   void handlePropertyChange();
 
 }	// end of interface BudaFileHandler
 

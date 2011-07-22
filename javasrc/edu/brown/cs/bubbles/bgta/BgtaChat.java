@@ -43,6 +43,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 
+import javax.naming.OperationNotSupportedException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -135,7 +136,6 @@ protected BgtaChat(String username,String pUsername,String pDisplayname,ChatServ
    if (!server.equals(ChatServer.AIM)) {
       is_xmpp = true;
       the_chat = (Chat) chat;
-      System.out.println("2: " + chat);
       chat_listener = new XMPPChatListener();
       the_chat.addMessageListener(chat_listener);
     }
@@ -361,6 +361,29 @@ public boolean sendMessage(String msg)
 /* Helper methods                           */
 /*                            */
 /********************************************************************************/
+
+protected void setChat(Object chat)
+{
+   the_chat.removeMessageListener(the_chat.getListeners().iterator().next());
+   if (is_xmpp) {    
+      the_chat = (Chat) chat;
+      chat_listener = new XMPPChatListener();
+      the_chat.addMessageListener(chat_listener);
+    }
+   else {
+      the_conversation = (Conversation) chat;
+      conversation_listener = new AIMChatListener();
+      the_conversation.addConversationListener(conversation_listener);
+   }
+}
+
+protected Chat getChat() throws OperationNotSupportedException
+{
+   if(is_xmpp)
+      return the_chat;
+   else 
+      throw new OperationNotSupportedException("Not an XMPP BgtaChat");
+}
 
 /**
  * Creates a more displayable version of a username. This

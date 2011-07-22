@@ -185,12 +185,11 @@ private class TicketPanel extends JPanel implements ActionListener
    	BgtaManager man = panel.chat_logins.get(panel.login_box.getSelectedItem());
    
    	man.subscribeToUser(ta_jid);
-   	BgtaBubble chat_b = BgtaFactory.createReceivedChatBubble(ta_jid, man);
+   	BgtaBubble chat_b = new BgtaResourceSwitchingBubble(man, ta_jid);
    	BudaBubbleArea bba = BudaRoot
    			.findBudaBubbleArea(BeduStudentTicketSubmitBubble.this);
+   	bba.addBubble(chat_b, this, null, PLACEMENT_GROUPED | PLACEMENT_LOGICAL);
    	chat_b.sendMessage("TICKET:" + panel.ticket_area.getText());
-   	bba.addBubble(chat_b, BeduStudentTicketSubmitBubble.this, null,
-   			PLACEMENT_LOGICAL | PLACEMENT_GROUPED);
    }
 }
 }

@@ -320,15 +320,7 @@ private void loadNoteFromFile(File f,boolean force)
       if (force) BoardLog.logE("BEAM","Problem reading note file",e);
       else return;
     }
-   Document d = note_area.getDocument();
-   int len = d.getLength();
-   try {
-      d.remove(0,len);
-      d.insertString(0,cnts,null);
-    }
-   catch (BadLocationException e) {
-      BoardLog.logE("BEAM","Problem replacing note contents",e);
-    }
+   note_area.setText(cnts);
 }
 
 

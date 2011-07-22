@@ -306,7 +306,6 @@ void drawLink(Graphics2D g,boolean overview)
 
    Point2D second = null;
    Point2D penult = null;
-
    Path2D.Double pa = new Path2D.Double();
    pa.moveTo(src.getX(),src.getY());
    if (pivot_points == null) {

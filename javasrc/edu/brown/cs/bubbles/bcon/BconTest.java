@@ -107,22 +107,22 @@ private static class CreateBcon implements Runnable {
 
    public void run() {
       try {
-	 File f = new File("/pro/ivy/javasrc/edu/brown/cs/ivy/xml/IvyXmlWriter.java");
-	 BconFactory bcf = BconFactory.getFactory();
-	 BaleFactory bale = BaleFactory.getFactory();
-
-	 BudaBubble bb = bale.createMethodBubble("ivy","edu.brown.cs.ivy.xml.IvyXmlWriter.text");
-	 for_root.add(bb,new BudaConstraint(100,300));
-	 BudaBubble nbb = bcf.createOverviewBubble(bb,new Point(100,300));
-	 for_root.add(nbb,new BudaConstraint(500,300));
-	 BudaBubble cbb = bcf.createClassBubble(bb,"ivy",f,"edu.brown.cs.ivy.xml.IvyXmlWriter",false);
-	 for_root.add(cbb,new BudaConstraint(850,300));
-	 BudaBubble pbb = bcf.createPackageBubble(bb,"bubbles","edu.brown.cs.bubbles.bcon");
-	 for_root.add(pbb,new BudaConstraint(100,600));
+         File f = new File("/pro/ivy/javasrc/edu/brown/cs/ivy/xml/IvyXmlWriter.java");
+         BconFactory bcf = BconFactory.getFactory();
+         BaleFactory bale = BaleFactory.getFactory();
+   
+         BudaBubble bb = bale.createMethodBubble("ivy","edu.brown.cs.ivy.xml.IvyXmlWriter.text");
+         for_root.add(bb,new BudaConstraint(100,300));
+         BudaBubble nbb = bcf.createOverviewBubble(bb,new Point(100,300));
+         for_root.add(nbb,new BudaConstraint(500,300));
+         BudaBubble cbb = bcf.createClassBubble(bb,"ivy",f,"edu.brown.cs.ivy.xml.IvyXmlWriter",false);
+         for_root.add(cbb,new BudaConstraint(850,300));
+         BudaBubble pbb = bcf.createPackageBubble(bb,"bubbles","edu.brown.cs.bubbles.bcon");
+         for_root.add(pbb,new BudaConstraint(100,600));
        }
       catch (Throwable t) {
-	 System.err.println("Error building database: " + t);
-	 t.printStackTrace();
+         System.err.println("Error building database: " + t);
+         t.printStackTrace();
        }
     }
 

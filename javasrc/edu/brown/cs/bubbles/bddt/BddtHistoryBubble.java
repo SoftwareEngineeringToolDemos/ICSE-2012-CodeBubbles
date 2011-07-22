@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -221,9 +221,9 @@ private class GotoSourceAction extends AbstractAction {
 
       if (bb != null) {
 	 BoardMetrics.noteCommand("BDDT","HistorySource");
-	 BudaRoot br = BudaRoot.findBudaRoot(BddtHistoryBubble.this);
-	 Rectangle r = BudaRoot.findBudaLocation(BddtHistoryBubble.this);
-	 br.add(bb,new BudaConstraint(r.x+r.width+25,r.y));
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtHistoryBubble.this);
+	 bba.addBubble(bb,BddtHistoryBubble.this,null,
+	       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
        }
    }
 
@@ -244,9 +244,9 @@ private class GotoStackAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BDDT","HistoryStack");
       BddtStackView sv = new BddtStackView(for_control,for_stack);
-      BudaRoot br = BudaRoot.findBudaRoot(BddtHistoryBubble.this);
-      Rectangle r = BudaRoot.findBudaLocation(BddtHistoryBubble.this);
-      br.add(sv,new BudaConstraint(r.x+r.width+25,r.y));
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtHistoryBubble.this);
+      bba.addBubble(sv,BddtHistoryBubble.this,null,
+		       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
     }
 
 }	// end of inner class GotoStackAction
@@ -266,9 +266,9 @@ private class GotoValueAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BDDT","HistoryValue");
       BddtStackView sv = new BddtStackView(for_control,for_value);
-      BudaRoot br = BudaRoot.findBudaRoot(BddtHistoryBubble.this);
-      Rectangle r = BudaRoot.findBudaLocation(BddtHistoryBubble.this);
-      br.add(sv,new BudaConstraint(r.x+r.width+25,r.y));
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtHistoryBubble.this);
+      bba.addBubble(sv,BddtHistoryBubble.this,null,
+		       PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
     }
 
 }	// end of inner class GotoValueAction

@@ -179,14 +179,12 @@ public void newDebugger(BumpLaunchConfig blc)
    BddtLaunchControl ctrl = new BddtLaunchControl(blc);
    console_controller.setupConsole(ctrl);
 
-   BudaConstraint bc;
+   BudaBubblePosition bbp = BudaBubblePosition.MOVABLE;
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_LAUNCH_CONTROL)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,BDDT_LAUNCH_CONTROL_X,BDDT_LAUNCH_CONTROL_Y);
+      bbp = BudaBubblePosition.FLOAT;
     }
-   else {
-      bc = new BudaConstraint(BDDT_LAUNCH_CONTROL_X,BDDT_LAUNCH_CONTROL_Y);
-    }
-   bba.add(ctrl,bc);
+   bba.addBubble(ctrl,null,new Point(BDDT_LAUNCH_CONTROL_X,BDDT_LAUNCH_CONTROL_Y),
+         PLACEMENT_EXPLICIT,bbp);
 
    BudaRoot br = BudaRoot.findBudaRoot(bba);
    br.setCurrentChannel(ctrl);

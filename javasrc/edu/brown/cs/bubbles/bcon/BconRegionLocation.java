@@ -31,7 +31,6 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import java.awt.Component;
-import java.awt.Rectangle;
 import javax.swing.text.*;
 
 
@@ -174,11 +173,9 @@ boolean createBubble(Component src)
    BudaBubble bb = makeBubble();
    if (bb == null) return false;
 
-   BudaRoot root = BudaRoot.findBudaRoot(src);
-   Rectangle loc = BudaRoot.findBudaLocation(src);
-   int offset = BudaConstants.BUBBLE_CREATION_SPACE;
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
 
-   root.add(bb,new BudaConstraint(loc.x + loc.width + offset,loc.y));
+   bba.addBubble(bb,src,null,BudaConstants.PLACEMENT_RIGHT|BudaConstants.PLACEMENT_LOGICAL);
    bb.markBubbleAsNew();
 
    return true;

@@ -198,20 +198,20 @@ private void setupPanel()
 
 private void createNewBubble(BdocReference br)
 {
-   BudaRoot root = BudaRoot.findBudaRoot(the_panel);
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_panel);
    BudaBubble bb = BudaRoot.findBudaBubble(the_panel);
-   Rectangle r = bb.getBounds();
 
    try {
       // This can take a while and should be done outside the UI thread, the rest should be done in UI thread
       BdocBubble nbb = new BdocBubble(br);
-      root.add(nbb,new BudaConstraint(r.x + r.width + 50,r.y));
+      bba.addBubble(nbb,the_panel,null,
+            PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
       BudaBubbleLink lnk = new BudaBubbleLink(
 	 bb,
 	 new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true),
 	 nbb,
 	 new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true));
-      root.addLink(lnk);
+      bba.addLink(lnk);
     }
    catch (BdocException e) {
       BoardLog.logE("BDOC","Problem creating new doc bubble: " + e);

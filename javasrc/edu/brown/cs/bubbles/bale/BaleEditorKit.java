@@ -104,6 +104,7 @@ private static final Action autocompletethings_action = new AutoCompleteIt();
 private static final Action rename_action = new RenameAction();
 private static final Action extract_method_action = new ExtractMethodAction();
 private static final Action format_action = new FormatAction();
+private static final Action expand_action = new ExpandAction();
 
 private static final Action goto_definition_action = new GotoDefinitionAction();
 private static final Action goto_implementation_action = new GotoImplementationAction();
@@ -119,6 +120,7 @@ private static final Action quick_fix_action = new QuickFixAction();
 private static final Action marquis_comment_action = new CommentAction("MarquisComment",BuenoType.NEW_MARQUIS_COMMENT);
 private static final Action block_comment_action = new CommentAction("BlockComment",BuenoType.NEW_BLOCK_COMMENT);
 private static final Action javadoc_comment_action = new CommentAction("JavadocComment",BuenoType.NEW_JAVADOC_COMMENT);
+
 
 
 
@@ -170,6 +172,7 @@ private static final Action [] local_actions = {
    rename_action,
    extract_method_action,
    format_action,
+   expand_action,
 
    goto_definition_action,
    goto_implementation_action,
@@ -242,6 +245,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("alt shift W",select_line_action),
       new KeyItem("menu B",select_paragraph_action),
       new KeyItem("menu shift F",format_action),
+      new KeyItem("alt B",expand_action),
 
       new KeyItem("ctrl SPACE",autocompletethings_action),
 
@@ -1809,6 +1813,34 @@ private static class FormatAction extends TextAction {
     }
 
 }	// end of inner class FormatAction
+
+
+
+
+private static class ExpandAction extends TextAction {
+
+   private static final long serialVersionUID = 1;
+
+   ExpandAction() {
+      super("ExpandAction");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BaleEditorPane target = getBaleEditor(e);
+      if (!checkReadEditor(target)) return;
+      javax.swing.plaf.TextUI tui = target.getUI();
+      View root = tui.getRootView(target);
+      View v1 = root.getView(0);
+      int vx = (int)(Math.ceil(v1.getMaximumSpan(View.X_AXIS)+0.5));
+      Dimension d = target.getSize();
+      if (vx <= d.width) return;
+      BudaBubble bb = BudaRoot.findBudaBubble(target);
+      Dimension d1 = bb.getSize();
+      d1.width += vx - d.width + 10;
+      bb.setSize(d1);
+    }
+
+}	// end of inner class ExpandAction
 
 
 

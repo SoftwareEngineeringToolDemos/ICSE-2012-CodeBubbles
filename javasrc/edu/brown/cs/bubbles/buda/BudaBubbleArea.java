@@ -1486,7 +1486,7 @@ private void removeBubbleGroup(BudaBubbleGroup bg)
 
 void removeMovingBubbles(Collection<BudaBubble> bubbles)
 {
-   synchronized(moving_bubbles) {
+   synchronized (moving_bubbles) {
       moving_bubbles.removeAll(bubbles);
     }
    checkAreaDimensions();
@@ -1496,7 +1496,7 @@ void removeMovingBubbles(Collection<BudaBubble> bubbles)
 
 void removeMovingBubble(BudaBubble bb)
 {
-   synchronized(moving_bubbles) {
+   synchronized (moving_bubbles) {
       moving_bubbles.remove(bb);
     }
    checkAreaDimensions();
@@ -1506,8 +1506,16 @@ void removeMovingBubble(BudaBubble bb)
 
 void addMovingBubble(BudaBubble bubble)
 {
-   synchronized(moving_bubbles) {
+   synchronized (moving_bubbles) {
       moving_bubbles.add(bubble);
+    }
+}
+
+
+boolean isMoving(BudaBubble bb)
+{
+   synchronized (moving_bubbles) {
+      return moving_bubbles.contains(bb);
     }
 }
 
@@ -1993,13 +2001,12 @@ private class BubbleMoveContext extends MouseContext {
       BudaCursorManager.setGlobalCursorForComponent(for_bubble, palm_cursor);
 
       ++move_count;
-      //for_bubble.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
       setLayer(for_bubble,DRAG_LAYER,0);
       Point p0 = e.getPoint();
       int x0 = initial_location.x + (int)(p0.x / scale_factor) - initial_mouse.x;
       int y0 = initial_location.y + (int)(p0.y / scale_factor) - initial_mouse.y;
 
-      if (scale_factor != 1.0){
+      if (scale_factor != 1.0) {
 	 p0 = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(),
 					     BudaBubbleArea.this);
 	 p0 = new Point((int)(p0.x / scale_factor), (int)(p0.y / scale_factor));
@@ -2023,6 +2030,7 @@ private class BubbleMoveContext extends MouseContext {
       for_bubble.setLocation(x0,y0);
       // TODO: ensure that this isn't done twice
       fixupGroups(for_bubble);
+      if (for_bubble.isUserPos()) repaint();
     }
 
    void finish() {
@@ -2035,6 +2043,7 @@ private class BubbleMoveContext extends MouseContext {
 
       fixupBubble(for_bubble);
       fixupGroups(for_bubble);
+      if (for_bubble.isUserPos()) repaint();
 
       BudaCursorManager.resetDefaults(for_bubble);
       //for_bubble.setCursor(for_bubble.getBubbleCursor());

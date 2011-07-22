@@ -42,7 +42,7 @@ import java.util.List;
 
 
 
-abstract class BuenoAbstractDialog implements BuenoConstants, ActionListener
+abstract class BuenoAbstractDialog implements BuenoConstants, ActionListener, BudaConstants
 {
 
 
@@ -131,28 +131,12 @@ public void showDialog()
    addButtons(pnl);
 
    BudaBubble bb = new DialogBubble(pnl);
-   Dimension bsz = bb.getPreferredSize();
    pnl.setFont(button_font);
 
-   BudaRoot root = BudaRoot.findBudaRoot(source_component);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_component);
-   Rectangle cr = BudaRoot.findBudaLocation(source_component);
-   Rectangle vr = root.getViewport();
 
-   int x;
-   int y = start_point.y;
-
-   if (cr.x + cr.width + bsz.width > vr.x + vr.width) {
-      x = cr.x - bsz.width - 25;
-   }
-   else {
-      x = cr.x + cr.width + 25;
-   }
-   if (y + bsz.height > vr.y + vr.height) {
-      y = vr.y + vr.height - bsz.height;
-   }
-   BudaConstraint bc = new BudaConstraint(x,y);
-   bba.add(bb,bc);
+   bba.addBubble(bb,source_component,start_point,
+         PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO|PLACEMENT_LOGICAL);
 }
 
 

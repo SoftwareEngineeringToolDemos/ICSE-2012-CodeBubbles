@@ -338,6 +338,20 @@ BgtaChat startChat(String username,BgtaBubble using)
     return chat;
 }
 
+BgtaChat startChat(String username)
+{
+   BgtaChat chat = null;
+   if (!hasChat(username)) {
+       Chat ch = the_connection.getChatManager().createChat(username,null);
+       String name = username;
+       if(the_connection.getRoster().getEntry(ch.getParticipant()) != null)
+          name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
+       chat = new BgtaChat(user_name,username,name,user_server,ch,getExistingDoc(username));
+       existing_chats.put(username,chat);
+       existing_docs.put(username,chat.getDocument());
+    }
+   return chat;
+}
 
 boolean hasChat(String username)
 {

@@ -56,13 +56,13 @@ private static String			  ta_login		= "codebubbles@jabber.org";
 private static String			  student_login = "codebubbles2";
 private static String           student2_login = "codebubbles3";
 
+private static PipedOutputStream pipe_err;
+
 //result bools for the routing test that have
 //to be members so we can set them inside
 //anonymous message listeners
-private boolean s1ToT2Received = false;
 private boolean t2ToS1Received = false;
 private boolean t1ToS2Received = false;
-private boolean s2ToT1Received = false;
 
 
 @BeforeClass public static void setUpOnce() throws XMPPException {
@@ -71,8 +71,10 @@ private boolean s2ToT1Received = false;
 	ta_client.connectAndLogin("TA1");
 
 	ta_client2 = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
-	//ta_client2.connectAndLogin("TA2");
+	ta_client2.connectAndLogin("TA2");
 
+	ta_client3 = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
+	
 	XMPPConnection.DEBUG_ENABLED = true;
 	ConnectionConfiguration config = new ConnectionConfiguration("jabber.org", 5222);
 	config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
@@ -134,7 +136,7 @@ private boolean s2ToT1Received = false;
 {
    System.out.println("Testing forward and accept");
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
-   ta_client2.connectAndLogin("TA2");
+   //ta_client2.connectAndLogin("TA2");
    
    assertTrue(ta_client.getTickets().size() == 0);
    assertTrue(ta_client2.getTickets().size() == 0);
@@ -156,7 +158,7 @@ private boolean s2ToT1Received = false;
 @Test public void testInitialTicketForwards() throws XMPPException, InterruptedException
 {
    System.out.println("Testing initial ticket forwarding...");
-   ta_client3 = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
+   
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
 
    assertTrue(ta_client.getTickets().size() == 0);
@@ -239,9 +241,9 @@ private boolean s2ToT1Received = false;
    assertTrue(ta_client.getTickets().size() == 0);
    assertTrue(ta_client2.getTickets().size() == 0);
    
-   PipedOutputStream pipeErr = new PipedOutputStream();
-   PipedInputStream pipeIn = new PipedInputStream(pipeErr);
-   System.setErr(new PrintStream(pipeErr));
+   pipe_err = new PipedOutputStream();
+   PipedInputStream pipeIn = new PipedInputStream(pipe_err);
+   System.setErr(new PrintStream(pipe_err));
 
    
    t2ToS1.sendMessage("t2ToS1");
@@ -252,14 +254,58 @@ private boolean s2ToT1Received = false;
    Thread.sleep(1000);
    s2ToT1.sendMessage("s2toT1");
    Thread.sleep(1000);
-   
-   byte[] errbuf = new byte[300];
-   pipeIn.read(errbuf);
-   
-   assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org/Smack:s1toT2\n"
-       + "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1",
-       new String(errbuf).trim());
+
    assertTrue(t2ToS1Received);
    assertTrue(t1ToS2Received);
+   
+
+   ta_client.endChatSession(t1ToS2);
+   ta_client.disconnect();
+   /**
+    * Now lets have the higher priority TA log out and see if the messages to the other one still get through
+    */
+   
+   byte[] errbuf = new byte[300];
+   Thread.sleep(1000);
+   s1ToT2.sendMessage("s1toT2 2");
+   Thread.sleep(1000);
+   pipeIn.read(errbuf);
+   assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org/Smack:s1toT2\n"
+         + "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1\n" 
+         + "BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org:s1toT2 2",
+         new String(errbuf).trim());
+   
+   ta_client2.endChatSession(t2ToS1);
 }
+
+@Test public void testSessionForwarding() throws Exception
+{
+   /*
+    * We need to make sure that sessions are being
+    * properly shared with TAs as they log in 
+    * 
+    * So to do this have 3 TAs logged in, have a student 
+    * enter into a chat session with the one with lowest priority
+    * 
+    * Then the first one logs out,
+    * then we need to make sure messages are still reaching the 
+    * 2nd TA from the student
+    */
+   
+   //ta_client.connectAndLogin("TA1");
+   ta_client3.connectAndLogin("TA3");
+   student_conn1.getChatManager().createChat("codebubbles@jabber.org", null).sendMessage("TICKET:ticky");
+   Thread.sleep(2000);
+   assertEquals(1, ta_client.getTickets().size());
+   assertEquals(1, ta_client2.getTickets().size());
+   assertEquals(1, ta_client3.getTickets().size());
+   
+   BgtaChat t2ToSChat = ta_client2.acceptTicketAndAlertPeers(new BeduStudentTicket("ticky", new Date(), student_login + "@jabber.org"));
+   student_conn1.getChatManager().createChat("codebubbles@jabber.org", null).sendMessage("1");
+   
+   ta_client.disconnect();
+   Thread.sleep(2000);
+   student_conn1.getChatManager().createChat("codebubbles@jabber.org", null).sendMessage("2");
+}
+
 }

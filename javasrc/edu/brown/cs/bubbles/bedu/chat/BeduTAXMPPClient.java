@@ -264,8 +264,9 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 	
 	 else if (cmd.equals("REQUEST-TICKETS")) {
       for (BeduStudentTicket t : ticket_list) {
+         Chat ta_c = conn.getChatManager().createChat(m.getFrom(), new StudentXMPPBotMessageListener());
          try {
-            c.sendMessage("TICKET-FORWARD:" + t.getStudentJID() + ":"
+            ta_c.sendMessage("TICKET-FORWARD:" + t.getStudentJID() + ":"
                   + t.getText());
             try {
                Thread.sleep(100);

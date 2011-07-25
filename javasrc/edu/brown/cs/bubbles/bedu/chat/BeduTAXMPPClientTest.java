@@ -29,10 +29,10 @@ import java.util.Date;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
 
-import org.junit.BeforeClass;
+
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -43,6 +43,8 @@ import org.jivesoftware.smack.packet.Message;
 
 import edu.brown.cs.bubbles.bedu.chat.BeduCourse.TACourse;
 import edu.brown.cs.bubbles.bgta.BgtaChat;
+import edu.brown.cs.bubbles.bgta.BgtaUtil;
+
 
 public class BeduTAXMPPClientTest {
 private static BeduTAXMPPClient ta_client;
@@ -63,6 +65,8 @@ private static PipedOutputStream pipe_err;
 //anonymous message listeners
 private boolean t2ToS1Received = false;
 private boolean t1ToS2Received = false;
+private BgtaChat bs1ToT2;
+private BgtaChat bs2ToT1;
 
 
 @BeforeClass public static void setUpOnce() throws XMPPException {
@@ -71,7 +75,7 @@ private boolean t1ToS2Received = false;
 	ta_client.connectAndLogin("TA1");
 
 	ta_client2 = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
-	ta_client2.connectAndLogin("TA2");
+//	ta_client2.connectAndLogin("TA2");
 
 	ta_client3 = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
 	
@@ -136,7 +140,7 @@ private boolean t1ToS2Received = false;
 {
    System.out.println("Testing forward and accept");
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
-   //ta_client2.connectAndLogin("TA2");
+   ta_client2.connectAndLogin("TA2");
    
    assertTrue(ta_client.getTickets().size() == 0);
    assertTrue(ta_client2.getTickets().size() == 0);
@@ -155,35 +159,47 @@ private boolean t1ToS2Received = false;
 
 }
 
+/**
+ * Tests the forwarding of all active tickets upon the login of another TA
+ * @throws XMPPException
+ * @throws InterruptedException
+ */
 @Test public void testInitialTicketForwards() throws XMPPException, InterruptedException
 {
    System.out.println("Testing initial ticket forwarding...");
    
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
 
-   assertTrue(ta_client.getTickets().size() == 0);
-   assertTrue(ta_client3.getTickets().size() == 0);
+   assertEquals(0, ta_client.getTickets().size());
+   assertEquals(0, ta_client3.getTickets().size());
    c.sendMessage("TICKET:1");
    c.sendMessage("TICKET:2");
 
    Thread.sleep(3000);
-   assertTrue(ta_client.getTickets().size() == 2);
-   assertTrue(ta_client3.getTickets().size() == 0);
+   assertEquals(2, ta_client.getTickets().size());
+   assertEquals(0, ta_client3.getTickets().size());
    
    ta_client3.connectAndLogin("TA3");
    Thread.sleep(3000);
-   assertTrue(ta_client.getTickets().size() == 2);
-   assertTrue(ta_client3.getTickets().size() == 2);
+   assertEquals(2, ta_client.getTickets().size());
+   assertEquals(2, ta_client3.getTickets().size());
    BgtaChat bc1 = ta_client.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
    BgtaChat bc3 = ta_client3.acceptTicketAndAlertPeers(ta_client.getTickets().get(0));
    Thread.sleep(3000);
-   assertTrue(ta_client.getTickets().size() == 0);
-   assertTrue(ta_client3.getTickets().size() == 0);
+   assertEquals(0, ta_client.getTickets().size());
+   assertEquals(0, ta_client3.getTickets().size());
    ta_client.endChatSession(bc1);
    ta_client3.endChatSession(bc3);
    
 }
 
+/**
+ * Tests the methodology used to make sure 
+ * that chats are setup appropriately
+ * Note that this does not test the actual code because it's difficult to divorce from the UI so 
+ * manual testing is required
+ * @throws Exception
+ */
 @Test public void testMessageRouting() throws Exception
 {
    /**
@@ -226,6 +242,68 @@ private boolean t1ToS2Received = false;
       }
    });
    
+   bs1ToT2 = BgtaUtil.bgtaChatForXMPPChat(student_conn1, s1ToT2);
+   bs2ToT1 = BgtaUtil.bgtaChatForXMPPChat(student_conn2, s2ToT1);
+   
+   //unforunately it isn't possible to test proper message routing without starting
+   //the whole UI so here I'm testing the general methodology I used to make sure 
+   //the ideas are correct but this doesn't test the actual resource switching code
+   //which is inside BgtaResourceSwitchingBubble
+   //actually testing that code has to be done by hand 
+   
+   bs1ToT2.getDocument().addDocumentListener(new DocumentListener(){
+
+      @Override
+      public void changedUpdate(DocumentEvent e)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      @Override
+      public void insertUpdate(DocumentEvent e)
+      {
+         String newDest = ((Message)bs1ToT2.getLastMessage()).getFrom();
+         bs1ToT2 = BgtaUtil.bgtaChatForXMPPChat(student_conn1, student_conn1.getChatManager().createChat(newDest, null));
+         
+      }
+
+      @Override
+      public void removeUpdate(DocumentEvent e)
+      {
+         // TODO Auto-generated method stub
+         
+      }});
+   
+   bs2ToT1.getDocument().addDocumentListener(new DocumentListener(){
+
+      @Override
+      public void changedUpdate(DocumentEvent e)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      @Override
+      public void insertUpdate(DocumentEvent e)
+      {
+         String newDest = ((Message)bs2ToT1.getLastMessage()).getFrom();
+         bs2ToT1= BgtaUtil.bgtaChatForXMPPChat(student_conn2, student_conn2.getChatManager().createChat(newDest, null));
+         
+      }
+
+      @Override
+      public void removeUpdate(DocumentEvent e)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+      
+   });
+   
+   
+   
+   
    student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null).sendMessage("TICKET:s1ToT2"); //hashcode = -954750633
    Thread.sleep(1000);
    student_conn2.getChatManager().createChat("codebubbles@jabber.org/TA2",null).sendMessage("TICKET:s2ToT1"); //hash = -953827113
@@ -250,9 +328,9 @@ private boolean t1ToS2Received = false;
    Thread.sleep(1000);
    t1ToS2.sendMessage("t1ToS2");
    Thread.sleep(1000);
-   s1ToT2.sendMessage("s1toT2");
+   bs1ToT2.sendMessage("s1toT2");
    Thread.sleep(1000);
-   s2ToT1.sendMessage("s2toT1");
+   bs2ToT1.sendMessage("s2toT1");
    Thread.sleep(1000);
 
    assertTrue(t2ToS1Received);
@@ -266,46 +344,14 @@ private boolean t1ToS2Received = false;
     */
    
    byte[] errbuf = new byte[300];
-   Thread.sleep(1000);
-   s1ToT2.sendMessage("s1toT2 2");
+
    Thread.sleep(1000);
    pipeIn.read(errbuf);
    assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org/Smack:s1toT2\n"
-         + "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1\n" 
-         + "BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org:s1toT2 2",
+         + "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1\n",
          new String(errbuf).trim());
    
    ta_client2.endChatSession(t2ToS1);
-}
-
-@Test public void testSessionForwarding() throws Exception
-{
-   /*
-    * We need to make sure that sessions are being
-    * properly shared with TAs as they log in 
-    * 
-    * So to do this have 3 TAs logged in, have a student 
-    * enter into a chat session with the one with lowest priority
-    * 
-    * Then the first one logs out,
-    * then we need to make sure messages are still reaching the 
-    * 2nd TA from the student
-    */
-   
-   //ta_client.connectAndLogin("TA1");
-   ta_client3.connectAndLogin("TA3");
-   student_conn1.getChatManager().createChat("codebubbles@jabber.org", null).sendMessage("TICKET:ticky");
-   Thread.sleep(2000);
-   assertEquals(1, ta_client.getTickets().size());
-   assertEquals(1, ta_client2.getTickets().size());
-   assertEquals(1, ta_client3.getTickets().size());
-   
-   BgtaChat t2ToSChat = ta_client2.acceptTicketAndAlertPeers(new BeduStudentTicket("ticky", new Date(), student_login + "@jabber.org"));
-   student_conn1.getChatManager().createChat("codebubbles@jabber.org", null).sendMessage("1");
-   
-   ta_client.disconnect();
-   Thread.sleep(2000);
-   student_conn1.getChatManager().createChat("codebubbles@jabber.org", null).sendMessage("2");
 }
 
 }

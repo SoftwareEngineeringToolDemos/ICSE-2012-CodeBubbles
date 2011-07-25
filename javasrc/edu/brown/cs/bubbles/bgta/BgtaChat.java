@@ -200,7 +200,7 @@ boolean isXMPP()        { return is_xmpp; }
  * 
  * @return the last message logged in this chat.
  */
-Object getLastMessage()
+public Object getLastMessage()
 {
     if (!is_xmpp)
         return last_minfo;

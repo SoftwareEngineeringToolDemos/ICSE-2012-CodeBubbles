@@ -7,8 +7,10 @@ import org.jivesoftware.smack.packet.Message;
 
 public class BgtaResourceSwitchingBubble extends BgtaBubble
 {
-   BgtaChat chat;
-   BgtaManager man;
+   private static final long serialVersionUID = 1L;
+   
+   private BgtaChat chat;
+   private BgtaManager man;
    
    public BgtaResourceSwitchingBubble(BgtaManager m, String username)
    {

@@ -197,6 +197,11 @@ static class StudentCourse extends BeduCourse
                //this is called when the login window has exited 
                if(BgtaUtil.getXMPPManagers().size() > 0)
                {
+                  try {
+                     Thread.sleep(1000);
+                  } catch (InterruptedException e1) {
+                     e1.printStackTrace();
+                  }
                   bba.addBubble(new BeduStudentTicketSubmitBubble(ta_chat_jid),e.getComponent().getX() - 100, e.getComponent().getY());
                }
                else

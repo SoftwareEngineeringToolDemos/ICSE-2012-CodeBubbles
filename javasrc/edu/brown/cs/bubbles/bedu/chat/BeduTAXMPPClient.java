@@ -42,6 +42,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 public class BeduTAXMPPClient {
@@ -122,16 +123,16 @@ void connectAndLogin(String name) throws XMPPException {
    Presence avail_p = new Presence(Presence.Type.available, "Answering questions", minPriority - 1, Presence.Mode.available);
    conn.sendPacket(avail_p);
    
-	//if(!conn.getRoster().contains(getMyBareJID()))
-	//{
-	// conn.getRoster().createEntry(getMyBareJID(), "Me", null);
-	//}
-	//BgtaUtil.getFullJIDsForRosterEntry(conn.getRoster(), getMyBareJID());
+	if(!conn.getRoster().contains(getMyBareJID()))
+	{
+	    Packet p = new Presence(Presence.Type.subscribe);
+         p.setTo(getMyBareJID());
+         conn.sendPacket(p);
+	}
 
    boolean foundFull = false;
    for(String full_jid : my_full_jids)
    {
-     // System.out.println(conn.getRoster().getPresence(full_jid).getPriority());
       if(!StringUtils.parseResource(full_jid).equals(name))
       {
          conn.getChatManager().createChat(full_jid, new StudentXMPPBotMessageListener()).sendMessage("REQUEST-TICKETS");
@@ -166,13 +167,11 @@ void disconnect() throws XMPPException {
  */
 void endChatSession(BgtaChat c) {
 	permitted_jids.remove(c.getUsername());
-	sendMessageToOtherResources("COMPLETED:" + c.getUsername());
 }
 
 
 
 BgtaChat acceptTicketAndAlertPeers(BeduStudentTicket t) {
-	//TODO: should i determine if the ticket is actually in the list?
 	sendMessageToOtherResources("ACCEPTING:" + t.textHash());
 	ticket_list.remove(t);
         BeduTAChat c = new BeduTAChat(conn, conn.getChatManager().createChat(t.getStudentJID(), null));
@@ -243,9 +242,7 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 				+ chat_args[1]);
 	} 
 	
-	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
-			getMyBareJID())
-			&& cmd.equals("TICKET-FORWARD")) {
+	else if (cmd.equals("TICKET-FORWARD")) {
 		// comes in the form "TICKET-FORWARD:<student-jid>:<message>"
 		BeduStudentTicket t = new BeduStudentTicket(chat_args[2], new Date(
 				System.currentTimeMillis()), chat_args[1]);
@@ -253,9 +250,7 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 			ticket_list.add(t);
 	}
 	
-	else if (StringUtils.parseBareAddress(c.getParticipant()).equals(
-			getMyBareJID())
-			&& cmd.equals("ACCEPTING")) {
+	else if (cmd.equals("ACCEPTING")) {
 		// form: "ACCEPTING:<string hash>"
 
       int hash = Integer.valueOf(chat_args[1]);
@@ -287,7 +282,11 @@ private class StudentXMPPBotMessageListener implements MessageListener {
       if (BeduChatFactory.DEBUG)
          System.err.println("BEDU:" + conn.getUser() + ":Student message:" + c.getParticipant()
                + ":" + m.getBody());
-   } 
+   }
+   else if(m.getBody().equals("Please submit a ticket to chat with a TA"))
+   {
+      System.err.println("BEDU: Error TA msg bounced back");
+   }
 	else {
 		try {
 			c.sendMessage("Please submit a ticket to chat with a TA");

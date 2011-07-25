@@ -56,7 +56,7 @@ public class BgtaUtil implements BassConstants{
    }
    
    /**
-    * Provides a 
+    * Provides a BgtaChat given enough Smack data 
     * @param conn
     * @param c
     * @return
@@ -66,6 +66,10 @@ public class BgtaUtil implements BassConstants{
       return new BgtaChat(conn.getUser(), c.getParticipant(), null, ChatServer.fromServer(conn.getServiceName()), c, null);
    }
    
+   /**
+    * Returns the bubble normally accessed by clicking "Manage accounts" on the Repository
+    * @return
+    */
    public static BudaBubble getLoginBubble()
    {
       for(BassName n : BassFactory.getRepository(BudaConstants.SearchType.SEARCH_PEOPLE).getAllNames())
@@ -79,6 +83,10 @@ public class BgtaUtil implements BassConstants{
       return null;
    }
    
+   /**
+    * Returns only the BgtaManagers attached to XMPP managers 
+    * @return
+    */
    public static Collection<BgtaManager> getXMPPManagers()
    {
       ArrayList<BgtaManager> l = new ArrayList<BgtaManager>();

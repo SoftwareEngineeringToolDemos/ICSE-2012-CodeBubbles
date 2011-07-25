@@ -306,7 +306,7 @@ private Position createBasePosition(int foff) throws BadLocationException
    int doff = getDocumentOffset(foff);
    if (doff < 0) {
       getDocumentOffset(foff);
-      BoardLog.logX("BALE","Position outside fragment: " + foff);
+      BoardLog.logX("BALE","Position outside fragment: " + foff + " " + length());
       throw new BadLocationException("Position outside fragment",foff);
     }
 

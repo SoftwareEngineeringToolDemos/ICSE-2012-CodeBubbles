@@ -326,10 +326,9 @@ private class ExtractAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BDDT","StackExtract");
       BddtStackView sv = new BddtStackView(BddtStackView.this,for_node);
-      Rectangle r = BudaRoot.findBudaLocation(BddtStackView.this);
-      BudaRoot br = BudaRoot.findBudaRoot(BddtStackView.this);
-      BudaConstraint bc = new BudaConstraint(r.x + r.width + 20,r.y);
-      br.add(sv,bc);
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtStackView.this);
+      bba.addBubble(sv,BddtStackView.this,null,
+	    PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
    }
 }
 
@@ -360,10 +359,9 @@ private class SourceAction extends AbstractAction {
       }
       if (bb != null) {
 	 BoardMetrics.noteCommand("BDDT","StackSource");
-	 Rectangle r = BudaRoot.findBudaLocation(BddtStackView.this);
-	 BudaRoot br = BudaRoot.findBudaRoot(BddtStackView.this);
-	 BudaConstraint bc = new BudaConstraint(r.x + r.width + 20,r.y);
-	 br.add(bb,bc);
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtStackView.this);
+	 bba.addBubble(bb,BddtStackView.this,null,
+	       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
       }
    }
 }

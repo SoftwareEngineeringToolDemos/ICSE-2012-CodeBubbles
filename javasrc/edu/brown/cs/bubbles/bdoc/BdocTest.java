@@ -124,12 +124,12 @@ private static class CreateJSearch implements Runnable {
 
    public void run() {
       try {
-	 BassFactory bf = BassFactory.getFactory();
-	 BudaBubble bb = bf.createSearch(BudaConstants.SearchType.SEARCH_DOC,null,null);
-	 for_root.add(bb,new BudaConstraint(100,400));
+         BassFactory bf = BassFactory.getFactory();
+         BudaBubble bb = bf.createSearch(BudaConstants.SearchType.SEARCH_DOC,null,null);
+         for_root.add(bb,new BudaConstraint(100,400));
        }
       catch (Throwable t) {
-	 System.err.println("Error building database: " + t);
+         System.err.println("Error building database: " + t);
        }
     }
 

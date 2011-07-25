@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Adam M. Cook, Steven P. Reiss	*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -293,11 +293,8 @@ private void showBubble(File f,int line)
    if (bn == null) return;
 
    BudaBubble bb = bn.createBubble();
-   Rectangle r = BudaRoot.findBudaLocation(this);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-   Dimension sz = bb.getSize();
-   BudaConstraint bc = new BudaConstraint(r.x,r.y - sz.height - 50);
-   bba.add(bb, bc);
+   bba.addBubble(bb,this,null,PLACEMENT_ABOVE|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
 }
 
 
@@ -671,11 +668,8 @@ private class NewExceptionAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent e) {
       BudaBubble bb = new BddtExceptionBreakpointBubble();
-      Rectangle r = BudaRoot.findBudaLocation(BddtBreakpointBubble.this);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtBreakpointBubble.this);
-      Dimension sz = bb.getSize();
-      BudaConstraint bc = new BudaConstraint(r.x,r.y - sz.height - 50);
-      bba.add(bb, bc);
+      bba.addBubble(bb,BddtBreakpointBubble.this,null,PLACEMENT_ABOVE|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
     }
 
 }	// end of inner class NewExceptionAction

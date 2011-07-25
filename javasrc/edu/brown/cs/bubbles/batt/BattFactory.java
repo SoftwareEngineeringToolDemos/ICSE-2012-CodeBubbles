@@ -111,22 +111,20 @@ public static void initialize(BudaRoot br)
 
 /********************************************************************************/
 /*										*/
-/*	Menu button handleing							*/
+/*	Menu button handling							*/
 /*										*/
 /********************************************************************************/
 
 @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt)
 {
-   BudaRoot br = BudaRoot.findBudaRoot(bba);
    BudaBubble bb = null;
 
    if (id.equals(TEST_BUTTON)) {
       bb = createStatusBubble();
     }
 
-   if (br != null && bb != null) {
-      BudaConstraint bc = new BudaConstraint(pt);
-      br.add(bb,bc);
+   if (bba != null && bb != null) {
+      bba.addBubble(bb,null,pt,0);
       bb.grabFocus();
     }
 }

@@ -32,6 +32,7 @@ import edu.brown.cs.bubbles.bump.BumpConstants;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import java.awt.Rectangle;
+import java.awt.Point;
 import java.util.*;
 
 
@@ -88,7 +89,7 @@ void createExecBubble(BumpThread bt)
 	 if (bd != null && bd.match(bt,stk,frm)) return;
 	 for (int i = 1; i < stk.getNumFrames(); ++i) {
 	    BumpStackFrame frame = stk.getFrame(i);
-	    if (frame.getFile() != null && frame.getFile().exists() && 
+	    if (frame.getFile() != null && frame.getFile().exists() &&
 		     !frame.isSystem()) {
 	       bb = createSourceBubble(stk,i,BubbleType.EXEC,false);
 	       break;
@@ -102,12 +103,11 @@ void createExecBubble(BumpThread bt)
       if (bd == null || bd.getBubbleType() != BubbleType.EXEC) return;
       if (bddt_properties.getBoolean("Bddt.show.values")) {
 	 BddtStackView sv = new BddtStackView(launch_control,bt);
-	 Rectangle r = BudaRoot.findBudaLocation(bb);
-	 BudaRoot br = BudaRoot.findBudaRoot(bb);
-	 if (br == null) return;
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
+	 if (bba == null) return;
 	 BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
 	 bubble_map.put(sv,nbd);
-	 br.add(sv,new BudaConstraint(r.x,r.y+r.height+20));
+	 bba.addBubble(sv,bb,null,PLACEMENT_BELOW|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
 	 bd.setAssocBubble(sv);
        }
     }
@@ -126,11 +126,10 @@ void createUserStackBubble(BubbleData bd)
    if (bd.getAssocBubble() != null) return;
    if (bddt_properties.getBoolean("Bddt.show.values")) {
       BddtStackView sv = new BddtStackView(launch_control,bt);
-      Rectangle r = BudaRoot.findBudaLocation(bb);
-      BudaRoot br = BudaRoot.findBudaRoot(bb);
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
       BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
       bubble_map.put(sv,nbd);
-      br.add(sv,new BudaConstraint(r.x,r.y+r.height+20));
+      bba.addBubble(sv,bb,null,PLACEMENT_BELOW|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
       bd.setAssocBubble(sv);
    }
 }
@@ -144,7 +143,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    if (stk == null) return null;
 
    BumpThread bt = stk.getThread();
-   
+
    boolean libbbl = frc || bddt_properties.getBoolean("Bddt.show.library.bubbles");
 
    // find user stack frame for the stack
@@ -198,13 +197,13 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
       else if (r != null) {
 	 // xpos = r.x + r.width + 40;
 	 // ypos = r.y;
-         xpos = r.x;
-         ypos = r.y + r.height + 40;
-         BudaBubble abb = bd.getAssocBubble();
-         if (abb != null) {
-            Rectangle rx = BudaRoot.findBudaLocation(abb);
-            ypos = Math.max(ypos,rx.y + rx.height + 40);
-          }
+	 xpos = r.x;
+	 ypos = r.y + r.height + 40;
+	 BudaBubble abb = bd.getAssocBubble();
+	 if (abb != null) {
+	    Rectangle rx = BudaRoot.findBudaLocation(abb);
+	    ypos = Math.max(ypos,rx.y + rx.height + 40);
+	  }
        }
       else {
 	 xpos = 100;
@@ -226,9 +225,9 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
       if (frame.isSystem()) {
 	 bb = BaleFactory.getFactory().createSystemMethodBubble(proj,mid,frame.getFile());
 	 if (bb == null) {
-            if (libbbl) {
-               bb = new BddtLibraryBubble(frame);
-             }
+	    if (libbbl) {
+	       bb = new BddtLibraryBubble(frame);
+	     }
 	  }
        }
       else {
@@ -240,7 +239,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
     }
    else {
       if (libbbl) {
-         bb = new BddtLibraryBubble(frame);
+	 bb = new BddtLibraryBubble(frame);
        }
     }
 
@@ -252,8 +251,8 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
       BubbleData nbd = new BubbleData(bb,bt,stk,frame,typ);
       bubble_map.put(bb,nbd);
       BudaRoot root = BudaRoot.findBudaRoot(bubble_area);
-      BudaConstraint bc = new BudaConstraint(xpos,ypos);
-      bubble_area.add(bb,bc);
+      bubble_area.addBubble(bb,null,new Point(xpos,ypos),PLACEMENT_EXPLICIT);
+
       if (link != null && link.isShowing()) {
 	 LinkPort port0;
 	 if (link instanceof BddtLibraryBubble || linkline <= 0) {

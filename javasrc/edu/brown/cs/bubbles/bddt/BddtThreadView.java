@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -293,9 +293,9 @@ private class ValuesAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BDDT","ThreadValues");
       BddtStackView sv = new BddtStackView(launch_control,for_thread);
-      BudaRoot br = BudaRoot.findBudaRoot(BddtThreadView.this);
-      Rectangle r = BudaRoot.findBudaLocation(BddtThreadView.this);
-      br.add(sv,new BudaConstraint(r.x+r.width+25,r.y));
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
+      bba.addBubble(sv,BddtThreadView.this,null,
+            PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
     }
 
 }	// end of inner class ValuesAction
@@ -317,18 +317,17 @@ private class SourceAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BudaBubble bb = null;
       if (for_frame.getFile() != null && for_frame.getFile().exists()) {
-	 String proj = for_frame.getThread().getLaunch().getConfiguration().getProject();
-	 String mid = for_frame.getMethod() + for_frame.getSignature();
-	 bb = BaleFactory.getFactory().createMethodBubble(proj,mid);
+         String proj = for_frame.getThread().getLaunch().getConfiguration().getProject();
+         String mid = for_frame.getMethod() + for_frame.getSignature();
+         bb = BaleFactory.getFactory().createMethodBubble(proj,mid);
       }
       if (bb != null) {
-	 BoardMetrics.noteCommand("BDDT","ThreadSource");
-	 Rectangle r = BudaRoot.findBudaLocation(BddtThreadView.this);
-	 BudaRoot br = BudaRoot.findBudaRoot(BddtThreadView.this);
-	 BudaConstraint bc = new BudaConstraint(r.x + r.width + 20,r.y);
-	 br.add(bb,bc);
+         BoardMetrics.noteCommand("BDDT","ThreadSource");
+         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
+         bba.addBubble(bb,BddtThreadView.this,null,
+               PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
       }
-   }
+      }
 
 }
 
@@ -348,10 +347,9 @@ private class HistoryAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BDDT","ThreadHistory");
       BudaBubble bb = new BddtStopTraceBubble(launch_control,for_thread);
-      Rectangle r = BudaRoot.findBudaLocation(BddtThreadView.this);
-      BudaRoot br = BudaRoot.findBudaRoot(BddtThreadView.this);
-      BudaConstraint bc = new BudaConstraint(r.x + r.width + 20,r.y);
-      br.add(bb,bc);
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
+      bba.addBubble(bb,BddtThreadView.this,null,
+            PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
     }
 
 }	// end of inner class HistoryAction

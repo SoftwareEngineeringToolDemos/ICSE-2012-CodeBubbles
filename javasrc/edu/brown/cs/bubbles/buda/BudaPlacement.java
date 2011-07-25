@@ -109,24 +109,30 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
       else if ((dflt & PLACEMENT_USER) != 0) place |= PLACEMENT_USER;
     }
 
-   Rectangle r = new Rectangle();
+   Rectangle r = null;
    if (rel != null) {
       r = BudaRoot.findBudaLocation(rel);
       grpb = rel;
     }
-   else if (relpt != null) {
-      r.setLocation(relpt);
-    }
-   else if (last_focus != null) {
-      r = BudaRoot.findBudaLocation(last_focus);
-      grpb = last_focus;
-    }
-   else if (last_placement != null) {
-      r = BudaRoot.findBudaLocation(last_placement);
-      grpb = last_placement;
+   
+   if (r == null) {
+      r = new Rectangle();
+      if (relpt != null) {
+	 r.setLocation(relpt);
+       }
+      else if (last_focus != null) {
+	 r = BudaRoot.findBudaLocation(last_focus);
+	 grpb = last_focus;
+       }
+      else if (last_placement != null) {
+	 r = BudaRoot.findBudaLocation(last_placement);
+	 grpb = last_placement;
+       }
     }
 
-   Rectangle r0 = new Rectangle(r);
+   
+   Rectangle r0 = null;
+   if (r != null) r0 = new Rectangle(r);
 
    if ((place & PLACEMENT_ADGROUP) != 0) {
       expandForGroup(r,grpb);
@@ -143,7 +149,7 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
        }
     }
 
-   if ((place & PLACEMENT_LOGICAL) != 0) {
+   if ((place & PLACEMENT_LOGICAL) != 0 && r != null) {
       BudaRoot br = BudaRoot.findBudaRoot(bubble_area);
       Rectangle r2 = br.getViewport();
       if (r.x - BUBBLE_CREATION_SPACE < r2.x) {
@@ -347,7 +353,7 @@ private static class UserUpdater implements ActionListener, ComponentListener {
    private BudaBubble for_bubble;
    private Timer swing_timer;
    private int move_count;
-   
+
    UserUpdater(BudaBubble bb) {
       for_bubble = bb;
       move_count = 0;
@@ -359,13 +365,17 @@ private static class UserUpdater implements ActionListener, ComponentListener {
     }
 
    void start() {
-      swing_timer.start();
+       // swing_timer.start();
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       // System.err.println("UPDATE: DONE");
-      for_bubble.removeComponentListener(this);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(for_bubble);
+      if (bba != null && bba.isMoving(for_bubble)) {
+	 swing_timer.restart();
+	 return;
+       }
+      for_bubble.removeComponentListener(this);
       if (bba != null) bba.setBubbleFloating(for_bubble,false);
     }
 
@@ -377,7 +387,7 @@ private static class UserUpdater implements ActionListener, ComponentListener {
 
    @Override public void componentMoved(ComponentEvent e) {
       // System.err.println("UPDATE: MOVE");
-      if (move_count++ < 2) {
+      if (move_count++ >= 2) {
 	 int t1 = BUDA_PROPERTIES.getInt("Buda.placement.user.moved",USER_POSITION_RESTART_TIME);
 	 // System.err.println("UPDATE: RESTART " + t1);
 	 swing_timer.setInitialDelay(t1);

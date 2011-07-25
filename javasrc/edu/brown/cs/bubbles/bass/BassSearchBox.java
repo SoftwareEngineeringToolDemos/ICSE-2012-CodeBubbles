@@ -481,7 +481,8 @@ void addAndLocateBubble(BudaBubble bb, int ypos)
 {
    BudaRoot root = BudaRoot.findBudaRoot(this);
    Rectangle loc = BudaRoot.findBudaLocation(this);
-   if (root == null || loc == null) return;
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+   if (bba == null || loc == null) return;
 
    if (ypos == 0) ypos = loc.y;
 
@@ -507,7 +508,7 @@ void addAndLocateBubble(BudaBubble bb, int ypos)
    }
 
    if (bb != null) {
-      root.add(bb,new BudaConstraint(loc.x,loc.y));
+      bba.addBubble(bb,null,new Point(loc.x,loc.y),PLACEMENT_LOGICAL);
       bb.markBubbleAsNew();
     }
 }

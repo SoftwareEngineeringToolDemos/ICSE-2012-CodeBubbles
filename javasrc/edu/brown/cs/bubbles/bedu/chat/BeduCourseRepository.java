@@ -37,7 +37,7 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 class BeduCourseRepository implements BassRepository {
 private static List<BeduCourse>     courses;
 private static BeduCourseRepository instance;
-private static String PROP_PREFIX = "Educhat.course.";
+private static String PROP_PREFIX = "Bedu.chat.course.";
 
 
 static BeduCourseRepository getInstance() {
@@ -58,15 +58,15 @@ static void initialize() {
    courses = new ArrayList<BeduCourse>();
 
    // grab courses out of the props file
-   BoardProperties bp = BoardProperties.getProperties("Educhat");
+   BoardProperties bp = BoardProperties.getProperties("Bedu");
    Set<String> courseNames = new HashSet<String>();
 
    // gather course names
    for (String s : bp.stringPropertyNames()) {
       // Property name should be in the form
       // Educhat.course.CS15.ta_jid
-      if (s.startsWith("Educhat.course."))
-         courseNames.add(s.split("\\.")[2]);
+      if (s.startsWith("Bedu.chat.course."))
+         courseNames.add(s.split("\\.")[3]);
    }
 
    for (String courseName : courseNames) {
@@ -117,8 +117,8 @@ private String coursePrefix(BeduCourse c)
    return PROP_PREFIX + c.getCourseName() + ".";
 }
 
-void addCourse(BeduCourse c) {
-   BoardProperties bp = BoardProperties.getProperties("Educhat");
+void addCourse(BeduCourse c){
+   BoardProperties bp = BoardProperties.getProperties("Bedu");
    courses.add(c);
    bp.setProperty(coursePrefix(c) + "ta_jid", c.getTAJID());
    if (c instanceof BeduCourse.StudentCourse) {
@@ -134,20 +134,13 @@ void addCourse(BeduCourse c) {
             tc.getXMPPServer());
    }
    
-   try {
-      bp.save();
-   } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-   }
-   
    BassFactory.reloadRepository(instance);
 
 }
 
-void removeCourse(BeduCourse c) throws IOException
+void removeCourse(BeduCourse c)
 {
-   BoardProperties bp = BoardProperties.getProperties("Educhat");
+   BoardProperties bp = BoardProperties.getProperties("Bedu");
    bp.remove(coursePrefix(c) + "ta_jid");
    bp.remove(coursePrefix(c) + "role");
    courses.remove(c);
@@ -157,15 +150,11 @@ void removeCourse(BeduCourse c) throws IOException
       bp.remove(coursePrefix(c) + "server");
    }
    
-   try {
-      bp.save();
-   } catch (IOException e) {
-      //The save didnt work so undo the removal 
-      addCourse(c);
-      throw e;
-   }
-   
    BassFactory.reloadRepository(instance);
-   
+}
+
+void saveConfigFile() throws IOException
+{
+   BoardProperties.getProperties("Bedu").save();
 }
 }

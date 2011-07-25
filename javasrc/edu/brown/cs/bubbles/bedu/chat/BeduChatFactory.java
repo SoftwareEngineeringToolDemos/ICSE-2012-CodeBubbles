@@ -31,36 +31,41 @@ static boolean DEBUG = false;
 private static List<BeduTAXMPPClient> ta_sessions;
 
 static {
-	ta_sessions = new ArrayList<BeduTAXMPPClient>();
+   ta_sessions = new ArrayList<BeduTAXMPPClient>();
 }
+
+
 
 public static void setup()
 {
    BeduCourseRepository.initialize();
 }
 
+
+
 /**
- * Returns the XMPPClient associated with the given course 
- * which the current user is a TA of
+ * Returns the XMPPClient associated with the given course which the current
+ * user is a TA of
  * 
- * Constructs it if it doesn't already exist 
+ * Constructs it if it doesn't already exist
+ * 
  * @param course
  * @return
  */
 static BeduTAXMPPClient getTAXMPPClientForCourse(BeduCourse.TACourse course)
 {
-	BeduTAXMPPClient the_client = null;
-	for (BeduTAXMPPClient c : ta_sessions) {
-		if (c.getCourse().equals(course))
-			the_client = c;
-	}
+   BeduTAXMPPClient the_client = null;
+   for (BeduTAXMPPClient c : ta_sessions) {
+      if (c.getCourse().equals(course))
+         the_client = c;
+   }
 
-	if (the_client == null) {
-		the_client = new BeduTAXMPPClient(course);
-		ta_sessions.add(the_client);
-	}
+   if (the_client == null) {
+      the_client = new BeduTAXMPPClient(course);
+      ta_sessions.add(the_client);
+   }
 
-	return the_client;
+   return the_client;
 
 }
 

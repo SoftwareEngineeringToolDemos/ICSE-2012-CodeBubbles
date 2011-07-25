@@ -31,16 +31,14 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 
 class BeduManageCoursesRepository implements BassConstants.BassRepository{
 
-   @Override
-   public Iterable<BassName> getAllNames()
+   @Override public Iterable<BassName> getAllNames()
    {
       ArrayList<BassName> l = new ArrayList<BassName>();
       l.add(new BeduAddCoursesName());
       return l;
    }
 
-   @Override
-   public boolean includesRepository(BassRepository br)
+   @Override public boolean includesRepository(BassRepository br)
    {
       return br == this;
    }
@@ -48,32 +46,28 @@ class BeduManageCoursesRepository implements BassConstants.BassRepository{
    class BeduAddCoursesName extends BassNameBase
    {
       private static final String name = "Manage courses";
-      @Override
-      public BudaBubble createBubble()
+      
+      @Override public BudaBubble createBubble()
       {
          return new BeduManageCoursesBubble();
       }
 
-      @Override
-      protected String getKey()
+      @Override protected String getKey()
       {
          return name;
       }
 
-      @Override
-      protected String getParameters()
+      @Override protected String getParameters()
       {
          return null;
       }
 
-      @Override
-      public String getProject()
+      @Override public String getProject()
       {
          return null;
       }
 
-      @Override
-      protected String getSymbolName()
+      @Override protected String getSymbolName()
       {
          return BassConstants.BASS_COURSE_LIST_NAME + "." + name;
       }

@@ -70,7 +70,7 @@ private BgtaChat bs2ToT1;
 
 
 @BeforeClass public static void setUpOnce() throws XMPPException {
-   //BeduChatFactory.DEBUG = true;
+   BeduChatFactory.DEBUG = true;
 	ta_client = new BeduTAXMPPClient(new TACourse("testcourse", ta_login, "brownbears", "jabber.org"));
 	ta_client.connectAndLogin("TA1");
 
@@ -329,7 +329,7 @@ private BgtaChat bs2ToT1;
    t1ToS2.sendMessage("t1ToS2");
    Thread.sleep(1000);
    bs1ToT2.sendMessage("s1toT2");
-   Thread.sleep(1000);
+   Thread.sleep(2000);
    bs2ToT1.sendMessage("s2toT1");
    Thread.sleep(1000);
 
@@ -347,8 +347,8 @@ private BgtaChat bs2ToT1;
 
    Thread.sleep(1000);
    pipeIn.read(errbuf);
-   assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org/Smack:s1toT2\n"
-         + "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1\n",
+   assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org:s1toT2\n"+
+         "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1",
          new String(errbuf).trim());
    
    ta_client2.endChatSession(t2ToS1);

@@ -30,6 +30,7 @@ class BeduManageCoursesBubble extends BudaBubble
    private static final Dimension DEFAULT_DIMENSION = new Dimension(400, 200);
    private static final String ADD_STUDENT_STR = "Add course as student";
    private static final String ADD_TA_STR = "Add course as TA";
+   
    BeduManageCoursesBubble()
    {
      setContentPane(new ContentPane()); 
@@ -61,8 +62,7 @@ class BeduManageCoursesBubble extends BudaBubble
          
       }
       
-      @Override
-      public void itemStateChanged(ItemEvent e)
+      @Override public void itemStateChanged(ItemEvent e)
       {
          if(cur_config_pane != null)
             remove(cur_config_pane);
@@ -94,6 +94,8 @@ class BeduManageCoursesBubble extends BudaBubble
       private JTextField password_field;
       private JTextField server_field;
       private BeduCourse course;
+      
+      private JLabel err_label;
       
       private ConfigPane(BeduCourse c)
       {
@@ -224,6 +226,8 @@ class BeduManageCoursesBubble extends BudaBubble
             gbc.anchor = GridBagConstraints.EAST;
             add(deleteButton, gbc);
          }
+         
+         err_label = new JLabel(""); 
       }
 
 		public void actionPerformed(ActionEvent e) {
@@ -239,24 +243,38 @@ class BeduManageCoursesBubble extends BudaBubble
 					new_course = new BeduCourse.TACourse(name_field.getText(), jid_field.getText(), password_field.getText(), server_field.getText());
 				}
 				
-				try {
-					r.removeCourse(course);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				r.removeCourse(course);
+
 				r.addCourse(new_course);
 				BeduManageCoursesBubble.this.combo.addItem(new_course);
 				BeduManageCoursesBubble.this.combo.setSelectedItem(new_course);
+				
+				try
+				{
+				   r.saveConfigFile();
+				} catch(IOException ex)
+				{
+				   err_label.setText("Error saving course");
+				   r.removeCourse(new_course);
+				   r.addCourse(course);
+				   
+				   BeduManageCoursesBubble.this.combo.removeItem(new_course);
+				}
 			}
 			else if(e.getActionCommand().equals(delete_action)){
-				try {
-					r.removeCourse(course);
-					BeduManageCoursesBubble.this.combo.removeItem(course);
-					BeduManageCoursesBubble.this.combo.setSelectedIndex(0);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				r.removeCourse(course);
+				int i = BeduManageCoursesBubble.this.combo.getSelectedIndex();
+				BeduManageCoursesBubble.this.combo.removeItem(course);
+				BeduManageCoursesBubble.this.combo.setSelectedIndex(0);
+				
+				try
+				{
+				   r.saveConfigFile();
+				} catch(IOException ex)
+				{
+				   r.addCourse(course);
+				   BeduManageCoursesBubble.this.combo.addItem(course);
+				   BeduManageCoursesBubble.this.combo.setSelectedIndex(i);
 				}
 			}
 		}

@@ -22,8 +22,9 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 
 import edu.brown.cs.bubbles.bass.BassConstants;
@@ -39,7 +40,6 @@ import edu.brown.cs.bubbles.board.BoardImage;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 abstract class BeduCourse extends BassNameBase
 {
@@ -57,30 +57,26 @@ protected BeduCourse(String a_course_name, String a_jid)
 
 
 
-@Override
-protected String getParameters()
+@Override protected String getParameters()
 {
 	return null;
 }
 
 
 
-@Override
-public String getProject()
+@Override public String getProject()
 {
 	return null;
 }
 
 
 
-@Override
-protected String getKey()
+@Override protected String getKey()
 {
 	return course_name;
 }
 
-@Override
-public String toString()
+@Override public String toString()
 {
    return course_name;
 }
@@ -106,15 +102,15 @@ static class TACourse extends BeduCourse
 	
 	
 	
-	public BeduTATicketList getTicketList()
+	BeduTATicketList getTicketList()
 	{
 		return ticket_list;
 	}
 	
 	
 	
-	@Override
-	public BudaBubble createBubble()
+	@SuppressWarnings("serial")
+   @Override public BudaBubble createBubble()
 	{
 		client = BeduChatFactory.getTAXMPPClientForCourse(this);
 	
@@ -122,10 +118,11 @@ static class TACourse extends BeduCourse
 			if (!client.isLoggedIn()) {
 				client.connectAndLogin(InetAddress.getLocalHost().getHostName());
 			}
-		} catch (UnknownHostException hostE) {
-			hostE.printStackTrace();
-		} catch (XMPPException xmppE) {
-			xmppE.printStackTrace();
+		} catch (final Exception e){
+		   BudaBubble b = new BudaBubble(){{
+		      setContentPane(new JPanel(){{add(new JLabel("Error logging in: " + e.getMessage()));}});
+		   }};
+		   return b;
 		}
 	
 		return new BeduTATicketListBubble(client.getTickets(), client);
@@ -133,8 +130,7 @@ static class TACourse extends BeduCourse
 	
 	
 	
-	@Override
-	protected String getSymbolName()
+	@Override protected String getSymbolName()
 	{
 		return BassConstants.BASS_COURSE_LIST_NAME + ".Enable " + getCourseName()
 				+ " chat hours";
@@ -142,22 +138,21 @@ static class TACourse extends BeduCourse
 	
 	
 	
-	@Override
-	public Icon getDisplayIcon()
+	@Override public Icon getDisplayIcon()
 	{
 		return BoardImage.getIcon("contents_view");
 	}
 	
 	
 	
-	public String getXMPPServer()
+	String getXMPPServer()
 	{
 		return xmpp_server;
 	}
 	
 	
 	
-	public String getXMPPPassword()
+	String getXMPPPassword()
 	{
 		return xmpp_password;
 	}
@@ -172,7 +167,7 @@ static class StudentCourse extends BeduCourse
    
    
    
-   public StudentCourse(String a_course_name, String a_jid)
+   StudentCourse(String a_course_name, String a_jid)
    {
    	super(a_course_name, a_jid);
    	ta_chat_jid = a_jid;
@@ -180,8 +175,7 @@ static class StudentCourse extends BeduCourse
    
    
    
-   @Override
-   public BudaBubble createBubble()
+   @Override public BudaBubble createBubble()
    {
       if(BgtaUtil.getXMPPManagers().size() == 0)
       {
@@ -190,8 +184,7 @@ static class StudentCourse extends BeduCourse
          
          b.addComponentListener(new ComponentListener(){
    
-            @Override
-            public void componentHidden(ComponentEvent e)
+            @Override public void componentHidden(ComponentEvent e)
             {
                BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((BudaBubble)e.getComponent());
                //this is called when the login window has exited 
@@ -272,23 +265,25 @@ static class StudentCourse extends BeduCourse
    }
    
    
-   
-   public String getTAJID()
+   /**
+    * Returns the JID of the TAs for this course
+    * @return
+    */
+   String getTAJID()
    {
    	return ta_chat_jid;
    }
    
    
    
-   public String getCourseName()
+   String getCourseName()
    {
    	return course_name;
    }
    
    
    
-   @Override
-   public boolean equals(Object o)
+   @Override public boolean equals(Object o)
    {
    	if (o instanceof BeduCourse) {
    		BeduCourse c = (BeduCourse) o;

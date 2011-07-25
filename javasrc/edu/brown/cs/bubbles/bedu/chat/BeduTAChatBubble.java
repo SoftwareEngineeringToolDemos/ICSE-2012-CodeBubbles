@@ -26,14 +26,14 @@ package edu.brown.cs.bubbles.bedu.chat;
 import edu.brown.cs.bubbles.bgta.*;
 
 
-class BeduChatBubble extends BgtaBubble
+class BeduTAChatBubble extends BgtaBubble
 {
 private static final long serialVersionUID = 1L;
 
 private BeduTAXMPPClient client;
 private BgtaChat chat;
 
-BeduChatBubble(BeduTAXMPPClient a_client, BgtaChat a_chat)
+BeduTAChatBubble(BeduTAXMPPClient a_client, BgtaChat a_chat)
 {
    super(a_chat);
    client = a_client;
@@ -44,6 +44,8 @@ BeduChatBubble(BeduTAXMPPClient a_client, BgtaChat a_chat)
 @Override
 public void setVisible(boolean vis)
 {
+   //when this chat window is closed make sure to cut 
+   //off the student 
    super.setVisible(vis);
    client.endChatSession(chat);
 }

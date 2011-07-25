@@ -151,7 +151,7 @@ private class ChatStartListener implements ActionListener
    
    @Override public void actionPerformed(ActionEvent e) {
    	BgtaChat c = client.acceptTicketAndAlertPeers(bubble.ticket);
-   	BudaBubble chat_bub = new BeduChatBubble(client,c);
+   	BudaBubble chat_bub = new BeduTAChatBubble(client,c);
    	BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
    	bba.addBubble(chat_bub, bubble, null, PLACEMENT_LOGICAL | PLACEMENT_GROUPED);
    }

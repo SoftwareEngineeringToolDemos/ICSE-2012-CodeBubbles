@@ -1024,6 +1024,11 @@ protected void paintBubbleBorder(Graphics2D g2)
 	 g2.setColor(border_color);
 	 g2.setStroke(border_stroke);
        }
+      if (is_userpos) {
+	 Color c = BUDA_PROPERTIES.getColorOption("Buda.userpos.color",Color.RED);
+	 g2.setColor(c);
+       }
+
       Shape s0 = getShape();
       g2.draw(s0);
       if (!has_focus && getContentKey() != null) {

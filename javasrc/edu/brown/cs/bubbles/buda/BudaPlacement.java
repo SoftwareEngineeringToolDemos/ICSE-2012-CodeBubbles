@@ -114,7 +114,7 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
       r = BudaRoot.findBudaLocation(rel);
       grpb = rel;
     }
-   
+
    if (r == null) {
       r = new Rectangle();
       if (relpt != null) {
@@ -130,7 +130,7 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
        }
     }
 
-   
+
    Rectangle r0 = null;
    if (r != null) r0 = new Rectangle(r);
 
@@ -301,6 +301,9 @@ private void expandForGroup(Rectangle r,BudaBubble grpb)
 	  }
        }
     }
+
+   // if bubble is supposed to be grouped, then we should limit the expansion
+   // to the y space of the bubble
 }
 
 

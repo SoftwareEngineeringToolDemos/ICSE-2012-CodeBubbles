@@ -80,6 +80,8 @@ private int		end_cline;
 private Map<BumpProblem,ProblemAnnot> problem_annotations;
 private Map<BumpBreakpoint,BreakpointAnnot> breakpoint_annotations;
 private Set<BaleAnnotation> document_annotations;
+private boolean 	check_annotations;
+
 
 private static final long serialVersionUID = 1;
 
@@ -101,6 +103,7 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
    fragment_type = typ;
    fragment_regions = new ArrayList<BaleRegion>(regions);
    fragment_name = name;
+   check_annotations = true;
 
    setInsets(0);
 
@@ -137,6 +140,7 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
       handleBreakpointAdded(bb);
     }
 
+   System.err.println("CHECK ANNOTATIONS");
    for (BaleAnnotation ba : BaleFactory.getFactory().getAnnotations(getDocument())) {
       annotationAdded(ba);
     }
@@ -275,6 +279,22 @@ private void convertMouseEvent(MouseEvent e,Point p,Component c)
 {
    Point pt = SwingUtilities.convertPoint(this,p,c);
    e.translatePoint(pt.x - e.getX(),pt.y - e.getY());
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Painting methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public void paint(Graphics g)
+{
+   if (check_annotations) checkInitialAnnotations();
+
+   super.paint(g);
 }
 
 
@@ -463,6 +483,7 @@ void relocateFindBar()
 
 @Override public void annotationAdded(BaleAnnotation ba)
 {
+   System.err.println("ADD ANNOTATION " + ba);
    if (ba.getFile() == null) return;
    if (!ba.getFile().equals(getDocument().getFile())) return;
 
@@ -494,6 +515,30 @@ void relocateFindBar()
       if (!document_annotations.contains(ba)) return;
     }
    annot_area.removeAnnotation(ba);
+}
+
+
+
+void checkInitialAnnotations()
+{
+   if (!check_annotations) return;
+   check_annotations = false;
+
+   BudaBubble bb = BudaRoot.findBudaBubble(this);
+
+   synchronized (document_annotations) {
+      for (BaleAnnotation ba : document_annotations) {
+	 int fragoffset = getDocument().getFragmentOffset(ba.getDocumentOffset());
+	 if (fragoffset < 0) continue;
+	 if (ba.getForceVisible(bb)) {
+	    try {
+	       Position p0 = getDocument().createPosition(fragoffset);
+	       SwingUtilities.invokeLater(new ForceVisible(p0));
+	     }
+	    catch (BadLocationException e) { }
+	  }
+       }
+    }
 }
 
 

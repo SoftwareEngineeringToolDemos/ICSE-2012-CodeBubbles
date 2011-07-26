@@ -73,7 +73,17 @@ BddtStackModel(BddtStackModel parent,ValueTreeNode root)
 {
    initialize();
 
-   root_node = new RootNode((AbstractNode) root);
+   AbstractNode rn = (AbstractNode) root;
+
+   List<AbstractNode> inodes = new ArrayList<AbstractNode>();
+   for (AbstractNode xn = rn; xn != null; xn = xn.getBddtParent()) {
+      if (xn == parent.root_node) break;
+      inodes.add(xn);
+    }
+   if (inodes.size() == 0) 
+      inodes.add(rn);
+
+   root_node = new RootNode((AbstractNode) root,inodes);
    parent_model = parent;
 
    parent.addChildModel(this);
@@ -136,6 +146,13 @@ private void initialize()
 
 
 
+void dispose()
+{
+   if (parent_model != null) {
+      parent_model.removeChildModel(this);
+    }
+}
+
 
 /********************************************************************************/
 /*										*/
@@ -147,6 +164,10 @@ BumpThread getThread()			{ return root_node.getThread(); }
 
 
 String getLabel()			{ return root_node.getLabel(); }
+
+
+boolean hasBeenFrozen() 		{ return root_node.isFrozen(); }
+
 
 
 void addChildModel(BddtStackModel c)
@@ -251,7 +272,8 @@ void noteChange(Object src)
 {
    Object [] path = new Object[] { root_node };
    TreeModelEvent evt = new TreeModelEvent(src,path);
-   fireTreeStructureChanged(evt);
+   if (root_node.isLeaf()) fireTreeNodesChanged(evt);
+   else fireTreeStructureChanged(evt);
 
    List<BddtStackModel> sml;
    synchronized (sub_models) {
@@ -259,7 +281,8 @@ void noteChange(Object src)
     }
    for (BddtStackModel sm : sml) {
       sm.fixRoot();
-      sm.noteChange(src);
+      // sm.noteChange(src);
+      sm.noteChange(sm);
     }
 }
 
@@ -484,6 +507,7 @@ protected abstract class AbstractNode implements ValueTreeNode, TreeNode {
 
    void fixAfterChange()					{ }
    boolean sameNode(AbstractNode an)				{ return false; }
+   boolean isFrozen()						{ return false; }
 
    protected AbstractNode getBddtParent()			{ return parent_node; }
 
@@ -652,11 +676,15 @@ private static class ValueSorter implements Comparator<AbstractNode> {
 
 private class RootNode extends AbstractNode {
 
-   AbstractNode base_node;
+   private AbstractNode base_node;
+   private List<AbstractNode> interim_nodes;
+   private boolean is_frozen;
 
-   RootNode(AbstractNode base) {
+   RootNode(AbstractNode base,List<AbstractNode> inodes) {
       super(null);
       base_node = base;
+      interim_nodes = inodes;
+      is_frozen = false;
     }
 
    @Override String getName()				{ return base_node.getName(); }
@@ -665,6 +693,7 @@ private class RootNode extends AbstractNode {
    @Override BumpThread getThread()			{ return base_node.getThread(); }
    @Override public BumpStackFrame getFrame()		{ return base_node.getFrame(); }
    @Override public BumpRunValue getRunValue()		{ return base_node.getRunValue(); }
+   boolean isFrozen()					{ return is_frozen; }
 
    @Override public TreeNode getParent()		{ return null; }
 
@@ -682,26 +711,57 @@ private class RootNode extends AbstractNode {
 
    @Override protected void expandChildren()		{ base_node.expandChildren(); }
 
-   @Override void freeze(int lvls)			{ base_node.freeze(lvls); }
+   @Override void freeze(int lvls) {
+      base_node.freeze(lvls);
+      is_frozen = true;
+    }
 
    @Override void update()				{ base_node.update(); }
 
    @Override String getLabel()				{ return base_node.getLabel(); }
 
    @Override void fixAfterChange() {
-      AbstractNode pn = (AbstractNode) base_node.getParent();
-      if (pn == null) return;
+      if (updateInterimNodes()) {
+	 if (interim_nodes.size() == 0) 
+	    System.err.println("BAD INTERIM NODES");
+	 else
+	 base_node = interim_nodes.get(0);
+      }
+      else freeze(0);
+    }
+
+   boolean updateInterimNodes() {
+      int ln = interim_nodes.size();
+      LinkedList<AbstractNode> nl = new LinkedList<AbstractNode>();
+      AbstractNode pn = null;
+      for (int i = ln-1; i >= 0; --i) {
+	 AbstractNode an = interim_nodes.get(i);
+	 if (pn == null) {
+	    pn = an.getBddtParent();
+	    if (pn == null) return true;
+	  }
+	 AbstractNode nn = replaceNode(pn,an);
+	 if (nn == null) return false;
+	 nl.addFirst(nn);
+	 pn = nn;
+      }
+      interim_nodes.clear();
+      interim_nodes.addAll(nl);
+      return true;
+   }
+   
+   AbstractNode replaceNode(AbstractNode pn,AbstractNode xn) {
+      if (pn == null) return null;
       AbstractNode newbase = null;
       for (int i = 0; i < pn.getChildCount(); ++i) {
 	 AbstractNode cn = (AbstractNode) pn.getChildAt(i);
-	 if (cn == base_node) return;
-	 if (cn.getType() == base_node.getType() && cn.sameNode(base_node))
+	 if (cn == xn) return cn;
+	 if (cn.getType() == xn.getType() && cn.sameNode(xn))
 	    newbase = cn;
        }
-      if (newbase != null) base_node = newbase;
-      else base_node.freeze(0);
-    }
-
+      return newbase;
+    }     
+	 
 
 }	// end of inner class RootNode
 

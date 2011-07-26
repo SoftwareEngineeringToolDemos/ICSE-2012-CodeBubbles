@@ -183,6 +183,8 @@ private void setupBubble()
 @Override protected void localDispose()
 {
    detachHandler();
+   if (value_model != null) value_model.dispose();
+   value_model = null;
 }
 
 
@@ -433,6 +435,8 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
     }
 
    @Override protected void paintComponent(Graphics g) {
+      if (!is_frozen && !is_extinct && value_model.hasBeenFrozen()) is_frozen = true;
+
       Dimension sz = getSize();
       Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
       Graphics2D g2 = (Graphics2D) g.create();
@@ -586,10 +590,18 @@ private static class TreeCellRenderer extends DefaultTreeCellRenderer {
 
 private class LabelUpdater implements TreeModelListener {
 
-   @Override public void treeNodesChanged(TreeModelEvent e) { }
+   @Override public void treeNodesChanged(TreeModelEvent e) { 
+      if (value_model == null || title_bar == null) return;
+      String txt = value_model.getLabel();
+      if (title_bar.getText().equals(txt)) return;
+      title_bar.setText(txt);
+    }
+   
    @Override public void treeNodesInserted(TreeModelEvent e) { }
    @Override public void treeNodesRemoved(TreeModelEvent e) { }
+   
    @Override public void treeStructureChanged(TreeModelEvent e) {
+      if (value_model == null || title_bar == null) return;
       title_bar.setText(value_model.getLabel());
     }
 

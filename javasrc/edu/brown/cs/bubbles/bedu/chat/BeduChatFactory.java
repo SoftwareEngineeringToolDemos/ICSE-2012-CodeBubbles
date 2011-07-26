@@ -1,12 +1,12 @@
 /********************************************************************************/
-/*                         						 								*/
-/*    		BeduChatManager.java                 								*/
-/*                            													*/
-/* 	Bubbles for Education   													*/
-/* 	Keeps track of edu chat sessions 	      									*/
-/* 				               													*/
+/*                         							*/
+/*    		BeduChatManager.java            				*/
+/*                            							*/
+/* 	Bubbles for Education   						*/
+/* 	Keeps track of edu chat sessions 	      				*/
+/* 				               					*/
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         					*/
+/* 	Copyright 2011 Brown University -- Andrew Kovacs         		*/
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -25,9 +25,9 @@ import java.util.List;
 
 import java.util.ArrayList;
 
-public class BeduChatFactory
-{
-static boolean DEBUG = false;
+
+public class BeduChatFactory {
+static boolean			DEBUG = false;
 private static List<BeduTAXMPPClient> ta_sessions;
 
 static {
@@ -35,12 +35,10 @@ static {
 }
 
 
-
 public static void setup()
 {
    BeduCourseRepository.initialize();
 }
-
 
 
 /**
@@ -56,8 +54,7 @@ static BeduTAXMPPClient getTAXMPPClientForCourse(BeduCourse.TACourse course)
 {
    BeduTAXMPPClient the_client = null;
    for (BeduTAXMPPClient c : ta_sessions) {
-      if (c.getCourse().equals(course))
-         the_client = c;
+      if (c.getCourse().equals(course)) the_client = c;
    }
 
    if (the_client == null) {

@@ -41,39 +41,35 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.net.InetAddress;
 
-abstract class BeduCourse extends BassNameBase
-{
+
+abstract class BeduCourse extends BassNameBase {
 
 private String course_name;
 private String ta_chat_jid;
 
 
-
-protected BeduCourse(String a_course_name, String a_jid)
+protected BeduCourse(String a_course_name,String a_jid)
 {
-	course_name = a_course_name;
-	ta_chat_jid = a_jid;
+   course_name = a_course_name;
+   ta_chat_jid = a_jid;
 }
-
 
 
 @Override protected String getParameters()
 {
-	return null;
+   return null;
 }
-
 
 
 @Override public String getProject()
 {
-	return null;
+   return null;
 }
-
 
 
 @Override protected String getKey()
 {
-	return course_name;
+   return course_name;
 }
 
 @Override public String toString()
@@ -82,213 +78,193 @@ protected BeduCourse(String a_course_name, String a_jid)
 }
 
 
-static class TACourse extends BeduCourse
+static class TACourse extends BeduCourse {
+private BeduTATicketList ticket_list;
+private String	   xmpp_password;
+private String	   xmpp_server;
+private BeduTAXMPPClient client;
+
+
+protected TACourse(String a_course_name,String a_jid,String a_password,String a_server)
 {
-   private BeduTATicketList ticket_list;
-	private String xmpp_password;
-	private String xmpp_server;
-	private BeduTAXMPPClient client;
-	
-	
-	
-	protected TACourse(String a_course_name, String a_jid, String a_password,
-			String a_server)
-	{
-		super(a_course_name, a_jid);
-		ticket_list = new BeduTATicketList();
-		xmpp_password = a_password;
-		xmpp_server = a_server;
-	}
-	
-	
-	
-	BeduTATicketList getTicketList()
-	{
-		return ticket_list;
-	}
-	
-	
-	
-	@SuppressWarnings("serial")
-   @Override public BudaBubble createBubble()
-	{
-		client = BeduChatFactory.getTAXMPPClientForCourse(this);
-	
-		try {
-			if (!client.isLoggedIn()) {
-				client.connectAndLogin(InetAddress.getLocalHost().getHostName());
-			}
-		} catch (final Exception e){
-		   BudaBubble b = new BudaBubble(){{
-		      setContentPane(new JPanel(){{add(new JLabel("Error logging in: " + e.getMessage()));}});
-		   }};
-		   return b;
-		}
-	
-		return new BeduTATicketListBubble(client.getTickets(), client);
-	}
-	
-	
-	
-	@Override protected String getSymbolName()
-	{
-		return BassConstants.BASS_COURSE_LIST_NAME + ".Enable " + getCourseName()
-				+ " chat hours";
-	}
-	
-	
-	
-	@Override public Icon getDisplayIcon()
-	{
-		return BoardImage.getIcon("contents_view");
-	}
-	
-	
-	
-	String getXMPPServer()
-	{
-		return xmpp_server;
-	}
-	
-	
-	
-	String getXMPPPassword()
-	{
-		return xmpp_password;
-	}
+   super(a_course_name,a_jid);
+   ticket_list = new BeduTATicketList();
+   xmpp_password = a_password;
+   xmpp_server = a_server;
 }
 
 
-
-static class StudentCourse extends BeduCourse
+BeduTATicketList getTicketList()
 {
+   return ticket_list;
+}
 
-   private String ta_chat_jid;
-   
-   
-   
-   StudentCourse(String a_course_name, String a_jid)
-   {
-   	super(a_course_name, a_jid);
-   	ta_chat_jid = a_jid;
+
+@SuppressWarnings("serial") @Override public BudaBubble createBubble()
+{
+   client = BeduChatFactory.getTAXMPPClientForCourse(this);
+
+   try {
+      if (!client.isLoggedIn()) {
+	 client.connectAndLogin(InetAddress.getLocalHost().getHostName());
+      }
    }
-   
-   
-   
-   @Override public BudaBubble createBubble()
-   {
-      if(BgtaUtil.getXMPPManagers().size() == 0)
-      {
-         BgtaLoginBubble b = (BgtaLoginBubble)BgtaUtil.getLoginBubble();
-         b.setErrorMessage("Login to GMail/Brown/Jabber");
-         
-         b.addComponentListener(new ComponentListener(){
-   
-            @Override public void componentHidden(ComponentEvent e)
-            {
-               BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((BudaBubble)e.getComponent());
-               //this is called when the login window has exited 
-               if(BgtaUtil.getXMPPManagers().size() > 0)
-               {
-                  try {
-                     Thread.sleep(1000);
-                  } catch (InterruptedException e1) {
-                     e1.printStackTrace();
-                  }
-                  bba.addBubble(new BeduStudentTicketSubmitBubble(ta_chat_jid),e.getComponent().getX() - 100, e.getComponent().getY());
-               }
-               else
-               {
-                  
-                  bba.addBubble(createBubble(),e.getComponent().getX(), e.getComponent().getY());
-               }
-            }
-   
-            @Override
-            public void componentMoved(ComponentEvent e)
-            {
-               // TODO Auto-generated method stub
-               
-            }
-   
-            @Override
-            public void componentResized(ComponentEvent e)
-            {
-               // TODO Auto-generated method stub
-               
-            }
-   
-            @Override
-            public void componentShown(ComponentEvent e)
-            {
-               // TODO Auto-generated method stub
-               
-            }
-            
-         });
-         
-         return b;
-         }
-      
-      else
-         return new BeduStudentTicketSubmitBubble(ta_chat_jid);
-   
+   catch (final Exception e) {
+      BudaBubble b = new BudaBubble() {
+	 {
+	    setContentPane(new JPanel() {
+	       {
+		  add(new JLabel("Error logging in: " + e.getMessage()));
+	       }
+	    });
+	 }
+      };
+      return b;
    }
-   
-   
-   
-   @Override
-   protected String getSymbolName()
-   {
-   	return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + getCourseName()
-   			+ " help";
+
+   return new BeduTATicketListBubble(client.getTickets(),client);
+}
+
+
+@Override protected String getSymbolName()
+{
+   return BassConstants.BASS_COURSE_LIST_NAME + ".Enable " + getCourseName()
+	    + " chat hours";
+}
+
+
+@Override public Icon getDisplayIcon()
+{
+   return BoardImage.getIcon("contents_view");
+}
+
+
+String getXMPPServer()
+{
+   return xmpp_server;
+}
+
+
+String getXMPPPassword()
+{
+   return xmpp_password;
+}
+}
+
+
+static class StudentCourse extends BeduCourse {
+
+private String ta_chat_jid;
+
+
+StudentCourse(String a_course_name,String a_jid)
+{
+   super(a_course_name,a_jid);
+   ta_chat_jid = a_jid;
+}
+
+
+@Override public BudaBubble createBubble()
+{
+   if (BgtaUtil.getXMPPManagers().size() == 0) {
+      BgtaLoginBubble b = (BgtaLoginBubble) BgtaUtil.getLoginBubble();
+      b.setErrorMessage("Login to GMail/Brown/Jabber");
+
+      b.addComponentListener(new ComponentListener() {
+
+	 @Override public void componentHidden(ComponentEvent e)
+	 {
+	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((BudaBubble) e
+		     .getComponent());
+	    // this is called when the login window has exited
+	    if (BgtaUtil.getXMPPManagers().size() > 0) {
+	       try {
+		  Thread.sleep(1000);
+	       }
+	       catch (InterruptedException e1) {
+		  e1.printStackTrace();
+	       }
+	       bba.addBubble(new BeduStudentTicketSubmitBubble(ta_chat_jid), e
+			.getComponent().getX() - 100, e.getComponent().getY());
+	    }
+	    else {
+
+	       bba.addBubble(createBubble(), e.getComponent().getX(), e.getComponent()
+			.getY());
+	    }
+	 }
+
+	 @Override public void componentMoved(ComponentEvent e)
+	 {
+	 // TODO Auto-generated method stub
+
+	 }
+
+	 @Override public void componentResized(ComponentEvent e)
+	 {
+	 // TODO Auto-generated method stub
+
+	 }
+
+	 @Override public void componentShown(ComponentEvent e)
+	 {
+	 // TODO Auto-generated method stub
+
+	 }
+
+      });
+
+      return b;
    }
-   
-   
-   
-   @Override
-   public Icon getDisplayIcon()
-   {
-   	if(BgtaUtil.getXMPPManagers().size() >= 0)
-   	{
-      	Presence p = BgtaManager.getPresence(ta_chat_jid);
-      	if(p != null)
-      	{
-      		if(p.getType() == Presence.Type.available)
-      			return BgtaManager.iconFor(new Presence(Presence.Type.available));
-      		else
-      			return BgtaManager.iconFor(new Presence(Presence.Type.unavailable));
-      	}
-   	}
-   	return BoardImage.getIcon("question");
+
+   else return new BeduStudentTicketSubmitBubble(ta_chat_jid);
+
+}
+
+
+@Override protected String getSymbolName()
+{
+   return BassConstants.BASS_COURSE_LIST_NAME + ".Get " + getCourseName() + " help";
+}
+
+
+@Override public Icon getDisplayIcon()
+{
+   if (BgtaUtil.getXMPPManagers().size() >= 0) {
+      Presence p = BgtaManager.getPresence(ta_chat_jid);
+      if (p != null) {
+	 if (p.getType() == Presence.Type.available) return BgtaManager
+		  .iconFor(new Presence(Presence.Type.available));
+	 else return BgtaManager.iconFor(new Presence(Presence.Type.unavailable));
+      }
    }
+   return BoardImage.getIcon("question");
+}
+}
+
+
+/**
+ * Returns the JID of the TAs for this course
+ * @return
+ */
+String getTAJID()
+{
+   return ta_chat_jid;
+}
+
+
+String getCourseName()
+{
+   return course_name;
+}
+
+
+@Override public boolean equals(Object o)
+{
+   if (o instanceof BeduCourse) {
+      BeduCourse c = (BeduCourse) o;
+      return (course_name == c.course_name && ta_chat_jid == c.ta_chat_jid);
    }
-   
-   
-   /**
-    * Returns the JID of the TAs for this course
-    * @return
-    */
-   String getTAJID()
-   {
-   	return ta_chat_jid;
-   }
-   
-   
-   
-   String getCourseName()
-   {
-   	return course_name;
-   }
-   
-   
-   
-   @Override public boolean equals(Object o)
-   {
-   	if (o instanceof BeduCourse) {
-   		BeduCourse c = (BeduCourse) o;
-   		return (course_name == c.course_name && ta_chat_jid == c.ta_chat_jid);
-   	} else
-   		return false;
-   }
+   else return false;
+}
 }

@@ -1,11 +1,9 @@
 /********************************************************************************/
-/*										                                                  */
-/*		StudentTicket.java						                                      */
-/*										     															  */
-/*		This class represents a request for help from a student						  */
- /*		to a TA		 																			  */
+/*										*/
+/*		BeduStudentTicket.java	 	                               	*/
+/*		Class defining a ticket for help submitted by  a student	*/
 /********************************************************************************/
-/*	Copyright 2011 Brown University -- Andrew Kovacs									  */
+/*	Copyright 2011 Brown University -- Andrew Kovacs			*/
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -22,14 +20,15 @@ package edu.brown.cs.bubbles.bedu.chat;
 
 import java.util.Date;
 
+
 class BeduStudentTicket {
 private String text;
 private Date   timestamp;
 private String studentJID;
 
 
-
-BeduStudentTicket(String txt, Date time, String jid) {
+BeduStudentTicket(String txt,Date time,String jid)
+{
    text = txt;
    timestamp = time;
    studentJID = jid;
@@ -40,12 +39,14 @@ BeduStudentTicket(String txt, Date time, String jid) {
  * Hashcode of the text contained in the ticket
  * @return
  */
-int textHash() {
+int textHash()
+{
    return text.hashCode();
 }
 
 
-String getText() {
+String getText()
+{
    return text;
 }
 
@@ -54,7 +55,8 @@ String getText() {
  * The time the ticket was received 
  * @return
  */
-Date getTimestamp() {
+Date getTimestamp()
+{
    return timestamp;
 }
 
@@ -64,14 +66,14 @@ Date getTimestamp() {
  * who submitted the ticket
  * @return
  */
-String getStudentJID() {
+String getStudentJID()
+{
    return studentJID;
 }
 
 
-
-@Override
-public int hashCode() {
+@Override public int hashCode()
+{
    final int prime = 31;
    int result = 1;
    result = prime * result + ((text == null) ? 0 : text.hashCode());
@@ -79,21 +81,16 @@ public int hashCode() {
 }
 
 
-
-@Override
-public boolean equals(Object obj) {
-   if (this == obj)
-      return true;
-   if (obj == null)
-      return false;
-   if (getClass() != obj.getClass())
-      return false;
+@Override public boolean equals(Object obj)
+{
+   if (this == obj) return true;
+   if (obj == null) return false;
+   if (getClass() != obj.getClass()) return false;
    BeduStudentTicket other = (BeduStudentTicket) obj;
    if (text == null) {
-      if (other.text != null)
-         return false;
-   } else if (!text.equals(other.text))
-      return false;
+      if (other.text != null) return false;
+   }
+   else if (!text.equals(other.text)) return false;
    return true;
 }
 

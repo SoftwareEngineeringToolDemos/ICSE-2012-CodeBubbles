@@ -1,10 +1,10 @@
 /********************************************************************************/
-/*										                                                  */
-/*		BeduTATicketListBubble.java 	                                            */
-/*		This Bubble is for listing the available tickets                          */
-/*    so a TA can select them and open up chat with a student						  */
+/*										*/
+/*		BeduTATicketListBubble.java 	                               	*/
+/*		This Bubble is for listing the available tickets               	*/
+/*    so a TA can select them and open up chat with a student			*/
 /********************************************************************************/
-/*	Copyright 2011 Brown University -- Andrew Kovacs									  */
+/*	Copyright 2011 Brown University -- Andrew Kovacs			*/
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -41,121 +41,123 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 
+
 class BeduTATicketListBubble extends BudaBubble {
-private static final long serialVersionUID = 1L;
-private static Color	  GRADIENT_BOTTOM_COLOR  = Color.white;
-private static Color	  GRADIENT_TOP_COLOR	 	 = new Color(0x33, 0x00, 0x99);
-private static Dimension DEFAULT_DIMENSION    = new Dimension(200, 200);
-private BeduTAXMPPClient ta_client;
+private static final long serialVersionUID      = 1L;
+private static Color      GRADIENT_BOTTOM_COLOR = Color.white;
+private static Color      GRADIENT_TOP_COLOR    = new Color(0x33,0x00,0x99);
+private static Dimension  DEFAULT_DIMENSION     = new Dimension(200,200);
+private BeduTAXMPPClient  ta_client;
 
 
-BeduTATicketListBubble(BeduTATicketList list, BeduTAXMPPClient a_ta_client) {
-	TicketListPanel p = new TicketListPanel(list, this);
-	ta_client = a_ta_client;
-	setContentPane(p);
+BeduTATicketListBubble(BeduTATicketList list,BeduTAXMPPClient a_ta_client)
+{
+   TicketListPanel p = new TicketListPanel(list,this);
+   ta_client = a_ta_client;
+   setContentPane(p);
 }
+
 @Override public void setVisible(boolean vis)
 {
-   if(vis == false)
-   {
+   if (vis == false) {
       try {
-         ta_client.disconnect();
-      } catch (XMPPException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
+	 ta_client.disconnect();
+      }
+      catch (XMPPException e) {
+	 // TODO Auto-generated catch block
+	 e.printStackTrace();
       }
    }
 }
+
 private class TicketListPanel extends JPanel implements MouseListener {
-	private static final long serialVersionUID = 1L;
-	private JTable			    table;
-   private BeduTATicketList ticket_list;
-   private BudaBubble		 parent;
-   
-   
-   
-   TicketListPanel(BeduTATicketList list, BudaBubble a_parent) {
-   	super(new BorderLayout());
-   	parent = a_parent;
-   	
-   	ticket_list = list;
-   	setOpaque(false);
-   	setPreferredSize(DEFAULT_DIMENSION);
-   	JLabel l = new JLabel("Tickets submitted by students:");
-   	add(l, BorderLayout.NORTH);
-   	table = new JTable(list);
-   
-   	table.getColumnModel().getColumn(1).setPreferredWidth(75);
-   
-   	table.getColumnModel().getColumn(0).setPreferredWidth(125);
-   
-   	table.setFillsViewportHeight(true);
-   	JScrollPane p = new JScrollPane(table);
-   	p.setPreferredSize(new Dimension(table.getPreferredSize().width, table
-   			.getRowHeight() * 2));
-   	p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-   	table.setOpaque(false);
-   	p.setOpaque(false);
-   	table.addMouseListener(this);
-   	add(p, BorderLayout.CENTER);
-   }
-   
-   
-   
-   @Override public void mouseClicked(MouseEvent e) {
-   	if (e.getClickCount() == 2) {
-   		if (table.rowAtPoint(e.getPoint()) != -1) {
-   			BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-   			BudaBubble ticket_view_bubble = new BeduTATicketViewBubble((BeduStudentTicket)ticket_list.get(table.rowAtPoint(e.getPoint())), ta_client);
-   			bba.addBubble(ticket_view_bubble, parent, null, PLACEMENT_LOGICAL
-   					| PLACEMENT_GROUPED);
-   		}
-   	}
-   }
-   
-   
-   
-   @Override public void mouseEntered(MouseEvent e) {
-   	// TODO Auto-generated method stub
-   
-   }
-   
-   
-   
-   @Override public void mouseExited(MouseEvent e) {
-   	// TODO Auto-generated method stub
-   
-   }
-   
-   
-   
-   @Override public void mousePressed(MouseEvent e) {
-   	// TODO Auto-generated method stub
-   
-   }
-   
-   
-   
-   @Override public void mouseReleased(MouseEvent e) {
-   	// TODO Auto-generated method stub
-   
+private static final long serialVersionUID = 1L;
+private JTable	    table;
+private BeduTATicketList  ticket_list;
+private BudaBubble	parent;
+
+
+TicketListPanel(BeduTATicketList list,BudaBubble a_parent)
+{
+   super(new BorderLayout());
+   parent = a_parent;
+
+   ticket_list = list;
+   setOpaque(false);
+   setPreferredSize(DEFAULT_DIMENSION);
+   JLabel l = new JLabel("Tickets submitted by students:");
+   add(l, BorderLayout.NORTH);
+   table = new JTable(list);
+
+   table.getColumnModel().getColumn(1).setPreferredWidth(75);
+
+   table.getColumnModel().getColumn(0).setPreferredWidth(125);
+
+   table.setFillsViewportHeight(true);
+   JScrollPane p = new JScrollPane(table);
+   p.setPreferredSize(new Dimension(table.getPreferredSize().width,
+	    table.getRowHeight() * 2));
+   p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+   table.setOpaque(false);
+   p.setOpaque(false);
+   table.addMouseListener(this);
+   add(p, BorderLayout.CENTER);
+}
+
+
+@Override public void mouseClicked(MouseEvent e)
+{
+   if (e.getClickCount() == 2) {
+      if (table.rowAtPoint(e.getPoint()) != -1) {
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+	 BudaBubble ticket_view_bubble = new BeduTATicketViewBubble(
+		  (BeduStudentTicket) ticket_list.get(table.rowAtPoint(e.getPoint())),
+		  ta_client);
+	 bba.addBubble(ticket_view_bubble, parent, null, PLACEMENT_LOGICAL
+		  | PLACEMENT_GROUPED);
+      }
    }
 }
 
 
+@Override public void mouseEntered(MouseEvent e)
+{
 
-@Override public void paintComponent(Graphics g) {
-	Graphics2D g2 = (Graphics2D) g.create();
-	Dimension sz = getSize();
-	Paint p = new GradientPaint(0f, 0f, GRADIENT_BOTTOM_COLOR, 0f, sz.height,
-			GRADIENT_TOP_COLOR);
+}
 
-	Shape r = new Rectangle2D.Float(0, 0, sz.width, sz.height);
-	g2.setColor(Color.orange);
-	g2.fill(r);
-	g2.setPaint(p);
-	g2.fill(r);
 
-	super.paintComponent(g);
+@Override public void mouseExited(MouseEvent e)
+{
+
+}
+
+
+@Override public void mousePressed(MouseEvent e)
+{
+
+}
+
+
+@Override public void mouseReleased(MouseEvent e)
+{
+
+}
+}
+
+
+@Override public void paintComponent(Graphics g)
+{
+   Graphics2D g2 = (Graphics2D) g.create();
+   Dimension sz = getSize();
+   Paint p = new GradientPaint(0f,0f,GRADIENT_BOTTOM_COLOR,0f,sz.height,
+	    GRADIENT_TOP_COLOR);
+
+   Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+   g2.setColor(Color.orange);
+   g2.fill(r);
+   g2.setPaint(p);
+   g2.fill(r);
+
+   super.paintComponent(g);
 }
 }

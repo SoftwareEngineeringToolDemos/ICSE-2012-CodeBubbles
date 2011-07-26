@@ -247,10 +247,20 @@ class BeduManageCoursesBubble extends BudaBubble
             add(deleteButton, gbc);
          }
          
-         err_label = new JLabel(""); 
+         err_label = new JLabel();
+         err_label.setVisible(false);
+         gbc = new GridBagConstraints();
+         gbc.fill = GridBagConstraints.CENTER;
+         gbc.weightx = 0.9;
+         gbc.weighty = 0.5;
+         gbc.gridwidth = 2;
+         gbc.gridy = 5;
+         gbc.gridx = 0;
+         add(err_label, gbc);
       }
 
 		public void actionPerformed(ActionEvent e) {
+		   err_label.setVisible(false);
 			BeduCourseRepository r = (BeduCourseRepository)(BassFactory.getRepository(BudaConstants.SearchType.SEARCH_COURSES));
 			if(e.getActionCommand().equals(save_action)){
 				BeduCourse new_course = null;
@@ -278,6 +288,7 @@ class BeduManageCoursesBubble extends BudaBubble
 				} catch(IOException ex)
 				{
 				   err_label.setText("Error saving course");
+				   err_label.setVisible(true);
 				   r.removeCourse(new_course);
 				   r.addCourse(course);
 				   
@@ -285,6 +296,7 @@ class BeduManageCoursesBubble extends BudaBubble
 				}
 			}
 			else if(e.getActionCommand().equals(delete_action)){
+			   err_label.setVisible(false);
 				r.removeCourse(course);
 				int i = BeduManageCoursesBubble.this.combo.getSelectedIndex();
 				BeduManageCoursesBubble.this.combo.removeItem(course);
@@ -296,6 +308,8 @@ class BeduManageCoursesBubble extends BudaBubble
 				   r.saveConfigFile();
 				} catch(IOException ex)
 				{
+				   err_label.setText("Error removing course");
+				   err_label.setVisible(true);
 				   r.addCourse(course);
 				   BeduManageCoursesBubble.this.combo.addItem(course);
 				   BeduManageCoursesBubble.this.combo.setSelectedIndex(i);

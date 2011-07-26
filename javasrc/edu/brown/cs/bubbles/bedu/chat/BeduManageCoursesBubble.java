@@ -268,10 +268,13 @@ class BeduManageCoursesBubble extends BudaBubble
 				r.addCourse(new_course);
 				BeduManageCoursesBubble.this.combo.addItem(new_course);
 				BeduManageCoursesBubble.this.combo.setSelectedItem(new_course);
-				
+				BeduManageCoursesBubble.this.combo.removeItem(course);
 				try
 				{
+				   
+				   BassFactory.reloadRepository(r);
 				   r.saveConfigFile();
+				   
 				} catch(IOException ex)
 				{
 				   err_label.setText("Error saving course");
@@ -289,6 +292,7 @@ class BeduManageCoursesBubble extends BudaBubble
 				
 				try
 				{
+				   BassFactory.reloadRepository(r);
 				   r.saveConfigFile();
 				} catch(IOException ex)
 				{

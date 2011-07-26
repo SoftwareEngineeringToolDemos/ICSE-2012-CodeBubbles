@@ -122,7 +122,7 @@ void addCourse(BeduCourse c){
    courses.add(c);
    bp.setProperty(coursePrefix(c) + "ta_jid", c.getTAJID());
    if (c instanceof BeduCourse.StudentCourse) {
-      bp.setProperty(coursePrefix(c)+"role", "Student");
+      bp.setProperty(coursePrefix(c)+"role", "STUDENT");
    }
 
    if (c instanceof BeduCourse.TACourse) {
@@ -133,9 +133,6 @@ void addCourse(BeduCourse c){
       bp.setProperty(coursePrefix(c) + "server",
             tc.getXMPPServer());
    }
-   
-   BassFactory.reloadRepository(instance);
-
 }
 
 void removeCourse(BeduCourse c)
@@ -149,8 +146,6 @@ void removeCourse(BeduCourse c)
       bp.remove(coursePrefix(c) + "xmpp_password");
       bp.remove(coursePrefix(c) + "server");
    }
-   
-   BassFactory.reloadRepository(instance);
 }
 
 void saveConfigFile() throws IOException

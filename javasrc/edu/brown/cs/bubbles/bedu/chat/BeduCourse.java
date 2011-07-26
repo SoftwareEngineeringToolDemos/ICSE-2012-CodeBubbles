@@ -34,6 +34,7 @@ import edu.brown.cs.bubbles.bgta.BgtaManager;
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+import edu.brown.cs.bubbles.buda.BudaHintBubble;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.board.BoardImage;
 
@@ -109,17 +110,8 @@ BeduTATicketList getTicketList()
 	 client.connectAndLogin(InetAddress.getLocalHost().getHostName());
       }
    }
-   catch (final Exception e) {
-      BudaBubble b = new BudaBubble() {
-	 {
-	    setContentPane(new JPanel() {
-	       {
-		  add(new JLabel("Error logging in: " + e.getMessage()));
-	       }
-	    });
-	 }
-      };
-      return b;
+   catch (Exception e) {
+      return new BudaHintBubble("Error logging in: " + e.getMessage(), null, 0);
    }
 
    return new BeduTATicketListBubble(client.getTickets(),client);

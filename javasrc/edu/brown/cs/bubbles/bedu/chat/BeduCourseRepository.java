@@ -100,7 +100,7 @@ static void initialize()
 
 @SuppressWarnings(value = "unchecked") @Override public Iterable<BassName> getAllNames()
 {
-   return (List<BassName>) (List<?>) courses;
+   return new ArrayList<BassName>((List<BassName>) (List<?>) courses);
 }
 
 

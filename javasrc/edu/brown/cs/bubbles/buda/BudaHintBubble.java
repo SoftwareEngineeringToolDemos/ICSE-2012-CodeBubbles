@@ -39,7 +39,7 @@ import java.awt.event.ActionListener;
 
 
 
-class BudaHintBubble extends BudaBubble implements ActionListener, BudaConstants {
+public class BudaHintBubble extends BudaBubble implements ActionListener, BudaConstants {
 
 
 
@@ -74,7 +74,7 @@ private static final long serialVersionUID = 1;
 /*										*/
 /********************************************************************************/
 
-BudaHintBubble(String msg,BudaHintActions action,int time)
+public BudaHintBubble(String msg,BudaHintActions action,int time)
 {
    super(BudaBorder.NONE);
 

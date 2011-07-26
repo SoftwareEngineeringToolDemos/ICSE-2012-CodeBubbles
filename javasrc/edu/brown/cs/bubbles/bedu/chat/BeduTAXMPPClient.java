@@ -51,7 +51,7 @@ private XMPPConnection			  conn;
 
 private String						  resource_name;
 private BeduCourse.TACourse	  course;
-private Map<String, BeduTAChat> chats;		  // maps bare jids to Chat objects
+private Map<String, BeduTAChat> chats;		  // maps jids to Chat objects
 private Set<String>				  permitted_jids;
 
 private BeduTATicketList		  ticket_list;
@@ -274,8 +274,8 @@ private class StudentXMPPBotMessageListener implements MessageListener {
                e.printStackTrace();
             }
          } catch (XMPPException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            //other guy probably logged off so it doesn't matter
+            //otherwise we did, there should be another alert if we did
          }
       }
    } else if (permitted_jids.contains(c.getParticipant())) {

@@ -26,6 +26,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.Date;
+import java.util.HashSet;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -347,9 +348,16 @@ private BgtaChat bs2ToT1;
 
    Thread.sleep(1000);
    pipeIn.read(errbuf);
-   assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org:s1toT2\n"+
-         "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1",
-         new String(errbuf).trim());
+   HashSet<String> prints = new HashSet<String>();
+   String[] arprints = new String(errbuf).trim().split("\\r?\\n");
+   prints.add(arprints[0]);
+   prints.add(arprints[1]);
+   //assertEquals("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org:s1toT2\n"+
+   //      "BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1",
+   //      new String(errbuf).trim());
+   
+   assertTrue(prints.contains("BEDU:codebubbles@jabber.org/TA2:Student message:codebubbles2@jabber.org:s1toT2"));
+   assertTrue(prints.contains("BEDU:codebubbles@jabber.org/TA1:Student message:codebubbles3@jabber.org:s2toT1"));
    
    ta_client2.endChatSession(t2ToS1);
 }

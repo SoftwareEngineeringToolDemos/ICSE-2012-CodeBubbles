@@ -98,7 +98,7 @@ static void initialize()
 }
 
 
-@SuppressWarnings(value = "unchecked") @Override public Iterable<BassName> getAllNames()
+@SuppressWarnings(value = "unchecked") @Override public synchronized Iterable<BassName> getAllNames()
 {
    return new ArrayList<BassName>((List<BassName>) (List<?>) courses);
 }
@@ -114,7 +114,7 @@ private String coursePrefix(BeduCourse c)
    return PROP_PREFIX + c.getCourseName() + ".";
 }
 
-void addCourse(BeduCourse c)
+synchronized void addCourse(BeduCourse c)
 {
    BoardProperties bp = BoardProperties.getProperties("Bedu");
    courses.add(c);
@@ -131,7 +131,7 @@ void addCourse(BeduCourse c)
    }
 }
 
-void removeCourse(BeduCourse c)
+synchronized void removeCourse(BeduCourse c)
 {
    BoardProperties bp = BoardProperties.getProperties("Bedu");
    bp.remove(coursePrefix(c) + "ta_jid");

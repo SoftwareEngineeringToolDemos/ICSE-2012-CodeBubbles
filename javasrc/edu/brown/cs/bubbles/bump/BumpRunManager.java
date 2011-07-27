@@ -293,9 +293,9 @@ private void startDebugServer()
       args.add(System.getProperty("java.class.path"));
       args.add("edu.brown.cs.bubbles.bump.BumpDebugServer");
       args.add("-M");
-      args.add(bump_client.getMintName());
+      args.add(BoardSetup.getSetup().getMintName());
 
-      MintControl mc = bump_client.getMintControl();
+      MintControl mc = BoardSetup.getSetup().getMintControl();
 
       for (int i = 0; i < 10; ++i) {
 	 MintDefaultReply rply = new MintDefaultReply();
@@ -376,10 +376,11 @@ void setup()
       active_processes.put(pd.getId(),pd);
     }
 
-   bump_client.getMintControl().register("<BANDAID REPORT='_VAR_0' TIME='_VAR_1'><_VAR_2 /></BANDAID>",
-					    new BandaidHandler());
-   bump_client.getMintControl().register("<BANDAID HISTORY='_VAR_0' THREAD='_VAR_1'><_VAR_2 /></BANDAID>",
-					    new BandaidHistoryHandler());
+   BoardSetup bs = BoardSetup.getSetup();
+   bs.getMintControl().register("<BANDAID REPORT='_VAR_0' TIME='_VAR_1'><_VAR_2 /></BANDAID>",
+				   new BandaidHandler());
+   bs.getMintControl().register("<BANDAID HISTORY='_VAR_0' THREAD='_VAR_1'><_VAR_2 /></BANDAID>",
+				   new BandaidHistoryHandler());
 }
 
 
@@ -810,7 +811,7 @@ private void handleTargetEvent(Element xml,long when)
    if (pd == null) return;
    String nm = IvyXml.getAttrString(tgt,"NAME");
    if (nm != null) pd.setProcessName(nm);
-   
+
    if (dtl == BumpThreadStateDetail.CONTENT) return;
 
    for (BumpThread bt : pd.getThreads()) {
@@ -1430,7 +1431,7 @@ private class ThreadData implements BumpThread {
 
    @Override public void requestHistory() {
       String cmd = "HISTORY " + getName();
-      MintControl mc = bump_client.getMintControl();
+      MintControl mc = BoardSetup.getSetup().getMintControl();
       if (for_process.getName() == null) return;
 
       mc.send("<BANDAID CMD='" + cmd + "' ID='" + for_process.getName() + "' />");
@@ -1521,7 +1522,7 @@ private class StackFrame implements BumpStackFrame {
 			FileOutputStream fos = new FileOutputStream(for_file);
 			fos.write(data);
 			fos.close();
-		      } 
+		      }
 		   }
 		  catch (IOException e) {
 		     BoardLog.logE("BUMP","Problem writing source file: " + e,e);

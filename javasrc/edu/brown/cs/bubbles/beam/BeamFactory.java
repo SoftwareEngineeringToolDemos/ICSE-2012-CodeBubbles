@@ -38,8 +38,6 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaPortPosition;
 import edu.brown.cs.bubbles.buda.BudaConstants.LinkPort;
-import edu.brown.cs.bubbles.bump.*;
-
 import edu.brown.cs.ivy.mint.*;
 
 import javax.swing.*;
@@ -146,20 +144,24 @@ public static void initialize(BudaRoot br)
    bfr.addPanel();
 
    BaleFactory.getFactory().addContextListener(new NoteHandler());
-   
+
    switch (BoardSetup.getSetup().getRunMode()) {
       case SERVER :
-         BumpClient bc = BumpClient.getBump();
-         MintControl mc = bc.getMintControl();
-         mc.register("<BEAM TYPE='NOTE' NAME='_VAR_0'><TEXT>_VAR_1</TEXT></BEAM>",
-               new NoteServer());
-         break;
+	 BoardSetup bs = BoardSetup.getSetup();
+	 MintControl mc = bs.getMintControl();
+	 mc.register("<BEAM TYPE='NOTE' NAME='_VAR_0'><TEXT>_VAR_1</TEXT></BEAM>",
+	       new NoteServer());
+	 break;
       case CLIENT :
-         bc = BumpClient.getBump();
-         mc = bc.getMintControl();
-         mc.register("<BEAM TYPE='NOTE' NAME='_VAR_0'><TEXT>_VAR_1</TEXT></BEAM>",
-               new NoteClient());
-         break;    
+	 bs = BoardSetup.getSetup();
+	 mc = bs.getMintControl();
+	 mc.register("<BEAM TYPE='NOTE' NAME='_VAR_0'><TEXT>_VAR_1</TEXT></BEAM>",
+	       new NoteClient());
+         new BeamProgressBubble(br);
+	 break; 
+      case NORMAL :
+         new BeamProgressBubble(br);
+         break;
     }
 }
 
@@ -339,41 +341,41 @@ private static class NoteAction extends AbstractAction {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handler for note requests when running in client/server mode            */
-/*                                                                              */
+/*										*/
+/*	Handler for note requests when running in client/server mode		*/
+/*										*/
 /********************************************************************************/
 
 private static class NoteServer implements MintHandler {
-   
+
    @Override public void receive(MintMessage msg,MintArguments args) {
       String name = args.getArgument(0);
       String cnts = args.getArgument(1);
       File dir = BoardSetup.getBubblesPluginDirectory();
       File f1 = new File(dir,name);
       try {
-         FileWriter fw = new FileWriter(f1);
-         fw.write(cnts);
-         fw.close();
+	 FileWriter fw = new FileWriter(f1);
+	 fw.write(cnts);
+	 fw.close();
        }
       catch (IOException e) {
-         BoardLog.logE("BEAM","Problem writing note file",e);
+	 BoardLog.logE("BEAM","Problem writing note file",e);
        }
     }
-   
-}       // end of inner class NoteServer
+
+}	// end of inner class NoteServer
 
 
 
 private static class NoteClient implements MintHandler {
-   
+
    @Override public void receive(MintMessage msg,MintArguments args) {
       String name = args.getArgument(0);
       String cnts = args.getArgument(1);
       BeamNoteBubble.updateNote(name,cnts);
     }
-   
-}       // end of inner class NoteClient
+
+}	// end of inner class NoteClient
 }	// end of class BeamFactory
 
 

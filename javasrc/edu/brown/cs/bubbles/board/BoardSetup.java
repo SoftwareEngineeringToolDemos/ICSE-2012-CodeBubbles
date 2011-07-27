@@ -28,6 +28,7 @@ package edu.brown.cs.bubbles.board;
 import edu.brown.cs.ivy.exec.IvySetup;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.swing.SwingSetup;
+import edu.brown.cs.ivy.mint.*;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -51,7 +52,7 @@ import java.util.*;
  *
  **/
 
-public class BoardSetup implements BoardConstants {
+public class BoardSetup implements BoardConstants, MintConstants {
 
 
 
@@ -108,6 +109,8 @@ private BoardSplash	splash_screen;
 private long		run_size;
 private String		update_proxy;
 private RunMode 	run_mode;
+private String		mint_name;
+private MintControl	mint_control;
 
 
 private static String	       prop_base;
@@ -173,6 +176,8 @@ private BoardSetup()
    allow_debug = false;
    use_lila = false;
    run_mode = RunMode.NORMAL;
+   mint_name = null;
+   mint_control = null;
 
    eclipse_directory = system_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    default_workspace = system_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
@@ -602,6 +607,53 @@ public boolean isServerMode()			{ return run_mode == RunMode.SERVER; }
 public boolean isClientMode()			{ return run_mode == RunMode.CLIENT; }
 
 public void setRunMode(RunMode rm)		{ run_mode = rm; }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Mint access methods							*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	Return name of the mint connection
+ **/
+public String getMintName()
+{
+   setupMint();
+   return mint_name;
+}
+
+
+/**
+ *	Return the mint handle
+ **/
+public MintControl getMintControl()
+{
+   setupMint();
+   return mint_control;
+}
+
+
+private synchronized void setupMint()
+{
+   if (mint_name != null) return;
+
+   mint_name = System.getProperty("edu.brown.cs.bubbles.MINT");
+   if (mint_name == null) mint_name = System.getProperty("edu.brown.cs.bubbles.mint");
+   if (mint_name == null) mint_name = system_properties.getProperty("edu.brown.cs.bubbles.MINT");
+   if (mint_name == null) mint_name = system_properties.getProperty("edu.brown.cs.bubbles.mint");
+   if (mint_name == null) mint_name = BOARD_MINT_NAME;
+
+   String mport = system_properties.getProperty(BOARD_PROP_MINT_MASTER_PORT);
+   if (mport != null) System.setProperty("edu.brown.cs.ivy.mint.master.port",mport);
+   String sport = system_properties.getProperty(BOARD_PROP_MINT_SERVER_PORT);
+   if (sport != null) System.setProperty("edu.brown.cs.ivy.mint.server.port",sport);
+
+   mint_control = MintControl.create(mint_name,MintSyncMode.ONLY_REPLIES);
+}
 
 
 

@@ -77,6 +77,7 @@ private Map<String,EvalData> eval_handlers;
 private int		collect_id;
 private Map<BumpChangeHandler,Boolean> change_handlers;
 private SwingEventListenerList<BumpOpenEditorBubbleHandler> open_editor_bubble_handlers;
+private SwingEventListenerList<BumpProgressHandler> progress_handlers;
 
 private boolean 	eclipse_active;
 private boolean 	eclipse_starting;
@@ -131,18 +132,8 @@ private BumpClient()
    doing_exit = false;
    same_host = true;
 
-   mint_name = System.getProperty("edu.brown.cs.bubbles.MINT");
-   if (mint_name == null) mint_name = System.getProperty("edu.brown.cs.bubbles.mint");
-   if (mint_name == null) mint_name = board_properties.getProperty("edu.brown.cs.bubbles.MINT");
-   if (mint_name == null) mint_name = board_properties.getProperty("edu.brown.cs.bubbles.mint");
-   if (mint_name == null) mint_name = BUMP_MINT_NAME;
-
-   String mport = board_properties.getProperty(BOARD_PROP_MINT_MASTER_PORT);
-   if (mport != null) System.setProperty("edu.brown.cs.ivy.mint.master.port",mport);
-   String sport = board_properties.getProperty(BOARD_PROP_MINT_SERVER_PORT);
-   if (sport != null) System.setProperty("edu.brown.cs.ivy.mint.server.port",sport);
-
-   mint_control = MintControl.create(mint_name,MintSyncMode.ONLY_REPLIES);
+   mint_control = BoardSetup.getSetup().getMintControl();
+   mint_name = BoardSetup.getSetup().getMintName();
 
    file_handlers = new ConcurrentHashMap<BumpFileHandler,File>();
    option_map = new HashMap<String,String>();
@@ -151,6 +142,8 @@ private BumpClient()
    change_handlers = new ConcurrentHashMap<BumpChangeHandler,Boolean>();
    open_editor_bubble_handlers = new SwingEventListenerList<BumpOpenEditorBubbleHandler>(
       BumpOpenEditorBubbleHandler.class);
+   progress_handlers = new SwingEventListenerList<BumpProgressHandler>(BumpProgressHandler.class);
+
    collect_id = (int)(Math.random() * 10000);
 
    source_id = "BUBBLES_" + IvyExecQuery.getHostName() + "_" + IvyExecQuery.getProcessId();
@@ -198,9 +191,6 @@ public void useWebMint(String key,String url)
 
 public String getName() 			{ return "Eclipse"; }
 
-
-public String getMintName()			{ return mint_name; }
-public MintControl getMintControl()		{ return mint_control; }
 
 
 
@@ -619,39 +609,39 @@ private class FileGetServerHandler implements MintHandler {
       File f = null;
       if (kind != null && kind.equals("BDOC")) f = BoardSetup.getDocumentationFile();
       else if (kind != null && kind.equals("NOTE")) {
-         File f1 = BoardSetup.getBubblesPluginDirectory();
-         File f2 = new File(filenm);
-         f = new File(f1,f2.getName());
+	 File f1 = BoardSetup.getBubblesPluginDirectory();
+	 File f2 = new File(filenm);
+	 f = new File(f1,f2.getName());
        }
       else f = new File(filenm);
-        
+
       try {
-         FileInputStream fr = new FileInputStream(f);
-         long len = f.length();
-         int pos = 0;
-         byte [] buf = new byte[40960];
-         while (pos < len) {
-            int ct = fr.read(buf,0,buf.length);
-            MintDefaultReply mr = new MintDefaultReply();
-            IvyXmlWriter xw = new IvyXmlWriter();
-            xw.begin("BUMPFILE");
-            xw.field("ID",id);
-            xw.field("POS",pos);
-            xw.field("LEN",len);
-            xw.field("CT",ct);
-            xw.bytesElement("CNTS",buf,0,ct);
-            xw.end("BUMPFILE");
-            mint_control.send(xw.toString(),mr,MintConstants.MINT_MSG_FIRST_NON_NULL);
-            mr.waitFor();
-            pos += ct;
-          }
-         fr.close();
-         msg.replyTo("OK");
+	 FileInputStream fr = new FileInputStream(f);
+	 long len = f.length();
+	 int pos = 0;
+	 byte [] buf = new byte[40960];
+	 while (pos < len) {
+	    int ct = fr.read(buf,0,buf.length);
+	    MintDefaultReply mr = new MintDefaultReply();
+	    IvyXmlWriter xw = new IvyXmlWriter();
+	    xw.begin("BUMPFILE");
+	    xw.field("ID",id);
+	    xw.field("POS",pos);
+	    xw.field("LEN",len);
+	    xw.field("CT",ct);
+	    xw.bytesElement("CNTS",buf,0,ct);
+	    xw.end("BUMPFILE");
+	    mint_control.send(xw.toString(),mr,MintConstants.MINT_MSG_FIRST_NON_NULL);
+	    mr.waitFor();
+	    pos += ct;
+	  }
+	 fr.close();
+	 msg.replyTo("OK");
        }
       catch (IOException e) {
-         msg.replyTo("FAIL");
+	 msg.replyTo("FAIL");
        }
-   
+
     }
 
 }	// end of inner class FileGetServerHandler
@@ -1904,6 +1894,25 @@ public void removeOpenEditorBubbleHandler(BumpOpenEditorBubbleHandler hdlr)
 
 
 
+/**
+ *	Add a progress handler
+ **/
+public void addProgressHandler(BumpProgressHandler hdlr)
+{
+   progress_handlers.add(hdlr);
+}
+
+
+/**
+ *	Remove previously registered progress handler
+ **/
+public void removeProgressHandler(BumpProgressHandler hdlr)
+{
+   progress_handlers.remove(hdlr);
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Error repository access 						*/
@@ -2783,10 +2792,17 @@ private class EclipseHandler implements MintHandler {
 	    msg.replyTo("<PONG/>");
 	  }
 	 else if (cmd.equals("PROGRESS")) {
-	    BoardLog.logD("BUMP","Progress " + IvyXml.getAttrString(e,"KIND") + " " +
-			     IvyXml.getAttrString(e,"TASK") + " " +
-			     IvyXml.getAttrString(e,"SUBTASK","") + " " +
-			     IvyXml.getAttrDouble(e,"WORK",0));
+	    long sid = IvyXml.getAttrLong(e,"S");
+	    String id = IvyXml.getAttrString(e,"ID");
+	    String kind = IvyXml.getAttrString(e,"KIND");
+	    String task = IvyXml.getAttrString(e,"TASK");
+	    String subtask = IvyXml.getAttrString(e,"SUBTASK","");
+	    double work = IvyXml.getAttrDouble(e,"WORK",0);
+	    BoardLog.logD("BUMP","Progress " + sid + " " + id + " " + kind + " " + task + " " + subtask + " " + work);
+	    for (BumpProgressHandler hdlr : progress_handlers) {
+	       hdlr.handleProgress(sid,id,kind,task,subtask,work);
+	     }
+	    msg.replyTo();
 	  }
 	 else if (cmd.equals("RESOURCE")) {
 	    BoardLog.logD("BUMP","RESOURCE: " + IvyXml.convertXmlToString(e));

@@ -1112,9 +1112,16 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
 	 wait.waitFor();
        }
       int kind = IncrementalProjectBuilder.INCREMENTAL_BUILD;
-      if (clean) kind = IncrementalProjectBuilder.CLEAN_BUILD;
-      else if (full) kind = IncrementalProjectBuilder.FULL_BUILD;
-      String desc = "Building " + kind + " project " + p.getName();
+      String knm = "";
+      if (clean) {
+	 kind = IncrementalProjectBuilder.CLEAN_BUILD;
+	 knm = " (clean)";
+       }
+      else if (full) {
+	 kind = IncrementalProjectBuilder.FULL_BUILD;
+	 knm = " (full)";
+       }
+      String desc = "Building " + knm + " project " + p.getName();
       p.build(kind,new BedrockProgressMonitor(our_plugin,desc));
     }
    catch (Throwable t) {

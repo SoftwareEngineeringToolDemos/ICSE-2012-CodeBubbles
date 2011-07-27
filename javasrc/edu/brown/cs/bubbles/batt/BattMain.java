@@ -24,7 +24,7 @@
 
 package edu.brown.cs.bubbles.batt;
 
-import edu.brown.cs.bubbles.bump.BumpConstants;
+import edu.brown.cs.bubbles.board.BoardConstants;
 
 import edu.brown.cs.ivy.exec.*;
 import edu.brown.cs.ivy.xml.*;
@@ -97,7 +97,7 @@ enum	ProcessMode {
 
 private BattMain(String [] args)
 {
-   mint_handle = BumpConstants.BUMP_MINT_NAME;
+   mint_handle = BoardConstants.BOARD_MINT_NAME;
    process_mode = ProcessMode.SERVER;
    start_mode = TestMode.ON_DEMAND;
    test_mode = null;

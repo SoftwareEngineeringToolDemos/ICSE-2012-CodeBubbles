@@ -50,20 +50,6 @@ public interface BumpConstants extends MintConstants {
 
 /********************************************************************************/
 /*										*/
-/*	Mint constants								*/
-/*										*/
-/********************************************************************************/
-
-/**
- *	Name of the mint server used to communicae with the back end.
- **/
-String	BUMP_MINT_NAME = "BUBBLES_" + System.getProperty("user.name").replace(" ","_");
-// String  BUMP_MINT_NAME = "BUBBLES";
-
-
-
-/********************************************************************************/
-/*										*/
 /*	Error types								*/
 /*										*/
 /********************************************************************************/
@@ -926,6 +912,21 @@ interface BumpEvaluationHandler extends EventListener {
    void evaluationError(String eid,String expr,String error);
 
 }	// end of inner class BumpEvaluationHandler
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Callbacks for progress requests 					*/
+/*										*/
+/********************************************************************************/
+
+interface BumpProgressHandler extends EventListener {
+
+   void handleProgress(long serialno,String id,String kind,String task,String subtask,double work);
+
+}	// end of inner class BumpProgressHandler
+
 
 
 

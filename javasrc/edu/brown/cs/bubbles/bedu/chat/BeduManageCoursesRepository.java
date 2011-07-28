@@ -45,7 +45,7 @@ class BeduManageCoursesRepository implements BassConstants.BassRepository {
 }
 
 class BeduAddCoursesName extends BassNameBase {
-private static final String name = "Manage courses";
+private static final String name_str = "Manage courses";
 
 @Override public BudaBubble createBubble()
 {
@@ -54,7 +54,7 @@ private static final String name = "Manage courses";
 
 @Override protected String getKey()
 {
-   return name;
+   return name_str;
 }
 
 @Override protected String getParameters()
@@ -69,7 +69,7 @@ private static final String name = "Manage courses";
 
 @Override protected String getSymbolName()
 {
-   return BassConstants.BASS_COURSE_LIST_NAME + "." + name;
+   return BassConstants.BASS_COURSE_LIST_NAME + "." + name_str;
 }
 
 }

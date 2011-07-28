@@ -37,10 +37,9 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 
 
 class BeduCourseRepository implements BassRepository {
-private List<BeduCourse>     my_courses;
-private static BeduCourseRepository instance;
 private final static String	 PROP_PREFIX = "Bedu.chat.course.";
-
+private static BeduCourseRepository instance;
+private List<BeduCourse>     my_courses;
 
 static BeduCourseRepository getInstance()
 {

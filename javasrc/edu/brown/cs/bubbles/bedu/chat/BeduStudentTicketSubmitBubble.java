@@ -59,7 +59,7 @@ private static Dimension  DEFAULT_DIMENSION     = new Dimension(275,200);
 
 private static final long serialVersionUID      = 1L;
 
-private TicketPanel       panel;
+private TicketPanel       content_panel;
 private String	    ta_jid;
 
 
@@ -83,8 +83,8 @@ BeduStudentTicketSubmitBubble(String a_jid)
       }
 
       ta_jid = a_jid;
-      panel = new TicketPanel(chat_logins);
-      setContentPane(panel);
+      content_panel = new TicketPanel(chat_logins);
+      setContentPane(content_panel);
    }
 }
 
@@ -181,13 +181,13 @@ private TicketPanel(Map<String, BgtaManager> some_chat_logins)
 
 @Override public void actionPerformed(ActionEvent e)
 {
-   BgtaManager man = panel.chat_logins.get(panel.login_box.getSelectedItem());
+   BgtaManager man = content_panel.chat_logins.get(content_panel.login_box.getSelectedItem());
 
    man.subscribeToUser(ta_jid);
    BgtaBubble chat_b = new BgtaResourceSwitchingBubble(man,ta_jid);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BeduStudentTicketSubmitBubble.this);
    bba.addBubble(chat_b, this, null, PLACEMENT_LOGICAL);
-   chat_b.sendMessage("TICKET:" + panel.ticket_area.getText());
+   chat_b.sendMessage("TICKET:" + content_panel.ticket_area.getText());
 
    this.setVisible(false);
 }

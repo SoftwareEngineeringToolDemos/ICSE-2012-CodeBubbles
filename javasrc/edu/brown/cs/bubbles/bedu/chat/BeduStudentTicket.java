@@ -22,16 +22,16 @@ import java.util.Date;
 
 
 class BeduStudentTicket {
-private String text;
-private Date   timestamp;
-private String studentJID;
+private String ticket_text;
+private Date   time_stamp;
+private String student_jid;
 
 
 BeduStudentTicket(String txt,Date time,String jid)
 {
-   text = txt;
-   timestamp = time;
-   studentJID = jid;
+   ticket_text = txt;
+   time_stamp = time;
+   student_jid = jid;
 }
 
 
@@ -41,13 +41,13 @@ BeduStudentTicket(String txt,Date time,String jid)
  */
 int textHash()
 {
-   return text.hashCode();
+   return ticket_text.hashCode();
 }
 
 
 String getText()
 {
-   return text;
+   return ticket_text;
 }
 
 
@@ -57,7 +57,7 @@ String getText()
  */
 Date getTimestamp()
 {
-   return timestamp;
+   return time_stamp;
 }
 
 
@@ -68,7 +68,7 @@ Date getTimestamp()
  */
 String getStudentJID()
 {
-   return studentJID;
+   return student_jid;
 }
 
 
@@ -76,7 +76,7 @@ String getStudentJID()
 {
    final int prime = 31;
    int result = 1;
-   result = prime * result + ((text == null) ? 0 : text.hashCode());
+   result = prime * result + ((ticket_text == null) ? 0 : ticket_text.hashCode());
    return result;
 }
 
@@ -87,10 +87,10 @@ String getStudentJID()
    if (obj == null) return false;
    if (getClass() != obj.getClass()) return false;
    BeduStudentTicket other = (BeduStudentTicket) obj;
-   if (text == null) {
-      if (other.text != null) return false;
+   if (ticket_text == null) {
+      if (other.ticket_text != null) return false;
    }
-   else if (!text.equals(other.text)) return false;
+   else if (!ticket_text.equals(other.ticket_text)) return false;
    return true;
 }
 

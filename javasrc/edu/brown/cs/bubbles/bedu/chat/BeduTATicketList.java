@@ -34,13 +34,13 @@ class BeduTATicketList extends ArrayList<BeduStudentTicket> implements TableMode
 private static final long	serialVersionUID = 1L;
 private static final String      DATE_FORMAT_STR  = "h:mm a";
 
-private List<TableModelListener> listeners;
+private List<TableModelListener> listeners_list;
 private SimpleDateFormat	 date_format;
 
 
 BeduTATicketList()
 {
-   listeners = new ArrayList<TableModelListener>();
+   listeners_list = new ArrayList<TableModelListener>();
    date_format = new SimpleDateFormat(DATE_FORMAT_STR);
 }
 
@@ -48,7 +48,7 @@ BeduTATicketList()
 // TableModel methods
 @Override public void addTableModelListener(TableModelListener l)
 {
-   if (!listeners.contains(l)) listeners.add(l);
+   if (!listeners_list.contains(l)) listeners_list.add(l);
 }
 
 
@@ -107,7 +107,7 @@ BeduTATicketList()
 
 @Override public void removeTableModelListener(TableModelListener l)
 {
-   listeners.remove(l);
+   listeners_list.remove(l);
 }
 
 
@@ -122,7 +122,7 @@ BeduTATicketList()
 @Override public boolean add(BeduStudentTicket t)
 {
    boolean ret = super.add(t);
-   for (TableModelListener l : listeners) {
+   for (TableModelListener l : listeners_list) {
       l.tableChanged(new TableModelEvent(this,size() - 1,size() - 1,
 	       TableModelEvent.ALL_COLUMNS,TableModelEvent.INSERT));
    }
@@ -134,7 +134,7 @@ BeduTATicketList()
 @Override public void add(int i,BeduStudentTicket t)
 {
    super.add(i, t);
-   for (TableModelListener l : listeners) {
+   for (TableModelListener l : listeners_list) {
       l.tableChanged(new TableModelEvent(this,i,size() - 1,TableModelEvent.INSERT));
    }
 }
@@ -143,7 +143,7 @@ BeduTATicketList()
 @Override public BeduStudentTicket remove(int i)
 {
    BeduStudentTicket t = super.remove(i);
-   for (TableModelListener l : listeners) {
+   for (TableModelListener l : listeners_list) {
       l.tableChanged(new TableModelEvent(this));
    }
 
@@ -155,7 +155,7 @@ BeduTATicketList()
 {
    boolean ret = super.remove(o);
    if (ret) {
-      for (TableModelListener l : listeners) {
+      for (TableModelListener l : listeners_list) {
 	 l.tableChanged(new TableModelEvent(this));
       }
    }

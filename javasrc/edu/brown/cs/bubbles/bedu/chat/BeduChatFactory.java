@@ -52,17 +52,17 @@ public static void setup()
  */
 static BeduTAXMPPClient getTAXMPPClientForCourse(BeduCourse.TACourse course)
 {
-   BeduTAXMPPClient the_client = null;
+   BeduTAXMPPClient client = null;
    for (BeduTAXMPPClient c : ta_sessions) {
-      if (c.getCourse().equals(course)) the_client = c;
+      if (c.getCourse().equals(course)) client = c;
    }
 
-   if (the_client == null) {
-      the_client = new BeduTAXMPPClient(course);
-      ta_sessions.add(the_client);
+   if (client == null) {
+      client = new BeduTAXMPPClient(course);
+      ta_sessions.add(client);
    }
 
-   return the_client;
+   return client;
 
 }
 

@@ -44,7 +44,7 @@ import edu.brown.cs.bubbles.buda.BudaConstants;
 
 
 class BeduManageCoursesBubble extends BudaBubble {
-private JComboBox	      combo;
+private JComboBox	      combo_box;
 
 private static final long      serialVersionUID  = 1L;
 private static final Dimension DEFAULT_DIMENSION = new Dimension(400,200);
@@ -67,15 +67,15 @@ private ContentPane()
    BassRepository course_repo = BassFactory
 	    .getRepository(BudaConstants.SearchType.SEARCH_COURSES);
    setLayout(new BorderLayout());
-   combo = new JComboBox();
-   combo.addItemListener(this);
-   combo.addItem(ADD_STUDENT_STR);
-   combo.addItem(ADD_TA_STR);
+   combo_box = new JComboBox();
+   combo_box.addItemListener(this);
+   combo_box.addItem(ADD_STUDENT_STR);
+   combo_box.addItem(ADD_TA_STR);
 
-   add(combo, BorderLayout.PAGE_START);
+   add(combo_box, BorderLayout.PAGE_START);
 
    for (BassName n : course_repo.getAllNames()) {
-      if (n.toString().length() >= 0 && n.toString().charAt(0) != '@') combo.addItem(n);
+      if (n.toString().length() >= 0 && n.toString().charAt(0) != '@') combo_box.addItem(n);
    }
 
 }
@@ -105,13 +105,13 @@ private JTextField	name_field;
 private JTextField	jid_field;
 private JTextField	password_field;
 private JTextField	server_field;
-private BeduCourse	course;
+private BeduCourse	my_course;
 
 private JLabel	    err_label;
 
 private ConfigPane(BeduCourse c)
 {
-   course = c;
+   my_course = c;
    JButton deleteButton = new JButton("Delete");
    deleteButton.setActionCommand(delete_action);
    deleteButton.addActionListener(this);
@@ -256,21 +256,21 @@ public void actionPerformed(ActionEvent e)
 	    .getRepository(BudaConstants.SearchType.SEARCH_COURSES));
    if (e.getActionCommand().equals(save_action)) {
       BeduCourse new_course = null;
-      if (course instanceof BeduCourse.StudentCourse) {
+      if (my_course instanceof BeduCourse.StudentCourse) {
 	 new_course = new BeduCourse.StudentCourse(name_field.getText(),jid_field
 		  .getText());
       }
-      else if (course instanceof BeduCourse.TACourse) {
+      else if (my_course instanceof BeduCourse.TACourse) {
 	 new_course = new BeduCourse.TACourse(name_field.getText(),jid_field.getText(),
 		  password_field.getText(),server_field.getText());
       }
 
-      r.removeCourse(course);
+      r.removeCourse(my_course);
 
       r.addCourse(new_course);
-      BeduManageCoursesBubble.this.combo.addItem(new_course);
-      BeduManageCoursesBubble.this.combo.setSelectedItem(new_course);
-      BeduManageCoursesBubble.this.combo.removeItem(course);
+      BeduManageCoursesBubble.this.combo_box.addItem(new_course);
+      BeduManageCoursesBubble.this.combo_box.setSelectedItem(new_course);
+      BeduManageCoursesBubble.this.combo_box.removeItem(my_course);
       try {
 	 BassFactory.reloadRepository(r);
 	 r.saveConfigFile();
@@ -280,17 +280,17 @@ public void actionPerformed(ActionEvent e)
 	 err_label.setText("Error saving course");
 	 err_label.setVisible(true);
 	 r.removeCourse(new_course);
-	 r.addCourse(course);
+	 r.addCourse(my_course);
 
-	 BeduManageCoursesBubble.this.combo.removeItem(new_course);
+	 BeduManageCoursesBubble.this.combo_box.removeItem(new_course);
       }
    }
    else if (e.getActionCommand().equals(delete_action)) {
       err_label.setVisible(false);
-      r.removeCourse(course);
-      int i = BeduManageCoursesBubble.this.combo.getSelectedIndex();
-      BeduManageCoursesBubble.this.combo.removeItem(course);
-      BeduManageCoursesBubble.this.combo.setSelectedIndex(0);
+      r.removeCourse(my_course);
+      int i = BeduManageCoursesBubble.this.combo_box.getSelectedIndex();
+      BeduManageCoursesBubble.this.combo_box.removeItem(my_course);
+      BeduManageCoursesBubble.this.combo_box.setSelectedIndex(0);
 
       try {
 	 BassFactory.reloadRepository(r);
@@ -299,9 +299,9 @@ public void actionPerformed(ActionEvent e)
       catch (IOException ex) {
 	 err_label.setText("Error removing course");
 	 err_label.setVisible(true);
-	 r.addCourse(course);
-	 BeduManageCoursesBubble.this.combo.addItem(course);
-	 BeduManageCoursesBubble.this.combo.setSelectedIndex(i);
+	 r.addCourse(my_course);
+	 BeduManageCoursesBubble.this.combo_box.addItem(my_course);
+	 BeduManageCoursesBubble.this.combo_box.setSelectedIndex(i);
       }
    }
 }

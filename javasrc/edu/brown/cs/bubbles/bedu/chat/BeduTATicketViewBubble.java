@@ -52,12 +52,12 @@ private static Color      GRADIENT_BOTTOM_COLOR = Color.white;
 private static Color      GRADIENT_TOP_COLOR    = new Color(0x33,0x00,0x99);
 private static Dimension  DEFAULT_DIMENSION     = new Dimension(250,200);
 
-private BeduStudentTicket ticket;
+private BeduStudentTicket student_ticket;
 
 
 BeduTATicketViewBubble(BeduStudentTicket t,BeduTAXMPPClient a_client)
 {
-   ticket = t;
+   student_ticket = t;
    setContentPane(new TicketViewPanel(t,this,new ChatStartListener(this,a_client)));
 }
 
@@ -67,8 +67,6 @@ private static final long serialVersionUID = 1L;
 private TicketViewPanel(BeduStudentTicket t,BeduTATicketViewBubble a_bubble,
 	 ChatStartListener listener)
 {
-   // add(new JLabel(t.getText()));
-
    setOpaque(false);
 
    setPreferredSize(DEFAULT_DIMENSION);
@@ -137,23 +135,23 @@ private TicketViewPanel(BeduStudentTicket t,BeduTATicketViewBubble a_bubble,
 }
 
 private class ChatStartListener implements ActionListener {
-private BeduTATicketViewBubble bubble;
-private BeduTAXMPPClient       client;
+private BeduTATicketViewBubble parent_bubble;
+private BeduTAXMPPClient       ta_client;
 
 
 private ChatStartListener(BeduTATicketViewBubble a_bubble,BeduTAXMPPClient a_client)
 {
-   bubble = a_bubble;
-   client = a_client;
+   parent_bubble = a_bubble;
+   ta_client = a_client;
 }
 
 
 @Override public void actionPerformed(ActionEvent e)
 {
-   BgtaChat c = client.acceptTicketAndAlertPeers(bubble.ticket);
-   BudaBubble chat_bub = new BeduTAChatBubble(client,c);
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bubble);
-   bba.addBubble(chat_bub, bubble, null, PLACEMENT_LOGICAL | PLACEMENT_GROUPED);
+   BgtaChat c = ta_client.acceptTicketAndAlertPeers(parent_bubble.student_ticket);
+   BudaBubble chat_bub = new BeduTAChatBubble(ta_client,c);
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(parent_bubble);
+   bba.addBubble(chat_bub, parent_bubble, null, PLACEMENT_LOGICAL | PLACEMENT_GROUPED);
 }
 }
 }

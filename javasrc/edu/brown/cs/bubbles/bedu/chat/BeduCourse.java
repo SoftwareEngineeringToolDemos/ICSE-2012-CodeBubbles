@@ -22,8 +22,6 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 import org.jivesoftware.smack.packet.Presence;
 
@@ -83,15 +81,15 @@ static class TACourse extends BeduCourse {
 private BeduTATicketList ticket_list;
 private String	   xmpp_password;
 private String	   xmpp_server;
-private BeduTAXMPPClient client;
+private BeduTAXMPPClient my_client;
 
 
-protected TACourse(String a_course_name,String a_jid,String a_password,String a_server)
+protected TACourse(String cn,String jid,String pwd,String srv)
 {
-   super(a_course_name,a_jid);
+   super(cn,jid);
    ticket_list = new BeduTATicketList();
-   xmpp_password = a_password;
-   xmpp_server = a_server;
+   xmpp_password = pwd;
+   xmpp_server = srv;
 }
 
 
@@ -101,20 +99,20 @@ BeduTATicketList getTicketList()
 }
 
 
-@SuppressWarnings("serial") @Override public BudaBubble createBubble()
+@Override public BudaBubble createBubble()
 {
-   client = BeduChatFactory.getTAXMPPClientForCourse(this);
+   my_client = BeduChatFactory.getTAXMPPClientForCourse(this);
 
    try {
-      if (!client.isLoggedIn()) {
-	 client.connectAndLogin(InetAddress.getLocalHost().getHostName());
+      if (!my_client.isLoggedIn()) {
+	 my_client.connectAndLogin(InetAddress.getLocalHost().getHostName());
       }
    }
    catch (Exception e) {
       return new BudaHintBubble("Error logging in: " + e.getMessage(), null, 0);
    }
 
-   return new BeduTATicketListBubble(client.getTickets(),client);
+   return new BeduTATicketListBubble(my_client.getTickets(),my_client);
 }
 
 

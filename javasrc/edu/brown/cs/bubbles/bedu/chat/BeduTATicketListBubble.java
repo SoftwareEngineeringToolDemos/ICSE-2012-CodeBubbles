@@ -72,35 +72,35 @@ BeduTATicketListBubble(BeduTATicketList list,BeduTAXMPPClient a_ta_client)
 
 private class TicketListPanel extends JPanel implements MouseListener {
 private static final long serialVersionUID = 1L;
-private JTable	    table;
+private JTable	    ticket_table;
 private BeduTATicketList  ticket_list;
-private BudaBubble	parent;
+private BudaBubble	parent_bubble;
 
 
 TicketListPanel(BeduTATicketList list,BudaBubble a_parent)
 {
    super(new BorderLayout());
-   parent = a_parent;
+   parent_bubble = a_parent;
 
    ticket_list = list;
    setOpaque(false);
    setPreferredSize(DEFAULT_DIMENSION);
    JLabel l = new JLabel("Tickets submitted by students:");
    add(l, BorderLayout.NORTH);
-   table = new JTable(list);
+   ticket_table = new JTable(list);
 
-   table.getColumnModel().getColumn(1).setPreferredWidth(75);
+   ticket_table.getColumnModel().getColumn(1).setPreferredWidth(75);
 
-   table.getColumnModel().getColumn(0).setPreferredWidth(125);
+   ticket_table.getColumnModel().getColumn(0).setPreferredWidth(125);
 
-   table.setFillsViewportHeight(true);
-   JScrollPane p = new JScrollPane(table);
-   p.setPreferredSize(new Dimension(table.getPreferredSize().width,
-	    table.getRowHeight() * 2));
+   ticket_table.setFillsViewportHeight(true);
+   JScrollPane p = new JScrollPane(ticket_table);
+   p.setPreferredSize(new Dimension(ticket_table.getPreferredSize().width,
+	    ticket_table.getRowHeight() * 2));
    p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-   table.setOpaque(false);
+   ticket_table.setOpaque(false);
    p.setOpaque(false);
-   table.addMouseListener(this);
+   ticket_table.addMouseListener(this);
    add(p, BorderLayout.CENTER);
 }
 
@@ -108,12 +108,12 @@ TicketListPanel(BeduTATicketList list,BudaBubble a_parent)
 @Override public void mouseClicked(MouseEvent e)
 {
    if (e.getClickCount() == 2) {
-      if (table.rowAtPoint(e.getPoint()) != -1) {
+      if (ticket_table.rowAtPoint(e.getPoint()) != -1) {
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
 	 BudaBubble ticket_view_bubble = new BeduTATicketViewBubble(
-		  (BeduStudentTicket) ticket_list.get(table.rowAtPoint(e.getPoint())),
+		  (BeduStudentTicket) ticket_list.get(ticket_table.rowAtPoint(e.getPoint())),
 		  ta_client);
-	 bba.addBubble(ticket_view_bubble, parent, null, PLACEMENT_LOGICAL
+	 bba.addBubble(ticket_view_bubble, parent_bubble, null, PLACEMENT_LOGICAL
 		  | PLACEMENT_GROUPED);
       }
    }

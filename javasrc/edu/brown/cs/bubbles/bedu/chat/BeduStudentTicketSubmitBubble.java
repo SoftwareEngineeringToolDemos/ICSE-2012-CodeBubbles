@@ -18,7 +18,6 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GradientPaint;
 import java.awt.Graphics;

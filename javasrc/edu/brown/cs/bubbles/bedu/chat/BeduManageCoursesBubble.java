@@ -64,6 +64,7 @@ private ConfigPane	cur_config_pane;
 
 private ContentPane()
 {
+   //setOpaque(false);
    setPreferredSize(DEFAULT_DIMENSION);
    BassRepository course_repo = BassFactory
 	    .getRepository(BudaConstants.SearchType.SEARCH_COURSES);
@@ -112,6 +113,7 @@ private JLabel	    err_label;
 
 private ConfigPane(BeduCourse c)
 {
+//   setOpaque(false);
    my_course = c;
    JButton deleteButton = new JButton("Delete");
    deleteButton.setActionCommand(delete_action);

@@ -46,7 +46,7 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bgta.BgtaChat;
 
 
-class BeduTATicketViewBubble extends BudaBubble {
+class BeduTATicketViewBubble extends BudaBubble implements BeduConstants{
 private static final long serialVersionUID      = 1L;
 private static Color      GRADIENT_BOTTOM_COLOR = Color.white;
 private static Color      GRADIENT_TOP_COLOR    = new Color(0x33,0x00,0x99);
@@ -121,12 +121,10 @@ private TicketViewPanel(BeduStudentTicket t,BeduTATicketViewBubble a_bubble,
 {
    Graphics2D g2 = (Graphics2D) g.create();
    Dimension sz = getSize();
-   Paint p = new GradientPaint(0f,0f,GRADIENT_BOTTOM_COLOR,0f,sz.height,
-	    GRADIENT_TOP_COLOR);
+   Paint p = new GradientPaint(0f,0f,TA_TICKET_VIEW_TOP_COLOR,0f,sz.height,
+	    TA_TICKET_VIEW_BOTTOM_COLOR);
 
    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
-   g2.setColor(Color.orange);
-   g2.fill(r);
    g2.setPaint(p);
    g2.fill(r);
 

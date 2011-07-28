@@ -52,11 +52,8 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 
 
-class BeduStudentTicketSubmitBubble extends BudaBubble {
-private static Color      GRADIENT_BOTTOM_COLOR = Color.white;
-private static Color      GRADIENT_TOP_COLOR    = new Color(0xC4,0x32,0x1F);
+class BeduStudentTicketSubmitBubble extends BudaBubble implements BeduConstants {
 private static Dimension  DEFAULT_DIMENSION     = new Dimension(275,200);
-
 private static final long serialVersionUID      = 1L;
 
 private TicketPanel       content_panel;
@@ -166,12 +163,10 @@ private TicketPanel(Map<String, BgtaManager> some_chat_logins)
 {
    Graphics2D g2 = (Graphics2D) g.create();
    Dimension sz = getSize();
-   Paint p = new GradientPaint(0f,0f,GRADIENT_BOTTOM_COLOR,0f,sz.height,
-	    GRADIENT_TOP_COLOR);
+   Paint p = new GradientPaint(0f,0f,BeduConstants.STUDENT_TICKET_SUBMIT_TOP_COLOR,0f,sz.height,
+	    STUDENT_TICKET_SUBMIT_BOTTOM_COLOR);
 
    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
-   g2.setColor(Color.orange);
-   g2.fill(r);
    g2.setPaint(p);
    g2.fill(r);
 

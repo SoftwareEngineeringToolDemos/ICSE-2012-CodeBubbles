@@ -42,10 +42,8 @@ import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 
 
-class BeduTATicketListBubble extends BudaBubble {
+class BeduTATicketListBubble extends BudaBubble implements BeduConstants{
 private static final long serialVersionUID      = 1L;
-private static Color      GRADIENT_BOTTOM_COLOR = Color.white;
-private static Color      GRADIENT_TOP_COLOR    = new Color(0x33,0x00,0x99);
 private static Dimension  DEFAULT_DIMENSION     = new Dimension(200,200);
 private BeduTAXMPPClient  ta_client;
 
@@ -149,8 +147,8 @@ TicketListPanel(BeduTATicketList list,BudaBubble a_parent)
 {
    Graphics2D g2 = (Graphics2D) g.create();
    Dimension sz = getSize();
-   Paint p = new GradientPaint(0f,0f,GRADIENT_BOTTOM_COLOR,0f,sz.height,
-	    GRADIENT_TOP_COLOR);
+   Paint p = new GradientPaint(0f,0f,TA_TICKET_LIST_TOP_COLOR,0f,sz.height,
+	    TA_TICKET_LIST_BOTTOM_COLOR);
 
    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
    g2.setColor(Color.orange);

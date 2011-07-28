@@ -360,11 +360,13 @@ void rebuild()
       for(BassName ba : for_repository.getAllNames()) {
 	 if(dels.remove(ba)) continue;
 	 adds.add(ba);
-	 root_node.addNode(ba,true);
        }
       for(BassName ba : dels) {
 	 removeNode(ba);
        }
+      for(BassName ba : adds){
+	 root_node.addNode(ba,true);
+      }
 
       max_childcount = root_node.getMaxCount();
 

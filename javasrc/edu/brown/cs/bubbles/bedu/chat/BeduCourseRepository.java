@@ -23,6 +23,7 @@ package edu.brown.cs.bubbles.bedu.chat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -36,7 +37,7 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 
 
 class BeduCourseRepository implements BassRepository {
-private static List<BeduCourse>     courses;
+private List<BeduCourse>     my_courses;
 private static BeduCourseRepository instance;
 private final static String	 PROP_PREFIX = "Bedu.chat.course.";
 
@@ -56,8 +57,8 @@ static BeduCourseRepository getInstance()
  */
 static void initialize()
 {
-   instance = new BeduCourseRepository();
-   courses = new ArrayList<BeduCourse>();
+
+   ArrayList<BeduCourse> courses = new ArrayList<BeduCourse>();
 
    // grab courses out of the props file
    BoardProperties bp = BoardProperties.getProperties("Bedu");
@@ -89,6 +90,8 @@ static void initialize()
       }
 
       if (c != null) courses.add(c);
+      
+      instance = new BeduCourseRepository(courses);
    }
 
    BassRepositoryMerge fullRepo = new BassRepositoryMerge(
@@ -97,10 +100,14 @@ static void initialize()
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_COURSES, instance);
 }
 
+private BeduCourseRepository(Collection<BeduCourse> c)
+{
+   my_courses = new ArrayList<BeduCourse>(c);
+}
 
 @SuppressWarnings(value = "unchecked") @Override public synchronized Iterable<BassName> getAllNames()
 {
-   return new ArrayList<BassName>((List<BassName>) (List<?>) courses);
+   return new ArrayList<BassName>((List<BassName>) (List<?>) my_courses);
 }
 
 
@@ -117,7 +124,7 @@ private String coursePrefix(BeduCourse c)
 synchronized void addCourse(BeduCourse c)
 {
    BoardProperties bp = BoardProperties.getProperties("Bedu");
-   courses.add(c);
+   my_courses.add(c);
    bp.setProperty(coursePrefix(c) + "ta_jid", c.getTAJID());
    if (c instanceof BeduCourse.StudentCourse) {
       bp.setProperty(coursePrefix(c) + "role", "STUDENT");
@@ -137,7 +144,7 @@ synchronized void removeCourse(BeduCourse c)
    BoardProperties bp = BoardProperties.getProperties("Bedu");
    bp.remove(coursePrefix(c) + "ta_jid");
    bp.remove(coursePrefix(c) + "role");
-   courses.remove(c);
+   my_courses.remove(c);
    if (c instanceof BeduCourse.TACourse) {
       bp.remove(coursePrefix(c) + "xmpp_password");
       bp.remove(coursePrefix(c) + "server");

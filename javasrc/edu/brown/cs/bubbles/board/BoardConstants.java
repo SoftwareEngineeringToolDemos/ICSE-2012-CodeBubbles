@@ -240,6 +240,19 @@ Color WARNING_COLOR = Color.red;
 
 /********************************************************************************/
 /*										*/
+/*	Mint constants								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	Name of the mint server used to communicate with the back end.
+ **/
+String	BOARD_MINT_NAME = "BUBBLES_" + System.getProperty("user.name").replace(" ","_");
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Standard file names for eclipse and bubbles installation directories	*/
 /*										*/
 /********************************************************************************/
@@ -450,15 +463,15 @@ long	BOARD_POOL_KEEP_ALIVE_TIME = 10*60*1000;
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Definitions for running front end remotely                              */
-/*                                                                              */
+/*										*/
+/*	Definitions for running front end remotely				*/
+/*										*/
 /********************************************************************************/
 
 enum RunMode {
-   NORMAL,                      // front end and eclipse on same host
-   SERVER,                      // running bubbles/eclipse without a front end
-   CLIENT                       // running front end without eclipse/backend
+   NORMAL,			// front end and eclipse on same host
+   SERVER,			// running bubbles/eclipse without a front end
+   CLIENT			// running front end without eclipse/backend
 }
 
 

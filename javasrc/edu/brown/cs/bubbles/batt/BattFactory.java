@@ -26,8 +26,6 @@ package edu.brown.cs.bubbles.batt;
 
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
-
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.exec.*;
 import edu.brown.cs.ivy.xml.*;
@@ -98,7 +96,7 @@ public static void setup()
 
 
 public static void initialize(BudaRoot br)
-{				
+{			
    switch (BoardSetup.getSetup().getRunMode()) {
       case SERVER :
 	 getFactory().startBattServer();
@@ -152,8 +150,8 @@ BudaBubble createStatusBubble()
 
 void updateTests()
 {
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    MintDefaultReply rply = new MintDefaultReply();
    mc.send("<BATT DO='SHOWALL' />",rply,MINT_MSG_FIRST_NON_NULL);
    Element e = rply.waitForXml();
@@ -164,24 +162,24 @@ void updateTests()
 
 void runTests(RunType rt)
 {
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    mc.send("<BATT DO='RUNTESTS' TYPE='" + rt.toString() + "' />");
 }
 
 
 void stopTest()
 {
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    mc.send("<BATT DO='STOPTEST' />");
 }
 
 
 TestMode getTestMode()
 {
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    MintDefaultReply rply = new MintDefaultReply();
    mc.send("<BATT DO='MODE' />",rply,MINT_MSG_FIRST_NON_NULL);
    Element e = rply.waitForXml();
@@ -200,8 +198,8 @@ void setTestMode(TestMode md)
 {
    if (md == null) return;
 
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    mc.send("<BATT DO='SETMODE' VALUE='" + md.toString() + "' />");
 }
 
@@ -209,9 +207,8 @@ void setTestMode(TestMode md)
 
 void startBattServer()
 {
-   BumpClient bc = BumpClient.getBump();
    BoardSetup bs = BoardSetup.getSetup();
-   MintControl mc = bc.getMintControl();
+   MintControl mc = bs.getMintControl();
 
    synchronized (this) {
       if (server_running) return;
@@ -226,7 +223,7 @@ void startBattServer()
       if (batt_props.getBoolean("Batt.server.continuous",false)) args.add("-C");
       else args.add("-S");
       args.add("-m");
-      args.add(bc.getMintName());
+      args.add(bs.getMintName());
 
       String s0 = bs.getLibraryPath("junit.jar");
       String s1 = bs.getLibraryPath("battjunit.jar");

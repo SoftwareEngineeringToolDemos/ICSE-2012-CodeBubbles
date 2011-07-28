@@ -25,7 +25,7 @@
 package edu.brown.cs.bubbles.bvcr;
 
 
-import edu.brown.cs.bubbles.bump.BumpConstants;
+import edu.brown.cs.bubbles.board.BoardConstants;
 
 import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.exec.IvySetup;
@@ -96,7 +96,7 @@ enum ProcessMode {
 
 private BvcrMain(String [] args)
 {
-   mint_handle = BumpConstants.BUMP_MINT_NAME;
+   mint_handle = BoardConstants.BOARD_MINT_NAME;
    process_mode = ProcessMode.SERVER;
    the_monitor = null;
    update_files = null;

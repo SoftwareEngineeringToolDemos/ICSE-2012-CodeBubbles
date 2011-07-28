@@ -1554,9 +1554,10 @@ private class BufferData {
 				 comp_unit.getElementName() + " " +
 				 comp_unit.hasUnsavedChanges() + " " +
 				 comp_unit.isConsistent());
-	    BedrockProgressMonitor bpm = new BedrockProgressMonitor(our_plugin,"Saving");
-	    if (comp_unit.isWorkingCopy()) comp_unit.commitWorkingCopy(true,bpm);
-	    comp_unit.save(bpm,false);
+	    if (comp_unit.isWorkingCopy()) {
+	       comp_unit.commitWorkingCopy(true,new BedrockProgressMonitor(our_plugin,"Committing"));
+	     }
+	    comp_unit.save(new BedrockProgressMonitor(our_plugin,"Saving"),false);
 	    // try this for now
 	    try {
 	       comp_unit = comp_unit.getWorkingCopy(copy_owner,null);

@@ -26,8 +26,6 @@ package edu.brown.cs.bubbles.bvcr;
 
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
-
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.exec.*;
 
@@ -103,8 +101,8 @@ Element getChangesForFile(String proj,String file)
 {
    if (!server_running) return null;
 
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    MintDefaultReply rply = new MintDefaultReply();
    String cmd = "<BVCR DO='FINDCHANGES'";
    cmd += " PROJECT='" + proj + "'";
@@ -125,8 +123,8 @@ Element getHistoryForFile(String proj,String file)
 {
    if (!server_running) return null;
 
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    MintDefaultReply rply = new MintDefaultReply();
    String cmd = "<BVCR DO='HISTORY'";
    cmd += " PROJECT='" + proj + "'";
@@ -148,8 +146,8 @@ Element getHistoryForFile(String proj,String file)
 
 void startBvcrServer()
 {
-   BumpClient bc = BumpClient.getBump();
-   MintControl mc = bc.getMintControl();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
    IvyExec exec = null;
 
    synchronized (this) {
@@ -162,7 +160,7 @@ void startBvcrServer()
       args.add("edu.brown.cs.bubbles.bvcr.BvcrMain");
       args.add("-S");
       args.add("-m");
-      args.add(bc.getMintName());
+      args.add(bs.getMintName());
 
       for (int i = 0; i < 100; ++i) {
 	 MintDefaultReply rply = new MintDefaultReply();

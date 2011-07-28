@@ -65,7 +65,7 @@ class BeamNoteBubble extends BudaBubble implements BeamConstants,
 /********************************************************************************/
 
 private NoteArea		note_area;
-private String                  note_name;
+private String			note_name;
 private BeamNoteAnnotation	note_annot;
 
 private static BoardProperties	beam_properties = BoardProperties.getProperties("Beam");
@@ -159,7 +159,7 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 
    if (name != null) note_name = name;
    else createFileName();
-   
+
    note_area = null;
    if (d != null) {
       note_area = new NoteArea(d);
@@ -252,25 +252,31 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Methods for loading and saving notes                                    */
-/*                                                                              */
+/*										*/
+/*	Methods for loading and saving notes					*/
+/*										*/
 /********************************************************************************/
 
 static void updateNote(String name,String cnts)
 {
    Document d = file_documents.get(name);
    if (d == null) return;
-   
+
    int len = d.getLength();
    try {
       String txt = d.getText(0,len);
       if (txt.equals(cnts)) return;
-      d.remove(0,len);
-      d.insertString(0,cnts,null);
+      EditorKit ek = new NoteEditorKit();
+      StringReader sr = new StringReader(cnts);
+      ek.read(sr,d,0);
+      // d.remove(0,len);
+      // d.insertString(0,cnts,null);
     }
    catch (BadLocationException e) {
       BoardLog.logE("BEAM","Problem updating note",e);
+    }
+   catch (IOException e) {
+      BoardLog.logE("BEAM","Problem updating node",e);
     }
 }
 
@@ -280,39 +286,39 @@ static void updateNote(String name,String cnts)
 private synchronized void loadNote(boolean force)
 {
    if (note_name == null) createFileName();
-   
+
    switch (BoardSetup.getSetup().getRunMode()) {
       case CLIENT :
-         BumpClient bc = BumpClient.getBump();
-         try {
-            File tmp = File.createTempFile("BUBBLES_NOTE_",".html");
-            File f = bc.getRemoteFile(tmp,"NOTE",new File(note_name));
-            if (f != null) loadNoteFromFile(f,force);
-            tmp.delete();
-          }
-         catch (IOException e) { }
-         break;
+	 BumpClient bc = BumpClient.getBump();
+	 try {
+	    File tmp = File.createTempFile("BUBBLES_NOTE_",".html");
+	    File f = bc.getRemoteFile(tmp,"NOTE",new File(note_name));
+	    if (f != null) loadNoteFromFile(f,force);
+	    tmp.delete();
+	  }
+	 catch (IOException e) { }
+	 break;
       case SERVER :
       case NORMAL :
-         loadNoteFromFile(getNoteFile(),force);
-         break;
+	 loadNoteFromFile(getNoteFile(),force);
+	 break;
     }
 }
 
-   
-   
+
+
 private void loadNoteFromFile(File f,boolean force)
 {
    String cnts = "";
- 
+
    try {
       FileReader fr = new FileReader(getNoteFile());
       StringBuffer cbuf = new StringBuffer();
       char [] buf = new char[1024];
       for ( ; ; ) {
-         int ln = fr.read(buf);
-         if (ln < 0) break;
-         cbuf.append(buf,0,ln);
+	 int ln = fr.read(buf);
+	 if (ln < 0) break;
+	 cbuf.append(buf,0,ln);
        }
       cnts = cbuf.toString();
     }
@@ -327,39 +333,40 @@ private void loadNoteFromFile(File f,boolean force)
 private synchronized void saveNote()
 {
    if (note_name == null) createFileName();
-   
-   switch (BoardSetup.getSetup().getRunMode()) {
+
+   BoardSetup bs = BoardSetup.getSetup();
+
+   switch (bs.getRunMode()) {
       case CLIENT :
-         break;
+	 break;
       case SERVER :
       case NORMAL :
-         try {
-            FileWriter fw = new FileWriter(getNoteFile());
-            String txt = note_area.getText();
-            fw.write(txt);
-            fw.close();
-          }
-         catch (IOException e) {
-            BoardLog.logE("BEAM","Problem writing note file",e);
-          }
-         break;
+	 try {
+	    FileWriter fw = new FileWriter(getNoteFile());
+	    String txt = note_area.getText();
+	    fw.write(txt);
+	    fw.close();
+	  }
+	 catch (IOException e) {
+	    BoardLog.logE("BEAM","Problem writing note file",e);
+	  }
+	 break;
     }
-   
-   switch (BoardSetup.getSetup().getRunMode()) {
+
+   switch (bs.getRunMode()) {
       case CLIENT :
       case NORMAL :
-         BumpClient bc = BumpClient.getBump();
-         MintControl mc = bc.getMintControl();
-         IvyXmlWriter xw = new IvyXmlWriter();
-         xw.begin("BEAM");
-         xw.field("TYPE","NOTE");
-         xw.field("NAME",note_name);
-         xw.cdataElement("TEXT",note_area.getText());
-         xw.end("BEAM");
-         mc.send(xw.toString());
-         break;
+	 MintControl mc = bs.getMintControl();
+	 IvyXmlWriter xw = new IvyXmlWriter();
+	 xw.begin("BEAM");
+	 xw.field("TYPE","NOTE");
+	 xw.field("NAME",note_name);
+	 xw.cdataElement("TEXT",note_area.getText());
+	 xw.end("BEAM");
+	 mc.send(xw.toString());
+	 break;
       case SERVER :
-         break;
+	 break;
     }
 }
 
@@ -368,12 +375,12 @@ private synchronized void deleteNote()
 {
    switch (BoardSetup.getSetup().getRunMode()) {
       case CLIENT :
-         break;
+	 break;
       case SERVER :
       case NORMAL :
-         File f = getNoteFile();
-         f.delete();
-         break;
+	 File f = getNoteFile();
+	 f.delete();
+	 break;
     }
 }
 

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -37,7 +37,7 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-
+import java.util.concurrent.atomic.*;
 
 
 class BedrockProgressMonitor extends NullProgressMonitor {
@@ -53,8 +53,14 @@ class BedrockProgressMonitor extends NullProgressMonitor {
 
 private BedrockPlugin	for_plugin;
 private String		task_name;
+private String		subtask_name;
 private double		total_work;
+private double		work_done;
 private boolean 	is_done;
+private String		task_id;
+
+private static AtomicInteger task_counter = new AtomicInteger(1);
+private static AtomicLong    serial_number = new AtomicLong(1);
 
 
 
@@ -68,8 +74,14 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
 {
    for_plugin = bp;
    task_name = nm;
+   subtask_name = null;
    total_work = UNKNOWN;
+   work_done = 0;
    is_done = false;
+
+   task_id = Integer.toString(task_counter.incrementAndGet());
+
+   BedrockPlugin.log("Progress Monitor " + nm + " " + task_id);
 }
 
 
@@ -85,11 +97,15 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
    super.beginTask(name,total);
 
    if (name != null && name.length() > 0) task_name = name;
+   subtask_name = null;
    total_work = total;
+   work_done = 0;
 
    IvyXmlWriter xw = for_plugin.beginMessage("PROGRESS");
    xw.field("KIND","BEGIN");
    xw.field("TASK",task_name);
+   xw.field("ID",task_id);
+   xw.field("S",serial_number.incrementAndGet());
    for_plugin.finishMessage(xw);
 }
 
@@ -104,9 +120,12 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
    IvyXmlWriter xw = for_plugin.beginMessage("PROGRESS");
    xw.field("KIND","DONE");
    xw.field("TASK",task_name);
+   xw.field("ID",task_id);
+   xw.field("S",serial_number.incrementAndGet());
    for_plugin.finishMessage(xw);
 
    task_name = null;
+   subtask_name = null;
 
    synchronized (this) {
       is_done = true;
@@ -124,6 +143,9 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
    if (v) xw.field("KIND","CANCEL");
    else xw.field("KIND","UNCANCEL");
    xw.field("TASK",task_name);
+   xw.field("SUBTASK",subtask_name);
+   xw.field("ID",task_id);
+   xw.field("S",serial_number.incrementAndGet());
    for_plugin.finishMessage(xw);
 }
 
@@ -134,9 +156,13 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
 {
    super.setTaskName(name);
 
+   subtask_name = null;
+
    IvyXmlWriter xw = for_plugin.beginMessage("PROGRESS");
    xw.field("KIND","ENDSUBTASK");
    xw.field("TASK",task_name);
+   xw.field("ID",task_id);
+   xw.field("S",serial_number.incrementAndGet());
    for_plugin.finishMessage(xw);
 }
 
@@ -147,10 +173,14 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
 {
    super.subTask(name);
 
+   subtask_name = name;
+
    IvyXmlWriter xw = for_plugin.beginMessage("PROGRESS");
    xw.field("KIND","SUBTASK");
    xw.field("TASK",task_name);
    xw.field("SUBTASK",name);
+   xw.field("ID",task_id);
+   xw.field("S",serial_number.incrementAndGet());
    for_plugin.finishMessage(xw);
 }
 
@@ -163,18 +193,20 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
 
    if (total_work == UNKNOWN) return;
 
-   double v = w / total_work;
+   work_done += w;
+
+   double v = work_done / total_work;
    double v0 = (v*100);
    if (v0 < 0) v0 = 0;
    if (v0 > 100) v0 = 100;
-   if (w != 0 && v0 == 0) {
-      BedrockPlugin.log("Inconsistent progress numbers: " + w + " " + total_work + " " + v0);
-    }
 
    IvyXmlWriter xw = for_plugin.beginMessage("PROGRESS");
    xw.field("KIND","WORKED");
    xw.field("TASK",task_name);
+   xw.field("SUBTASK",subtask_name);
+   xw.field("ID",task_id);
    xw.field("WORK",v0);
+   xw.field("S",serial_number.incrementAndGet());
    for_plugin.finishMessage(xw);
 }
 

@@ -129,6 +129,8 @@ synchronized void addCourse(BeduCourse c)
       bp.setProperty(coursePrefix(c) + "xmpp_password", tc.getXMPPPassword());
       bp.setProperty(coursePrefix(c) + "server", tc.getXMPPServer());
    }
+   
+   BassFactory.reloadRepository(this);
 }
 
 synchronized void removeCourse(BeduCourse c)
@@ -141,6 +143,8 @@ synchronized void removeCourse(BeduCourse c)
       bp.remove(coursePrefix(c) + "xmpp_password");
       bp.remove(coursePrefix(c) + "server");
    }
+   
+   BassFactory.reloadRepository(this);
 }
 
 void saveConfigFile() throws IOException

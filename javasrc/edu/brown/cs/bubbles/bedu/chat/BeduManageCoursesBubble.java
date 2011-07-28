@@ -273,7 +273,7 @@ public void actionPerformed(ActionEvent e)
       BeduManageCoursesBubble.this.combo.removeItem(course);
       try {
 
-	 BassFactory.reloadRepository(r);
+
 	 r.saveConfigFile();
 
       }

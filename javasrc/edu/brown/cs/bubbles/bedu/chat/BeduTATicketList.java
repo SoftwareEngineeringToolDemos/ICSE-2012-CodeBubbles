@@ -28,19 +28,22 @@ import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
+
 
 class BeduTATicketList extends ArrayList<BeduStudentTicket> implements TableModel {
 
 private static final long	serialVersionUID = 1L;
 private static final String      DATE_FORMAT_STR  = "h:mm a";
 
-private List<TableModelListener> listeners_list;
+private SwingEventListenerList<TableModelListener> listeners_list;
+
 private SimpleDateFormat	 date_format;
 
 
 BeduTATicketList()
 {
-   listeners_list = new ArrayList<TableModelListener>();
+   listeners_list = new SwingEventListenerList<TableModelListener>(TableModelListener.class);
    date_format = new SimpleDateFormat(DATE_FORMAT_STR);
 }
 
@@ -48,7 +51,7 @@ BeduTATicketList()
 // TableModel methods
 @Override public void addTableModelListener(TableModelListener l)
 {
-   if (!listeners_list.contains(l)) listeners_list.add(l);
+   listeners_list.add(l);
 }
 
 

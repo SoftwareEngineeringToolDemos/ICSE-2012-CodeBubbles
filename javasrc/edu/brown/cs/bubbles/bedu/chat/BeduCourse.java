@@ -1,12 +1,12 @@
 /********************************************************************************/
-/*                         						 											  */
-/*    		BeduCourse.java     	            											  */
-/*                            													    		  */
-/* 	Bubbles for Education   																  */
-/* 	Represents a school course		 	      											  */
-/* 				               															  	  */
+/*                         							*/
+/*    		BeduCourse.java     	            				*/
+/*                            							*/
+/* 	Bubbles for Education   						*/
+/* 	Represents a school course		 	      			*/
+/* 				               					*/
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         					  */
+/* 	Copyright 2011 Brown University -- Andrew Kovacs         		*/
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.                            *
  *                                                                               *
@@ -32,7 +32,6 @@ import edu.brown.cs.bubbles.bgta.BgtaManager;
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.buda.BudaHintBubble;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.board.BoardImage;
 
@@ -109,7 +108,7 @@ BeduTATicketList getTicketList()
       }
    }
    catch (Exception e) {
-      return new BudaHintBubble("Error logging in: " + e.getMessage(), null, 0);
+      return new BeduErrorBubble("Error logging in: " + e.getMessage());
    }
 
    return new BeduTATicketListBubble(my_client.getTickets(),my_client);

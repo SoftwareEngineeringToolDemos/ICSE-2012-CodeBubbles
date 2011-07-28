@@ -46,7 +46,7 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 
-public class BeduTAXMPPClient {
+class BeduTAXMPPClient {
 private ConnectionConfiguration xmpp_config;
 private XMPPConnection	  xmpp_conn;
 
@@ -183,7 +183,7 @@ BgtaChat acceptTicketAndAlertPeers(BeduStudentTicket t)
 }
 
 
-public BeduTATicketList getTickets()
+BeduTATicketList getTickets()
 {
    return ticket_list;
 }

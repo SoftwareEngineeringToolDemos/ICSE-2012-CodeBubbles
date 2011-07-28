@@ -39,6 +39,7 @@ import javax.swing.JTextField;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
+import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 
@@ -279,6 +280,7 @@ public void actionPerformed(ActionEvent e)
       catch (IOException ex) {
 	 err_label.setText("Error saving course");
 	 err_label.setVisible(true);
+	 BoardLog.logE("BEDU", "Exception managing course: " + ex.getMessage());
 	 r.removeCourse(new_course);
 	 r.addCourse(my_course);
 
@@ -299,6 +301,7 @@ public void actionPerformed(ActionEvent e)
       catch (IOException ex) {
 	 err_label.setText("Error removing course");
 	 err_label.setVisible(true);
+	 BoardLog.logE("BEDU", "Exception managing course: " + ex.getMessage());
 	 r.addCourse(my_course);
 	 BeduManageCoursesBubble.this.combo_box.addItem(my_course);
 	 BeduManageCoursesBubble.this.combo_box.setSelectedIndex(i);

@@ -1110,7 +1110,7 @@ interface BudaBubbler {
  *	the deletion of a bubble or a bubble group.
  **/
 
-public interface BudaHintActions {
+interface BudaHintActions {
 
    void clickAction();
    void finalAction();

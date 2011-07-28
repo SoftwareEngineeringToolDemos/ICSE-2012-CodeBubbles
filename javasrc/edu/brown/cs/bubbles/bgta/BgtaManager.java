@@ -350,6 +350,10 @@ BgtaChat startChat(String username)
        existing_chats.put(username,chat);
        existing_docs.put(username,chat.getDocument());
     }
+   else
+   {
+      return existing_chats.get(username);
+   }
    return chat;
 }
 

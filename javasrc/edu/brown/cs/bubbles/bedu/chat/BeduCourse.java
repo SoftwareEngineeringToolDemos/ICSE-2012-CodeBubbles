@@ -78,15 +78,6 @@ protected BeduCourse(String a_course_name,String a_jid)
    return course_name;
 }
 
-void setCourseName(String name)
-{
-	course_name = name;
-}
-
-void setChatJID(String jid)
-{
-	ta_chat_jid = jid;
-}
 
 static class TACourse extends BeduCourse {
 private BeduTATicketList ticket_list;
@@ -109,18 +100,8 @@ BeduTATicketList getTicketList()
    return ticket_list;
 }
 
-void setXMPPPassword(String pwd)
-{
-	xmpp_password = pwd;
-}
 
-void setXMPPServer(String srv)
-{
-	xmpp_server = srv;
-}
-
-
-@Override public BudaBubble createBubble()
+@SuppressWarnings("serial") @Override public BudaBubble createBubble()
 {
    client = BeduChatFactory.getTAXMPPClientForCourse(this);
 

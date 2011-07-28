@@ -84,14 +84,11 @@ private ContentPane()
 {
    if (cur_config_pane != null) remove(cur_config_pane);
    if (e.getItem() instanceof String) {
-   	BeduCourse new_course = null;
       if (((String) e.getItem()).equals(ADD_STUDENT_STR)) {
-      	new_course = new BeduCourse.StudentCourse("","");
-	 cur_config_pane = new ConfigPane(new_course);
+	 cur_config_pane = new ConfigPane(new BeduCourse.StudentCourse("",""));
       }
       else if (((String) e.getItem()).equals(ADD_TA_STR)) {
-      	new_course = new BeduCourse.TACourse("","","","");
-	 cur_config_pane = new ConfigPane(new_course);
+	 cur_config_pane = new ConfigPane(new BeduCourse.TACourse("","","",""));
       }
    }
    else cur_config_pane = new ConfigPane((BeduCourse) e.getItem());
@@ -254,24 +251,26 @@ private ConfigPane(BeduCourse c)
 
 public void actionPerformed(ActionEvent e)
 {
-	boolean newC = false;
-	if(course.getName().equals(""))
-		newC = true;
    err_label.setVisible(false);
    BeduCourseRepository r = (BeduCourseRepository) (BassFactory
 	    .getRepository(BudaConstants.SearchType.SEARCH_COURSES));
    if (e.getActionCommand().equals(save_action)) {
+      BeduCourse new_course = null;
       if (course instanceof BeduCourse.StudentCourse) {
+	 new_course = new BeduCourse.StudentCourse(name_field.getText(),jid_field
+		  .getText());
       }
       else if (course instanceof BeduCourse.TACourse) {
-      	((BeduCourse.TACourse)course).setXMPPPassword(password_field.getText());
-      	((BeduCourse.TACourse)course).setXMPPServer(server_field.getText());
+	 new_course = new BeduCourse.TACourse(name_field.getText(),jid_field.getText(),
+		  password_field.getText(),server_field.getText());
       }
-      course.setCourseName(name_field.getText());
-      course.setChatJID(jid_field.getText());
-      
-      if(newC)
-      	r.addCourse(course);
+
+      r.removeCourse(course);
+
+      r.addCourse(new_course);
+      BeduManageCoursesBubble.this.combo.addItem(new_course);
+      BeduManageCoursesBubble.this.combo.setSelectedItem(new_course);
+      BeduManageCoursesBubble.this.combo.removeItem(course);
       try {
 
 	 BassFactory.reloadRepository(r);
@@ -281,6 +280,10 @@ public void actionPerformed(ActionEvent e)
       catch (IOException ex) {
 	 err_label.setText("Error saving course");
 	 err_label.setVisible(true);
+	 r.removeCourse(new_course);
+	 r.addCourse(course);
+
+	 BeduManageCoursesBubble.this.combo.removeItem(new_course);
       }
    }
    else if (e.getActionCommand().equals(delete_action)) {

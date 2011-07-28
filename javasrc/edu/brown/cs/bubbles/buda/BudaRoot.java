@@ -2261,7 +2261,6 @@ private static class MouseEventQueue extends EventQueue {
        }
       catch (Throwable t) {
 	 BoardLog.logE("BUDA","Problem processing user interface event: " + t,t);
-	 t.printStackTrace();
        }
     }
 

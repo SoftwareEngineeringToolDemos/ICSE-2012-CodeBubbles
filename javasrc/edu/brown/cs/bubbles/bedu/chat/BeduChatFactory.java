@@ -27,7 +27,7 @@ import java.util.ArrayList;
 
 
 public class BeduChatFactory {
-static boolean			DEBUG = false;
+public static boolean			DEBUG = false;
 private static List<BeduTAXMPPClient> ta_sessions;
 
 static {

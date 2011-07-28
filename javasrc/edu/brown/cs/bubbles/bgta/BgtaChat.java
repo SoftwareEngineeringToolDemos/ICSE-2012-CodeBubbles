@@ -635,7 +635,6 @@ void close()
 private class XMPPChatListener implements MessageListener {
 
    @Override public void processMessage(Chat ch,Message msg) {
-      System.out.println("3: " + ch);
       if (!ch.equals(the_chat))
          return;
       if (msg.getType() != Message.Type.chat)

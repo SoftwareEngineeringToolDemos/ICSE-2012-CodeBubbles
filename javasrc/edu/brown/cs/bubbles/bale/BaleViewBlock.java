@@ -26,8 +26,7 @@
 package edu.brown.cs.bubbles.bale;
 
 
-import edu.brown.cs.bubbles.board.BoardImage;
-import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -506,7 +505,13 @@ private void drawElisionTrigger(Graphics g,Rectangle alloc,boolean fg)
 
    boolean wasvalid = layout_valid;
 
-   super.forwardUpdate(ec, e, a, f);
+   try {
+      super.forwardUpdate(ec, e, a, f);
+    }
+   catch (Throwable t) {
+      BoardLog.logE("BALE","Problem with event updating for " + getBaleElement(),t);
+      return;
+    }
 
    if (isTopNode()) {
       BaleDocument bd = (BaleDocument) getDocument();
@@ -948,3 +953,212 @@ private class ExtractTrigger implements RegionAction {
 
 
 /* end of BaleViewBlock.java */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

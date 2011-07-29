@@ -809,7 +809,75 @@ void setColors(Color top,Color bottom)
 /*										*/
 /********************************************************************************/
 
+public boolean isPrimaryArea()			{ return channel_set == null; }
+
+
 BudaChannelSet getChannelSet()			{ return channel_set; }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Region methods								*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	Compute screen region including given window (or what is displayed)
+ **/
+
+public Rectangle computeRegion(Component base)
+{
+   Rectangle rview = new Rectangle(for_root.getViewport());
+   Rectangle rloc = null;
+   if (base != null) {
+      rloc = BudaRoot.findBudaLocation(base);
+      if (rloc == null) return null;
+    }
+   else rloc = rview;
+   int space = Math.max(rview.width/2,768);
+
+   if (isPrimaryArea()) {
+      // check if we are inside a working set and use it if so
+      for (BudaConstants.BudaWorkingSet ws : for_root.getWorkingSets()) {
+	 Rectangle r = ws.getRegion();
+	 if (r != null && r.intersects(rloc)) {
+	    return new Rectangle(r);
+	  }
+       }
+    }
+
+   int left = Math.max(0,rloc.x - space);
+   int right = rloc.x + rloc.width + space;
+   boolean chng = true;
+   while (chng) {
+      chng = false;
+      for (BudaBubble bb : getBubbles()) {
+	 Rectangle bloc = BudaRoot.findBudaLocation(bb);
+	 if (bloc != null && bloc.x <= right && bloc.x + bloc.width >= left) {
+	    int l0 = Math.max(0,bloc.x - space);
+	    int r0 = bloc.x + bloc.width + space;
+	    if (l0 < left) {
+	       left = l0;
+	       chng = true;
+	    }
+	    if (r0 > right) {
+	       right = r0;
+	       chng = true;
+	    }
+	 }
+      }
+   }
+
+   Rectangle r0 = new Rectangle(rview);
+   r0.x = left;
+   r0.width = right-left+1;
+   r0.y = 0;
+   r0.height = getHeight();
+
+   return r0;
+}
 
 
 

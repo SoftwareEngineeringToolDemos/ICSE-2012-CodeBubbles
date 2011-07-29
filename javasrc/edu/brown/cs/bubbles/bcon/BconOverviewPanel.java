@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -64,7 +64,6 @@ private Rectangle		focus_region;
 private boolean 		is_vertical;
 private Set<BudaBubble> 	active_bubbles;
 
-private static final int	EMPTY_SPACE = 768;
 
 
 
@@ -157,49 +156,11 @@ private void addAllBubbles()
 
 private void computeRegion()
 {
-   BudaRoot root = BudaRoot.findBudaRoot(bubble_area);
-   Rectangle rloc = BudaRoot.findBudaLocation(drawing_area);
-   if (rloc == null) return;
-   Rectangle oldrgn = focus_region;
+   Rectangle newrgn = bubble_area.computeRegion(drawing_area);
+   if (newrgn.equals(focus_region)) return;
 
-   // first check if we are inside a working set and use it if so
-   for (BudaConstants.BudaWorkingSet ws : root.getWorkingSets()) {
-      Rectangle r = ws.getRegion();
-      if (r != null && r.intersects(rloc)) {
-	 focus_region = new Rectangle(r);
-	 if (!focus_region.equals(oldrgn)) addAllBubbles();
-	 return;
-      }
-   }
-
-   int left = Math.max(0,rloc.x - EMPTY_SPACE);
-   int right = rloc.x + rloc.width + EMPTY_SPACE;
-   boolean chng = true;
-   while (chng) {
-      chng = false;
-      for (BudaBubble bb : bubble_area.getBubbles()) {
-	 Rectangle bloc = BudaRoot.findBudaLocation(bb);
-	 if (bloc != null && bloc.x <= right && bloc.x + bloc.width >= left) {
-	    int l0 = Math.max(0,bloc.x - EMPTY_SPACE);
-	    int r0 = bloc.x + bloc.width + EMPTY_SPACE;
-	    if (l0 < left) {
-	       left = l0;
-	       chng = true;
-	    }
-	    if (r0 > right) {
-	       right = r0;
-	       chng = true;
-	    }
-	 }
-      }
-   }
-
-   Rectangle r0 = new Rectangle(root.getViewport());
-   r0.x = left;
-   r0.width = right-left+1;
-   focus_region = r0;
-
-   if (!focus_region.equals(oldrgn)) addAllBubbles();
+   focus_region = new Rectangle(newrgn);
+   addAllBubbles();
 }
 
 

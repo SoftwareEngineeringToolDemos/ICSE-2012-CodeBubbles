@@ -1107,7 +1107,7 @@ private void setupGlobalActions()
 
 
 
-private void registerKeyAction(Action act,String cmd,KeyStroke k)
+public void registerKeyAction(Action act,String cmd,KeyStroke k)
 {
    JPanel cnt = (JPanel) getContentPane();
    cnt.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(k,cmd);

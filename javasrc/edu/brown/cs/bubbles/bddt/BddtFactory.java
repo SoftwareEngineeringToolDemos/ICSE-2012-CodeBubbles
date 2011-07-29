@@ -1,4 +1,5 @@
-/********************************************************************************/ /*										   */
+/********************************************************************************/
+/*										*/
 /*		BddtFactory.java						*/
 /*										*/
 /*	Bubbles Environment dyanmic debugger tool factory and setup class	*/
@@ -184,7 +185,7 @@ public void newDebugger(BumpLaunchConfig blc)
       bbp = BudaBubblePosition.FLOAT;
     }
    bba.addBubble(ctrl,null,new Point(BDDT_LAUNCH_CONTROL_X,BDDT_LAUNCH_CONTROL_Y),
-         PLACEMENT_EXPLICIT,bbp);
+	 PLACEMENT_EXPLICIT,bbp);
 
    BudaRoot br = BudaRoot.findBudaRoot(bba);
    br.setCurrentChannel(ctrl);
@@ -253,6 +254,8 @@ private void setupDebugging(BudaRoot br)
    pnl.addGBComponent(launch_label,0,3,0,0,1,1);
 
    br.addPanel(pnl);
+
+   // register F2 to bring up task bubble
 }
 
 

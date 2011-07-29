@@ -25,8 +25,6 @@ import javax.swing.event.DocumentEvent;
 
 import org.jivesoftware.smack.packet.Message;
 
-import edu.brown.cs.bubbles.bedu.chat.BeduChatFactory;
-
 public class BgtaResourceSwitchingBubble extends BgtaBubble
 {
    private static final long serialVersionUID = 1L;
@@ -57,8 +55,6 @@ public class BgtaResourceSwitchingBubble extends BgtaBubble
       try {
          if(!msg.getFrom().equals(chat.getChat().getParticipant()))
          {
-            if(BeduChatFactory.DEBUG)
-               System.out.println("BgtaChat switching from " + chat.getChat().getParticipant() + " to " + msg.getFrom());
             chat.setChat(man.startChat(msg.getFrom()).getChat());
          }
       } catch (OperationNotSupportedException e1) {

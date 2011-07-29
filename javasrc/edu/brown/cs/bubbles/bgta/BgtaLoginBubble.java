@@ -61,7 +61,7 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 
 
 
-class BgtaLoginBubble extends BudaBubble implements BgtaConstants {
+public class BgtaLoginBubble extends BudaBubble implements BgtaConstants {
 
 
 
@@ -215,7 +215,11 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    error_label.setVisible(false);
 }
 
-
+public void setErrorMessage(String msg)
+{
+   error_label.setText(msg);
+   error_label.setVisible(true);
+}
 
 
 /********************************************************************************/

@@ -25,6 +25,8 @@ import java.util.List;
 
 import java.util.ArrayList;
 
+import edu.brown.cs.bubbles.board.BoardProperties;
+
 
 public class BeduChatFactory {
 public static boolean			DEBUG = false;
@@ -37,7 +39,9 @@ static {
 
 public static void setup()
 {
-   BeduCourseRepository.initialize();
+   BoardProperties bp = BoardProperties.getProperties("Bedu");
+   if(!bp.getProperty("enabled").equals("false"))
+      BeduCourseRepository.initialize();
 }
 
 

@@ -45,6 +45,37 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
+/**
+ * This class implements the bulk of the system of ticket handling
+ * and chatting with students. 
+ * 
+ * TAs all login to the same XMPP account, but they all use different
+ * resource names, currently the resource name is the hostname of the machine
+ * (this means it is problematic to for someone to log into the same course
+ * account as a TA on multiple instances on the same machine).
+ * 
+ * Once logged in TA clients implement the following protocol:
+ * ACCEPTING:<string hash>			Sent to other TAs to alert them that the given client is
+ * 			     			accepting the ticket with the given hash of its text string.
+ * 						Other clients are expected to remove the ticket from their
+ * 						lists of open tickets
+ * 
+ * REQUEST-TICKETS				Send to another TA to request all of its tickets. This is 
+ * 						used upon login to find out about all the tickets that
+ * 						have been submitted in the time before the client logged in
+ * 
+ * TICKET-FORWARD:<student jid>:<ticket text>	Sent to another TA to alert that client about a ticket that 
+ * 						the given client knows about. This is called every time a client
+ * 						receives a ticket from a student (because the priorities are arranged
+ * 						such that only the longest logged in TA will receive the ticket messages).
+ * 						TAs who receive this should add the ticket to their lists.
+ * 
+ * TICKET:<ticket text>				Sent by students to the TA with the highest priority. This TA client
+ * 						should add the ticket to its list and forward the ticket to the other TAs
+ * 
+ * @author akovacs
+ *
+ */
 
 class BeduTAXMPPClient {
 private ConnectionConfiguration xmpp_config;
@@ -170,7 +201,12 @@ void endChatSession(BgtaChat c)
    permitted_jids.remove(c.getUsername());
 }
 
-
+/**
+ * Opens a chat sesion with the student who subbmitted the 
+ * given ticket and returns a BgtaChat with the student 
+ * @param t
+ * @return
+ */
 BgtaChat acceptTicketAndAlertPeers(BeduStudentTicket t)
 {
    sendMessageToOtherResources("ACCEPTING:" + t.textHash());
@@ -194,7 +230,10 @@ XMPPConnection getConnection()
    return xmpp_conn;
 }
 
-
+/**
+ * Sends a message to the other TAs (other resources on the same account)
+ * @param msg
+ */
 private void sendMessageToOtherResources(String msg)
 {
    for (String full_jid : BgtaUtil.getFullJIDsForRosterEntry(xmpp_conn.getRoster(),

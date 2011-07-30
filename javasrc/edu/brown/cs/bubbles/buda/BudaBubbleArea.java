@@ -330,6 +330,7 @@ void removeCurrentBubble(MouseEvent e)
 	 setLayer(bb,MODAL_LAYER+3);
        }
       else if (bc.getPositionType() == BudaBubblePosition.FLOAT) {
+	 fixed = false;
 	 floating_bubbles.put(bb,floc);
 	 loc = setFloatingLocation(bb);
 	 bb.setFloating(true);
@@ -340,6 +341,7 @@ void removeCurrentBubble(MouseEvent e)
 	 setLayer(bb,MODAL_LAYER+4);
        }
       else if (bc.getPositionType() == BudaBubblePosition.DIALOG) {
+	 fixed = false;
 	 floating_bubbles.put(bb,floc);
 	 loc = setFloatingLocation(bb);
 	 bb.setFloating(true);
@@ -2669,8 +2671,9 @@ private class BubbleManager implements ComponentListener, ContainerListener {
    public void componentAdded(ContainerEvent e) {
       if (e.getChild() instanceof BudaBubble) {
 	 BudaBubble bb = (BudaBubble) e.getChild();
-	 localAddBubble(bb,true);
-	 updateOverview();
+	 // if (bb.isShowing()) localAddBubble(bb,true);
+	 // updateOverview();
+	 // wait for componentShown event
        }
     }
 

@@ -112,7 +112,7 @@ private BgtaChat		 bs2ToT1;
    System.out.println("Testing ticket receipt");
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1",
 	    new MessageListener() {
-	       @Override public void processMessage(Chat c,Message m)
+	       @Override public void processMessage(Chat ch,Message m)
 	       {
 
 	       }

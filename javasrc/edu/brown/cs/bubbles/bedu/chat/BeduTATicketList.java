@@ -54,7 +54,7 @@ BeduTATicketList()
 }
 
 
-@SuppressWarnings("unchecked") @Override public Class getColumnClass(int columnIndex)
+@Override public Class<?> getColumnClass(int columnIndex)
 {
    return String.class;
 }

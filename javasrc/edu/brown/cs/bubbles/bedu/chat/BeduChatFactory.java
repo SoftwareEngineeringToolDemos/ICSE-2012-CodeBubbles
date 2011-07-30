@@ -1,22 +1,22 @@
 /********************************************************************************/
-/*                         							*/
-/*    		BeduChatManager.java            				*/
-/*                            							*/
-/* 	Bubbles for Education   						*/
-/* 	Keeps track of edu chat sessions 	      				*/
-/* 				               					*/
+/*										*/
+/*		BeduChatFactory.java						*/
+/*										*/
+/*	Bubbles for Education							*/
+/*	Keeps track of edu chat sessions					*/
+/*										*/
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         		*/
+/*	Copyright 2011 Brown University -- Andrew Kovacs			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bedu.chat;
@@ -44,9 +44,9 @@ public static void setup()
 /**
  * Returns the XMPPClient associated with the given course which the current
  * user is a TA of
- * 
+ *
  * Constructs it if it doesn't already exist
- * 
+ *
  * @param course
  * @return
  */

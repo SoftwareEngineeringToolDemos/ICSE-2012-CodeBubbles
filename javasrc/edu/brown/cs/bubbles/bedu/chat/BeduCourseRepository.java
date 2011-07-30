@@ -89,10 +89,10 @@ static void initialize()
       }
 
       if (c != null) courses.add(c);
-      
-      instance = new BeduCourseRepository(courses);
    }
-
+   
+   instance = new BeduCourseRepository(courses);
+   
    BassRepositoryMerge fullRepo = new BassRepositoryMerge(
 	    new BeduManageCoursesRepository(),instance);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, fullRepo);

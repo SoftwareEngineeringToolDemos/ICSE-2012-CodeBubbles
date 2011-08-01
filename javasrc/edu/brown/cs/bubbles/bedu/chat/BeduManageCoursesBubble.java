@@ -22,12 +22,18 @@ package edu.brown.cs.bubbles.bedu.chat;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
 import javax.swing.JButton;
@@ -44,7 +50,7 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 
 
-class BeduManageCoursesBubble extends BudaBubble {
+class BeduManageCoursesBubble extends BudaBubble implements BeduConstants{
 private JComboBox	      combo_box;
 
 private static final long      serialVersionUID  = 1L;
@@ -64,7 +70,7 @@ private ConfigPane	cur_config_pane;
 
 private ContentPane()
 {
-   //setOpaque(false);
+   setOpaque(false);
    setPreferredSize(DEFAULT_DIMENSION);
    BassRepository course_repo = BassFactory
 	    .getRepository(BudaConstants.SearchType.SEARCH_COURSES);
@@ -113,7 +119,7 @@ private JLabel	    err_label;
 
 private ConfigPane(BeduCourse c)
 {
-//   setOpaque(false);
+   setOpaque(false);
    my_course = c;
    JButton deleteButton = new JButton("Delete");
    deleteButton.setActionCommand(delete_action);
@@ -310,5 +316,19 @@ public void actionPerformed(ActionEvent e)
       }
    }
 }
+@Override public void paintComponent(Graphics g)
+{
+   Graphics2D g2 = (Graphics2D) g.create();
+   Dimension sz = getSize();
+   Paint p = new GradientPaint(0f,0f,COURSE_MANAGE_TOP_COLOR,0f,sz.height,
+	    COURSE_MANAGE_BOTTOM_COLOR);
+
+   Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+   g2.setPaint(p);
+   g2.fill(r);
+
+   super.paintComponent(g);
+}
+
 }
 }

@@ -441,12 +441,13 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("CREATEPROJECT")) {
       bedrock_project.createProject();
     }
-   else if(cmd.equals("CONSTRUCTPROJECT")){
-      System.out.println("Construct project command received");
+   else if(cmd.equals("IMPORTPROJECT")){
+      System.out.println("Importing proj: " + proj);
       try{
-      	bedrock_project.importExistingProject("name");
+      	bedrock_project.importExistingProject(proj);
       }catch(Throwable t)
       {
+	 System.out.println(t.getMessage());
 	 throw new BedrockException("Exception constructing project: " + t.getMessage());
       }
    }

@@ -40,6 +40,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import javax.swing.AbstractAction;
+import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 
 import java.awt.*;
@@ -475,6 +476,7 @@ private static class ProjectProps implements BassPopupHandler {
 
       menu.add(new ProjectAction(proj));
       menu.add(new NewProjectAction());
+      menu.add(new BassImportProjectAction());
     }
 
 }	// end of inner class ProjectProps
@@ -515,8 +517,6 @@ private static class NewProjectAction extends AbstractAction {
     }
 
 }	// end of inner class ProjectAction
-
-
 
 }	// end of class BassFactory
 

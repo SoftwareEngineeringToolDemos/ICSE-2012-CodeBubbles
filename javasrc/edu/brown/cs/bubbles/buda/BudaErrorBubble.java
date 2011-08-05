@@ -1,9 +1,8 @@
 /********************************************************************************/
 /*                         							*/
-/*    		BeduErrorBubble.java  	            				*/
+/*    		BudaErrorBubble.java  	            				*/
 /*                            							*/
-/* 	Bubbles for Education   						*/
-/* 	Bubble for displaying error messages in Bedu package  			*/
+/* 	Bubble for displaying error messages 					*/
 /* 				               					*/
 /********************************************************************************/
 /* 	Copyright 2011 Brown University -- Andrew Kovacs         		*/
@@ -19,23 +18,26 @@
  *                                                                               *
  ********************************************************************************/
 
-package edu.brown.cs.bubbles.bedu.chat;
+package edu.brown.cs.bubbles.buda;
+
+import java.awt.Color;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import edu.brown.cs.bubbles.buda.BudaBubble;
 
 
-class BeduErrorBubble extends BudaBubble {
+public class BudaErrorBubble extends BudaBubble {
 private static final long serialVersionUID = 1L;
 
-BeduErrorBubble(final String err_msg)
+public BudaErrorBubble(final String errmsg)
 {
    setContentPane(new JPanel() {
       private static final long serialVersionUID = 1L;
       {
-	 add(new JLabel(err_msg));
+	 JLabel errlabel = new JLabel(errmsg);
+	 errlabel.setForeground(Color.RED);
+	 add(new JLabel(errmsg));
       }
    });
 }

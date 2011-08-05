@@ -769,11 +769,11 @@ public void createProject()
    sendMessage("CREATEPROJECT",null,null,null);
 }
 
-public void constructProject()
+public void importProject(String name)
 {
    waitForIDE();
 
-   sendMessage("CONSTRUCTPROJECT", null, null, null);
+   sendMessage("IMPORTPROJECT", name, null, null);
 }
 
 

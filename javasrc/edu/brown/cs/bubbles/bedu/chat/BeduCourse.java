@@ -32,6 +32,7 @@ import edu.brown.cs.bubbles.bgta.BgtaManager;
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+import edu.brown.cs.bubbles.buda.BudaErrorBubble;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.board.BoardImage;
 
@@ -108,7 +109,7 @@ BeduTATicketList getTicketList()
       }
    }
    catch (Exception e) {
-      return new BeduErrorBubble("Error logging in: " + e.getMessage());
+      return new BudaErrorBubble("Error logging in: " + e.getMessage());
    }
 
    return new BeduTATicketListBubble(my_client.getTickets(),my_client);

@@ -382,8 +382,12 @@ void importExistingProject(String name) throws Exception
    IProject p = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
    
    //if it already exists in the workspace don't do anything
-   if(p.exists()) return;
-   
+   if(p.exists())
+   {
+      System.out.println("Project already exists");
+      return;
+   }
+   p.create(null);
    p.open(null);
    JavaCore.create(p);
    p.refreshLocal(IResource.DEPTH_INFINITE, null);

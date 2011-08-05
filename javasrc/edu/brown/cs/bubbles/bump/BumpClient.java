@@ -769,6 +769,12 @@ public void createProject()
    sendMessage("CREATEPROJECT",null,null,null);
 }
 
+public void constructProject()
+{
+   waitForIDE();
+
+   sendMessage("CONSTRUCTPROJECT", null, null, null);
+}
 
 
 

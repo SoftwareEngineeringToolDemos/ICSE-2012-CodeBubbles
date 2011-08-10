@@ -251,13 +251,6 @@ public void startIDE()
 private void ensureRunning()
 {
    if (tryPing()) return;
-   if (BoardSetup.getSetup().getRunMode() == BoardConstants.RunMode.CLIENT) {
-      BoardLog.logE("BUMP","Client mode with no eclipse found");
-      JOptionPane.showMessageDialog(null,
-				       "Server must be running and accessible before client can be run",
-				       "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
-      System.exit(1);
-    }
 
    String eclipsedir = board_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    String ws = board_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
@@ -798,23 +791,7 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
 
    String nm0 = name;
    int idx2 = name.indexOf("(");
-   String args = "";
-   if (idx2 >= 0) {
-      nm0 = name.substring(0,idx2);
-      args = name.substring(idx2);
-      if (args.contains("<")) {
-	 StringBuffer buf = new StringBuffer();
-	 int lvl = 0;
-	 for (int i = 0; i < args.length(); ++i) {
-	    char c = args.charAt(i);
-	    if (c == '<') ++lvl;
-	    else if (c == '>') --lvl;
-	    else if (lvl == 0) buf.append(c);
-	  }
-	 args = buf.toString();
-	 name = nm0 + args;
-       }
-    }
+   if (idx2 >= 0) nm0 = name.substring(0,idx2);
 
    int idx0 = nm0.lastIndexOf(".");
    if (idx0 >= 0) {
@@ -824,7 +801,7 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
       if (mthd.equals(clsn) || mthd.equals("<init>")) {
 	 cnstr = true;
 	 nm0 = nm0.substring(0,idx0);
-	 if (idx2 > 0) nm0 += args;
+	 if (idx2 > 0) nm0 += name.substring(idx2);
 	 name = nm0;
        }
     }
@@ -840,6 +817,7 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
       int x1 = name.indexOf('(');
       if (cnstr && x1 >= 0) {				// check for nested constructor with extra argument
 	 String mthd = name.substring(0,x1);
+	 String args = name.substring(x1);
 	 int x2 = mthd.lastIndexOf('.');
 	 if (x2 >= 0) {
 	    String pfx = name.substring(0,x2);

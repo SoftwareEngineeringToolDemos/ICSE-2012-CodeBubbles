@@ -438,7 +438,7 @@ private void waitForServerExit(BudaRoot root)
 {
    JOptionPane.showConfirmDialog(root,"Exit from Code Bubbles Server",
 	    "Exit When Done",
-	    JOptionPane.DEFAULT_OPTION,
+	    JOptionPane.OK_OPTION,
 	    JOptionPane.QUESTION_MESSAGE);
 
    root.handleSaveAllRequest();

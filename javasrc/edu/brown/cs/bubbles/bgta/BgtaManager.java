@@ -40,7 +40,7 @@ import java.util.*;
 
 
 
-public class BgtaManager implements PacketListener {
+class BgtaManager implements PacketListener {
 
 
 
@@ -63,7 +63,6 @@ protected Vector<BgtaBubble>       existing_bubbles;
 protected Map<String, BgtaChat>    existing_chats;
 protected Map<String, Document>    existing_docs;
 protected BgtaRoster               the_roster;
-
 
 
 
@@ -123,7 +122,7 @@ BgtaManager(String username,String password,ChatServer server)
 
 BgtaRoster getRoster()			   { return the_roster; }
 
-public String getUsername()				   { return user_name; }
+String getUsername()				   { return user_name; }
 
 String getPassword()				   { return user_password; }
 
@@ -181,7 +180,7 @@ boolean propertiesMatch(String un,String se)
 
 /********************************************************************************/
 /*										*/
-/*	Presence methods							*/
+/*	Presence listener							*/
 /*										*/
 /********************************************************************************/
 
@@ -191,12 +190,7 @@ void addPresenceListener(PacketListener p)
    the_connection.addPacketListener(p, new PacketTypeFilter(pr.getClass()));
 }
 
-public void subscribeToUser(String jid)
-{
-   Packet p = new Presence(Presence.Type.subscribe);
-   p.setTo(jid);
-   the_connection.sendPacket(p);
-}
+
 
 /********************************************************************************/
 /*										*/
@@ -338,24 +332,6 @@ BgtaChat startChat(String username,BgtaBubble using)
     return chat;
 }
 
-BgtaChat startChat(String username)
-{
-   BgtaChat chat = null;
-   if (!hasChat(username)) {
-       Chat ch = the_connection.getChatManager().createChat(username,null);
-       String name = username;
-       if(the_connection.getRoster().getEntry(ch.getParticipant()) != null)
-          name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
-       chat = new BgtaChat(user_name,username,name,user_server,ch,getExistingDoc(username));
-       existing_chats.put(username,chat);
-       existing_docs.put(username,chat.getDocument());
-    }
-   else
-   {
-      return existing_chats.get(username);
-   }
-   return chat;
-}
 
 boolean hasChat(String username)
 {
@@ -403,12 +379,9 @@ Document getExistingDoc(String username)
 /*										*/
 /********************************************************************************/
 
-public static Presence getPresence(String conname)
+static Presence getPresence(String conname)
 {
-	if(stat_con != null)
-		return stat_con.getRoster().getPresence(conname);
-	else
-		return null;
+   return stat_con.getRoster().getPresence(conname);
 }
 
 /**
@@ -576,8 +549,10 @@ class BgtaXMPPRosterEntry implements BgtaRosterEntry {
     }
    
 }   // end of inner class BgtaXMPPRosterEntry
-}   // end of class BgtaManager
 
+
+
+}   // end of class BgtaManager
 
 
 

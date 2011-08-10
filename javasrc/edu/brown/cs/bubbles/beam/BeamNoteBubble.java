@@ -220,7 +220,7 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 /*										*/
 /**********************************************a**********************************/
 
-@Override protected void paintContentOverview(Graphics2D g,Shape s)
+@Override protected void paintContentOverview(Graphics2D g)
 {
    Dimension sz = getSize();
 

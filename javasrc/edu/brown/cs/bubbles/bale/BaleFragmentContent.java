@@ -220,10 +220,6 @@ int getDocumentOffset(int off,boolean edit)
       // pointing to extra eol inserted -- really we want to return a BaleStartPosition for this
       return lastbr.getEnd()+loff;
     }
-   if (loff == 0 && lastbr == null && fragment_regions.size() > 0) {
-      lastbr = fragment_regions.get(0);
-      return lastbr.getStart();
-    }
 
    return -1;
 }

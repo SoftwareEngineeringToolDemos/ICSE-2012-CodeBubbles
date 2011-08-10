@@ -10,7 +10,6 @@
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bandaid" target='jar' />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/board" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bqst" />
-      <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bnote" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/buda" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bump" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bueno" />
@@ -29,8 +28,6 @@
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bddt" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bted" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/batt" />
-      <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bedu" />
-      <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bbook" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bema" target='jar' />
    </target>
 
@@ -64,15 +61,12 @@
 	 <package name='edu.brown.cs.bubbles.bandaid' />
 	 <package name='edu.brown.cs.bubbles.bass' />
 	 <package name='edu.brown.cs.bubbles.batt' />
-	 <package name='edu.brown.cs.bubbles.bbook' />
 	 <package name='edu.brown.cs.bubbles.bcon' />
 	 <package name='edu.brown.cs.bubbles.bddt' />
 	 <package name='edu.brown.cs.bubbles.bdoc' />
 	 <package name='edu.brown.cs.bubbles.beam' />
-	 <package name='edu.brown.cs.bubbles.bedu' />
 	 <package name='edu.brown.cs.bubbles.bema' />
 	 <package name='edu.brown.cs.bubbles.bgta' />
-	 <package name='edu.brown.cs.bubbles.bnote' />
 	 <package name='edu.brown.cs.bubbles.board' />
 	 <package name='edu.brown.cs.bubbles.bopp' />
 	 <package name='edu.brown.cs.bubbles.bowi' />

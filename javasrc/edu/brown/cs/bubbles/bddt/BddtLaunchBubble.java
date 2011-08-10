@@ -239,7 +239,7 @@ private String getNewName()
 /*										*/
 /********************************************************************************/
 
-@Override protected void paintContentOverview(Graphics2D g,Shape s)
+@Override protected void paintContentOverview(Graphics2D g)
 {
    Dimension sz = getSize();
    g.setColor(BDDT_LAUNCH_OVERVIEW_COLOR);

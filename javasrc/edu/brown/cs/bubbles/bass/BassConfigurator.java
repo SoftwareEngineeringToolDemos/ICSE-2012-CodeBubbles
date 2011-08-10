@@ -101,7 +101,7 @@ class BassConfigurator implements BassConstants, BudaConstants.BubbleConfigurato
 }
 
 
-@Override public void loadXml(BudaBubbleArea bba,Element root)
+@Override public void loadXml(Element root)
 {
    Element e = IvyXml.getChild(root,"BASSDATA");
    if (e != null) {

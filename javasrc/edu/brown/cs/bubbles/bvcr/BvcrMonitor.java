@@ -144,7 +144,6 @@ void loadProjects()
        }
       Element ppr = IvyXml.getChild(pr,"PROJECT");
       BvcrProject bp = new BvcrProject(ppr);
-      if (bp.getSourceDirectory() == null) continue;
       bvcr_control.setProject(bp);
     }
 }

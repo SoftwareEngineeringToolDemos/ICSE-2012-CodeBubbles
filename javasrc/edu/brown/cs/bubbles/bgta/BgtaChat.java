@@ -43,7 +43,6 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 
-import javax.naming.OperationNotSupportedException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -113,7 +112,7 @@ private boolean is_xmpp;
 /*                            */
 /********************************************************************************/
 
-protected BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
+BgtaChat(String username,String pUsername,String pDisplayname,ChatServer server,Object chat,Document doc)
 { 
    // Fix display names so they don't have the server endings.
    this_user = username;
@@ -158,6 +157,7 @@ protected BgtaChat(String username,String pUsername,String pDisplayname,ChatServ
 }
 
 
+
 /********************************************************************************/
 /*                            */
 /* Access methods                           */
@@ -169,7 +169,7 @@ protected BgtaChat(String username,String pUsername,String pDisplayname,ChatServ
  * 
  * @return the name of the participant in this chat.
  */
-public String getUsername()    { return user_name; }
+String getUsername()    { return user_name; }
 
 
 /**
@@ -184,8 +184,8 @@ ChatServer getServer()  { return user_server; }
  * Returns the Document associated with this chat.
  * 
  * @return the Document associated with this chat.
- public */
-public Document getDocument()  { return user_document; }
+ */
+Document getDocument()  { return user_document; }
 
 
 /**
@@ -200,7 +200,7 @@ boolean isXMPP()        { return is_xmpp; }
  * 
  * @return the last message logged in this chat.
  */
-public Object getLastMessage()
+Object getLastMessage()
 {
     if (!is_xmpp)
         return last_minfo;
@@ -295,7 +295,7 @@ void messageReceived(Object msg)
  * 
  * @param msg A String
  */
-public void logMessage(String msg)
+void logMessage(String msg)
 {
    logMessage(msg,user_display);
 }
@@ -337,7 +337,7 @@ void logMessage(String msg,String from)
  * 
  * @return true if the message sent successfully; false otherwise.
  */
-public boolean sendMessage(String msg)
+boolean sendMessage(String msg)
 {
    boolean sent = true;
    try {
@@ -361,29 +361,6 @@ public boolean sendMessage(String msg)
 /* Helper methods                           */
 /*                            */
 /********************************************************************************/
-
-protected void setChat(Object chat)
-{
-   the_chat.removeMessageListener(the_chat.getListeners().iterator().next());
-   if (is_xmpp) {    
-      the_chat = (Chat) chat;
-      chat_listener = new XMPPChatListener();
-      the_chat.addMessageListener(chat_listener);
-    }
-   else {
-      the_conversation = (Conversation) chat;
-      conversation_listener = new AIMChatListener();
-      the_conversation.addConversationListener(conversation_listener);
-   }
-}
-
-protected Chat getChat() throws OperationNotSupportedException
-{
-   if(is_xmpp)
-      return the_chat;
-   else 
-      throw new OperationNotSupportedException("Not an XMPP BgtaChat");
-}
 
 /**
  * Creates a more displayable version of a username. This

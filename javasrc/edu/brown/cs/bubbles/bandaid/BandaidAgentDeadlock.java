@@ -80,8 +80,6 @@ BandaidAgentDeadlock(BandaidController bc)
 
 void handleThreadStack(long now,ThreadInfo ti,StackTraceElement [] trc)
 {
-   // should use ThreadMXBean.findDeadlockedThreads()
-
    if (check_counter % check_every != 0) return;
 
    LockInfo [] lis = ti.getLockedSynchronizers();
@@ -215,11 +213,11 @@ private class Deadlock {
    void outputXml(BandaidXmlWriter xw) {
       xw.begin("DEADLOCK");
       for (Map.Entry<ThreadInfo,String> ent : lock_set.entrySet()) {
-	 xw.begin("THREAD");
-	 xw.field("NAME",ent.getKey().getThreadName());
-	 xw.field("ID",ent.getKey().getThreadId());
-	 xw.field("LOCK",ent.getValue());
-	 xw.end();
+         xw.begin("THREAD");
+         xw.field("NAME",ent.getKey().getThreadName());
+         xw.field("ID",ent.getKey().getThreadId());
+         xw.field("LOCK",ent.getValue());
+         xw.end();
        }
       xw.end();
     }

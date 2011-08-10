@@ -63,7 +63,7 @@ class BgtaConfigurator implements BubbleConfigurator {
 
 
 
-@Override public void loadXml(BudaBubbleArea bba,Element root)		{ }
+@Override public void loadXml(Element root)				{ }
 
 @Override public void outputXml(BudaXmlWriter xw,boolean history)	{ }
 

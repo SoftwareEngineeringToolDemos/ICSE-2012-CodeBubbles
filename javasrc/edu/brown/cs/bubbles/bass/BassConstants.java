@@ -201,11 +201,7 @@ String BASS_CONFIG_LIST_NAME = "@Launch Configurations";
  */
 String BASS_PROCESS_LIST_NAME = "@Processes";
 
-/**
- * 	Name for the courses lsit
- */
 
-String BASS_COURSE_LIST_NAME = "@Courses";
 
 /**
  *	Determines whether on startup in a new workspace the package explorer comes up

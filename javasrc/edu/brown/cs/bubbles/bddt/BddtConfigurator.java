@@ -89,7 +89,7 @@ class BddtConfigurator implements BddtConstants, BudaConstants.BubbleConfigurato
 
 
 
-@Override public void loadXml(BudaBubbleArea bba,Element root)
+@Override public void loadXml(Element root)
 {
    Element de = IvyXml.getChild(root,"BDDT");
    if (de != null) {

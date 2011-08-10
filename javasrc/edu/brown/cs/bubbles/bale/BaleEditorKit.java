@@ -100,6 +100,7 @@ private static final Action explicit_elision_action = new ExplicitElisionAction(
 private static final Action redo_elision_action = new RedoElisionAction();
 private static final Action remove_elision_action = new RemoveElisionAction();
 private static final Action autocomplete_action = new AutoCompleteAction();
+private static final Action autocompletethings_action = new AutoCompleteIt();
 private static final Action rename_action = new RenameAction();
 private static final Action extract_method_action = new ExtractMethodAction();
 private static final Action format_action = new FormatAction();
@@ -167,6 +168,7 @@ private static final Action [] local_actions = {
    move_lines_up_action,
    move_lines_down_action,
    autocomplete_action,
+   autocompletethings_action,
    rename_action,
    extract_method_action,
    format_action,
@@ -236,6 +238,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu shift V",pasteAction),
       new KeyItem("alt DOWN",move_lines_down_action),
       new KeyItem("alt UP",move_lines_up_action),
+      new KeyItem("F2",autocomplete_action),
       new KeyItem("alt shift R",rename_action),
       new KeyItem("alt shift M",extract_method_action),
       new KeyItem("alt W",select_word_action),
@@ -244,7 +247,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu shift F",format_action),
       new KeyItem("alt B",expand_action),
 
-      new KeyItem("ctrl SPACE",autocomplete_action),
+      new KeyItem("ctrl SPACE",autocompletethings_action),
 
       new KeyItem("F3",goto_implementation_action),
       new KeyItem("menu shift F3",goto_definition_action),
@@ -1602,27 +1605,43 @@ private static class ExplicitElisionAction extends AbstractAction {
 /*										*/
 /********************************************************************************/
 
-private static class AutoCompleteAction extends TextAction  {
+private static class AutoCompleteAction extends TextAction {
 
    private static final long serialVersionUID = 1;
 
    AutoCompleteAction() {
       super("AutoCompleteAction");
-   }
+    }
 
    @Override public void actionPerformed(ActionEvent e) {
       BaleEditorPane target = getBaleEditor(e);
       if (!checkEditor(target)) return;
       BaleCompletionContext ctx = target.getCompletionContext();
+      if (ctx != null) ctx.handleSelected();
+      BoardMetrics.noteCommand("BALE","AutoComplete");
+    }
+
+}	// end of inner class AutoCompletionAction
+
+
+
+
+private static class AutoCompleteIt extends TextAction	{
+
+   private static final long serialVersionUID = 1;
+
+   AutoCompleteIt() {
+      super("AutoCompleteIt");
+   }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BaleEditorPane target = getBaleEditor(e);
+      BaleCompletionContext ctx = target.getCompletionContext();
       if (ctx == null) {
 	 int sel = target.getSelectionStart();
 	 new BaleCompletionContext(target,sel-1,'1');
-	 BoardMetrics.noteCommand("BALE","AutoCompleteIt");
        }
-      else {
-	 ctx.handleSelected();
-	 BoardMetrics.noteCommand("BALE","AutoComplete");
-       }
+      BoardMetrics.noteCommand("BALE","AutoCompleteIt");
    }
 }
 

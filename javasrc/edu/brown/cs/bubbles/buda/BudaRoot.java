@@ -274,7 +274,7 @@ private void initialize(Element e)
 				 (int) IvyXml.getAttrDouble(shape,"Y",0));
     }
 
-   for (BubbleConfigurator bc : bubble_config.values()) bc.loadXml(bubble_area,e);
+   for (BubbleConfigurator bc : bubble_config.values()) bc.loadXml(e);
 
    BudaCursorManager.setupDefaults(this);
 
@@ -1107,7 +1107,7 @@ private void setupGlobalActions()
 
 
 
-public void registerKeyAction(Action act,String cmd,KeyStroke k)
+private void registerKeyAction(Action act,String cmd,KeyStroke k)
 {
    JPanel cnt = (JPanel) getContentPane();
    cnt.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(k,cmd);
@@ -1573,7 +1573,10 @@ public void outputXml(BudaXmlWriter xw,boolean history)
       xw.end("TASKS");
       relation_data.outputXml(xw);
     }
-   for (BubbleConfigurator bc : bubble_config.values()) bc.outputXml(xw,history);
+   for (BubbleConfigurator bc : bubble_config.values()) bc.outputXml(xw,false);
+   if (history) {
+      for (BubbleConfigurator bc : bubble_config.values()) bc.outputXml(xw,true);
+    }
 
    xw.end("ROOT");
 }
@@ -1617,8 +1620,6 @@ private void setupSession(Element config)
    if (bubbles != null) {
       bubble_area.configure(bubbles,delta);
     }
-
-   noteConfigureDone();
 }
 
 
@@ -1657,7 +1658,7 @@ private void loadHistory(Element e)
 
    relation_data.loadRelations(IvyXml.getChild(e,"RELATIONS"));
 
-   for (BubbleConfigurator bc : bubble_config.values()) bc.loadXml(null,e);
+   for (BubbleConfigurator bc : bubble_config.values()) bc.loadXml(e);
 }
 
 
@@ -1952,32 +1953,6 @@ boolean noteBubbleActionDone(BudaBubble bb)
     }
 
    return fg;
-}
-
-
-void noteWorkingSetAdded(BudaWorkingSet ws)
-{
-   for (BubbleViewCallback cb : view_callbacks) {
-      cb.workingSetAdded(ws);
-    }
-}
-
-
-
-void noteWorkingSetRemoved(BudaWorkingSet ws)
-{
-   for (BubbleViewCallback cb : view_callbacks) {
-      cb.workingSetRemoved(ws);
-    }
-}
-
-
-
-void noteConfigureDone()
-{
-   for (BubbleViewCallback cb : view_callbacks) {
-      cb.doneConfiguration();
-    }
 }
 
 

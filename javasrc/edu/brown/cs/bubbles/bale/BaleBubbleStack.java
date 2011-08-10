@@ -430,9 +430,6 @@ private static class EditorBubbleCallback implements BubbleViewCallback {
    @Override public void focusChanged(BudaBubble bb,boolean set)	{}
    @Override public void bubbleAdded(BudaBubble bb)			{}
    @Override public void bubbleRemoved(BudaBubble bb)			{}
-   @Override public void workingSetAdded(BudaWorkingSet ws)		{ }
-   @Override public void workingSetRemoved(BudaWorkingSet ws)		{ }
-   @Override public void doneConfiguration()				{ }
 
    @Override public boolean bubbleActionDone(BudaBubble bb) {
       if (!(bb instanceof BaleEditorBubble)) return false;

@@ -632,11 +632,6 @@ private class BubbleUpdater implements BubbleViewCallback {
 
    @Override public boolean bubbleActionDone(BudaBubble bb)		{ return false; }
 
-   @Override public void workingSetAdded(BudaWorkingSet ws)		{ }
-   @Override public void workingSetRemoved(BudaWorkingSet ws)		{ }
-
-   @Override public void doneConfiguration()				{ }
-
 }
 
 

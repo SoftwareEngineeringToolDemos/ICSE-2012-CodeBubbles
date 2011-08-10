@@ -621,7 +621,7 @@ private class BtedEditorPane extends JEditorPane {
 /**
  * Paints the bubble on the overview panel
  */
-@Override protected void paintContentOverview(Graphics2D g,Shape s)
+@Override protected void paintContentOverview(Graphics2D g)
 {
    Dimension sz = getSize();
    g.setColor(bted_props.getColor(BtedConstants.OVERVIEW_COLOR));

@@ -877,15 +877,10 @@ interface BubbleAreaCallback extends EventListener {
 
 interface BubbleViewCallback extends EventListener {
 
-   public void doneConfiguration();
-
    public void focusChanged(BudaBubble bb,boolean set);
    public void bubbleAdded(BudaBubble bb);
    public void bubbleRemoved(BudaBubble bb);
    public boolean bubbleActionDone(BudaBubble bb);
-
-   public void workingSetAdded(BudaWorkingSet ws);
-   public void workingSetRemoved(BudaWorkingSet ws);
 
 }
 
@@ -941,8 +936,7 @@ enum SearchType {
    SEARCH_PEOPLE,
    SEARCH_EXPLORER,
    SEARCH_LAUNCH_CONFIG,
-   SEARCH_ALL,
-   SEARCH_COURSES
+   SEARCH_ALL
 }
 
 
@@ -1003,7 +997,7 @@ interface BubbleConfigurator {
 
    BudaBubble createBubble(BudaBubbleArea bba,Element xml);
    void outputXml(BudaXmlWriter xw,boolean history);
-   void loadXml(BudaBubbleArea bba,Element root);
+   void loadXml(Element root);
 
 }	// end of inner interface BubbleConfigurator
 
@@ -1187,11 +1181,6 @@ interface BudaWorkingSet {
  *	Return the region defined by the working set
  **/
    public Rectangle getRegion();
-
-/**
- *	Return the bubble area associated with the working set
- **/
-   public BudaBubbleArea getBubbleArea();
 
 }	// end of interface BudaWorkingSet
 

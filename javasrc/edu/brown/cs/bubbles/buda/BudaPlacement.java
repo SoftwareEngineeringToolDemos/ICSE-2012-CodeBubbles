@@ -148,35 +148,43 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
 	  }
        }
     }
+   
+   int delta;
+   if ((place & PLACEMENT_GROUPED) != 0) delta = BUBBLE_CREATION_NEAR_SPACE;
+   else delta = BUBBLE_CREATION_SPACE;
 
    if ((place & PLACEMENT_LOGICAL) != 0 && r != null) {
       BudaRoot br = BudaRoot.findBudaRoot(bubble_area);
       Rectangle r2 = br.getViewport();
-      if (r.x - BUBBLE_CREATION_SPACE < r2.x) {
-	 if (r.x + r.width + BUBBLE_CREATION_SPACE < r2.x + r2.width)
+      if (r.x - delta - bbl.getWidth() < r2.x) {
+	 if (r.x + r.width + delta + bbl.getWidth() < r2.x + r2.width) {
+	    place &= ~PLACEMENT_LEFT;
 	    place |= PLACEMENT_RIGHT;
+	  }
        }
-      if (r.x + r.width + BUBBLE_CREATION_SPACE > r2.x + r2.width) {
-	 if (r.x - BUBBLE_CREATION_SPACE > r2.x)
+      if (r.x + r.width + delta + bbl.getWidth() > r2.x + r2.width) {
+	 if (r.x - delta - bbl.getWidth() > r2.x) {
+	    place &= ~PLACEMENT_RIGHT;
 	    place |= PLACEMENT_LEFT;
+	  }
        }
-      if (r.y - BUBBLE_CREATION_SPACE < r2.y) {
-	 if (r.y + r.height + BUBBLE_CREATION_SPACE < r2.y + r2.height)
+      if (r.y - delta - bbl.getHeight() < r2.y) {
+	 if (r.y + r.height + delta + bbl.getHeight() < r2.y + r2.height) {
+	    place &= ~PLACEMENT_ABOVE;
 	    place |= PLACEMENT_BELOW;
+	  }
        }
-      if (r.y + r.height + BUBBLE_CREATION_SPACE > r2.y + r2.height) {
-	 if (r.y - BUBBLE_CREATION_SPACE > r2.y)
+      if (r.y + r.height + delta + bbl.getHeight() > r2.y + r2.height) {
+	 if (r.y - delta - bbl.getHeight() > r2.y) {
+	    place &= ~PLACEMENT_BELOW;
 	    place |= PLACEMENT_ABOVE;
+	  }
        }
     }
 
    Dimension sz = bbl.getSize();
    int x0;
    int y0;
-   int delta;
-
-   if ((place & PLACEMENT_GROUPED) != 0) delta = BUBBLE_CREATION_NEAR_SPACE;
-   else delta = BUBBLE_CREATION_SPACE;
 
    if (rel == null) {
       x0 = r.x;
@@ -338,6 +346,10 @@ private void expandForGroup(Rectangle r,BudaBubble grpb)
     }
 }
 
+@Override public void workingSetAdded(BudaWorkingSet ws)	{ }
+@Override public void workingSetRemoved(BudaWorkingSet ws)	{ }
+
+@Override public void doneConfiguration()			{ }
 
 
 

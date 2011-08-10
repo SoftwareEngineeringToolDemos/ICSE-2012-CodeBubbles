@@ -191,6 +191,7 @@ void listProjects(IvyXmlWriter xw)
 
    for (int i = 0; i < projs.length; ++i) {
       if (ignore_projects.contains(projs[i].getName())) continue;
+      if (projs[i].getLocation() == null) continue;
       xw.begin("PROJECT");
       xw.field("NAME",projs[i].getName());
       xw.field("OPEN",projs[i].isOpen());
@@ -839,6 +840,8 @@ private IFile findProjectFile(IResource ir,String name)
 private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolean opt,
 			      IvyXmlWriter xw)
 {
+   if (p.getLocation() == null) return;
+
    xw.begin("PROJECT");
    xw.field("NAME",p.getName());
    xw.field("PATH",p.getLocation().toOSString());

@@ -24,7 +24,6 @@
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
-	 <pathelement location='${BUBBLES}/javadb/lib/derby.jar' />
       </path>
    </target>
 

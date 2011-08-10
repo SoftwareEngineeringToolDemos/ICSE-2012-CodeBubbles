@@ -105,6 +105,7 @@ public static void setup()
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_PEOPLE, buddy_list);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, buddy_list);
    BudaRoot.addBubbleConfigurator("BGTA", new BgtaConfigurator());
+   
 }
 
 /**

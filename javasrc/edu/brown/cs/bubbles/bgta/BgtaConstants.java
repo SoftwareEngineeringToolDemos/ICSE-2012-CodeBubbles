@@ -186,7 +186,7 @@ enum ChatServer {
       return "";
     }
 
-   static ChatServer fromServer(String server) {
+   public static ChatServer fromServer(String server) {
       for (ChatServer s : values()) {
 	 if (server.equals(s.server())) return s;
        }
@@ -196,7 +196,6 @@ enum ChatServer {
    @Override public String toString() { return chat_selector + " - " + chat_display; }
 
 }	// end of enum ChatServer
-
 
 
 /********************************************************************************/

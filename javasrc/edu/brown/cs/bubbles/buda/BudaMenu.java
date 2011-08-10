@@ -247,6 +247,11 @@ private void addPopupItems(Point pt,List<MenuItem> itms,JComponent menu,String p
 
 @Override public boolean bubbleActionDone(BudaBubble bb)	{ return false; }
 
+@Override public void workingSetAdded(BudaWorkingSet ws)	{ }
+@Override public void workingSetRemoved(BudaWorkingSet ws)	{ }
+
+@Override public void doneConfiguration()			{ }
+
 
 
 
@@ -593,7 +598,7 @@ private class MenuConfigurator implements BubbleConfigurator {
     }
 
    @Override public void outputXml(BudaXmlWriter xw,boolean history)	{ }
-   @Override public void loadXml(Element root)				{ }
+   @Override public void loadXml(BudaBubbleArea bba,Element root)	{ }
 
 
 }	// end of inner class MenuConfigurator

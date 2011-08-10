@@ -58,11 +58,12 @@ class BeamProgressBubble implements BeamConstants, BumpConstants.BumpProgressHan
 
 private BudaRoot	buda_root;
 private Map<String,ProgressDisplay> all_displays;
-private Set<String>	deleted_items;
+private Map<String,Long> last_id;
 
 private Color		done_color;
 private Color		todo_color;
 
+private static final int MAX_RANGE = 512;
 
 
 
@@ -80,7 +81,7 @@ BeamProgressBubble(BudaRoot br)
    todo_color = new Color(0xffc0c0c0,true);
 
    all_displays = new HashMap<String,ProgressDisplay>();
-   deleted_items = new HashSet<String>();
+   last_id = new HashMap<String,Long>();
 
    BumpClient.getBump().addProgressHandler(this);
 }
@@ -129,10 +130,19 @@ private synchronized void startProgress(String id,String task,long sid)
 {
    String tnm = task;
    if (subtask != null && subtask.length() > 0) tnm += " (" + subtask + ")";
-
+   
+   // ensure we ignore items that are out of order
+   Long lid = last_id.get(id);
+   if (lid != null &&  sid <= lid) return;
+   last_id.put(id,sid);
+   if (last_id.size() > MAX_RANGE) {
+      for (Iterator<Long> it = last_id.values().iterator(); it.hasNext(); ) {
+	 Long l = it.next();
+	 if (sid - l > MAX_RANGE) it.remove();
+       }
+    }
+   
    if (kind.equals("BEGIN")) {
-      if (deleted_items.remove(id)) return;
-
       ProgressDisplay pd = all_displays.get(id);
       if (pd == null) startProgress(id,tnm,sid);
       else pd.set(tnm,work,sid);
@@ -149,7 +159,6 @@ private synchronized void startProgress(String id,String task,long sid)
 	 Remover rm = new Remover(pd);
 	 SwingUtilities.invokeLater(rm);
        }
-      else deleted_items.add(id);
    }
    else {
       BoardLog.logE("BEAM","Unknown progress message " + kind);

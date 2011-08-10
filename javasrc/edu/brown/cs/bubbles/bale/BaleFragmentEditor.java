@@ -140,7 +140,6 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
       handleBreakpointAdded(bb);
     }
 
-   System.err.println("CHECK ANNOTATIONS");
    for (BaleAnnotation ba : BaleFactory.getFactory().getAnnotations(getDocument())) {
       annotationAdded(ba);
     }

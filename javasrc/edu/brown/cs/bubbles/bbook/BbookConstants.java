@@ -45,6 +45,17 @@ public interface BbookConstants extends BnoteConstants
 {
 
 
+/********************************************************************************/
+/*										*/
+/*	Task Region								*/
+/*										*/
+/********************************************************************************/
+
+interface BbookRegion {
+
+}	// end of interface BbookRegion
+
+
 
 }	// end of interface BbookConstants
 

@@ -39,10 +39,17 @@ package edu.brown.cs.bubbles.bbook;
 
 import edu.brown.cs.bubbles.buda.*;
 
+import edu.brown.cs.ivy.xml.*;
+
+import org.w3c.dom.*;
+
 import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 
-public class BbookFactory implements BbookConstants
+
+public class BbookFactory implements BbookConstants, BudaConstants
 {
 
 
@@ -53,7 +60,7 @@ public class BbookFactory implements BbookConstants
 /********************************************************************************/
 
 private BbookTasker		task_manager;
-private BubbleViewer		view_checker;
+private BbookRegionManager	region_manager;
 
 private static BbookFactory	the_factory = new BbookFactory();
 
@@ -69,7 +76,7 @@ private static BbookFactory	the_factory = new BbookFactory();
 private BbookFactory()
 {
    task_manager = new BbookTasker();
-   view_checker = new BubbleViewer();
+   region_manager = new BbookRegionManager();
 }
 
 
@@ -86,51 +93,107 @@ public static BbookFactory getFactory() 	{ return the_factory; }
 
 public static void setup()
 {
+   BudaRoot.addBubbleConfigurator("BBOOK",new TaskConfig());
 }
 
 
 public static void initialize(BudaRoot br)
 {
-   // should wait until configuration is set up
-   BudaRoot.addBubbleViewCallback(getFactory().view_checker);
+   br.registerKeyAction(new BbookAction(br),"Programmer's Log",
+			   KeyStroke.getKeyStroke(KeyEvent.VK_F2,0));
 }
 
 
 /********************************************************************************/
 /*										*/
-/*	Bubble view callback handler						*/
+/*	Bubble creation methods 						*/
 /*										*/
 /********************************************************************************/
 
-private class BubbleViewer implements BudaConstants.BubbleViewCallback
+void createTaskSelector(BudaBubbleArea bba,BudaBubble bb,Point pt,String proj)
 {
-   @Override public void focusChanged(BudaBubble bb,boolean set)	{ }
+   task_manager.createTaskSelector(bba,bb,pt,proj);
+}
 
-   @Override public void bubbleRemoved(BudaBubble bb)			{ }
 
-   @Override public boolean bubbleActionDone(BudaBubble bb)		{ return false; }
+BbookRegion findTaskRegion(BudaBubbleArea bba,Rectangle r0)
+{
+   return region_manager.findTaskRegion(bba,r0);
+}
 
-   @Override public void bubbleAdded(BudaBubble bb) {
-      if (bb.isTransient() || bb.isFloating()) return;
-      if (bb.getContentProject() == null) return;
-      if (bb.getContentName() == null) return;
-      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
-      if (!bba.isPrimaryArea()) return;
-      Rectangle rgn = bba.computeRegion(bb);
-      int ctr = 0;
-      for (BudaBubble xbb : bba.getBubblesInRegion(rgn)) {
-	 if (xbb.isFloating() || xbb.isTransient()) continue;
-	 if (xbb != bb) ++ctr;
-       }
-      if (ctr == 0) {
-	 Rectangle r = BudaRoot.findBudaLocation(bb);
-	 Point pt = new Point(r.x + 20,r.y + 20);
-	 task_manager.createTaskSelector(bba,pt,bb.getContentProject());
-	 // pop up initial query
-       }
+
+
+/********************************************************************************/
+/*										*/
+/*	Updating methods							*/
+/*										*/
+/********************************************************************************/
+
+void handleSetTask(BnoteTask task,BudaBubbleArea bba,Rectangle loc)
+{
+   region_manager.handleSetTask(task,bba,loc);
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Task request action							*/
+/*										*/
+/********************************************************************************/
+
+private static class BbookAction extends AbstractAction {
+
+   private BudaRoot buda_root;
+
+   BbookAction(BudaRoot br) {
+      super("ProgrammersLogAction");
+      buda_root = br;
     }
 
-}	// end of inner class BubbleViewer
+   @Override public void actionPerformed(ActionEvent evt) {
+      BudaBubbleArea bba = buda_root.getCurrentBubbleArea();
+      if (!bba.isPrimaryArea()) return;
+      Point pt = bba.getCurrentMouse();
+      Rectangle r0 = new Rectangle(pt);
+      BbookRegion tr = getFactory().findTaskRegion(bba,r0);
+      if (tr == null) return;
+      getFactory().task_manager.createTaskSelector(bba,null,pt,null);
+    }
+
+}	// end of inner class BbookAction
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Configurator for saving task set					*/
+/*										*/
+/********************************************************************************/
+
+private static class TaskConfig implements BubbleConfigurator {
+
+   @Override public BudaBubble createBubble(BudaBubbleArea bba,Element xml) {
+      return null;
+    }
+
+   @Override public void outputXml(BudaXmlWriter xw,boolean history) {
+      if (history) return;
+      xw.begin("BBOOK");
+      getFactory().region_manager.outputTasks(xw);
+      xw.end("BBOOK");
+    }
+
+   @Override public void loadXml(BudaBubbleArea bba,Element root) {
+      if (bba == null) return;		// history loading
+      Element e = IvyXml.getChild(root,"BBOOK");
+      if (e == null) return;
+      getFactory().region_manager.loadTasks(e,bba);
+    }
+
+}	// end of inner class TaskConfig
 
 
 

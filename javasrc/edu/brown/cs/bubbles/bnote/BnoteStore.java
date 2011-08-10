@@ -42,8 +42,9 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.xml.*;
 
+import org.w3c.dom.*;
+
 import java.util.*;
-import java.io.*;
 
 
 public class BnoteStore implements BnoteConstants, MintConstants
@@ -58,12 +59,12 @@ public class BnoteStore implements BnoteConstants, MintConstants
 
 private boolean 	is_local;
 private BnoteDatabase	note_db;
-private PrintWriter	output_file;
 
 private static BnoteStore	the_store = null;
 
 private static Set<String>	field_strings;
 private static Set<String>	cdata_strings;
+
 
 static {
    field_strings = new HashSet<String>();
@@ -71,6 +72,7 @@ static {
    field_strings.add("TYPE");
    field_strings.add("USER");
    field_strings.add("TIME");
+   field_strings.add("TASK");
 
    cdata_strings = new HashSet<String>();
 }
@@ -90,30 +92,18 @@ private BnoteStore()
    switch (bs.getRunMode()) {
       case CLIENT :
 	 is_local = false;
+	 // need to handle task notifications and build up task set
 	 break;
       case SERVER :
 	 is_local = true;
 	 MintControl mc = bs.getMintControl();
-	 mc.register("<BNOTE TYPE='LOG'><_VAR_0></BNOTE>",
-	       new LogServer());
+	 mc.register("<BNOTE TYPE='LOG'><_VAR_0 /></BNOTE>",new LogServer());
 	 break;
       default :
 	 is_local = true;
 	 break;
     }
 
-   output_file = null;
-   if (is_local) {
-      File dir = BoardSetup.getBubblesPluginDirectory();
-      File logf = new File(dir,BNOTE_LOG_FILE_NAME);
-      try {
-	 FileWriter fw = new FileWriter(logf);
-	 output_file = new PrintWriter(fw);
-       }
-      catch (IOException e) {
-	 BoardLog.logE("BNOTE","Problem setting up log file",e);
-       }
-    }
    note_db = new BnoteDatabase();
 }
 
@@ -136,11 +126,18 @@ static BnoteStore createStore()
 /*										*/
 /********************************************************************************/
 
-List<String> getTasksForProject(String proj)
+List<BnoteTask> getTasksForProject(String proj)
 {
    if (proj == null) return null;
 
    return note_db.getTasksForProject(proj);
+}
+
+
+
+BnoteTask findTaskById(int id)
+{
+   return note_db.findTaskById(id);
 }
 
 
@@ -152,22 +149,33 @@ List<String> getTasksForProject(String proj)
 /*										*/
 /********************************************************************************/
 
-public static void log(String project,BnoteEntryType type,Map<String,Object> values)
+public static BnoteTask defineTask(String name,String proj,String desc)
 {
-   if (the_store == null) return;
+   if (the_store == null) return null;
 
-   the_store.enter(project,type,values);
+   return log(proj,null,BnoteEntryType.NEW_TASK,"NAME",name,"DESCRIPTION",desc);
 }
 
 
 
-public static void log(String project,BnoteEntryType type,Object ... args)
+
+public static BnoteTask log(String project,BnoteTask task,BnoteEntryType type,Map<String,Object> values)
+{
+   if (the_store == null) return null;
+
+   return the_store.enter(project,task,type,values);
+}
+
+
+
+public static BnoteTask log(String project,BnoteTask task,BnoteEntryType type,Object ... args)
 {
    Map<String,Object> values = new HashMap<String,Object>();
    for (int i = 0; i < args.length-1; i += 2) {
       values.put(args[i].toString(),args[i+1]);
     }
-   log(project,type,values);
+
+   return log(project,task,type,values);
 }
 
 
@@ -178,14 +186,19 @@ public static void log(String project,BnoteEntryType type,Object ... args)
 /*										*/
 /********************************************************************************/
 
-private void enter(String project,BnoteEntryType type,Map<String,Object> values)
+private BnoteTask enter(String project,BnoteTask task,BnoteEntryType type,Map<String,Object> values)
 {
+   if (is_local) {
+      return note_db.addEntry(project,task,type,values);
+    }
+
    IvyXmlWriter xw = new IvyXmlWriter();
 
    if (project != null) values.put("PROJECT",project);
    if (type != null) values.put("TYPE",type);
    if (!values.containsKey("USER")) values.put("USER",System.getProperty("user.name"));
    values.put("TIME",System.currentTimeMillis());
+   if (task != null) values.put("TASK",task);
 
    xw.begin("BNOTE");
 
@@ -208,26 +221,23 @@ private void enter(String project,BnoteEntryType type,Map<String,Object> values)
 
    xw.end("BNOTE");
 
-   saveEntry(xw.toString());
+   sendEntry(xw.toString());
+
+   return null;
 }
 
 
 
-private void saveEntry(String ent)
+private BnoteTask sendEntry(String ent)
 {
-   if (!is_local) {
-      MintControl mc = BoardSetup.getSetup().getMintControl();
-      String msg = "<BNOTE TYPE='LOG'>" + ent + "</BNOTE>";
-      mc.send(msg);
-      return;
-    }
+   MintControl mc = BoardSetup.getSetup().getMintControl();
+   String msg = "<BNOTE TYPE='LOG'>" + ent + "</BNOTE>";
+   mc.send(msg);
 
-   if (output_file == null) return;
+   // should get task id if a new task
+   // then need to get the actual task
 
-   synchronized (this) {
-      output_file.println(ent);
-      output_file.flush();
-    }
+   return null;
 }
 
 
@@ -241,8 +251,31 @@ private void saveEntry(String ent)
 private class LogServer implements MintHandler {
 
    @Override public void receive(MintMessage msg,MintArguments args) {
-      String entry = args.getArgument(0);
-      saveEntry(entry);
+      Element entry = args.getXmlArgument(0);
+
+      Map<String,Object> vals = new HashMap<String,Object>();
+      String proj = IvyXml.getAttrString(entry,"PROJECT");
+      BnoteEntryType typ = IvyXml.getAttrEnum(entry,"TYPE",BnoteEntryType.NONE);
+      int tid = IvyXml.getAttrInt(entry,"TASK");
+
+      for (String s : field_strings) {
+	 String v = IvyXml.getAttrString(entry,s);
+	 if (v != null) vals.put(s,v);
+       }
+      for (Element e : IvyXml.children(entry,"DATA")) {
+	 String k = IvyXml.getAttrString(e,"KEY");
+	 String v = IvyXml.getText(e);
+	 vals.put(k,v);
+       }
+
+      BnoteTask task = null;
+      task = note_db.findTaskById(tid);
+
+      vals.remove("PROJECT");
+      vals.remove("TYPE");
+      vals.remove("TASK");
+
+      log(proj,task,typ,vals);
     }
 
 }	// end of inner class LogServer

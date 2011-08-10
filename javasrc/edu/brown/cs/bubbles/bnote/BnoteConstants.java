@@ -50,19 +50,22 @@ public interface BnoteConstants
 /********************************************************************************/
 
 enum BnoteEntryType {
+   NONE,
    TASK,		// specify task being worked on
    OPEN,		// open an editor
+   CLOSE,		// close an editor
    EDIT,		// change code
    NOTE,		// user note
+   NEW_TASK,
 }
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Log Entry Keys                                                          */
-/*                                                                              */
+/*										*/
+/*	Log Entry Keys								*/
+/*										*/
 /********************************************************************************/
 
 enum BnoteKey {
@@ -77,12 +80,34 @@ enum BnoteKey {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Log File Definitions                                                    */
-/*                                                                              */
+/*										*/
+/*	Task Definition 							*/
+/*										*/
 /********************************************************************************/
 
-String BNOTE_LOG_FILE_NAME = "Programmers_Log.xml";
+interface BnoteTask {
+
+   int getTaskId();
+   String getName();
+   String getProject();
+   String getDescription();
+
+}	// end of interface BnoteTask
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Database value definitions						*/
+/*										*/
+/********************************************************************************/
+
+interface BnoteValue {
+
+   String getDatabaseValue();
+
+}	// end of interface BnoteValue
+
 
 
 }	// end of interface BnoteConstants

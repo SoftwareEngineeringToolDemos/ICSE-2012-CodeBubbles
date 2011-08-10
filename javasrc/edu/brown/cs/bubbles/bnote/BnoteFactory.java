@@ -92,11 +92,17 @@ public static void setup()
 /*										*/
 /********************************************************************************/
 
-public List<String> getTasksForProject(String proj)
+public List<BnoteTask> getTasksForProject(String proj)
 {
    if (the_store == null) return null;
 
    return the_store.getTasksForProject(proj);
+}
+
+
+public BnoteTask findTaskById(int tid)
+{
+   return the_store.findTaskById(tid);
 }
 
 

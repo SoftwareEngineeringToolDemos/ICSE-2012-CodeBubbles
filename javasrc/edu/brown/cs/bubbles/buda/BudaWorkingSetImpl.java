@@ -110,6 +110,11 @@ void setLabel(String s)
 }
 
 
+@Override public BudaBubbleArea getBubbleArea()
+{
+   return bubble_area;
+}
+
 
 void setRegion(Rectangle r)
 {

@@ -40,7 +40,6 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import javax.swing.AbstractAction;
-import javax.swing.JFileChooser;
 import javax.swing.JPopupMenu;
 
 import java.awt.*;

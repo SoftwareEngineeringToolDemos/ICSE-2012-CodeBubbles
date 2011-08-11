@@ -41,7 +41,7 @@ import java.awt.*;
 import java.util.*;
 
 
-class BudaTask implements BudaConstants, BoardConstants {
+public class BudaTask implements BudaConstants, BoardConstants {
 
 
 
@@ -64,7 +64,7 @@ private String task_text;
 /*										*/
 /********************************************************************************/
 
-BudaTask(Element xml)
+public BudaTask(Element xml)
 {
    task_name = IvyXml.getAttrString(xml,"NAME");
    task_xml = xml;
@@ -137,7 +137,7 @@ void outputXml(BudaXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-void loadTask(BudaBubbleArea bba,int offset)
+public void loadTask(BudaBubbleArea bba,int offset)
 {
    BudaRoot root = BudaRoot.findBudaRoot(bba);
    Rectangle arearect = bba.getBounds();

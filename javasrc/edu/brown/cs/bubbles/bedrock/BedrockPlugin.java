@@ -414,7 +414,6 @@ String finishMessageWait(IvyXmlWriter xw,long delay)
 
 private String handleCommand(String cmd,String proj,Element xml) throws BedrockException
 {
-   System.out.println("3:09");
    BedrockPlugin.logI("Handle command " + cmd + " for " + proj);
 
    IvyXmlWriter xw = new IvyXmlWriter();
@@ -442,12 +441,10 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       bedrock_project.createProject();
     }
    else if(cmd.equals("IMPORTPROJECT")){
-      System.out.println("Importing proj: " + proj);
       try{
       	bedrock_project.importExistingProject(proj);
       }catch(Throwable t)
       {
-	 System.out.println(t.getMessage());
 	 throw new BedrockException("Exception constructing project: " + t.getMessage());
       }
    }

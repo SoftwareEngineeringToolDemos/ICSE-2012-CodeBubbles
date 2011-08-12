@@ -131,7 +131,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 /********************************************************************************/
 
 @Override public void outputXml(BudaXmlWriter xw,boolean history)	{ }
-@Override public void loadXml(Element root)				{ }
+@Override public void loadXml(BudaBubbleArea bba,Element root)		{ }
 
 
 

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -91,7 +91,7 @@ BconRegionLocation(BaleConstants.BaleFileOverview fov,BumpLocation bl)
    try {
       fov.getText(0,fov.getLength(),s);
       int idx = pos0;
-      while (idx >= 0 && Character.isWhitespace(s.charAt(idx))) {
+      while (idx >= 0 && idx < s.length() && Character.isWhitespace(s.charAt(idx))) {
 	 if (s.charAt(idx) == '\n') {
 	    pos0 = idx;
 	    break;

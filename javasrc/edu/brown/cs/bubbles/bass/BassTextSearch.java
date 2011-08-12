@@ -108,7 +108,8 @@ BassTextSearch()
    input_field.selectAll();
    Keymap kmp = input_field.getKeymap();
    kmp.addActionForKeyStroke(KeyStroke.getKeyStroke("ESCAPE"),new AbortAction());
-   kmp.addActionForKeyStroke(KeyStroke.getKeyStroke("F2"),new SearchAction());
+   kmp.addActionForKeyStroke(KeyStroke.getKeyStroke("F12"),new SearchAction());
+   kmp.addActionForKeyStroke(KeyStroke.getKeyStroke("FIND"),new SearchAction());
    addGBComponent(input_field,0,y++,0,1,1,0);
    addGBComponent(new JSeparator(),0,y++,0,1,0,0);
 

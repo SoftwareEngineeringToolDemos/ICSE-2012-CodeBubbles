@@ -251,6 +251,13 @@ public void startIDE()
 private void ensureRunning()
 {
    if (tryPing()) return;
+   if (BoardSetup.getSetup().getRunMode() == BoardConstants.RunMode.CLIENT) {
+      BoardLog.logE("BUMP","Client mode with no eclipse found");
+      JOptionPane.showMessageDialog(null,
+				       "Server must be running and accessible before client can be run",
+				       "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
+      System.exit(1);
+    }
 
    String eclipsedir = board_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    String ws = board_properties.getProperty(BOARD_PROP_ECLIPSE_WS);

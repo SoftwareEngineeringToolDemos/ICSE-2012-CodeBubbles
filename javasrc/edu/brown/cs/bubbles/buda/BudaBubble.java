@@ -368,9 +368,9 @@ BudaBubbleGroup getNewGroup()
 public boolean isFloating()			{ return is_float; }
 
 
-boolean isFixed()				{ return is_fixed; }
+public boolean isFixed()			{ return is_fixed; }
 boolean isDocked()				{ return is_docked; }
-boolean isUserPos()				{ return is_userpos; }
+public boolean isUserPos()			{ return is_userpos; }
 
 /**
  *	Indicate that the bubble is fixed (i.e. should not be considered by the
@@ -998,7 +998,7 @@ protected void paintOverview(Graphics2D g)
       //g.fill(s0);//commented out by Ian Strickman
     }
 
-   paintContentOverview(g);
+   paintContentOverview(g,s0);
 
    if (border_type == BudaBorder.NONE) return;
 
@@ -1009,7 +1009,7 @@ protected void paintOverview(Graphics2D g)
 
 
 
-protected void paintContentOverview(Graphics2D g)	{ }
+protected void paintContentOverview(Graphics2D g,Shape s)	{ }
 
 
 
@@ -1435,7 +1435,9 @@ private class RemoveAction extends AbstractAction {
 @Override public String toString()
 {
    String  r = "BUBBLE " + getBounds();
-   if (content_pane != null) r += " :: " + content_pane.getClass().toString();
+   if (content_pane != null) {
+      r += " :: " + getContentPane().getClass().toString();
+    }
    return r;
 }
 

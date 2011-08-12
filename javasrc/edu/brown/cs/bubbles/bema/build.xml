@@ -26,6 +26,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
      </path>
       <path id='test.classpath'>
@@ -40,6 +41,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
       </path>
    </target>

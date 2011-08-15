@@ -673,7 +673,25 @@ public BudaWorkingSet findWorkingSetForBubble(BudaBubble bb)
    return null;
 }
 
+/**
+ * Add the working set with the given xml with the given offset to the area
+ * @param xml
+ * @param offset
+ */
+public void addWorkingSet(Element xml, int offset)
+{
+   BudaTask bt = new BudaTask(xml);
+   bt.loadTask(this, offset);
+}
 
+/**
+ * Add the working set represented by the given xml to the bubble area
+ * @param xml
+ */
+public void addWorkingSet(Element xml)
+{
+   addWorkingSet(xml, 0);
+}
 
 Collection<BudaWorkingSetImpl> getWorkingSets()
 {

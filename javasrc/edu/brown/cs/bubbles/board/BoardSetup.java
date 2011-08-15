@@ -355,7 +355,14 @@ public void setDefaultWorkspace(String ws)
    if (!checkWorkspace()) default_workspace = null;
 }
 
-
+/**
+ * Returns the workspace this bubbles instance is using
+ * @return
+ */
+public String getDefaultWorkspace()
+{
+   return default_workspace;
+}
 
 /**
  *	Set the java arguments to be used when restarting the system.  This is used

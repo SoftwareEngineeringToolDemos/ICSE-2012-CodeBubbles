@@ -374,6 +374,23 @@ void createProject()
    Display.getDefault().asyncExec(new RunNewDialog(ww));
 }
 
+/**
+ * Adds a project that is already in the workspace folder but is not 
+ * a member of the workspace yet 
+ */
+void importExistingProject(String name) throws Exception
+{
+   IProject p = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
+   
+   //if it already exists in the workspace don't do anything
+   if(p.exists()) return;
+   
+   p.create(null);
+   p.open(null);
+   JavaCore.create(p);
+   p.refreshLocal(IResource.DEPTH_INFINITE, null);
+}
+
 
 private static final class RunNewDialog implements Runnable {
 

@@ -776,6 +776,12 @@ public void createProject()
    sendMessage("CREATEPROJECT",null,null,null);
 }
 
+public void importProject(String name)
+{
+   waitForIDE();
+
+   sendMessage("IMPORTPROJECT", name, null, null);
+}
 
 
 

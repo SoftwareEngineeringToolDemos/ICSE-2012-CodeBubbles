@@ -475,6 +475,7 @@ private static class ProjectProps implements BassPopupHandler {
 
       menu.add(new ProjectAction(proj));
       menu.add(new NewProjectAction());
+      menu.add(new BassImportProjectAction());
     }
 
 }	// end of inner class ProjectProps
@@ -515,8 +516,6 @@ private static class NewProjectAction extends AbstractAction {
     }
 
 }	// end of inner class ProjectAction
-
-
 
 }	// end of class BassFactory
 

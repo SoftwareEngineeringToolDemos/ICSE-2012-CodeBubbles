@@ -41,7 +41,7 @@ import java.awt.*;
 import java.util.*;
 
 
-public class BudaTask implements BudaConstants, BoardConstants {
+class BudaTask implements BudaConstants, BoardConstants {
 
 
 
@@ -137,7 +137,7 @@ void outputXml(BudaXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-public void loadTask(BudaBubbleArea bba,int offset)
+void loadTask(BudaBubbleArea bba,int offset)
 {
    BudaRoot root = BudaRoot.findBudaRoot(bba);
    Rectangle arearect = bba.getBounds();

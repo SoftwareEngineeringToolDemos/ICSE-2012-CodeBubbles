@@ -32,13 +32,17 @@ private static final long serialVersionUID = 1L;
 
 public BudaErrorBubble(final String errmsg)
 {
-   setContentPane(new JPanel() {
-      private static final long serialVersionUID = 1L;
-      {
-	 JLabel errlabel = new JLabel(errmsg);
+   setContentPane(new ErrorContentPane(errmsg));
+}
+
+private class ErrorContentPane extends JPanel
+{
+   private static final long serialVersionUID = 1L;
+   private ErrorContentPane(String errmsg)
+   {
+      JLabel errlabel = new JLabel(errmsg);
 	 errlabel.setForeground(Color.RED);
 	 add(new JLabel(errmsg));
-      }
-   });
+   }
 }
 }

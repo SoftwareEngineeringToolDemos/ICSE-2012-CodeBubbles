@@ -48,7 +48,6 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaErrorBubble;
 import edu.brown.cs.bubbles.buda.BudaRoot;
-import edu.brown.cs.bubbles.buda.BudaTask;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.ivy.xml.IvyXml;
 
@@ -68,6 +67,7 @@ BassImportProjectAction() {
    JFileChooser chooser = new JFileChooser();
   
    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+   chooser.setDialogTitle("Choose a project directory to import");
    the_source = (Component)e.getSource();
 
    int returnVal = chooser.showOpenDialog(null);
@@ -93,7 +93,6 @@ BassImportProjectAction() {
       BumpClient bc = BumpClient.getBump();
       
       bc.importProject(f.getName());
-      bc.waitForIDE();
       
       //import working sets 
       File wsdir = new File(proj_dir, "workingsets");
@@ -110,23 +109,28 @@ private class WorkingSetConfirmDialog extends BudaBubble implements ActionListen
 
    WorkingSetConfirmDialog()
     {
-       setContentPane(new JPanel() {
-	 private static final long serialVersionUID = 1L;
-	 {
-             add(new JLabel("Load and display working sets from project?"));
-             JButton okB = new JButton("Yes");
-             okB.setActionCommand("Yes");
-             okB.addActionListener(WorkingSetConfirmDialog.this);
-             
-             JButton noB = new JButton("No");
-             noB.setActionCommand("No");
-             noB.addActionListener(WorkingSetConfirmDialog.this);
-             
-             add(okB);
-             add(noB);
-	  }
-       });
+       setContentPane(new ConfirmContentPane());
     }
+   
+   private class ConfirmContentPane extends JPanel
+   {
+      private static final long serialVersionUID = 1L;
+
+      private ConfirmContentPane()
+   	{
+           add(new JLabel("Load and display working sets from project?"));
+           JButton okB = new JButton("Yes");
+           okB.setActionCommand("Yes");
+           okB.addActionListener(WorkingSetConfirmDialog.this);
+           
+           JButton noB = new JButton("No");
+           noB.setActionCommand("No");
+           noB.addActionListener(WorkingSetConfirmDialog.this);
+           
+           add(okB);
+           add(noB);
+   	}
+   }
 
    @Override public void actionPerformed(ActionEvent e)
    {
@@ -147,10 +151,9 @@ private void loadWorkingSets()
     {
        Element xml = IvyXml.loadXmlFromFile(wsf);
        fixFilePaths(xml, proj_dir.getName());
-       
-       BudaTask bt = new BudaTask(xml);
+      
        BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_source);
-       bt.loadTask(bba, 0);
+       bba.addWorkingSet(xml);
     }
    }
 }
@@ -194,7 +197,7 @@ private void fixFilePaths(Element xml, String proj)
    if(attr != null && attr.contains(proj))
    {
       xml.setAttribute("FILE",
-	       BoardSetup.getSetup().getDefaultWorkspace() + "/" + attr.substring(attr.indexOf(proj)));    
+	       BoardSetup.getSetup().getDefaultWorkspace() + File.separator + attr.substring(attr.indexOf(proj)));    
    }
    
    NodeList nl = xml.getChildNodes();

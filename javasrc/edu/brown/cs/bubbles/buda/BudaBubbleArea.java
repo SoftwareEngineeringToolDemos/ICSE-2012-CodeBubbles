@@ -330,6 +330,7 @@ void removeCurrentBubble(MouseEvent e)
 	 setLayer(bb,MODAL_LAYER+3);
        }
       else if (bc.getPositionType() == BudaBubblePosition.FLOAT) {
+	 fixed = false;
 	 floating_bubbles.put(bb,floc);
 	 loc = setFloatingLocation(bb);
 	 bb.setFloating(true);
@@ -340,6 +341,7 @@ void removeCurrentBubble(MouseEvent e)
 	 setLayer(bb,MODAL_LAYER+4);
        }
       else if (bc.getPositionType() == BudaBubblePosition.DIALOG) {
+	 fixed = false;
 	 floating_bubbles.put(bb,floc);
 	 loc = setFloatingLocation(bb);
 	 bb.setFloating(true);
@@ -642,6 +644,8 @@ BudaWorkingSetImpl defineWorkingSet(String lbl,Rectangle rgn)
    working_sets.add(ws);
    repaint();
 
+   for_root.noteWorkingSetAdded(ws);
+
    return ws;
 }
 
@@ -649,8 +653,24 @@ BudaWorkingSetImpl defineWorkingSet(String lbl,Rectangle rgn)
 
 void removeWorkingSet(BudaWorkingSetImpl ws)
 {
-   working_sets.remove(ws);
-   repaint();
+   if (working_sets.remove(ws)) {
+      for_root.noteWorkingSetRemoved(ws);
+      repaint();
+    }
+}
+
+
+
+public BudaWorkingSet findWorkingSetForBubble(BudaBubble bb)
+{
+   Rectangle r1 = BudaRoot.findBudaLocation(bb);
+
+   for (BudaWorkingSetImpl ws : getWorkingSets()) {
+      Rectangle r2 = ws.getRegion();
+      if (r1.intersects(r2)) return ws;
+    }
+
+   return null;
 }
 
 /**
@@ -847,14 +867,21 @@ BudaChannelSet getChannelSet()			{ return channel_set; }
 
 public Rectangle computeRegion(Component base)
 {
-   Rectangle rview = new Rectangle(for_root.getViewport());
    Rectangle rloc = null;
    if (base != null) {
       rloc = BudaRoot.findBudaLocation(base);
       if (rloc == null) return null;
     }
-   else rloc = rview;
-   int space = Math.max(rview.width/2,768);
+   else rloc = new Rectangle(for_root.getViewport());
+
+   return computeRegion(rloc);
+}
+
+
+
+public Rectangle computeRegion(Rectangle rloc)
+{
+   int space = getRegionSpace();
 
    if (isPrimaryArea()) {
       // check if we are inside a working set and use it if so
@@ -888,7 +915,7 @@ public Rectangle computeRegion(Component base)
       }
    }
 
-   Rectangle r0 = new Rectangle(rview);
+   Rectangle r0 = new Rectangle();
    r0.x = left;
    r0.width = right-left+1;
    r0.y = 0;
@@ -897,6 +924,12 @@ public Rectangle computeRegion(Component base)
    return r0;
 }
 
+
+public int getRegionSpace()
+{
+   Rectangle rview = new Rectangle(for_root.getViewport());
+   return Math.max(rview.width/2,768);
+}
 
 
 
@@ -1050,7 +1083,7 @@ void handleCheckpointRequest()
 
 
 
-Point getCurrentMouse()
+public Point getCurrentMouse()
 {
    if (last_mouse == null) return null;
 
@@ -2687,8 +2720,10 @@ private class BubbleManager implements ComponentListener, ContainerListener {
    public void componentAdded(ContainerEvent e) {
       if (e.getChild() instanceof BudaBubble) {
 	 BudaBubble bb = (BudaBubble) e.getChild();
-	 localAddBubble(bb,true);
-	 updateOverview();
+	 if (bb.isShowing()) {
+	    localAddBubble(bb,true);
+	    updateOverview();
+	  }
        }
     }
 

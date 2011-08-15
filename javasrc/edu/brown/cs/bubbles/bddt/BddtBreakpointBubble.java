@@ -123,7 +123,7 @@ BddtBreakpointBubble()
 /*										*/
 /********************************************************************************/
 
-@Override protected void paintContentOverview(Graphics2D g)
+@Override protected void paintContentOverview(Graphics2D g,Shape s)
 {
    Dimension sz = getSize();
    g.setColor(BDDT_BREAKPOINT_OVERVIEW_COLOR);

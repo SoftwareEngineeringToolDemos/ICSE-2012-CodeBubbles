@@ -621,7 +621,10 @@ private boolean loadXml(File f)
 			return false;
 		      }
 		   }
-		  else if (cd >= 400) return false;
+		  else if (cd >= 400) {
+		     BoardLog.logD("BDOC","Update doc because of error " + cd + " on " + u);
+		     return false;
+		   }
 		}
 	       catch (IOException e) {
 		  // ignore bad connection -- use cached value
@@ -629,6 +632,7 @@ private boolean loadXml(File f)
 	     }
 	  }
 	 catch (URISyntaxException e) {
+	    BoardLog.logD("BDOC","Update doc because of uri syntax error " + e);
 	    return false;
 	  }
        }

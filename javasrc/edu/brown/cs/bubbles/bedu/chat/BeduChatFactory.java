@@ -40,7 +40,9 @@ static {
 public static void setup()
 {
    BoardProperties bp = BoardProperties.getProperties("Bedu");
-   if(!bp.getProperty("enabled").equals("false"))
+   if (bp.getProperty("enabled") == null) return;
+   
+   if (!bp.getProperty("enabled").equals("false"))
       BeduCourseRepository.initialize();
 }
 

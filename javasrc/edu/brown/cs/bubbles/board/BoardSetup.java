@@ -493,9 +493,11 @@ public static File getBubblesPluginDirectory()
 		       bs.install_jar);
     }
 
-   File f1 = new File(wsd,".metadata");
-   File f2 = new File(f1,".plugins");
-   File f3 = new File(f2,"edu.brown.cs.bubbles.bedrock");
+   // File f1 = new File(wsd,".metadata");
+   // File f2 = new File(f1,".plugins");
+   // File f3 = new File(f2,"edu.brown.cs.bubbles.bedrock");
+   File f3 = new File(wsd,".bubbles");
+
    if (!f3.exists()) f3.mkdirs();
    if (!f3.exists() || !f3.isDirectory()) {
       BoardLog.logE("BOARD","Bad plugin directory " + f3);
@@ -741,7 +743,7 @@ public boolean doSetup()
       BoardUpdate.setVersion();
     }
 
-   if (!update_setup) {
+   if (!update_setup && getRunMode() != RunMode.CLIENT) {
       setSplashTask("Getting configuration information");
       if (needsetup) handleSetup();
       else if (ask_workspace || has_changed) {
@@ -898,6 +900,8 @@ private void deleteAll(File f)
 
 private void handleSetup()
 {
+   if (getRunMode() == RunMode.CLIENT) return;
+
    SetupDialog sd = new SetupDialog();
    if (!sd.process()) {
       BoardLog.logE("BOARD","Setup aborted by user");

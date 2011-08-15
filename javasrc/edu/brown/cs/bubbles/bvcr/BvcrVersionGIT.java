@@ -74,7 +74,7 @@ BvcrVersionGIT(BvcrProject bp)
 
    if (origin_name == null) {
       origin_name = "";
-      String cmd = git_command + "-branch -all";
+      String cmd = git_command + " branch -all";
       StringCommand sc = new StringCommand(cmd);
       String vers = sc.getContent();
       StringTokenizer tok = new StringTokenizer(vers," \r\n\t*");
@@ -132,7 +132,7 @@ String getRepositoryName()
 
 void getDifferences(BvcrDifferenceSet ds)
 {
-   String cmd = git_command  + "-diff " + origin_name + " -r -- ";
+   String cmd = git_command  + " diff " + origin_name + " -r -- ";
 
    List<File> diffs = ds.getFilesToCompute();
    if (diffs == null) {

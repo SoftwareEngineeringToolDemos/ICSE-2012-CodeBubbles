@@ -72,8 +72,7 @@ private ContentPane()
 {
    setOpaque(false);
    setPreferredSize(DEFAULT_DIMENSION);
-   BassRepository course_repo = BassFactory
-	    .getRepository(BudaConstants.SearchType.SEARCH_COURSES);
+   BassRepository courserepo = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_COURSES);
    setLayout(new BorderLayout());
    combo_box = new JComboBox();
    combo_box.addItemListener(this);
@@ -81,11 +80,12 @@ private ContentPane()
    combo_box.addItem(ADD_TA_STR);
 
    add(combo_box, BorderLayout.PAGE_START);
-
-   for (BassName n : course_repo.getAllNames()) {
-      if (n.toString().length() >= 0 && n.toString().charAt(0) != '@') combo_box.addItem(n);
+   
+   if (courserepo != null) {
+      for (BassName n : courserepo.getAllNames()) {
+	 if (n.toString().length() >= 0 && n.toString().charAt(0) != '@') combo_box.addItem(n);
+      }
    }
-
 }
 
 @Override public void itemStateChanged(ItemEvent e)

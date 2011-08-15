@@ -317,7 +317,7 @@ enum BaleViewType {
 /*										*/
 /********************************************************************************/
 
-public enum BaleInfoBubbleType {
+enum BaleInfoBubbleType {
    IMPLDOC,
    DEFDOC,
    DOC,
@@ -326,7 +326,7 @@ public enum BaleInfoBubbleType {
 }
 
 
-public enum BaleInfoBubbleIconType {
+enum BaleInfoBubbleIconType {
    WARNING,
    ERROR,
 }

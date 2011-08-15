@@ -42,7 +42,7 @@ import java.util.*;
 
 
 class BconOverviewPanel implements BconConstants, BudaConstants.BubbleViewCallback,
-	BconConstants.BconPanel
+	BconConstants.BconPanel, BudaConstants
 {
 
 
@@ -225,6 +225,13 @@ private void computeRegion()
 {
    return false;
 }
+
+
+@Override public void workingSetAdded(BudaWorkingSet ws)	{ }
+@Override public void workingSetRemoved(BudaWorkingSet ws)	{ }
+
+@Override public void doneConfiguration()			{ }
+
 
 
 

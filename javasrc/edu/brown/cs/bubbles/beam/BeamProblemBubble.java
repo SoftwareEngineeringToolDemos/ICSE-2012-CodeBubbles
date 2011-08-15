@@ -209,7 +209,7 @@ BeamProblemBubble(String typs,boolean task)
 /*										*/
 /********************************************************************************/
 
-@Override protected void paintContentOverview(Graphics2D g)
+@Override protected void paintContentOverview(Graphics2D g,Shape s)
 {
    Dimension sz = getSize();
 

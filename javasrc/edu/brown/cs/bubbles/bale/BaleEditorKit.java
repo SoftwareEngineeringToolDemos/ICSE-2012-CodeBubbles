@@ -244,7 +244,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu shift F",format_action),
       new KeyItem("alt B",expand_action),
 
-      new KeyItem("ctrl SPACE",autocomplete_action),
+      new KeyItem("menu SPACE",autocomplete_action),
 
       new KeyItem("F3",goto_implementation_action),
       new KeyItem("menu shift F3",goto_definition_action),
@@ -2258,19 +2258,16 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
 
    for (BumpLocation bl : locs) {
       BumpSymbolType nst = bl.getSymbolType();
+      if (nst != BumpSymbolType.CLASS && nst != BumpSymbolType.ENUM &&
+		  nst != BumpSymbolType.THROWABLE &&
+		  nst != BumpSymbolType.INTERFACE &&
+		  nst != BumpSymbolType.PACKAGE) return false;
       if (bst == null) bst = nst;
-      else if (bst != nst) {
-	 bst = null;
-	 break;
-       }
+      else if (bst != nst) return false;
       baseloc = bl;
     }
 
    if (bst == null) return false;
-
-   if (bst != BumpSymbolType.CLASS && bst != BumpSymbolType.ENUM &&
-	  bst != BumpSymbolType.THROWABLE &&
-	  bst != BumpSymbolType.INTERFACE && bst != BumpSymbolType.PACKAGE) return false;
 
    if (locs.size() == 2) {
       BumpLocation fnd = null;

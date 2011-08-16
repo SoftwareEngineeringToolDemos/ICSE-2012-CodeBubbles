@@ -101,7 +101,10 @@ BaleCompactFragment(BaleDocument bd,Collection<BumpLocation> locs,int wd)
 	 case ENUM :
 	 case THROWABLE :
 	    if (bl.getDefinitionOffset() == bl.getOffset() &&
-	       bl.getDefinitionEndOffset() == bl.getEndOffset()) continue;
+	       bl.getDefinitionEndOffset() == bl.getEndOffset()) {
+	       // add dummy line
+	       // continue;
+	    }
 	    break;
        }
 

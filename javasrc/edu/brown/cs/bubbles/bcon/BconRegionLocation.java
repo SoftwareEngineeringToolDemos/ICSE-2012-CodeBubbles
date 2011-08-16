@@ -148,6 +148,23 @@ String getRegionName()
 }
 
 
+
+String getShortRegionName()
+{
+   String nm = null;
+   if (base_location != null) {
+      nm = base_location.getSymbolName();
+      String pm = base_location.getParameters();
+      if (pm != null) {
+	 if (pm.length() < 8) nm += pm;
+	 else nm += "(...)";
+       }
+    }
+   
+   return nm;
+}
+      
+
 int getModifiers()
 {
    if (base_location == null) return BCON_MODIFIERS_UNDEFINED;

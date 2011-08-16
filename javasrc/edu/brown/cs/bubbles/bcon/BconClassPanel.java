@@ -1360,7 +1360,7 @@ private class DeleteAction extends AbstractAction {
    private BconRegion delete_region;
    
    DeleteAction(BconRegion br) {
-      super("Delete " + br.getRegionName());
+      super("Delete " + br.getShortRegionName());
       delete_region = br;
     }
    

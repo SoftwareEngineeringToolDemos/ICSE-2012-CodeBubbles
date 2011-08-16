@@ -141,6 +141,8 @@ boolean isValid()
 abstract RegionType getRegionType();
 abstract String getRegionName();
 
+String getShortRegionName()			{ return getRegionName(); }
+
 boolean nameMatch(String name)			{ return false; }
 boolean createBubble(Component src)		{ return false; }
 BudaBubble makeBubble() 			{ return null; }

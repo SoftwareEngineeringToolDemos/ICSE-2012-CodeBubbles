@@ -478,10 +478,41 @@ public static File getDocumentationFile()
 
 /**
  *	Returns the file location of the bubbles plugin directory.  This is where we should
- *	be saving various files and auxilliary information.
+ *	be saving eclipse-specific information		
  **/
 
 public static File getBubblesPluginDirectory()
+{
+   BoardSetup bs = getSetup();
+
+   File wsd = new File(bs.default_workspace);
+
+   if (!wsd.exists() || !wsd.isDirectory()) {
+      BoardLog.logX("BOARD","Bad board setup " + bs.default_workspace + " " + bs.eclipse_directory + " " +
+		       bs.jar_file + " " + bs.jar_directory + " " + bs.install_path + " " +
+		       bs.install_jar);
+    }
+
+   File f1 = new File(wsd,".metadata");
+   File f2 = new File(f1,".plugins");
+   File f3 = new File(f2,"edu.brown.cs.bubbles.bedrock");
+
+   if (!f3.exists()) f3.mkdirs();
+   if (!f3.exists() || !f3.isDirectory()) {
+      BoardLog.logE("BOARD","Bad plugin directory " + f3);
+    }
+
+   return f3;
+}
+
+
+
+/**
+ *	Returns the file location of the bubbles plugin directory.  This is where we should
+ *	be saving various files and auxilliary information.
+ **/
+
+public static File getBubblesWorkingDirectory()
 {
    BoardSetup bs = getSetup();
 
@@ -1218,6 +1249,12 @@ private void checkLibResources()
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Initial property definitions						*/
+/*										*/
+/********************************************************************************/
+
 private void ensurePropsDefined(String nm,InputStream ins) throws IOException
 {
    BoardProperties ups = BoardProperties.getProperties(nm);
@@ -1226,8 +1263,24 @@ private void ensurePropsDefined(String nm,InputStream ins) throws IOException
    boolean chng = false;
 
    for (String pnm : dps.stringPropertyNames()) {
+      if (pnm.endsWith(".PROB")) continue;
       String v = dps.getProperty(pnm);
       if (v != null && !ups.containsKey(pnm)) {
+	 String xnm = pnm + ".PROB";
+	 String up = ups.getProperty(xnm);
+	 String vp = dps.getProperty(xnm);
+	 if (vp != null && up == null) {
+	    double dv = 1;
+	    try {
+	       dv = Double.parseDouble(vp);
+	     }
+	    catch (NumberFormatException e) { }
+	    if (Math.random() > dv) {
+	       ups.setProperty(xnm,"0");
+	       chng = true;
+	       continue;
+	     }
+	  }
 	 ups.setProperty(pnm,v);
 	 chng = true;
        }

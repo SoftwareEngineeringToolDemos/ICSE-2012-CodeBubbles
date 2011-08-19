@@ -45,6 +45,7 @@ import edu.brown.cs.ivy.xml.*;
 import org.w3c.dom.*;
 
 import java.util.*;
+import java.io.*;
 
 
 public class BnoteStore implements BnoteConstants, MintConstants
@@ -98,6 +99,7 @@ private BnoteStore()
 	 is_local = true;
 	 MintControl mc = bs.getMintControl();
 	 mc.register("<BNOTE TYPE='LOG'><_VAR_0 /></BNOTE>",new LogServer());
+	 // mc.register("<BNOTE TYPE='ATTACH'><_VAR_0 /></BNOTE>",new AttachServer());
 	 break;
       default :
 	 is_local = true;
@@ -128,25 +130,66 @@ static BnoteStore createStore()
 
 List<BnoteTask> getTasksForProject(String proj)
 {
+   // handle non-local access
+
    return note_db.getTasksForProject(proj);
 }
 
 
 List<String> getUsersForTask(String proj,BnoteTask task)
 {
+   // handle non-local access
+
    return note_db.getUsersForTask(proj,task);
+}
+
+
+List<Date> getDatesForTask(String proj,BnoteTask task)
+{
+   // handle non-local access
+
+   return note_db.getDatesForTask(proj,task);
 }
 
 
 List<String> getNamesForTask(String proj,BnoteTask task)
 {
+   // handle non-local access
+
    return note_db.getNamesForTask(proj,task);
 }
 
 
 
+List<BnoteEntry> getEntriesForTask(String proj,BnoteTask task)
+{
+   // handle non-local access
+
+   return note_db.getEntriesForTask(proj,task);
+}
+
+
+
+File getAttachment(String aid)
+{
+   // handle non-local access
+
+   return note_db.getAttachment(aid);
+}
+
+
+String getAttachmentAsString(String aid)
+{
+   // handle non-local access
+   
+   return note_db.getAttachmentAsString(aid);
+}
+
+
 BnoteTask findTaskById(int id)
 {
+   // handle non-local access
+
    return note_db.findTaskById(id);
 }
 
@@ -180,6 +223,8 @@ public static BnoteTask log(String project,BnoteTask task,BnoteEntryType type,Ma
 
 public static BnoteTask log(String project,BnoteTask task,BnoteEntryType type,Object ... args)
 {
+   if (the_store == null) return null;
+
    Map<String,Object> values = new HashMap<String,Object>();
    for (int i = 0; i < args.length-1; i += 2) {
       values.put(args[i].toString(),args[i+1]);
@@ -188,6 +233,19 @@ public static BnoteTask log(String project,BnoteTask task,BnoteEntryType type,Ob
    return log(project,task,type,values);
 }
 
+
+
+public static boolean attach(BnoteTask task,File file)
+{
+   if (the_store == null || task == null || file == null) return false;
+
+   long aid = the_store.saveAttachment(file);
+   if (aid == 0) return false;
+
+   log(task.getProject(),task,BnoteEntryType.ATTACHMENT,"SOURCE",file,"ATTACHID",aid);
+
+   return true;
+}
 
 
 /********************************************************************************/
@@ -249,6 +307,37 @@ private BnoteTask sendEntry(String ent)
 
    return null;
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Attachment methods							*/
+/*										*/
+/********************************************************************************/
+
+private long saveAttachment(File f)
+{
+   long len = f.length();
+   if (len == 0 || len > MAX_ATTACHMENT_SIZE) return 0;
+
+   if (is_local) {
+      try {
+	 InputStream ins = new FileInputStream(f);
+	 return note_db.saveAttachment(f.getPath(),ins,(int) len);
+       }
+      catch (IOException e) {
+	 BoardLog.logD("BNOTE","Problem reading attachment: " + e);
+       }
+      return 0;
+    }
+
+   // handle sending attachment to remote server
+   // and getting id back
+
+   return 0;
+}
+
 
 
 

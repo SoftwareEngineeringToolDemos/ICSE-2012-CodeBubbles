@@ -363,7 +363,7 @@ String [] BOARD_RESOURCE_PROPS =  new String [] {
    "Bale.props", "Bale.x86.props", "Bdoc.props", "Bema.props", "Beam.props",
    "Bgta.props", "Buda.props", "Bass.props", "Bted.props", "Board.props",
    "Board.x86.props", "Bddt.props", "Bcon.props", "Bueno.props", "Bvcr.props",
-   "Batt.props", "Bedu.props"
+   "Batt.props", "Bedu.props", "Bnote.props", "Bbook.props"
 };
 
 
@@ -384,7 +384,8 @@ String [] BOARD_LIBRARY_FILES = new String [] {
    "joscar-protocol.jar",
    "jsocks-klea.jar",
    "bubblesasm.jar",
-   "ColorPicker.jar"
+   "ColorPicker.jar",
+   "derby.jar", "mysql.jar", "postgresql.jar"
 };
 
 
@@ -396,7 +397,8 @@ String [] BOARD_LIBRARY_EXTRAS = new String [] {
    "bandaid.jar",
    "LagHunter-4.jar",
    "LagHunterBootClasses_4.jar",
-   "LiLaConfiguration.ini"
+   "LiLaConfiguration.ini",
+   "bbookbkg.gif"
 };
 
 

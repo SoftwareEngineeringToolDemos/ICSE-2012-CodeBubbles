@@ -616,7 +616,7 @@ private class FileGetServerHandler implements MintHandler {
       File f = null;
       if (kind != null && kind.equals("BDOC")) f = BoardSetup.getDocumentationFile();
       else if (kind != null && kind.equals("NOTE")) {
-	 File f1 = BoardSetup.getBubblesPluginDirectory();
+	 File f1 = BoardSetup.getBubblesWorkingDirectory();
 	 File f2 = new File(filenm);
 	 f = new File(f1,f2.getName());
        }

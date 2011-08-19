@@ -48,6 +48,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.io.*;
 
 
 class BbookTasker implements BbookConstants, BudaConstants, BnoteConstants
@@ -192,23 +193,24 @@ private class TaskSelector extends TaskDialog implements ActionListener {
       task_box = null;
       current_project = proj;
       result_status = 0;
-   
+
       beginLayout();
       addBannerLabel("Programmer's Log Book");
       addSeparator();
-   
+
       List<String> plist = BbookFactory.getFactory().getProjects();
       if (proj == null && plist.size() > 0) {
-         proj = plist.get(0);
-         current_project = proj;
+	 proj = plist.get(0);
+	 current_project = proj;
        }
       addChoice("Project",plist,proj,this);
-   
+
       task_box = addChoice("Task",(Collection<Object>) null,0,this);
       setupTasks();
-   
+
       addBottomButton("Cancel","Cancel",this);
       note_button = addBottomButton("Add Note","Add Note",this);
+      addBottomButton("New Task","New Task",this);
       done_button = addBottomButton("Done","Done",this);
       updateButtons();
       addBottomButtons();
@@ -229,7 +231,7 @@ private class TaskSelector extends TaskDialog implements ActionListener {
 	 result_status = -1;
 	 closeDialog(evt);
        }
-      else if (cmd.equals("Done")) {
+      else if (cmd.equals("Done") || cmd.equals("New Task")) {
 	 loc = BudaRoot.findBudaLocation(this);
 	 bba = BudaRoot.findBudaBubbleArea(this);
 	 closeDialog(evt);
@@ -237,7 +239,7 @@ private class TaskSelector extends TaskDialog implements ActionListener {
 	    Object tobj = task_box.getSelectedItem();
 	    if (tobj == null) return;
 	    if (tobj instanceof BnoteTask) task = (BnoteTask) tobj;
-	    if (tobj.equals("< New Task >")) {
+	    if (tobj.equals("< New Task >") || cmd.equals("New Task")) {
 	       result_status = 1;
 	     }
 	    else result_status = 3;
@@ -328,18 +330,18 @@ private class TaskCreator extends TaskDialog implements ActionListener {
    TaskCreator(String proj) {
       current_project = proj;
       result_status = 0;
-   
+
       beginLayout();
       addBannerLabel("Programmer's Log Book");
       addSeparator();
-   
+
       List<String> plist = BbookFactory.getFactory().getProjects();
       addChoice("Project",plist,proj,this);
-   
+
       name_field = addTextField("New Task Name",null,24,this,null);
       desc_field = addTextArea("Description",null,6,32,null);
       desc_field.setLineWrap(true);
-   
+
       addBottomButton("Cancel","Cancel",this);
       addBottomButton("Create","Create",this);
       addBottomButtons();
@@ -348,30 +350,30 @@ private class TaskCreator extends TaskDialog implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
       if (cmd.equals("Cancel")) {
-         result_status = -1;
-         closeDialog(evt);
+	 result_status = -1;
+	 closeDialog(evt);
        }
       else if (cmd.equals("Done") || cmd.equals("Create")) {
-         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-         Rectangle loc = BudaRoot.findBudaLocation(this);
-         closeDialog(evt);
-         if (name_field != null && current_project != null && name_field.getText().length() > 0) {
-            BnoteTask task = BnoteStore.defineTask(name_field.getText(),current_project,
-        					      desc_field.getText());
-            if (task != null) BbookFactory.getFactory().handleSetTask(task,bba,loc);
-          }
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+	 Rectangle loc = BudaRoot.findBudaLocation(this);
+	 closeDialog(evt);
+	 if (name_field != null && current_project != null && name_field.getText().length() > 0) {
+	    BnoteTask task = BnoteStore.defineTask(name_field.getText(),current_project,
+						      desc_field.getText());
+	    if (task != null) BbookFactory.getFactory().handleSetTask(task,bba,loc);
+	  }
        }
-   
+
       if (result_status == 0) updateButtons();
     }
 
    private void updateButtons() {
       JButton done = (JButton) getComponentForLabel("Done");
       if (current_project != null && name_field != null && name_field.getText().length() > 0) {
-         if (done != null) done.setEnabled(true);
+	 if (done != null) done.setEnabled(true);
        }
       else {
-         if (done != null) done.setEnabled(false);
+	 if (done != null) done.setEnabled(false);
        }
     }
 
@@ -390,6 +392,7 @@ private class TaskCreator extends TaskDialog implements ActionListener {
 private class TaskNoter extends TaskDialog implements ActionListener {
 
    private JTextArea  note_field;
+   private JTextField attach_field;
    private BnoteTask current_task;
    private String current_project;
    private int result_status;
@@ -398,16 +401,16 @@ private class TaskNoter extends TaskDialog implements ActionListener {
       current_project = proj;
       current_task = task;
       result_status = 0;
-   
+
       beginLayout();
       addBannerLabel("Programmer's Log Book");
       addSeparator();
-   
+
       addDescription("Project",proj);
       addDescription("Task",task.toString());
-   
-      note_field = addTextArea("Task Notes",null,4,48,null);
-   
+
+      note_field = addTextArea("Task Notes",null,4,40,null);
+      attach_field = addFileField("Attachment",(String) null,0,null,null);
       addBottomButton("Cancel","Cancel",this);
       addBottomButton("Change Task","Change Task",this);
       addBottomButton("New Task","New Task",this);
@@ -418,28 +421,34 @@ private class TaskNoter extends TaskDialog implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
       if (cmd.equals("Cancel")) {
-         result_status = -1;
-         closeDialog(evt);
+	 result_status = -1;
+	 closeDialog(evt);
        }
       else if (cmd.equals("Done")) {
-         closeDialog(evt);
-         if (note_field != null && note_field.getText().length() > 0) {
-            BnoteStore.log(current_project,current_task,BnoteEntryType.NOTE,"NOTE",note_field.getText());
-          }
+	 closeDialog(evt);
+	 if (note_field != null && note_field.getText().length() > 0) {
+	    BnoteStore.log(current_project,current_task,BnoteEntryType.NOTE,"NOTE",note_field.getText());
+	  }
+	 if (attach_field != null && attach_field.getText().length() > 0) {
+	    File f1 = new File(attach_field.getText());
+	    if (f1.exists() && f1.canRead()) {
+	       BnoteStore.attach(current_task,f1);
+	     }
+	  }
        }
       else if (cmd.equals("Change Task")) {
-         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-         Rectangle r = BudaRoot.findBudaLocation(this);
-         closeDialog(evt);
-         createTaskSelector(bba,null,r.getLocation(),current_project);
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+	 Rectangle r = BudaRoot.findBudaLocation(this);
+	 closeDialog(evt);
+	 createTaskSelector(bba,null,r.getLocation(),current_project);
        }
       else if (cmd.equals("New Task")) {
-         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-         Rectangle r = BudaRoot.findBudaLocation(this);
-         closeDialog(evt);
-         createTaskCreator(bba,null,r.getLocation(),current_project);
-       }     
-   
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+	 Rectangle r = BudaRoot.findBudaLocation(this);
+	 closeDialog(evt);
+	 createTaskCreator(bba,null,r.getLocation(),current_project);
+       }
+
       if (result_status == 0) updateButtons();
     }
 

@@ -39,6 +39,8 @@ package edu.brown.cs.bubbles.bbook;
 
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.bnote.*;
 
 import edu.brown.cs.ivy.xml.*;
 
@@ -65,7 +67,7 @@ public class BbookFactory implements BbookConstants, BudaConstants
 
 private BbookTasker		task_manager;
 private BbookRegionManager	region_manager;
-private List<String>            all_projects;
+private List<String>		all_projects;
 
 private static BbookFactory	the_factory = new BbookFactory();
 
@@ -80,9 +82,14 @@ private static BbookFactory	the_factory = new BbookFactory();
 
 private BbookFactory()
 {
-   task_manager = new BbookTasker();
-   region_manager = new BbookRegionManager();
+   task_manager = null;
+   region_manager = null;
    all_projects = null;
+
+   if (isEnabled()) {
+      task_manager = new BbookTasker();
+      region_manager = new BbookRegionManager();
+    }
 }
 
 
@@ -99,17 +106,31 @@ public static BbookFactory getFactory() 	{ return the_factory; }
 
 public static void setup()
 {
-   BudaRoot.addBubbleConfigurator("BBOOK",new TaskConfig());
-   
-   BudaRoot.registerMenuButton("Show Programmer's Log",new LogShow());
+   if (isEnabled()) {
+      BudaRoot.addBubbleConfigurator("BBOOK",new TaskConfig());
+      BudaRoot.registerMenuButton("Show Programmer's Log",new LogShow());
+    }
 }
 
 
 public static void initialize(BudaRoot br)
 {
-   br.registerKeyAction(new BbookAction(br),"Programmer's Log",
-			   KeyStroke.getKeyStroke(KeyEvent.VK_F2,0));
+   if (isEnabled()) {
+      br.registerKeyAction(new BbookAction(br),"Programmer's Log",
+			      KeyStroke.getKeyStroke(KeyEvent.VK_F2,0));
+    }
 }
+
+
+private static boolean isEnabled()
+{
+   if (!BnoteFactory.getFactory().isEnabled()) return false;
+
+   BoardProperties bp = BoardProperties.getProperties("Bbook");
+
+   return bp.getBoolean("Bbook.enable",true);
+}
+
 
 
 /********************************************************************************/
@@ -149,9 +170,9 @@ void handleSetTask(BnoteTask task,BudaBubbleArea bba,Rectangle loc)
 synchronized List<String> getProjects()
 {
    if (all_projects != null) return all_projects;
-   
+
    all_projects = new ArrayList<String>();
-   
+
    Element pxml = BumpClient.getBump().getAllProjects();
    if (pxml != null) {
       Set<String> pset = new TreeSet<String>();
@@ -161,8 +182,8 @@ synchronized List<String> getProjects()
        }
       all_projects.addAll(pset);
     }
-   
-   return all_projects;   
+
+   return all_projects;
 }
 
 /********************************************************************************/
@@ -187,13 +208,13 @@ private static class BbookAction extends AbstractAction {
       Rectangle r0 = new Rectangle(pt);
       BbookRegion tr = getFactory().findTaskRegion(bba,r0);
       if (tr == null) {
-         getFactory().task_manager.createTaskCreator(bba,null,pt,null);
+	 getFactory().task_manager.createTaskCreator(bba,null,pt,null);
        }
       else if (tr.getTask() != null) {
-         getFactory().task_manager.createTaskNoter(bba,null,pt,tr.getTask().getProject(),tr.getTask());
+	 getFactory().task_manager.createTaskNoter(bba,null,pt,tr.getTask().getProject(),tr.getTask());
        }
       else {
-         getFactory().task_manager.createTaskSelector(bba,null,pt,null);
+	 getFactory().task_manager.createTaskSelector(bba,null,pt,null);
        }
     }
 
@@ -233,21 +254,21 @@ private static class TaskConfig implements BubbleConfigurator {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle menu buttons                                                          */
-/*                                                                              */
+/*										*/
+/*	Handle menu buttons							     */
+/*										*/
 /********************************************************************************/
 
 private static class LogShow implements ButtonListener {
-   
+
    LogShow() { }
-   
+
    @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt) {
       BudaBubble bb = new BbookQueryBubble(bba,pt);
       bba.addBubble(bb,null,pt,BudaConstants.PLACEMENT_EXPLICIT);
     }
-   
-}       // end of inner class LogShow
+
+}	// end of inner class LogShow
 
 
 

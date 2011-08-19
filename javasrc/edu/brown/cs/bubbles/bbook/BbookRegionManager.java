@@ -40,6 +40,7 @@ package edu.brown.cs.bubbles.bbook;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bnote.*;
 import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.xml.*;
 
@@ -68,8 +69,8 @@ public class BbookRegionManager implements BbookConstants, BudaConstants, BumpCo
 private List<TaskRegion>	task_regions;
 private boolean 		config_done;
 private ChangeListener		change_listener;
-private Map<Document,Boolean>   noedit_set;
-
+private Map<Document,Boolean>	noedit_set;
+private boolean 		auto_show;
 
 
 /********************************************************************************/
@@ -83,8 +84,11 @@ BbookRegionManager()
    task_regions = new ArrayList<TaskRegion>();
    config_done = false;
 
+   BoardProperties bp = BoardProperties.getProperties("Bbook");
+   auto_show = bp.getBoolean("Bbook.autoshow",true);
+
    change_listener = new ChangeListener();
-   
+
    noedit_set = new WeakHashMap<Document,Boolean>();
 
    BudaRoot.addBubbleViewCallback(new BubbleViewer());
@@ -269,7 +273,7 @@ void handleSetTask(BnoteTask task,BudaBubbleArea bba,Rectangle r)
 	 String b2 = bb.getContentName();
 	 File f3 = bb.getContentFile();
 	 if (b1 != null && b2 != null && f3 != null) {
-	    BnoteStore.log(task.getProject(),task,BnoteEntryType.OPEN,"INPROJECT",b1,"NAME",b2,"File",f3.getPath());
+	    BnoteStore.log(task.getProject(),task,BnoteEntryType.OPEN,"INPROJECT",b1,"NAME",b2,"FILE",f3.getPath());
 	  }
        }
     }
@@ -298,21 +302,21 @@ private void handleBubbleAdded(BudaBubble bb)
       else tr.addBubble(bb);
     }
 
-   if (create && config_done) {
+   if (create && config_done && auto_show) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
       BbookFactory.getFactory().createTaskSelector(bba,bb,null,bb.getContentProject());
     }
 
    BnoteTask task = tr.getTask();
-   if (task != null) {
+   if (task != null && config_done) {
       String b1 = bb.getContentProject();
       String b2 = bb.getContentName();
       File f3 = bb.getContentFile();
       if (b1 != null && b2 != null && f3 != null) {
-	 BnoteStore.log(task.getProject(),task,BnoteEntryType.OPEN,"INPROJECT",b1,"NAME",b2,"File",f3.getPath());
+	 BnoteStore.log(task.getProject(),task,BnoteEntryType.OPEN,"INPROJECT",b1,"NAME",b2,"FILE",f3.getPath());
        }
     }
-   
+
    Document d = getBubbleDocument(bb);
    if (d != null) noedit_set.put(d,Boolean.TRUE);
 }
@@ -329,7 +333,7 @@ private Document getBubbleDocument(BudaBubble bb)
       JTextComponent jtc = (JTextComponent) c;
       return jtc.getDocument();
     }
-   
+
    return null;
 }
 
@@ -349,7 +353,7 @@ private void handleBubbleRemoved(BudaBubble bb)
 	 BnoteStore.log(task.getProject(),task,BnoteEntryType.CLOSE,"INPROJECT",b1,"NAME",b2,"FILE",f3);
       }
     }
-   
+
    Document d = getBubbleDocument(bb);
    if (d != null) noedit_set.remove(d);
 
@@ -400,8 +404,19 @@ private void noteFileChanged(File f)
 
    for (TaskRegion tr : upds) {
       BnoteTask task = tr.getTask();
-      BnoteStore.log(task.getProject(),task,BnoteEntryType.SAVE,"FILE",f);
-      // TODO: should also note save for each bubble of that file
+      boolean used = false;
+      for (BudaBubble bb : tr.getBubbles()) {
+	 String b1 = bb.getContentProject();
+	 String b2 = bb.getContentName();
+	 File f3 = bb.getContentFile();
+	 if (b1 != null && b2 != null && f3 != null && f3.equals(f)) {
+	    BnoteStore.log(task.getProject(),task,BnoteEntryType.SAVE,"INPROJECT",b1,"NAME",b2,"FILE",f3.getPath());
+	    used = true;
+	  }
+       }
+      if (!used) {
+	 BnoteStore.log(task.getProject(),task,BnoteEntryType.SAVE,"FILE",f);
+       }
     }
 }
 
@@ -410,20 +425,20 @@ private void noteFileChanged(File f)
 private void noteDocumentChanged(Document d)
 {
    if (!noedit_set.remove(d)) return;
-   
+
    synchronized (task_regions) {
       for (TaskRegion tr : task_regions) {
-         BudaBubble bb = tr.contains(d);
-         if (bb == null) continue;
-         BnoteTask task = tr.getTask();
-         if (task == null) continue;
-         String b1 = bb.getContentProject();
-         String b2 = bb.getContentName();
-         File f3 = bb.getContentFile();
-         if (b1 != null && b2 != null && f3 != null) {
-            BnoteStore.log(task.getProject(),task,BnoteEntryType.EDIT,
-                  "INPROJECT",b1,"NAME",b2,"FILE",f3);
-          }
+	 BudaBubble bb = tr.contains(d);
+	 if (bb == null) continue;
+	 BnoteTask task = tr.getTask();
+	 if (task == null) continue;
+	 String b1 = bb.getContentProject();
+	 String b2 = bb.getContentName();
+	 File f3 = bb.getContentFile();
+	 if (b1 != null && b2 != null && f3 != null) {
+	    BnoteStore.log(task.getProject(),task,BnoteEntryType.EDIT,
+		  "INPROJECT",b1,"NAME",b2,"FILE",f3);
+	  }
        }
     }
 }
@@ -552,8 +567,8 @@ private class TaskRegion implements BbookRegion
    BudaBubble contains(Document d) {
       if (d == null) return null;
       for (BudaBubble bb : active_bubbles) {
-         Document d1 = getBubbleDocument(bb);
-         if (d1 == d) return bb;
+	 Document d1 = getBubbleDocument(bb);
+	 if (d1 == d) return bb;
        }
       return null;
     }

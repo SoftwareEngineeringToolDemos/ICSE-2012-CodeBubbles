@@ -132,14 +132,15 @@ String getRepositoryName()
 
 void getDifferences(BvcrDifferenceSet ds)
 {
-   String cmd = git_command  + " diff " + origin_name + " -r -- ";
+   String cmd = git_command  + " diff " + origin_name + " -r";
 
    List<File> diffs = ds.getFilesToCompute();
    if (diffs == null) {
-      cmd += " " + git_root.getPath();
+      // cmd += " " + git_root.getPath();
     }
    else if (diffs.size() == 0) return;
    else {
+      cmd += " --";
       for (File f : diffs) {
 	 cmd += " " + f.getPath();
        }

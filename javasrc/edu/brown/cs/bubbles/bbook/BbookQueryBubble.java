@@ -71,7 +71,9 @@ private JComboBox	class_selector;
 private JComboBox	method_selector;
 private Orderings	current_order;
 
- 
+private boolean 	show_users;
+
+
 
 
 
@@ -93,6 +95,9 @@ BbookQueryBubble(BudaBubbleArea bba,Point pt)
    current_class = null;
    current_method = null;
    current_order = Orderings.TASK;
+
+   List<String> usrs = BnoteFactory.getFactory().getUsersForTask(null,null);
+   show_users = usrs != null && usrs.size() > 2;
 
    task_selector = null;
    user_selector = null;
@@ -206,7 +211,7 @@ private void addTaskSelector(SwingGridPanel pnl)
 private void resetTasks()
 {
    if (task_selector == null) return;
-   
+
    List<BnoteTask> tasks = BnoteFactory.getFactory().getTasksForProject(current_project);
    task_selector.removeAllItems();
    task_selector.addItem("< Any Task >");
@@ -255,6 +260,8 @@ private class TaskHandler implements ActionListener {
 
 private void addUserSelector(SwingGridPanel pnl)
 {
+   if (!show_users) return;
+
    user_selector = pnl.addChoice("User",new Object [0],0,new UserHandler());
 
    resetUsers();
@@ -264,7 +271,7 @@ private void addUserSelector(SwingGridPanel pnl)
 private void resetUsers()
 {
    if (user_selector == null) return;
-   
+
    List<String> usrs = BnoteFactory.getFactory().getUsersForTask(current_project,current_task);
    user_selector.removeAllItems();
    user_selector.addItem("< Any User >");
@@ -325,7 +332,7 @@ private void addNameSelector(SwingGridPanel pnl)
 private void resetNames()
 {
    if (class_selector == null || method_selector == null) return;
-   
+
    List<String> nms = BnoteFactory.getFactory().getNamesForTask(current_project,current_task);
    if (nms == null) nms = new ArrayList<String>();
    List<String> mnms = createMethods(nms);
@@ -439,9 +446,14 @@ private void addClassSets(String nm,int idx,Map<String,Set<String>> found,Set<St
 private class NameHandler implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
+      JComboBox cbx = (JComboBox) evt.getSource();
       if (evt.getActionCommand().equals("Class")) {
+	 current_class = (String) cbx.getSelectedItem();
+	 if (current_class != null && current_class == "< Any Class >") current_class = null;
        }
       else {
+	 current_method = (String) cbx.getSelectedItem();
+	 if (current_method != null && current_method == "< Any Method >") current_method = null;
        }
     }
 
@@ -501,10 +513,22 @@ private class DisplayHandler implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
       if (cmd.equals("Cancel")) {
-	 closeDialog(evt);
+         closeDialog(evt);
       }
       else {
-	 closeDialog(evt);
+         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BbookQueryBubble.this);
+         Rectangle r0 = BudaRoot.findBudaLocation(BbookQueryBubble.this);
+         closeDialog(evt);
+         Map<String,Object> props = new HashMap<String,Object>();
+         if (current_project != null) props.put("PROJECT",current_project);
+         if (current_task != null) props.put("TASK",current_task);
+         if (current_user != null) props.put("USER",current_user);
+         if (current_class != null) props.put("CLASS",current_class);
+         if (current_method != null) props.put("METHOD",current_method);
+         props.put("ORDERBY",current_order);
+         BbookDisplayBuilder bld = new BbookDisplayBuilder(props);
+         BudaBubble nbb = new BbookDisplayBubble(bld);
+         bba.addBubble(nbb,null,r0.getLocation(),BudaConstants.PLACEMENT_LOGICAL);
       }
    }
 

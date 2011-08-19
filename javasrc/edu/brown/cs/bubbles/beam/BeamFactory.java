@@ -157,11 +157,11 @@ public static void initialize(BudaRoot br)
 	 mc = bs.getMintControl();
 	 mc.register("<BEAM TYPE='NOTE' NAME='_VAR_0'><TEXT>_VAR_1</TEXT></BEAM>",
 	       new NoteClient());
-         new BeamProgressBubble(br);
-	 break; 
+	 new BeamProgressBubble(br);
+	 break;
       case NORMAL :
-         new BeamProgressBubble(br);
-         break;
+	 new BeamProgressBubble(br);
+	 break;
     }
 }
 
@@ -351,7 +351,7 @@ private static class NoteServer implements MintHandler {
    @Override public void receive(MintMessage msg,MintArguments args) {
       String name = args.getArgument(0);
       String cnts = args.getArgument(1);
-      File dir = BoardSetup.getBubblesPluginDirectory();
+      File dir = BoardSetup.getBubblesWorkingDirectory();
       File f1 = new File(dir,name);
       try {
 	 FileWriter fw = new FileWriter(f1);

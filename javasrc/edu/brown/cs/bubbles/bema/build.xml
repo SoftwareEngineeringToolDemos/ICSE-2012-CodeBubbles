@@ -27,6 +27,8 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
      </path>
       <path id='test.classpath'>
@@ -42,6 +44,8 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
       </path>
    </target>
@@ -220,6 +224,10 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
+	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
    </target>
@@ -256,6 +264,10 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
+	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -296,6 +308,10 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
+	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -333,6 +349,10 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='junit.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
+	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
       </jar>
       <copy file='external/bubbles.jar' tofile='/pro/web/web/people/spr/bubbles.ext/bubbles.jar' />
       <copy file='external/version.xml' tofile='/pro/web/web/people/spr/bubbles.ext/version.xml' />

@@ -38,6 +38,8 @@
 package edu.brown.cs.bubbles.bnote;
 
 
+import java.util.*;
+
 
 public interface BnoteConstants
 {
@@ -57,6 +59,7 @@ enum BnoteEntryType {
    EDIT,		// change code
    SAVE,		// save files
    NOTE,		// user note
+   ATTACHMENT,		// user attachment
    NEW_TASK,
 }
 
@@ -88,12 +91,33 @@ enum BnoteKey {
 
 interface BnoteTask {
 
-   int getTaskId();
+   long getTaskId();
    String getName();
    String getProject();
    String getDescription();
 
 }	// end of interface BnoteTask
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Entry definition							*/
+/*										*/
+/********************************************************************************/
+
+interface BnoteEntry {
+
+   String getProject();
+   BnoteTask getTask();
+   BnoteEntryType getType();
+   String getUser();
+   Date getTime();
+   String getProperty(String id);
+   Set<String> getPropertyNames();
+
+}	// end of interface BnoteEntry
+
 
 
 
@@ -108,6 +132,16 @@ interface BnoteValue {
    String getDatabaseValue();
 
 }	// end of interface BnoteValue
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Limits									*/
+/*										*/
+/********************************************************************************/
+
+int MAX_ATTACHMENT_SIZE = 16*1024*1024;
 
 
 

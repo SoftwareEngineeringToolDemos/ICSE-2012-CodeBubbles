@@ -42,9 +42,17 @@ import edu.brown.cs.bubbles.bnote.*;
 
 import edu.brown.cs.ivy.xml.*;
 
+import org.eclipse.mylyn.wikitext.core.parser.*;
+import org.eclipse.mylyn.wikitext.core.parser.builder.*;
+import org.eclipse.mylyn.wikitext.tracwiki.core.TracWikiLanguage;
+
+
 import javax.activation.*;
+import javax.imageio.ImageIO;
 
 import java.util.*;
+import java.io.*;
+import java.awt.image.*;
 
 
 
@@ -107,9 +115,11 @@ String generateHtml()
    html.append("<h1 align='center' style='font-family: Arial, Helvetica, sans-serif; " +
 		  "font-size: 24px'>Programmer's Log Book</h1>");
 
-   generateHtmlOverview(html);
+   GenContext ctx = new GenContext();
 
-   generateContents(html);
+   generateHtmlOverview(ctx,html);
+
+   generateContents(ctx,html);
 
    html.append("</body></html>");
 
@@ -124,7 +134,7 @@ String generateHtml()
 /*										*/
 /********************************************************************************/
 
-private void generateHtmlOverview(StringBuffer buf)
+private void generateHtmlOverview(GenContext ctx,StringBuffer buf)
 {
    Date start = null;
    Date end = null;
@@ -147,6 +157,23 @@ private void generateHtmlOverview(StringBuffer buf)
       buf.append("<tr><td>User:</td><td>");
       buf.append(fixText(for_user));
       buf.append("</td></tr>");
+    }
+   else {
+      List<String> usrs = BnoteFactory.getFactory().getUsersForTask(for_project,for_task);
+      if (usrs.size() == 1) {
+	 buf.append("<tr><td>Author:</td><td>");
+	 buf.append(fixText(usrs.get(0)));
+	 buf.append("</td></tr>");
+	 ctx.setLastUser(usrs.get(0));
+       }
+      else if (usrs.size() > 1) {
+	 buf.append("<tr><td>Authors:</td><td>");
+	 for (int i = 0; i < usrs.size(); ++i) {
+	    if (i > 0) buf.append(", ");
+	    buf.append(fixText(usrs.get(i)));
+	  }
+	 buf.append("</td></tr>");
+       }
     }
 
    if (for_class != null || for_method != null) {
@@ -182,7 +209,7 @@ private void generateHtmlOverview(StringBuffer buf)
 /*										*/
 /********************************************************************************/
 
-private void generateContents(StringBuffer buf)
+private void generateContents(GenContext ctx,StringBuffer buf)
 {
    List<BnoteEntry> ents = BnoteFactory.getFactory().getEntriesForTask(for_project,for_task);
 
@@ -201,8 +228,6 @@ private void generateContents(StringBuffer buf)
 	 ents = orderByMethod(ents);
 	 break;
     }
-
-   GenContext ctx = new GenContext();
 
    for (BnoteEntry be : ents) {
       BnoteTask bt = be.getTask();
@@ -298,7 +323,7 @@ private void outputTaskHeader(BnoteTask bt,GenContext ctx,StringBuffer buf)
    boolean full = ctx.setTask(bt);
    buf.append("<h2>Task: " + fixText(bt.getName()) + "</h2>");
    if (full && bt.getDescription() != null) {
-      buf.append("<blockquote><p>");
+      buf.append("<blockquote>");
       buf.append(fixTextBlock(bt.getDescription()));
       buf.append("</blockquote>");
     }
@@ -309,8 +334,21 @@ private void outputTaskHeader(BnoteTask bt,GenContext ctx,StringBuffer buf)
 
 private void outputEntryData(BnoteEntry ent,GenContext ctx,StringBuffer buf)
 {
-   // if the date has changed significantly, output that
-   // if the user has changed, output that
+   long when = ent.getTime().getTime();
+   long ld = ctx.getLastTime();
+   if (ld > 0 && when - ld > 1000*60*30) {
+      setState(ctx,ContextState.INFO,buf);
+      buf.append("<h3>Date: " + ent.getTime() + "</h3>");
+    }
+   ctx.setLastTime(when);
+
+   String usr = ent.getUser();
+   String lusr = ctx.getLastUser();
+   if (usr != null && !usr.equals(lusr)) {
+      setState(ctx,ContextState.INFO,buf);
+      buf.append("<h3>User: " + usr + "</h3>");
+      ctx.setLastUser(usr);
+    }
 
    switch (ent.getType()) {
       case NONE :
@@ -333,33 +371,68 @@ private void outputEntryData(BnoteEntry ent,GenContext ctx,StringBuffer buf)
       case NOTE :
 	 setState(ctx,ContextState.NOTE,buf);
 	 String nt = ent.getProperty("NOTE");
-	 buf.append("<blockquote><p>");
+	 buf.append("<blockquote>");
 	 buf.append(fixTextBlock(nt));
 	 buf.append("</blockquote>");
 	 break;
       case ATTACHMENT :
-         String fnm = ent.getProperty("SOURCE");
-         String aid = ent.getProperty("ATTACHID");
-         MimetypesFileTypeMap  mtm = new MimetypesFileTypeMap();
-         String mtname = mtm.getContentType(fnm);
-         if (mtname == null) break;
-         MimeType mt = null;
-         try {
-            mt = new MimeType(mtname);
-          }
-         catch (MimeTypeParseException e) {
-            break;
-          }
-         String ptyp = mt.getPrimaryType();
-         if (ptyp == null) break;
-         if (ptyp.equals("text")) {
-          }
-         else if (ptyp.equals("audio")) {
-          }
-         else if (ptyp.equals("image")) {
-          }
-         else if (ptyp.equals("video")) {
-          }
+	 String fnm = ent.getProperty("SOURCE");
+	 String aid = ent.getProperty("ATTACHID");
+	 MimetypesFileTypeMap  mtm = new MimetypesFileTypeMap();
+	 String mtname = mtm.getContentType(fnm);
+	 if (mtname == null) break;
+	 MimeType mt = null;
+	 try {
+	    mt = new MimeType(mtname);
+	  }
+	 catch (MimeTypeParseException e) {
+	    break;
+	  }
+	 String ptyp = mt.getPrimaryType();
+	 if (ptyp == null) break;
+	 if (ptyp.equals("text")) {
+	    String txt = BnoteFactory.getFactory().getAttachmentAsString(aid);
+	    buf.append("<blockquote>");
+	    buf.append(fixTextBlock(txt));
+	    buf.append("</blockquote>");
+	  }
+	 else if (ptyp.equals("audio")) {
+	    File fn = BnoteFactory.getFactory().getAttachment(aid);
+	    if (fn != null) {
+	       buf.append("<A HREF='file://" + fn.getPath() + "'>");
+	       buf.append("Play Audio");
+	       buf.append("</A>");
+	     }
+	  }
+	 else if (ptyp.equals("image")) {
+	    File fn = BnoteFactory.getFactory().getAttachment(aid);
+	    if (fn != null) {
+	       int w = 64;
+	       int h = 64;
+	       try {
+		  BufferedImage bi = ImageIO.read(fn);
+		  int w1 = bi.getWidth();
+		  int h1 = bi.getHeight();
+		  double scl = 1.0;
+		  if (h1 > h) scl = ((double) h) / h1;
+		  h = (int)(h1 * scl);
+		  w = (int)(w1 * scl);
+	        }
+	       catch (Exception e) { }
+	       buf.append("<A HREF='file://" + fn.getPath() + "'>");
+	       buf.append("<IMG src='file://" + fn.getPath() + "'");
+	       buf.append("alt='inserted image' width='" + w + "' height='" + h + "' />");
+	       buf.append("</A>");
+	     }
+	  }
+	 else if (ptyp.equals("video")) {
+	    File fn = BnoteFactory.getFactory().getAttachment(aid);
+	    if (fn != null) {
+	       buf.append("<A HREF='file://" + fn.getPath() + "'>");
+	       buf.append("Play Video");
+	       buf.append("</A>");
+	     }
+	  }
 	 break;
     }
 }
@@ -394,6 +467,8 @@ private void setState(GenContext ctx,ContextState st,StringBuffer buf)
       case NOTE :
 	 buf.append("<h3>Notes:</h3>");
 	 break;
+      case INFO :
+	 break;
     }
 
    ctx.setState(st);
@@ -420,9 +495,21 @@ private String fixTextBlock(String s)
 {
    if (s == null) return null;
 
-   String s1 = IvyXml.xmlSanitize(s,false);
-   s1 = s1.replace("\n\n","\n<p>");
-   return s1;
+   try {
+      MarkupParser mp = new MarkupParser();
+      mp.setMarkupLanguage(new TracWikiLanguage());
+      StringWriter sw = new StringWriter();
+      HtmlDocumentBuilder bld = new HtmlDocumentBuilder(sw);
+      bld.setEmitAsDocument(false);
+      mp.setBuilder(bld);
+      mp.parse(s);
+      return sw.toString();
+    }
+   catch (Exception e) {
+      BoardLog.logE("BBOOK","Problem parsing wiki text",e);
+    }
+
+   return IvyXml.xmlSanitize(s);
 }
 
 
@@ -437,6 +524,7 @@ enum ContextState {
    NONE,
    TASK,
    WORK,
+   INFO,
    NOTE
 }
 
@@ -447,11 +535,15 @@ private static class GenContext {
    private BnoteTask	current_task;
    private Set<BnoteTask> done_tasks;
    private ContextState current_state;
+   private long 	last_time;
+   private String	last_user;
 
    GenContext() {
       current_task = null;
       done_tasks = new HashSet<BnoteTask>();
       current_state = ContextState.NONE;
+      last_time = 0;
+      last_user = null;
     }
 
    BnoteTask getTask()				{ return current_task; }
@@ -462,6 +554,12 @@ private static class GenContext {
 
    ContextState getState()			{ return current_state; }
    void setState(ContextState st)		{ current_state = st; }
+
+   long getLastTime()				{ return last_time; }
+   void setLastTime(long t)			{ last_time = t; }
+
+   String getLastUser() 			{ return last_user; }
+   void setLastUser(String u)			{ last_user = u; }
 
 }	// end of inner class GenContext
 

@@ -17,13 +17,15 @@
    <target name='init' depends='init1,init2' >
       <path id='bubbles.classpath'>
 	 <pathelement location='${BUBBLES}/java' />
-	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
+	 <pathelement location='${BUBBLES}/lib/wikitextcore.jar' />
+	 <pathelement location='${BUBBLES}/lib/wikitexttrac.jar' />
 	 <pathelement location='${IVYBIN}' />
       </path>
       <path id='test.classpath'>
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
-	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
+	 <pathelement location='${BUBBLES}/lib/wikitextcore.jar' />
+	 <pathelement location='${BUBBLES}/lib/wikitexttrac.jar' />
       </path>
    </target>
 

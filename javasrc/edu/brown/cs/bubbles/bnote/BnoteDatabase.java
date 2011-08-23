@@ -63,6 +63,7 @@ private long		id_count;
 private long		next_id;
 private long		id_request;
 private Boolean		use_begin;
+private boolean		use_streams;
 
 private static Set<String>	ignore_fields;
 
@@ -94,6 +95,7 @@ BnoteDatabase()
    id_request = 32;
    use_begin = null;
    all_tasks = new ArrayList<TaskImpl>();
+   use_streams = false;
 
    BnoteConnect bcn = new BnoteConnect();
 
@@ -180,8 +182,19 @@ long saveAttachment(String anm,InputStream ins,int len)
       PreparedStatement s = note_conn.prepareStatement("INSERT INTO Attachment VALUES (?,?,?)");
       s.setLong(1,id);
       s.setString(2,anm);
-      if (len > 0) s.setBlob(3,ins,len);
-      else s.setBlob(3,ins);
+      if (!use_streams) {
+	 try {
+	    if (len > 0) s.setBlob(3,ins,len);
+	    else s.setBlob(3,ins);
+	  }
+	 catch (SQLException e) {
+	    use_streams = true;
+	  }
+       }
+      if (use_streams) {
+	 if (len > 0) s.setBinaryStream(3,ins,len);
+	 else s.setBinaryStream(3,ins);
+       }
       s.executeUpdate();
     }
    catch (SQLException e) {
@@ -214,13 +227,22 @@ File getAttachment(String aid)
       ResultSet rs = s.executeQuery();
       if (!rs.next()) return null;
       String snm = rs.getString(1);
-      Blob data = rs.getBlob(2);
+      InputStream ins = null;
+      if (!use_streams) {
+	 try {
+	    Blob data = rs.getBlob(2);
+	    ins = data.getBinaryStream();
+	  }
+	 catch (SQLException e) {
+	    use_streams = true;
+	  }
+       }
+      if (use_streams) ins = rs.getBinaryStream(2);
       int idx = snm.lastIndexOf(".");
       String kind = "";
       if (idx > 0) kind = snm.substring(idx);
       outf = File.createTempFile("BnoteBlob",kind);
       outf.deleteOnExit();
-      InputStream ins = data.getBinaryStream();
       OutputStream fos = new FileOutputStream(outf);
       byte [] buf = new byte[16384];
       for ( ; ; ) {

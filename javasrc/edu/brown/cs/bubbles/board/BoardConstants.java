@@ -385,6 +385,7 @@ String [] BOARD_LIBRARY_FILES = new String [] {
    "jsocks-klea.jar",
    "bubblesasm.jar",
    "ColorPicker.jar",
+   "wikitextcore.jar", "wikitexttrac.jar",
    "derby.jar", "mysql.jar", "postgresql.jar"
 };
 

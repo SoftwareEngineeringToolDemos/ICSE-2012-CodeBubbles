@@ -96,6 +96,7 @@ private String		jar_file;
 private String		jar_directory;
 private String		eclipse_directory;
 private String		default_workspace;
+private boolean         create_workspace;
 private boolean 	auto_update;
 private boolean 	do_uninstall;
 private int		setup_count;
@@ -181,6 +182,7 @@ private BoardSetup()
 
    eclipse_directory = system_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    default_workspace = system_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
+   create_workspace = false;
    ask_workspace = system_properties.getBoolean(BOARD_PROP_ECLIPSE_ASK_WS,true);
    run_foreground = system_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,false);
 
@@ -783,7 +785,14 @@ public boolean doSetup()
 	    BoardLog.logE("BOARD","BUBBLES: Setup aborted");
 	    System.exit(1);
 	  }
-	 if (has_changed || wd.hasChanged()) saveProperties();
+	 if (has_changed || wd.hasChanged()) { 
+            if (create_workspace) {
+               File wf = new File(default_workspace);
+               if (!wf.exists()) wf.mkdirs();
+               create_workspace = false;
+             }
+            saveProperties();
+          }
        }
     }
 
@@ -1301,7 +1310,7 @@ private boolean checkWorkspace()
 {
    if (default_workspace == null) return false;
    File wsd = new File(default_workspace);
-   if (!checkWorkspaceDirectory(wsd)) return false;
+   if (!checkWorkspaceDirectory(wsd,create_workspace)) return false;
 
    default_workspace = wsd.getAbsolutePath();
    return true;
@@ -1309,12 +1318,17 @@ private boolean checkWorkspace()
 
 
 
-private static boolean checkWorkspaceDirectory(File wsd)
+private static boolean checkWorkspaceDirectory(File wsd,boolean create)
 {
    if (wsd == null) return false;
    if (!wsd.exists() || !wsd.isDirectory()) return false;
+   
+   if (create) {
+      if (wsd.getParentFile().exists()) return true;
+    }
+   
    File df = new File(wsd,BOARD_ECLIPSE_WS_DATA);
-
+   
    if (!df.exists() || !df.canRead()) return false;
 
    return true;
@@ -1669,41 +1683,41 @@ private class SetupDialog implements ActionListener, CaretListener {
    @Override public void actionPerformed(ActionEvent e) {
       String cmd = e.getActionCommand();
       if (cmd.equals("Eclipse Installation Directory")) {
-	 JTextField tf = (JTextField) e.getSource();
-	 File ef = new File(tf.getText());
-	 eclipse_directory = ef.getAbsolutePath();
-	 has_changed = true;
+         JTextField tf = (JTextField) e.getSource();
+         File ef = new File(tf.getText());
+         eclipse_directory = ef.getAbsolutePath();
+         has_changed = true;
        }
       else if (cmd.equals("Bubbles Installation Directory")) {
-	 JTextField tf = (JTextField) e.getSource();
-	 File inf = new File(tf.getText());
-	 install_path = inf.getPath();
-	 has_changed = true;
+         JTextField tf = (JTextField) e.getSource();
+         File inf = new File(tf.getText());
+         install_path = inf.getPath();
+         has_changed = true;
        }
       else if (cmd.equals("Automatically Update Bubbles")) {
-	 JCheckBox cbx = (JCheckBox) e.getSource();
-	 auto_update = cbx.isSelected();
-	 has_changed = true;
+         JCheckBox cbx = (JCheckBox) e.getSource();
+         auto_update = cbx.isSelected();
+         has_changed = true;
        }
       else if (cmd.equals("Run Eclipse in Foreground")) {
-	 JCheckBox cbx = (JCheckBox) e.getSource();
-	 run_foreground = cbx.isSelected();
-	 has_changed = true;
+         JCheckBox cbx = (JCheckBox) e.getSource();
+         run_foreground = cbx.isSelected();
+         has_changed = true;
        }
       else if (cmd.equals("INSTALL")) {
-	 updatePlugin();
-	 force_setup = false;
+         updatePlugin();
+         force_setup = false;
        }
       else if (cmd.equals("OK")) {
-	 result_status = true;
-	 working_dialog.setVisible(false);
+         result_status = true;
+         working_dialog.setVisible(false);
        }
       else if (cmd.equals("CANCEL")) {
-	 result_status = false;
-	 working_dialog.setVisible(false);
+         result_status = false;
+         working_dialog.setVisible(false);
        }
       else {
-	 BoardLog.logE("BOARD","Unknown SETUP DIALOG command: " + cmd);
+         BoardLog.logE("BOARD","Unknown SETUP DIALOG command: " + cmd);
        }
       checkStatus();
     }
@@ -1762,37 +1776,37 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 
    WorkspaceDialog() {
       SwingGridPanel pnl = new SwingGridPanel();
-
+   
       pnl.beginLayout();
       pnl.addBannerLabel("Bubbles Workspace Setup");
-
+   
       pnl.addSeparator();
-
+   
       JTextField textfield = pnl.addFileField("Eclipse Workspace",default_workspace,JFileChooser.DIRECTORIES_ONLY,
-	       new WorkspaceDirectoryFilter(),this,null);
-
+               new WorkspaceDirectoryFilter(),this,null);
+   
       textfield.addKeyListener(this);
-
+   
       workspace_warning = new JLabel("Warning");//added by amc6
       workspace_warning.setToolTipText("Not a vaid Eclipse Workspace");
       workspace_warning.setForeground(WARNING_COLOR);
-
       pnl.add(workspace_warning);
-
+   
       pnl.addSeparator();
-
+      
+      pnl.addBoolean("Create New Workspace",create_workspace,this);
       pnl.addBoolean("Always Ask for Workspace",ask_workspace,this);
-
+   
       pnl.addSeparator();
       accept_button = pnl.addBottomButton("OK","OK",this);
       pnl.addBottomButton("CANCEL","CANCEL",this);
       pnl.addBottomButtons();
-
+   
       working_dialog = new JDialog((JFrame) null,"Bubbles Workspace Setup",true);
       working_dialog.setContentPane(pnl);
       working_dialog.pack();
     }
-
+   
    boolean process() {
       ws_changed = false;
       checkStatus();
@@ -1805,12 +1819,12 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 
    private void checkStatus() {
       if (checkWorkspace()) {
-	 accept_button.setEnabled(true);
-	 workspace_warning.setVisible(false);
+         accept_button.setEnabled(true);
+         workspace_warning.setVisible(false);
        }
       else {
-	 accept_button.setEnabled(false);
-	 workspace_warning.setVisible(true);
+         accept_button.setEnabled(false);
+         workspace_warning.setVisible(true);
        }
     }
 
@@ -1827,6 +1841,10 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 	 JCheckBox cbx = (JCheckBox) e.getSource();
 	 if (ask_workspace != cbx.isSelected()) ws_changed = true;
 	 ask_workspace = cbx.isSelected();
+       }
+      else if (cmd.equals("Create New Workspace")) {
+         JCheckBox cbx = (JCheckBox) e.getSource();
+         create_workspace = cbx.isSelected();
        }
       else if (cmd.equals("OK")) {
 	 result_status = true;

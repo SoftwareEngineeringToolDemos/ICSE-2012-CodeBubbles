@@ -1343,6 +1343,8 @@ private class FileData implements IBufferChangedListener {
 	    default_buffer.addBufferChangedListener(this);
 	    buf = default_buffer;
 	    last_ast = null;
+	    // BedrockPlugin.logD("New buffer contents:\n" + buf.getContents());
+	    // BedrockPlugin.logD("End of contents");
 	  }
 	 catch (JavaModelException e) {
 	    BedrockPlugin.logD("BUFFER MODEL EXCEPTION " + e);
@@ -1359,10 +1361,12 @@ private class FileData implements IBufferChangedListener {
 	 xw.field("FILE",file_name);
 	 xw.field("LENGTH",len);
 	 xw.field("OFFSET",off);
+	 int xlen = len;
 	 if (len == buf.getLength() && off == 0) {
 	    xw.field("COMPLETE",true);
 	    byte [] data = txt.getBytes();
 	    xw.bytesElement("CONTENTS",data);
+	    xlen = bdb.getLength();
 	    // BedrockPlugin.logD("TEXT = " + txt);
 	  }
 	 else {
@@ -1370,7 +1374,7 @@ private class FileData implements IBufferChangedListener {
 	  }
 	 our_plugin.finishMessage(xw);
 	 BedrockPlugin.logD("SENDING EDIT " + xw.toString());
-	 bdb.replace(off,len,txt);
+	 bdb.replace(off,xlen,txt);
        }
       if (buf != default_buffer && default_buffer != null) default_buffer.replace(off,len,txt);
 

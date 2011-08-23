@@ -723,7 +723,7 @@ public void compile(boolean clean,boolean full,boolean refresh)
 
 
 /**
- *	Open a project (if not already open) and return project information
+ *	Open a project (if not already open) and return class information for project
  **/
 
 public Element openProject(String name)
@@ -731,6 +731,27 @@ public Element openProject(String name)
    waitForIDE();
 
    String q = "CLASSES='true'";
+
+   Element xml = getXmlReply("OPENPROJECT",name,q,null,0);
+
+   if (!IvyXml.isElement(xml,"RESULT")) return null;
+
+   Element proj = IvyXml.getChild(xml,"PROJECT");
+
+   return proj;
+}
+
+
+
+/**
+ *	Open a project (if not already open) and return project information
+ **/
+
+public Element getProjectData(String name)
+{
+   waitForIDE();
+
+   String q = "PATHS='true' OPTIONS='true'";
 
    Element xml = getXmlReply("OPENPROJECT",name,q,null,0);
 

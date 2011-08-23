@@ -291,11 +291,8 @@ private class TaskSelector extends TaskDialog implements ActionListener {
 	 for (BnoteTask t : tasks) {
 	    task_box.addItem(t);
 	  }
-
-	 // should find current task
-	 task_box.setSelectedIndex(1);
        }
-      else task_box.setSelectedIndex(0);
+      task_box.setSelectedIndex(0);
       updateButtons();
     }
 

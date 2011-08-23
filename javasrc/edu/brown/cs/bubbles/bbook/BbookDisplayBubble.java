@@ -40,7 +40,10 @@ package edu.brown.cs.bubbles.bbook;
 import edu.brown.cs.bubbles.buda.*;
 
 import javax.swing.*;
+import javax.swing.event.*;
 import java.awt.*;
+import java.net.*;
+
 
 
 class BbookDisplayBubble extends BudaBubble implements BbookConstants
@@ -93,10 +96,30 @@ private JComponent setupDisplay()
 
    JEditorPane edp = new JEditorPane("text/html",html);
    edp.setEditable(false);
-  
+   edp.addHyperlinkListener(new Linker());
 
    return edp;
 }
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Hyperlink management                                                         */
+/*                                                                              */
+/********************************************************************************/
+
+private class Linker implements HyperlinkListener {
+   
+   @Override public void hyperlinkUpdate(HyperlinkEvent e) {
+      if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+         URL u = e.getURL();
+         System.err.println("HANDLE LINK TO " + u);
+       }
+    }
+   
+}       // end of inner class Linker
+
 
 
 

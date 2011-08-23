@@ -29,6 +29,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
      </path>
       <path id='test.classpath'>
@@ -46,6 +47,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
       </path>
    </target>
@@ -228,6 +230,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
    </target>
@@ -268,11 +271,11 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
       <copy file='${BUBBLES}/lib/version.xml' tofile='/pro/web/web/people/spr/bubbles/version.xml' />
-      <exec dir='/pro/web/web/people/spr/bubbles' executable='webupdate' />
       <exec executable='sendupdate.csh' />
    </target>
 
@@ -312,11 +315,11 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
       <copy file='${BUBBLES}/lib/version.xml' tofile='/pro/web/web/people/spr/bubbles/version.xml' />
-      <exec dir='/pro/web/web/people/spr/bubbles' executable='webupdate' />
    </target>
 
    <target name='external' depends='compile'>
@@ -353,10 +356,10 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
       </jar>
       <copy file='external/bubbles.jar' tofile='/pro/web/web/people/spr/bubbles.ext/bubbles.jar' />
       <copy file='external/version.xml' tofile='/pro/web/web/people/spr/bubbles.ext/version.xml' />
-      <exec dir='/pro/web/web/people/spr/bubbles.ext' executable='webupdate' />
       <exec executable='sendupdateext.csh' />
       <delete dir='external' />
    </target>

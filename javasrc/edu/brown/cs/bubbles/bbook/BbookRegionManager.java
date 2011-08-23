@@ -404,13 +404,18 @@ private void noteFileChanged(File f)
 
    for (TaskRegion tr : upds) {
       BnoteTask task = tr.getTask();
+      if (task == null) return;
       boolean used = false;
       for (BudaBubble bb : tr.getBubbles()) {
 	 String b1 = bb.getContentProject();
 	 String b2 = bb.getContentName();
 	 File f3 = bb.getContentFile();
 	 if (b1 != null && b2 != null && f3 != null && f3.equals(f)) {
-	    BnoteStore.log(task.getProject(),task,BnoteEntryType.SAVE,"INPROJECT",b1,"NAME",b2,"FILE",f3.getPath());
+	    Document d = getBubbleDocument(bb);
+	    if (noedit_set.get(d) == Boolean.FALSE) {
+	       BnoteStore.log(task.getProject(),task,BnoteEntryType.SAVE,"INPROJECT",b1,"NAME",b2,"FILE",f3.getPath());
+	       noedit_set.put(d,Boolean.TRUE);
+	     }
 	    used = true;
 	  }
        }
@@ -424,7 +429,9 @@ private void noteFileChanged(File f)
 
 private void noteDocumentChanged(Document d)
 {
-   if (!noedit_set.remove(d)) return;
+   Boolean fg = noedit_set.get(d);
+   noedit_set.put(d,Boolean.FALSE);
+   if (fg != Boolean.TRUE) return;
 
    synchronized (task_regions) {
       for (TaskRegion tr : task_regions) {

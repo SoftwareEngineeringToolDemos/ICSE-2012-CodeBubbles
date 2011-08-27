@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -29,6 +29,8 @@
 
 
 package edu.brown.cs.bubbles.bump;
+
+import edu.brown.cs.bubbles.board.BoardLog;
 
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -66,6 +68,7 @@ private String		symbol_name;
 private int		symbol_offset;
 private int		symbol_length;
 private String		symbol_key;
+private String		symbol_handle;
 private int		symbol_flags;
 private String		symbol_project;
 private BumpSymbolType	source_type;
@@ -123,6 +126,7 @@ BumpLocation(String proj,String file,int off,int len,String srctyp,Element itm)
    symbol_offset = 0;
    symbol_length = 0;
    symbol_key = null;
+   symbol_handle = null;
    symbol_flags = -1;
    symbol_project = project_name;
 
@@ -137,7 +141,8 @@ BumpLocation(String proj,String file,int off,int len,String srctyp,Element itm)
       symbol_offset = IvyXml.getAttrInt(itm,"STARTOFFSET");
       symbol_length = IvyXml.getAttrInt(itm,"LENGTH");
       symbol_key = IvyXml.getAttrString(itm,"KEY");
-      if (symbol_key == null) symbol_key = IvyXml.getAttrString(itm,"HANDLE");
+      symbol_handle = IvyXml.getAttrString(itm,"HANDLE");
+      if (symbol_key == null) symbol_key = symbol_handle;
       symbol_flags = IvyXml.getAttrInt(itm,"FLAGS");
       symbol_project = IvyXml.getAttrString(itm,"PROJECT");
       if (file_location == null) {
@@ -358,6 +363,33 @@ private static List<String> getParameterList(String arr)
     }
 
    return rslt;
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Update methods								*/
+/*										*/
+/********************************************************************************/
+
+public void update()
+{
+   // TODO: the result is not accurate if there has been editing sometimes
+   //	 We need to determine when this works and when it fails
+   if (symbol_handle != null) {
+      List<BumpLocation> rslt = BumpClient.getBump().findByKey(project_name,symbol_handle,
+								  file_location);
+      if (rslt == null || rslt.size() == 0) return;
+      
+      BumpLocation newl = rslt.get(0);
+//      BoardLog.logD("BUMP","UPDATE CHECK " + this + " :: " + newl + " :: " +
+//	       symbol_offset + "/" + symbol_length + " " +
+//	       newl.symbol_offset + "/" + newl.symbol_length);
+      symbol_offset = newl.symbol_offset;
+      symbol_length = newl.symbol_length;
+    }
 }
 
 

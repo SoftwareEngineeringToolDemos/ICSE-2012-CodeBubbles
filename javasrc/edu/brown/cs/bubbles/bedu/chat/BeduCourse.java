@@ -164,8 +164,7 @@ StudentCourse(String a_course_name,String a_jid)
 
 	 @Override public void componentHidden(ComponentEvent e)
 	 {
-	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((BudaBubble) e
-		     .getComponent());
+	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(e.getComponent());
 	    // this is called when the login window has exited
 	    if (BgtaUtil.getXMPPManagers().size() > 0) {
 	       try {

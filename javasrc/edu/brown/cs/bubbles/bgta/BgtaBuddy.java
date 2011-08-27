@@ -29,7 +29,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 
 
 
@@ -219,8 +218,8 @@ private void changeSortPriority()
       if (fromuser.equals(connection_name)) {
 	 is_available = pr;
 	 if (pr.getType() == Presence.Type.available
-		|| pr.getType() == Presence.Type.unavailable) avail_icon = (ImageIcon) BgtaManager
-	    .iconFor(is_available);
+		|| pr.getType() == Presence.Type.unavailable) 
+	    avail_icon = BgtaManager.iconFor(is_available);
 	 changeSortPriority();
        }
     }

@@ -46,7 +46,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-
+import javax.swing.text.Document;
 
 
 
@@ -629,6 +629,15 @@ public File getContentFile()			{ return null; }
  **/
 
 public String getContentName()			{ return null; }
+
+
+/**
+ *	Return the document associated with the bubble.
+ **/
+
+public Document getContentDocument()		{ return null; }
+
+
 
 
 /**

@@ -40,9 +40,6 @@ package edu.brown.cs.bubbles.bnote;
 import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.*;
-
-import org.w3c.dom.*;
 
 import java.util.*;
 import java.io.*;
@@ -58,13 +55,11 @@ public class BnoteStore implements BnoteConstants, MintConstants
 /*										*/
 /********************************************************************************/
 
-private boolean 	is_local;
 private BnoteDatabase	note_db;
 
 private static BnoteStore	the_store = null;
 
 private static Set<String>	field_strings;
-private static Set<String>	cdata_strings;
 
 
 static {
@@ -74,8 +69,6 @@ static {
    field_strings.add("USER");
    field_strings.add("TIME");
    field_strings.add("TASK");
-
-   cdata_strings = new HashSet<String>();
 }
 
 
@@ -88,24 +81,6 @@ static {
 
 private BnoteStore()
 {
-   BoardSetup bs = BoardSetup.getSetup();
-
-   switch (bs.getRunMode()) {
-      case CLIENT :
-	 is_local = false;
-	 // need to handle task notifications and build up task set
-	 break;
-      case SERVER :
-	 is_local = true;
-	 MintControl mc = bs.getMintControl();
-	 mc.register("<BNOTE TYPE='LOG'><_VAR_0 /></BNOTE>",new LogServer());
-	 // mc.register("<BNOTE TYPE='ATTACH'><_VAR_0 /></BNOTE>",new AttachServer());
-	 break;
-      default :
-	 is_local = true;
-	 break;
-    }
-
    note_db = new BnoteDatabase();
 }
 
@@ -256,10 +231,10 @@ public static boolean attach(BnoteTask task,File file)
 
 private BnoteTask enter(String project,BnoteTask task,BnoteEntryType type,Map<String,Object> values)
 {
-   if (is_local) {
-      return note_db.addEntry(project,task,type,values);
-    }
+   return note_db.addEntry(project,task,type,values);
 
+   /*********************
+   // this code will be useful for export
    IvyXmlWriter xw = new IvyXmlWriter();
 
    if (project != null) values.put("PROJECT",project);
@@ -292,20 +267,7 @@ private BnoteTask enter(String project,BnoteTask task,BnoteEntryType type,Map<St
    sendEntry(xw.toString());
 
    return null;
-}
-
-
-
-private BnoteTask sendEntry(String ent)
-{
-   MintControl mc = BoardSetup.getSetup().getMintControl();
-   String msg = "<BNOTE TYPE='LOG'>" + ent + "</BNOTE>";
-   mc.send(msg);
-
-   // should get task id if a new task
-   // then need to get the actual task
-
-   return null;
+ * ***************/
 }
 
 
@@ -321,63 +283,16 @@ private long saveAttachment(File f)
    long len = f.length();
    if (len == 0 || len > MAX_ATTACHMENT_SIZE) return 0;
 
-   if (is_local) {
-      try {
-	 InputStream ins = new FileInputStream(f);
-	 return note_db.saveAttachment(f.getPath(),ins,(int) len);
-       }
-      catch (IOException e) {
-	 BoardLog.logD("BNOTE","Problem reading attachment: " + e);
-       }
-      return 0;
+   try {
+      InputStream ins = new FileInputStream(f);
+      return note_db.saveAttachment(f.getPath(),ins,(int) len);
     }
-
-   // handle sending attachment to remote server
-   // and getting id back
-
+   catch (IOException e) {
+      BoardLog.logD("BNOTE","Problem reading attachment: " + e);
+    }
    return 0;
 }
 
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Handler for log entries from client					*/
-/*										*/
-/********************************************************************************/
-
-private class LogServer implements MintHandler {
-
-   @Override public void receive(MintMessage msg,MintArguments args) {
-      Element entry = args.getXmlArgument(0);
-
-      Map<String,Object> vals = new HashMap<String,Object>();
-      String proj = IvyXml.getAttrString(entry,"PROJECT");
-      BnoteEntryType typ = IvyXml.getAttrEnum(entry,"TYPE",BnoteEntryType.NONE);
-      int tid = IvyXml.getAttrInt(entry,"TASK");
-
-      for (String s : field_strings) {
-	 String v = IvyXml.getAttrString(entry,s);
-	 if (v != null) vals.put(s,v);
-       }
-      for (Element e : IvyXml.children(entry,"DATA")) {
-	 String k = IvyXml.getAttrString(e,"KEY");
-	 String v = IvyXml.getText(e);
-	 vals.put(k,v);
-       }
-
-      BnoteTask task = null;
-      task = note_db.findTaskById(tid);
-
-      vals.remove("PROJECT");
-      vals.remove("TYPE");
-      vals.remove("TASK");
-
-      log(proj,task,typ,vals);
-    }
-
-}	// end of inner class LogServer
 
 
 

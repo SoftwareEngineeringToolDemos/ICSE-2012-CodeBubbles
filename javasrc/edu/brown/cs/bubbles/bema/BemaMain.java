@@ -400,7 +400,7 @@ private Collection<String> getSetupPackageProperties()
 
    for (String s : bp.stringPropertyNames()) {
       boolean use = false;
-      if (s.startsWith("Bema.plugin.")) use = true;
+      if (s.startsWith("Bema.plugin.") && s.lastIndexOf(".") == 11) use = true;
       switch (bs.getRunMode()) {
 	 case NORMAL :
 	    if (s.startsWith("Bema.plugin.normal.")) use = true;

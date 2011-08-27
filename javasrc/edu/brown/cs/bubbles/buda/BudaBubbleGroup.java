@@ -295,7 +295,7 @@ BudaRegion correlate(int x,int y)
 
    if (title_shape != null && title_shape.contains(x,y)) return BudaRegion.GROUP_NAME;
 
-   if (s != null && s.contains((double) x,(double) y)) return BudaRegion.GROUP;
+   if (s != null && s.contains(x,y)) return BudaRegion.GROUP;
 
    return BudaRegion.NONE;
 }

@@ -85,7 +85,6 @@ private long	last_options;
 private long	last_active;
 private long	last_screen;
 private long	total_active;
-private long	total_inactive;
 
 private long	next_screen;
 private long	next_command;
@@ -154,7 +153,6 @@ private BoardMetrics()
    command_data = null;
    do_dump = true;
    total_active = 0;
-   total_inactive = 0;
    next_screen = 0;
    next_command = 0;
    next_feedback = 0;
@@ -652,35 +650,50 @@ private void dumpScreen()
 private class ScreenDumper implements Runnable {
 
    private String dump_type;
+   private File dump_file;
 
    ScreenDumper(String typ) {
       dump_type = typ;
+      dump_file = null;
     }
 
    @Override public void run() {
-      BufferedImage bi;
-      Dimension sz = root_window.getSize();
-      bi = new BufferedImage(sz.width,sz.height,BufferedImage.TYPE_INT_RGB);
-      Graphics2D g2 = bi.createGraphics();
-      root_window.paint(g2);
+      if (dump_file == null) {
+	 BufferedImage bi;
+	 Dimension sz = root_window.getSize();
+	 bi = new BufferedImage(sz.width,sz.height,BufferedImage.TYPE_INT_RGB);
+	 Graphics2D g2 = bi.createGraphics();
+	 root_window.paint(g2);
 
-      BoardProperties bp = BoardProperties.getProperties("Board");
-      if (bp.getBoolean(BOARD_BLUR_SCREENSHOT)) {
-	 BufferedImageOp op = new ConvolveOp(new Kernel(3, 3, BLUR_MATRIX));
-	 bi = op.filter(bi, null);
-       }
+	 BoardProperties bp = BoardProperties.getProperties("Board");
+	 if (bp.getBoolean(BOARD_BLUR_SCREENSHOT)) {
+	    BufferedImageOp op = new ConvolveOp(new Kernel(3, 3, BLUR_MATRIX));
+	    bi = op.filter(bi, null);
+	 }
 
-      File f = null;
-      try {
-	 f = File.createTempFile("BoardMetrics_SCREEN_","." + dump_type);
-	 ImageIO.write(bi,dump_type,f);
-	 sendFile(f,"SCREEN",true);
-       }
-      catch (IOException e) {
-	 BoardLog.logE("BOARD","Problem dumping screen: " + e);
-       }
-      finally {
-	 if (f != null) f.delete();
+	 File f = null;
+	 try {
+	    f = File.createTempFile("BoardMetrics_SCREEN_","." + dump_type);
+	    ImageIO.write(bi,dump_type,f);
+	  }
+	 catch (IOException e) {
+	    BoardLog.logE("BOARD","Problem dumping screen: " + e);
+	  }
+	 if (f != null) {
+	    dump_file = f;
+	    // do the upload in a background thread
+	    BoardThreadPool.start(this);
+	  }
+      }
+      else {
+	 try {
+	    sendFile(dump_file,"SCREEN",true);
+	    dump_file.delete();
+	    dump_file = null;
+	  }
+	 catch (IOException e) { 
+	    BoardLog.logE("BOARD","Problem sending screen image: " + e);
+	  }
        }
     }
 
@@ -924,7 +937,6 @@ private void setActive(long when)
       last_active = when;
 
       if (delta > INACTIVE_TIME) {
-	 total_inactive += delta;
 	 if (collect_active) {
 	    saveCommand("ACTIVE","inactive.start",prev);
 	    saveCommand("ACTIVE","inactive.end",when);

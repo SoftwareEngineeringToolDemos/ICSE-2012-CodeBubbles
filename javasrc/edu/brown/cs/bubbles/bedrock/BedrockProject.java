@@ -33,7 +33,7 @@
 package edu.brown.cs.bubbles.bedrock;
 
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
+import edu.brown.cs.ivy.xml.*;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
@@ -277,8 +277,13 @@ void buildProject(String proj,boolean clean,boolean full,boolean refresh,IvyXmlW
 /*										*/
 /********************************************************************************/
 
-void editProject(String proj)
+void editProject(String proj,boolean lcl,Element xml,IvyXmlWriter xw) throws BedrockException
 {
+   if (lcl) {
+      localEditProject(xml,xw);
+      return;
+    }
+
    IWorkspace ws = ResourcesPlugin.getWorkspace();
    IWorkspaceRoot wr = ws.getRoot();
    IProject ip = wr.getProject(proj);
@@ -301,6 +306,62 @@ void editProject(String proj)
 
    Display.getDefault().asyncExec(new RunPropDialog(sp));
 }
+
+
+void localEditProject(Element pxml,IvyXmlWriter xw) throws BedrockException
+{
+   String pnm = IvyXml.getAttrString(pxml,"NAME");
+   IProject ip = findProject(pnm);
+   IJavaProject ijp = JavaCore.create(ip);
+   List<IClasspathEntry> ents = new ArrayList<IClasspathEntry>();
+   try {
+      for (Element oe : IvyXml.children(pxml,"OPTION")) {
+	 String k = IvyXml.getAttrString(oe,"NAME");
+	 String v = IvyXml.getAttrString(oe,"VALUE");
+	 ijp.setOption(k,v);
+       }
+
+      for (IClasspathEntry cpe : ijp.getRawClasspath()) ents.add(cpe);
+      for (Element pe : IvyXml.children(pxml,"PATH")) {
+	 updatePathElement(ents,pe);
+       }
+      IClasspathEntry [] enta = new IClasspathEntry[ents.size()];
+      enta = ents.toArray(enta);
+      ijp.setRawClasspath(enta,new BedrockProgressMonitor(our_plugin,"Update Paths"));
+    }
+   catch (CoreException e) {
+      throw new BedrockException("Problem editing project",e);
+    }
+}
+
+
+
+private void updatePathElement(List<IClasspathEntry> ents,Element xml)
+{
+   IClasspathEntry oent = null;
+   int id = IvyXml.getAttrInt(xml,"ID");
+   if (id > 0) {
+      for (IClasspathEntry ent : ents) {
+	 if (ent.hashCode() == id) {
+	    oent = ent;
+	    break;
+	  }
+       }
+    }
+   if (IvyXml.getAttrString(xml,"TYPE").equals("LIBRARY")) {
+      // if DELETE=true, just remove from ents
+      // create IPath for binary
+      // create IPath for source if present
+      // create IPath for javadoc
+      // if javadoc/optional, create extra attributes
+      // get access rules from original or xml
+      // JavaCore.newLibraryEntry(...)
+      // if oent != null, replace oent with this entry in ents
+      // else add this entry to ents
+    }
+}
+
+
 
 
 private static final class SelProvider implements ISelectionProvider, IShellProvider {
@@ -375,16 +436,16 @@ void createProject()
 }
 
 /**
- * Adds a project that is already in the workspace folder but is not 
- * a member of the workspace yet 
+ * Adds a project that is already in the workspace folder but is not
+ * a member of the workspace yet
  */
 void importExistingProject(String name) throws Exception
 {
    IProject p = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-   
+
    //if it already exists in the workspace don't do anything
    if(p.exists()) return;
-   
+
    p.create(null);
    p.open(null);
    JavaCore.create(p);
@@ -870,6 +931,15 @@ private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolea
       xw.begin("CLASSPATH");
       addClassPaths(jp,xw,null,false);
       xw.end("CLASSPATH");
+      xw.begin("RAWPATH");
+      try {
+	 IClasspathEntry [] ents = jp.getRawClasspath();
+	 for (IClasspathEntry ent : ents) {
+	    addPath(xw,jp,ent,false);
+	  }
+	 xw.end("RAWPATH");
+       }
+      catch (JavaModelException e) { }
     }
 
    if (fil) {
@@ -900,6 +970,17 @@ private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolea
       Map<?,?> opts = jp.getOptions(false);
       for (Map.Entry<?,?> ent : opts.entrySet()) {
 	 xw.begin("OPTION");
+	 xw.field("NAME",ent.getKey().toString());
+	 xw.field("VALUE",ent.getValue().toString());
+	 xw.end("OPTION");
+       }
+      Map<?,?> allopts = jp.getOptions(true);
+      for (Map.Entry<?,?> ent : allopts.entrySet()) {
+	 String knm = (String) ent.getKey();
+	 if (opts.containsKey(knm)) continue;
+	 if (knm.startsWith("org.eclipse.jdt.core.formatter")) continue;
+	 xw.begin("OPTION");
+	 xw.field("DEFAULT",true);
 	 xw.field("NAME",ent.getKey().toString());
 	 xw.field("VALUE",ent.getValue().toString());
 	 xw.end("OPTION");
@@ -953,6 +1034,18 @@ private void addPath(IvyXmlWriter xw,IJavaProject jp,IClasspathEntry ent,boolean
    IPath sp = ent.getSourceAttachmentPath();
    IProject ip = jp.getProject();
 
+   String jdp = null;
+   boolean opt = false;
+   IClasspathAttribute [] atts = ent.getExtraAttributes();
+   for (IClasspathAttribute att : atts) {
+      if (att.getName().equals(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME))
+	 jdp = att.getValue();
+      else if (att.getName().equals(IClasspathAttribute.OPTIONAL)) {
+	 String v = att.getValue();
+	 if (v.equals("true")) opt = true;
+       }
+    }
+
    if (p == null && op == null) return;
    File f1 = null;
    if (p != null) {
@@ -984,6 +1077,7 @@ private void addPath(IvyXmlWriter xw,IJavaProject jp,IClasspathEntry ent,boolean
    if (ent.getEntryKind() == IClasspathEntry.CPE_PROJECT) return;
 
    xw.begin("PATH");
+   xw.field("ID",ent.hashCode());
    if (nest) xw.field("NESTED","TRUE");
 
    switch (ent.getEntryKind()) {
@@ -1000,10 +1094,12 @@ private void addPath(IvyXmlWriter xw,IJavaProject jp,IClasspathEntry ent,boolean
 	 break;
     }
    if (ent.isExported()) xw.field("EXPORTED",true);
+   if (opt) xw.field("OPTIONAL",true);
 
    if (f1 != null) xw.textElement("BINARY",f1.getAbsolutePath());
    if (f2 != null) xw.textElement("OUTPUT",f2.getAbsolutePath());
    if (f3 != null) xw.textElement("SOURCE",f3.getAbsolutePath());
+   if (jdp != null) xw.textElement("JAVADOC",jdp);
 
    xw.end("PATH");
 }

@@ -56,7 +56,6 @@ private Point popup_point;
 private HashMap<String, DefaultMutableTreeNode> task_nodes;
 private String [] group_by;
 private boolean group_by_date;
-private int groups_in_use;
 private JPopupMenu my_popup;
 private JPopupMenu my_brother_popup;
 
@@ -84,7 +83,6 @@ BudaTaskShelf(BudaTopBar topbar, BudaTask [] tasks, Point popuppoint)
 
    group_by_date = BUDA_PROPERTIES.getBoolean(TASK_SHELF_SORT_BY_DATE);
 
-   groups_in_use = 0;
    my_popup = null;
    my_brother_popup = null;
 
@@ -247,8 +245,6 @@ private DefaultMutableTreeNode getTopNode(boolean bydate, BudaTask [] tasks)
 private DefaultMutableTreeNode setupByDate(BudaTask [] tasks) {
    DefaultMutableTreeNode top = new DefaultMutableTreeNode("Task Shelf");
 
-   groups_in_use = group_by.length;
-
    DefaultMutableTreeNode category;
    for (int i=0; i<group_by.length; i++) {
       category = new DefaultMutableTreeNode(group_by[i]);
@@ -311,7 +307,6 @@ private DefaultMutableTreeNode setupAlphabetically(BudaTask [] tasks)
 	 cat = new DefaultMutableTreeNode(id);
 	 top.add(cat);
 	 task_nodes.put(id, cat);
-	 groups_in_use++;
        }
       cat.add(new DefaultMutableTreeNode(tasks[i]));
     }

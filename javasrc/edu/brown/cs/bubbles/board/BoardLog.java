@@ -137,7 +137,7 @@ private void setupLogger()
     }
 
    if (wsd != null) {
-      bedrock_log = new File(wsd,"bedrock_log" + id + ".log");
+      bedrock_log = new File(wsd,"bedrock_log" + ".log");
       monitor_log = new File(wsd,"monitor_log.log");
     }
 
@@ -145,7 +145,7 @@ private void setupLogger()
       if (use_stderr) {
 	 // doing debugging: use a single file and keep it around
 	 debug_log = new File(wsd,"bubbles_log" + id + ".log");
-	 File t1 = new File(wsd,"bedrock_log" + id + ".save");
+	 File t1 = new File(wsd,"bedrock_log" + ".save");
 	 File t2 = new File(wsd,"bubbles_log" + id + ".save");
 	 if (bedrock_log.exists()) bedrock_log.renameTo(t1);
 	 if (debug_log.exists()) debug_log.renameTo(t2);

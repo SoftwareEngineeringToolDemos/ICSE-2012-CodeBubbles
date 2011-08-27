@@ -237,7 +237,7 @@ private void writeName(String name) throws IOException
 
 
 
-private static void pipe(InputStream in, OutputStream out) throws IOException
+private static int pipe(InputStream in, OutputStream out) throws IOException
 {
    byte[] buf = new byte[500000];
    int nread;
@@ -250,6 +250,8 @@ private static void pipe(InputStream in, OutputStream out) throws IOException
     }
    out.flush();
    buf = null;
+   
+   return total;
 }
 
 

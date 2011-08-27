@@ -107,6 +107,7 @@ Color BDDT_THREADS_BOTTOM_COLOR = Color.WHITE;
 
 int   BDDT_STACK_WIDTH = 400;
 int   BDDT_STACK_HEIGHT = 200;
+int   BDDT_STACK_VALUE_HEIGHT = 50;
 
 Color BDDT_STACK_TOP_COLOR = new Color(153,255,133);
 Color BDDT_STACK_BOTTOM_COLOR = Color.WHITE;
@@ -316,6 +317,7 @@ interface ValueTreeNode extends TreeNode {
    BumpStackFrame getFrame();
    Object getValue();
    BumpRunValue getRunValue();
+   boolean showValueArea();
 
 }	// end of inner interface ValueTreeNode
 

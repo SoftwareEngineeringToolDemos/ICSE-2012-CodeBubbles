@@ -402,14 +402,14 @@ private class DrawingPanel extends JPanel implements BudaConstants.BudaBubbleOut
       double wd,ht;
       Rectangle2D.Double trex;
       if (is_vertical) {
-	 wd = ((double) d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+	 wd = (d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
 		  ct * NAME_SPACE)/ct;
 	 ht = d.height - 2 * TB_MARGIN_SPACE;
 	 trex = new Rectangle2D.Double(0,TB_MARGIN_SPACE,NAME_SPACE,ht);
        }
       else {
 	 wd = d.width - 2 * LR_MARGIN_SPACE;
-	 ht = ((double) d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+	 ht = (d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
 		  ct * NAME_SPACE)/ct;
 	 trex = new Rectangle2D.Double(LR_MARGIN_SPACE,0,wd,NAME_SPACE);
        }
@@ -461,13 +461,13 @@ private class DrawingPanel extends JPanel implements BudaConstants.BudaBubbleOut
       Dimension d = getSize();
       double wd,ht;
       if (is_vertical) {
-	 wd = ((double) d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+	 wd = (d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
 		  ct * NAME_SPACE)/ct;
 	 ht = d.height - 2 * TB_MARGIN_SPACE;
        }
       else {
 	 wd = d.width - 2 * LR_MARGIN_SPACE;
-	 ht = ((double) d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+	 ht = (d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
 		  ct * NAME_SPACE)/ct;
        }
 
@@ -518,13 +518,13 @@ private class DrawingPanel extends JPanel implements BudaConstants.BudaBubbleOut
       Dimension d = getSize();
       double wd,ht;
       if (is_vertical) {
-	 wd = ((double) d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+	 wd = (d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
 		  ct * NAME_SPACE)/ct;
 	 ht = d.height - 2 * TB_MARGIN_SPACE;
        }
       else {
 	 wd = d.width - 2 * LR_MARGIN_SPACE;
-	 ht = ((double) d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+	 ht = (d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
 		  ct * NAME_SPACE)/ct;
        }
 

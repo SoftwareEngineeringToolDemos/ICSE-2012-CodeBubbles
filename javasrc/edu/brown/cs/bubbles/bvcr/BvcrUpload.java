@@ -340,7 +340,7 @@ private void writeln(String s) throws IOException
 
 
 
-private static void pipe(InputStream in,OutputStream out) throws IOException
+private static int pipe(InputStream in,OutputStream out) throws IOException
 {
    byte[] buf = new byte[10240];
    int nread;
@@ -353,6 +353,8 @@ private static void pipe(InputStream in,OutputStream out) throws IOException
     }
    out.flush();
    buf = null;
+   
+   return total;
 }
 
 

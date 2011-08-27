@@ -115,7 +115,6 @@ public BedrockPlugin()
 
    if (log_file == null) {
       try {
-	 //TODO : this should be in the plugin subdirectory
 	 String filename = ws.getRoot().getLocation().append("bedrock_log.log").toOSString();
 	 log_file = new PrintStream(new FileOutputStream(filename),true);
        }
@@ -354,7 +353,7 @@ private String sendMessageWait(String msg,long delay)
 
    synchronized (send_sema) {
       if (mint_control != null) {
-	 mint_control.send(msg,rply,MINT_MSG_FIRST_REPLY);
+	 mint_control.send(msg,rply,MINT_MSG_FIRST_NON_NULL);
        }
       else return null;
     }
@@ -435,14 +434,15 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       bedrock_project.closeProject(proj,xw);
     }
    else if (cmd.equals("EDITPROJECT")) {
-      bedrock_project.editProject(proj);
+      bedrock_project.editProject(proj,IvyXml.getAttrBool(xml,"LOCAL"),
+	    IvyXml.getChild(xml,"PROJECT"),xw);
     }
    else if (cmd.equals("CREATEPROJECT")) {
       bedrock_project.createProject();
     }
    else if(cmd.equals("IMPORTPROJECT")){
       try{
-      	bedrock_project.importExistingProject(proj);
+	bedrock_project.importExistingProject(proj);
       }catch(Throwable t)
       {
 	 throw new BedrockException("Exception constructing project: " + t.getMessage());
@@ -710,6 +710,12 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				       IvyXml.getAttrBool(xml,"PACKAGE",false),
 				       IvyXml.getAttrBool(xml,"TOPDECLS",false),
 				       IvyXml.getAttrBool(xml,"ALL",false),xw);
+    }
+   else if (cmd.equals("FINDBYKEY")) {
+      bedrock_editor.findByKey(proj,
+				IvyXml.getAttrString(xml,"BID","*"),
+				IvyXml.getAttrString(xml,"KEY"),
+				IvyXml.getAttrString(xml,"FILE"), xw);
     }
    else if (cmd.equals("CALLPATH")) {
       bedrock_call.getCallPath(proj,IvyXml.getAttrString(xml,"FROM"),

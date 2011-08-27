@@ -113,7 +113,7 @@ public static Icon resizeIcon(Image input, int newWidth, int newHeight)
 
    ImageIcon result = new ImageIcon(output);
 
-   return (Icon) result;
+   return result;
 }
 
 

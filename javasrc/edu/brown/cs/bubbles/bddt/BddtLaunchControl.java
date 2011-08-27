@@ -943,6 +943,9 @@ String getEvaluationString(BumpStackFrame frm,BumpRunValue rv,String id)
 	       s = rv.getDetail();
 	       if (s != null) return s;
 	     }
+	    else {
+	       System.err.println("BDDT: Handle large arrays");
+	     }
 	    break;
 	 case PRIMITIVE :
 	 case STRING :
@@ -955,7 +958,7 @@ String getEvaluationString(BumpStackFrame frm,BumpRunValue rv,String id)
       return rv.getDetail();
     }
 
-   String expr = "(" + id + ").toString()";
+   String expr = "(" + id.replace('?','.') + ").toString()";
    if (rv != null && rv.getKind() == BumpValueKind.ARRAY) {
       if (rv.getLength() <= 100) {
 	 expr = "java.util.Arrays.toString(" + id + ")";

@@ -65,7 +65,7 @@
 
    <target name='myplugin' depends='plugin' if='ivy.present'>
       <copy file='bedrock.jar'
-		tofile='/home/spr/eclipse35x/eclipse/plugins/edu.brown.cs.bubbles.bedrock_1.0.0.jar' />
+		tofile='/home/spr/eclipse37x/eclipse/plugins/edu.brown.cs.bubbles.bedrock_1.0.0.jar' />
    </target>
 
 </project>

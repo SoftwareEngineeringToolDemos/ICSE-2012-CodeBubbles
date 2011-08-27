@@ -109,7 +109,7 @@ TicketListPanel(BeduTATicketList list,BudaBubble a_parent)
       if (ticket_table.rowAtPoint(e.getPoint()) != -1) {
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
 	 BudaBubble ticket_view_bubble = new BeduTATicketViewBubble(
-		  (BeduStudentTicket) ticket_list.get(ticket_table.rowAtPoint(e.getPoint())),
+		  ticket_list.get(ticket_table.rowAtPoint(e.getPoint())),
 		  ta_client);
 	 bba.addBubble(ticket_view_bubble, parent_bubble, null, PLACEMENT_LOGICAL
 		  | PLACEMENT_GROUPED);

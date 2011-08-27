@@ -36,6 +36,7 @@ import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bueno.*;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
@@ -464,16 +465,18 @@ static BassTreeModelBase getModelBase(BassRepository br)
 private static class ProjectProps implements BassPopupHandler {
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,
-				       String fullname,BassName bn) {
+        			       String fullname,BassName bn) {
       if (bn != null) return;
       if (fullname.startsWith("@")) return;
-
+   
       int idx = fullname.indexOf(":");
       if (idx <= 0) return;
       String proj = fullname.substring(0,idx);
       fullname = fullname.substring(idx+1);
-
-      menu.add(new ProjectAction(proj));
+   
+      menu.add(new EclipseProjectAction(proj));
+      if (System.getProperty("user.name").equals("spr"))
+         menu.add(new ProjectAction(proj,bb,where));
       menu.add(new NewProjectAction());
       menu.add(new BassImportProjectAction());
     }
@@ -482,13 +485,14 @@ private static class ProjectProps implements BassPopupHandler {
 
 
 
-private static class ProjectAction extends AbstractAction {
+private static class EclipseProjectAction extends AbstractAction {
 
    private String for_project;
+
    private static final long serialVersionUID = 1;
 
-   ProjectAction(String proj) {
-      super("Edit Properties of Project " + proj);
+   EclipseProjectAction(String proj) {
+      super("Eclipse Project Properties for " + proj);
       for_project = proj;
     }
 
@@ -496,6 +500,33 @@ private static class ProjectAction extends AbstractAction {
       BumpClient bc = BumpClient.getBump();
       bc.saveAll();
       bc.editProject(for_project);
+    }
+
+}	// end of inner class EclipseProjectAction
+
+
+
+private static class ProjectAction extends AbstractAction {
+
+   private String for_project;
+   private BudaBubble rel_bubble;
+   private Point rel_point;
+
+   private static final long serialVersionUID = 1;
+
+   ProjectAction(String proj,BudaBubble rel,Point pt) {
+      super("TESTING PROPERTIES OF " + proj);
+      // super("Edit Properties of Project " + proj);
+      for_project = proj;
+      rel_bubble = rel;
+      rel_point = pt;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BuenoProjectDialog dlg = new BuenoProjectDialog(for_project);
+      BudaBubble bb = dlg.createProjectEditor();
+      if (bb == null) return;
+      BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
     }
 
 }	// end of inner class ProjectAction

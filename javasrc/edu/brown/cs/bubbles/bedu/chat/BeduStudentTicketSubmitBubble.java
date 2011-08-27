@@ -63,7 +63,7 @@ BeduStudentTicketSubmitBubble(String a_jid)
 {
    HashMap<String, BgtaManager> chat_logins = new HashMap<String, BgtaManager>();
 
-   BgtaManager a_man = (BgtaManager) BgtaUtil.getXMPPManagers().iterator().next();
+   BgtaManager a_man = BgtaUtil.getXMPPManagers().iterator().next();
    a_man.subscribeToUser(a_jid);
    if (BgtaManager.getPresence(a_jid).getType() == Presence.Type.unavailable) {
       JPanel fail_panel = new JPanel();

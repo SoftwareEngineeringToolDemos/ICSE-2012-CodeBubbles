@@ -34,7 +34,7 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
-class BudaToolbar implements BudaConstants{
+class BudaToolbar implements BudaConstants {
 
 
 /********************************************************************************/
@@ -42,8 +42,6 @@ class BudaToolbar implements BudaConstants{
 /*	Private storage 							*/
 /*										*/
 /********************************************************************************/
-
-private static final long serialVersionUID = 1;
 
 private static List<MenuButton> the_buttons = new ArrayList<MenuButton>();
 private static Map<BudaBubbleArea, Toolbar> menu_map = new HashMap<BudaBubbleArea, Toolbar>();
@@ -187,13 +185,11 @@ private class Toolbar extends BudaBubble implements NoFreeze
 private class MenuPanel extends JPanel {
 
    private String menu_name;
-   private int count;
-
+   
    private static final long serialVersionUID = 1;
 
    MenuPanel(String name) {
       menu_name = name;
-      count = 0;
       setLayout(new GridBagLayout());
       setBackground(new Color(0,0,0,80));
     }
@@ -204,10 +200,9 @@ private class MenuPanel extends JPanel {
       GridBagConstraints c;
       int i = 0;		// TODO: compute row here based on count
       c = new GridBagConstraints(GridBagConstraints.RELATIVE,i,
-				    1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE,
-				    new Insets(3, 3, 3, 3), 2, 2);
+        			    1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE,
+        			    new Insets(3, 3, 3, 3), 2, 2);
       add(b,c);
-      count++;
     }
 
 }	// end of inner class MenuPanel

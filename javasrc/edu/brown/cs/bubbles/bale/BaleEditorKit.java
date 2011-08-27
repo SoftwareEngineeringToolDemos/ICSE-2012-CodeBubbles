@@ -597,6 +597,8 @@ private static boolean matchesText(BaleEditorPane target,int pos,String match)
       txt = target.getText(pos-delta,delta+1);
     }
    catch (BadLocationException e) { return false; }
+   
+   if (txt == null) return false;
 
    for (int i = txt.length()-1; i >= 0; --i) {
       char ch = txt.charAt(i);

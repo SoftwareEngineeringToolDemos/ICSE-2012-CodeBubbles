@@ -1124,11 +1124,13 @@ private static void outputSymbol(IJavaElement elt,String what,String nm,String k
    if (elt instanceof IMember) {
       try {
 	 IMember mem = ((IMember) elt);
-	 xw.field("FLAGS",mem.getFlags());
+	 int fgs = mem.getFlags();
 	 if (mem.getParent() instanceof IType && !(elt instanceof IType)) {
 	    IType par = (IType) mem.getParent();
+	    if (par.isInterface()) fgs |= Flags.AccPublic;
 	    xw.field("QNAME",par.getFullyQualifiedName() + "." + nm);
 	  }
+	 xw.field("FLAGS",fgs);
        }
       catch (JavaModelException e) { }
     }
@@ -1469,7 +1471,10 @@ static void outputStackFrame(IJavaStackFrame jsf,int lvl,int vdepth,IvyXmlWriter
    xw.field("LINENO", jsf.getLineNumber());
    xw.field("CLASS",jsf.getDeclaringTypeName());
    xw.field("METHOD",jsf.getDeclaringTypeName() + "." + jsf.getMethodName());
-   xw.field("RECEIVER",jsf.getReceivingTypeName());
+   try {
+      xw.field("RECEIVER",jsf.getReceivingTypeName());
+    }
+   catch (DebugException e) { }
    if (jsf.isConstructor()) xw.field("CONSTRUCTOR",true);
    if (jsf.isNative()) xw.field("NATIVE",true);
    if (jsf.isStaticInitializer()) xw.field("INITIALIZER",true);
@@ -1581,6 +1586,17 @@ static void outputValue(IValue val,IJavaVariable var,String name,int lvls,IvyXml
 	       catch (DebugException e) { break; }
 	     }
 	  }
+	 else if (lvls > 0) {
+	    // TODO: Need to handle large arrays
+	    for (int i = 0; i < 100; ++i) {
+	       try {
+		  outputValue(arr.getValue(i),null,"[" + i + "]",lvls-1,xw);
+		}
+	       catch (DebugException e) { break; }
+	     }
+	  }
+	
+
        }
       else if (val instanceof IJavaPrimitiveValue) {
 	 xw.field("KIND","PRIMITIVE");
@@ -1771,13 +1787,15 @@ static File getFileForPath(File f,IProject proj)
    if (!f.exists() && proj != null && proj.getLocation() != null) {
       Stack<File> pars = new Stack<File>();
       for (File f1 = f; f1 != null; f1 = f1.getParentFile()) pars.push(f1);
-      pars.pop();		// /
-      pars.pop();		// /project
-      File f0 = proj.getLocation().toFile();
-      while (!pars.empty()) {
-	 f0 = new File(f0,pars.pop().getName());
+      if (pars.size() >= 3) {
+	 pars.pop();		   // /
+	 pars.pop();		   // /project
+	 File f0 = proj.getLocation().toFile();
+	 while (!pars.empty()) {
+	    f0 = new File(f0,pars.pop().getName());
+	  }
+	 if (f0.exists()) f = f0;
        }
-      if (f0.exists()) f = f0;
     }
 
    if (!f.exists() && proj != null) {

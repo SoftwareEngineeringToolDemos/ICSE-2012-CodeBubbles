@@ -209,7 +209,7 @@ private static class SubInputStream extends FilterInputStream {
       return sub_length - sub_ptr;
     }
 
-   @Override public void close() {		
+   @Override public void close() {	
       sub_length = sub_ptr = 0;
     }
 

@@ -390,6 +390,7 @@ private void outputEntryData(BnoteEntry ent,GenContext ctx,StringBuffer buf)
 	  }
 	 String ptyp = mt.getPrimaryType();
 	 if (ptyp == null) break;
+	 setState(ctx,ContextState.ATTACH,buf);
 	 if (ptyp.equals("text")) {
 	    String txt = BnoteFactory.getFactory().getAttachmentAsString(aid);
 	    buf.append("<blockquote>");
@@ -417,7 +418,7 @@ private void outputEntryData(BnoteEntry ent,GenContext ctx,StringBuffer buf)
 		  if (h1 > h) scl = ((double) h) / h1;
 		  h = (int)(h1 * scl);
 		  w = (int)(w1 * scl);
-	        }
+		}
 	       catch (Exception e) { }
 	       buf.append("<A HREF='file://" + fn.getPath() + "'>");
 	       buf.append("<IMG src='file://" + fn.getPath() + "'");
@@ -452,6 +453,9 @@ private void setState(GenContext ctx,ContextState st,StringBuffer buf)
       case NOTE :
 	 ctx.setState(ContextState.TASK);
 	 break;
+      case ATTACH :
+	 buf.append("<br>");
+	 break;
     }
 
    switch (st) {
@@ -466,6 +470,9 @@ private void setState(GenContext ctx,ContextState st,StringBuffer buf)
 	 break;
       case NOTE :
 	 buf.append("<h3>Notes:</h3>");
+	 break;
+      case ATTACH :
+	 buf.append("<h3>Attachments:</h3>");
 	 break;
       case INFO :
 	 break;
@@ -525,6 +532,7 @@ enum ContextState {
    TASK,
    WORK,
    INFO,
+   ATTACH,
    NOTE
 }
 

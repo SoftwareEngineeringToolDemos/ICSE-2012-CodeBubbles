@@ -80,7 +80,7 @@ BddtStackModel(BddtStackModel parent,ValueTreeNode root)
       if (xn == parent.root_node) break;
       inodes.add(xn);
     }
-   if (inodes.size() == 0) 
+   if (inodes.size() == 0)
       inodes.add(rn);
 
    root_node = new RootNode((AbstractNode) root,inodes);
@@ -167,6 +167,8 @@ String getLabel()			{ return root_node.getLabel(); }
 
 
 boolean hasBeenFrozen() 		{ return root_node.isFrozen(); }
+
+boolean showValueArea() 		{ return root_node.showValueArea(); }
 
 
 
@@ -504,6 +506,7 @@ protected abstract class AbstractNode implements ValueTreeNode, TreeNode {
    abstract BumpThread getThread();
    @Override public BumpStackFrame getFrame()			{ return null; }
    @Override public BumpRunValue getRunValue()			{ return null; }
+   @Override public boolean showValueArea()			{ return false; }
 
    void fixAfterChange()					{ }
    boolean sameNode(AbstractNode an)				{ return false; }
@@ -722,7 +725,7 @@ private class RootNode extends AbstractNode {
 
    @Override void fixAfterChange() {
       if (updateInterimNodes()) {
-	 if (interim_nodes.size() == 0) 
+	 if (interim_nodes.size() == 0)
 	    System.err.println("BAD INTERIM NODES");
 	 else
 	 base_node = interim_nodes.get(0);
@@ -749,7 +752,7 @@ private class RootNode extends AbstractNode {
       interim_nodes.addAll(nl);
       return true;
    }
-   
+
    AbstractNode replaceNode(AbstractNode pn,AbstractNode xn) {
       if (pn == null) return null;
       AbstractNode newbase = null;
@@ -760,8 +763,8 @@ private class RootNode extends AbstractNode {
 	    newbase = cn;
        }
       return newbase;
-    }     
-	 
+    }
+
 
 }	// end of inner class RootNode
 

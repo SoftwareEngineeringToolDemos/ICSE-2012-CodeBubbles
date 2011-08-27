@@ -65,8 +65,6 @@ private Collection<TreeModelListener>  listener_set;
 private static final BassTreeBase [] EMPTY = new BassTreeBase[0];
 
 
-private static final long serialVersionUID = 1;
-
 
 /********************************************************************************/
 /*										*/

@@ -50,7 +50,6 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.io.File;
-import javax.swing.text.*;
 import javax.swing.event.*;
 import javax.swing.text.Document;
 
@@ -327,14 +326,7 @@ private void handleBubbleAdded(BudaBubble bb)
 private Document getBubbleDocument(BudaBubble bb)
 {
    if (bb == null) return null;
-   Component c = bb.getContentPane();
-   if (c == null) return null;
-   if (c instanceof JTextComponent) {
-      JTextComponent jtc = (JTextComponent) c;
-      return jtc.getDocument();
-    }
-
-   return null;
+   return bb.getContentDocument();
 }
 
 
@@ -587,12 +579,8 @@ private class TaskRegion implements BbookRegion
 
    void noteBubble(BudaBubble bb) {
       active_bubbles.add(bb);
-      Component c = bb.getContentPane();
-      if (c instanceof JTextComponent) {
-	 JTextComponent jtc = (JTextComponent) c;
-	 Document d = jtc.getDocument();
-	 d.addDocumentListener(change_listener);
-       }
+      Document d = bb.getContentDocument();
+      if (d != null) d.addDocumentListener(change_listener);
     }
 
    boolean removeBubble(BudaBubble nbb) {

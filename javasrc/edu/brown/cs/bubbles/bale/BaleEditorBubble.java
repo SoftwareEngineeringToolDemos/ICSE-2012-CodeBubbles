@@ -37,8 +37,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
+import javax.swing.text.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -230,6 +229,15 @@ BaleEditorBubble(BaleFragmentEditor bfe)
     }
 
    return nty;
+}
+
+
+
+@Override public Document getContentDocument()
+{
+   BaleFragmentEditor bfe = (BaleFragmentEditor) getContentPane();
+   if (bfe == null) return null;
+   return bfe.getDocument();
 }
 
 

@@ -195,6 +195,7 @@ private void setProperties(Element d)
 @Override public String getBreakId()			{ return breakpoint_id; }
 @Override public File getFile() 			{ return (File) break_props.get("FILE"); }
 @Override public int getLineNumber()			{ return getIntProperty("LINE"); }
+@Override public String getDescription()                { return break_desc; }
 
 
 @Override public String getProperty(String id)

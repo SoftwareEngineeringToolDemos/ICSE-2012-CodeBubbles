@@ -211,9 +211,9 @@ private class PackageAction extends AbstractAction
    @Override public void actionPerformed(ActionEvent e) {
       // this should be done in a separate thread
       BudaBubble bb = BconFactory.getFactory().createPackageBubble(source_bubble,project_name,
-								      package_name);
+        							      package_name);
       if (bb == null) return;
-
+   
       BassFactory.getFactory().addNewBubble(source_bubble,source_point,bb);
     }
 

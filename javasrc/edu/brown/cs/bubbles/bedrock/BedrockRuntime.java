@@ -637,7 +637,7 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 
 	 if (var == null) throw new BedrockException("Variable " + vhead + " not found");
 	 IValue val = var.getValue();
-	 BedrockPlugin.logD("VAR START " + vhead + " " + var + " " + val + " " + val.hasVariables());
+	 BedrockPlugin.logD("VAR START " + vhead + " " + var.getName() + " " + val + " " + val.hasVariables());
 
 	 while (tok.hasMoreTokens()) {
 	    boolean found = false;
@@ -645,7 +645,7 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	    String next = tok.nextToken();
 	    if (val.hasVariables()) {
 	       for (IVariable t: val.getVariables()) {
-		  BedrockPlugin.logD("VAR LOOKUP " + t + " " + next);
+		  // BedrockPlugin.logD("VAR LOOKUP " + t + " " + next);
 		  if (matchVariable(next,t)) {
 		     found = true;
 		     val = t.getValue();

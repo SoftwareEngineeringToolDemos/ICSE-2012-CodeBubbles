@@ -55,8 +55,6 @@ private int content_width;
 
 private BussBubble buss_bubble;
 
-private static final long serialVersionUID = 1;
-
 
 
 

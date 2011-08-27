@@ -881,6 +881,50 @@ private AbstractTypeDeclaration findTypeDecl(String cls,List<?> typs)
 
 /********************************************************************************/
 /*										*/
+/*	Methods to update a key-based item					*/
+/*										*/
+/********************************************************************************/
+
+void findByKey(String proj,String bid,String key,String file,IvyXmlWriter xw)
+		throws BedrockException
+{
+   FileData fd = findFile(proj,file,bid,null);
+   ICompilationUnit icu = fd.getEditableUnit(bid);
+
+   IJavaElement elt1 = null;
+   
+   // elt1 = JavaCore.create(key,icu.getOwner());
+
+   elt1 = findElementForKey(icu,key);
+
+   if (elt1 != null) BedrockUtil.outputJavaElement(elt1,false,xw);
+}
+
+
+private IJavaElement findElementForKey(IJavaElement elt,String key)
+{
+   if (key.equals(elt.getHandleIdentifier())) return elt;
+
+   if (elt instanceof IParent) {
+      IParent ip = (IParent) elt;
+      try {
+	 if (ip.hasChildren()) {
+	    for (IJavaElement je : ip.getChildren()) {
+	       IJavaElement re = findElementForKey(je,key);
+	       if (re != null) return re;
+	     }
+	  }
+       }
+      catch (JavaModelException e) { }
+    }
+
+   return null;
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Methods to get a list of active java elements				*/
 /*										*/
 /********************************************************************************/

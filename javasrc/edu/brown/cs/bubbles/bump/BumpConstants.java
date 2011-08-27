@@ -300,6 +300,8 @@ interface BumpBreakpoint {
  *	Get an integer property associated with the breakpoint, 0 if not defined.
  **/
    int getIntProperty(String id);
+   
+   String getDescription();
 
 }	// end of inner interface BumpBreakpoint
 

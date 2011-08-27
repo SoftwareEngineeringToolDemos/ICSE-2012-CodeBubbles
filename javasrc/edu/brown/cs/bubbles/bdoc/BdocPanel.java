@@ -73,10 +73,6 @@ private BdocCellRenderer cell_renderer;
 private static int	scroll_width = 0;
 
 
-private static final long serialVersionUID = 1;
-
-
-
 
 
 /********************************************************************************/

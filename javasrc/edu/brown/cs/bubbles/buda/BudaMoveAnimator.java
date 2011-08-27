@@ -57,9 +57,6 @@ private static final int	FRAME_DELAY = 10;
 private static final int	FRAME_MOVE = 16;
 
 
-private static final long serialVersionUID = 1L;
-
-
 
 
 /********************************************************************************/

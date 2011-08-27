@@ -212,7 +212,7 @@ BaleViewBlock(BaleElement e)
 	 Image img;
 	 if (draw_style == DrawStyle.SHRUNK_COMMENT) img = BoardImage.getImage("comment_ellipses");
 	 else img = BoardImage.getImage("ellipses");
-	 ImageObserver obs = (ImageObserver) getContainer();
+	 ImageObserver obs = getContainer();
 	 int x = alloc.x + getLeftInset() + ELLIPSES_INDENT;
 	 int y = alloc.y + getTopInset();
 	 int ht = alloc.height - getTopInset() - getBottomInset();
@@ -621,7 +621,7 @@ protected void computeLayout()
       switch (bd.getElideMode()) {
 	 case ELIDE_CHECK_ALWAYS :
 	 case ELIDE_CHECK_ONCE :
-	    Container tc = (JComponent) getContainer();
+	    Container tc = getContainer();
 	    JViewport vp = null;
 	    for (int i = 0; i < 2; ++i) {
 	       tc = tc.getParent();

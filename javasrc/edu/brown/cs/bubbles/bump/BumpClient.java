@@ -88,6 +88,7 @@ private static BoardProperties board_properties = null;
 private static BumpClient default_client = null;
 
 private static final int MAX_DELAY = 30000;
+private static final int BUILD_DELAY = 300000;
 
 
 
@@ -593,9 +594,9 @@ public File getRemoteFile(File lcl,String kind,File rem)
    MintDefaultReply mr = new MintDefaultReply();
    mint_control.send(msg,mr,MINT_MSG_FIRST_NON_NULL);
    String sts = mr.waitForString();
-   if (!ch.isOkay()) sts = "FAIL";
+   if (!ch.isOkay()) sts = "<FAIL/>";
    mint_control.unregister(ch);
-   if (sts == null || !sts.equals("OK")) {
+   if (sts == null || !sts.equals("<OK/>")) {
       lcl.delete();
       return null;
     }
@@ -643,10 +644,10 @@ private class FileGetServerHandler implements MintHandler {
 	    pos += ct;
 	  }
 	 fr.close();
-	 msg.replyTo("OK");
+	 msg.replyTo("<OK/>");
        }
       catch (IOException e) {
-	 msg.replyTo("FAIL");
+	 msg.replyTo("<FAIL/>");
        }
 
     }
@@ -689,7 +690,7 @@ private class FileGetClientHandler implements MintHandler {
 	 file_writer = null;
 	 is_okay = false;
        }
-      msg.replyTo("OK");
+      msg.replyTo("<OK/>");
     }
 
 }	// end of inner class FileGetClientHandler
@@ -785,7 +786,19 @@ public void editProject(String name)
 {
    waitForIDE();
 
-   sendMessage("EDITPROJECT",name,null,null);
+   String q = "LOCAL='false'";
+
+   sendMessage("EDITPROJECT",name,q,null);
+}
+
+
+public void editProject(String name,String xml)
+{
+   waitForIDE();
+
+   String q = "LOCAL='true'";
+
+   sendMessage("EDITPROJECT",name,q,xml);
 }
 
 
@@ -1194,6 +1207,21 @@ public List<BumpLocation> findAllDeclarations(String proj,String clsn)
 
    return getSearchResults(proj,xml,false);
 }
+
+
+
+List<BumpLocation> findByKey(String proj,String key,File file)
+{
+   waitForIDE();
+
+   String q = "KEY='" + IvyXml.xmlSanitize(key) + "'";
+   if (file != null) q += " FILE='" + file.getPath() + "'";
+
+   Element xml = getXmlReply("FINDBYKEY",proj,q,null,0);
+
+   return getSearchResults(proj,xml,false);
+}
+
 
 
 
@@ -2743,7 +2771,7 @@ private void buildAllProjects(boolean clean,boolean full,boolean refresh)
       if (!IvyXml.getAttrBool(p,"OPEN")) {
 	 getStringReply("OPENPROJECT",pnm,null,null,0);
        }
-      Element probs = getXmlReply("BUILDPROJECT",pnm,q,null,0);
+      Element probs = getXmlReply("BUILDPROJECT",pnm,q,null,BUILD_DELAY);
       problem_set.handleErrors(pnm,null,0,probs);
     }
 }
@@ -2770,7 +2798,7 @@ private class EclipseHandler implements MintHandler {
 	    BoardLog.logE("BUMP","Bad eclipse message:" + msg.getText());
 	  }
 	 else if (doing_exit) {
-	    msg.replyTo();
+	    msg.replyTo("<OK/>");
 	  }
 	 else if (cmd.equals("ELISION")) {
 	    handleElision(IvyXml.getAttrString(e,"BID"),
@@ -2818,7 +2846,7 @@ private class EclipseHandler implements MintHandler {
 	    for (Element re : IvyXml.children(e,"RUNEVENT")) {
 	       run_manager.handleRunEvent(re,when);
 	     }
-	    msg.replyTo();
+	    msg.replyTo("<OK/>");
 	  }
 	 else if (cmd.equals("NAMES") && name_collects != null) {
 	    // BoardLog.logD("BUMP","NAMES: " + IvyXml.convertXmlToString(e));
@@ -2828,10 +2856,10 @@ private class EclipseHandler implements MintHandler {
 	       nc.addNames(e);
 	       BoardLog.logD("BUMP","NAMES: " + nc.getSize());
 	    }
-	    msg.replyTo();	// wait until add to ensure end doesn't come before we are all processed
+	    msg.replyTo("<OK/>");       // wait until add to ensure end doesn't come before we are all processed
 	  }
 	 else if (cmd.equals("ENDNAMES")) {
-	    msg.replyTo();
+	    msg.replyTo("<OK/>");
 	    // BoardLog.logD("BUMP","ENDNAMES: " + IvyXml.convertXmlToString(e));
 	    String nid = IvyXml.getAttrString(e,"NID");
 	    NameCollector nc = name_collects.remove(nid);
@@ -2851,7 +2879,7 @@ private class EclipseHandler implements MintHandler {
 	    for (BumpProgressHandler hdlr : progress_handlers) {
 	       hdlr.handleProgress(sid,id,kind,task,subtask,work);
 	     }
-	    msg.replyTo();
+	    msg.replyTo("<OK/>");
 	  }
 	 else if (cmd.equals("RESOURCE")) {
 	    BoardLog.logD("BUMP","RESOURCE: " + IvyXml.convertXmlToString(e));
@@ -2862,7 +2890,7 @@ private class EclipseHandler implements MintHandler {
 	 else if (cmd.equals("CONSOLE"))   {
 	    // BoardLog.logD("BUMP","CONSOLE: " + IvyXml.convertXmlToString(e));
 	    run_manager.handleConsoleEvent(e);
-	    msg.replyTo();
+	    msg.replyTo("<OK/>");
 	  }
 	 else if (cmd.equals("OPENEDITOR")) {
 	    String projname = IvyXml.getAttrString(e,"PROJECT");
@@ -2882,7 +2910,7 @@ private class EclipseHandler implements MintHandler {
 		  ed.handleResult(e);
 		}
 	     }
-	    msg.replyTo();
+	    msg.replyTo("<OK/>");
 	  }
 	 else {
 	    BoardLog.logD("BUMP","Received " + cmd + " FROM ECLIPSE");

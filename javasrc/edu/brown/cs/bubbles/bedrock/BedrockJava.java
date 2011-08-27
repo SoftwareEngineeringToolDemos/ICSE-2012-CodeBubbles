@@ -201,7 +201,7 @@ private class NameThread extends Thread {
 	 boolean cfg = ent.getValue();
 	 BedrockUtil.outputJavaElement(ent.getKey(),file_set,cfg,xw);
 	 if (xw.getLength() <= 0 || xw.getLength() > 1000000) {
-	    our_plugin.finishMessageWait(xw,5000);
+	    our_plugin.finishMessageWait(xw,15000);
 	    // BedrockPlugin.logD("OUTPUT NAMES: " + xw.toString());
 	    xw = null;
 	  }

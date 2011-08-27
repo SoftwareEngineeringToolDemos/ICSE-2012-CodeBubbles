@@ -42,7 +42,6 @@ class BandaidAgentHistory extends BandaidAgent implements BandaidConstants {
 /********************************************************************************/
 
 private Map<String,ThreadData>	thread_data;
-private int			current_count;
 private long			last_sample;
 private Map<String,StopData>	stop_data;
 private long [] 		sample_time;
@@ -65,7 +64,6 @@ BandaidAgentHistory(BandaidController bc)
 
    thread_data = new HashMap<String,ThreadData>();
    stop_data = new HashMap<String,StopData>();
-   current_count = 0;
    last_sample = 0;
    sample_time = new long [BUFFER_SIZE];
    sample_count = 0;
@@ -105,7 +103,6 @@ boolean generateHistory(BandaidXmlWriter xw,String tnm)
 void handleThreadStack(long now,ThreadInfo ti,StackTraceElement [] trc)
 {
    if (last_sample != now) {
-      ++current_count;
       last_sample = now;
       sample_count = (sample_count + 1) % BUFFER_SIZE;
       sample_time[sample_count] = now;

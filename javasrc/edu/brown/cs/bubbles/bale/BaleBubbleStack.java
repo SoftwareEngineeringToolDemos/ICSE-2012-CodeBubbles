@@ -208,18 +208,9 @@ private void setupStack()
    BussBubble bb = bussf.createBubbleStack(entries, contentwidth + title_width);
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_bubble);
-   int place = PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO;
+   int place = PLACEMENT_RIGHT|PLACEMENT_MOVETO;
    if (place_near) place |= PLACEMENT_GROUPED;
    bba.addBubble(bb,source_bubble,source_point,place);
-
-   /******************
-   Rectangle loc = BudaRoot.findBudaLocation(source_bubble);
-   BudaConstraint bcr = null;
-   int boffset = (place_near ? BUBBLE_CREATION_NEAR_SPACE : BUBBLE_CREATION_SPACE);
-   if (source_point == null) bcr = new BudaConstraint(loc.x+loc.width+boffset,loc.y);
-   else bcr = new BudaConstraint(source_point);
-   root.add(bb,bcr);
-   *******************/
 
    if (source_bubble != null && source_position != null) {
       BudaConstants.LinkPort p0 = new BaleLinePort(source_bubble,source_position,null);
@@ -291,6 +282,7 @@ private abstract class GenericStackEntry implements BussEntry {
 
    @Override public BudaBubble getBubble() {
       if (item_bubble == null) {
+	 def_location.update();
 	 item_bubble = createBubble(source_bubble,source_position,source_point,false,def_location,false,BudaLinkStyle.NONE);
        }
       if (item_bubble != null && item_bubble.getContentPane() != null) {

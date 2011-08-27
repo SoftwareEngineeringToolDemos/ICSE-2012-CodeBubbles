@@ -393,7 +393,7 @@ private static class Expander implements TreeExpansionListener, TreeModelListene
 	 else tp = tp.pathByAddingChild(vn);
 	 for_tree.expandPath(tp);
 	 for (int i = 0; i < vn.getChildCount(); ++i) {
-	    checkNode(tp,(PerfNode) vn.getChild(i));
+	    checkNode(tp,vn.getChild(i));
 	  }
        }
     }

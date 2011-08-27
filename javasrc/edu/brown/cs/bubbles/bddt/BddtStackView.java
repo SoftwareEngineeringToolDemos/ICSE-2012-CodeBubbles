@@ -71,6 +71,7 @@ private RunEventHandler 	event_handler;
 private Expander		tree_expander;
 private LabelUpdater		label_updater;
 private JLabel			title_bar;
+private JTextArea		value_area;
 
 
 
@@ -158,6 +159,12 @@ private void setupBubble()
    value_component = new ValueTable(value_model);
    value_component.addMouseListener(new ClickHandler());
 
+   value_area = null;
+
+   if (value_model.showValueArea()) {
+      // if single variable, setup value area
+    }
+
    tree_expander = new Expander(value_component.getTree());
    value_component.addTreeExpansionListener(tree_expander);
    value_model.addTreeModelListener(tree_expander);
@@ -173,6 +180,16 @@ private void setupBubble()
    JPanel pnl = new JPanel(new BorderLayout());
    pnl.add(title_bar,BorderLayout.NORTH);
    pnl.add(sp,BorderLayout.CENTER);
+
+   if (value_area == null) {
+      setContentPane(pnl,null);
+    }
+   else {
+      JScrollPane sp1 = new JScrollPane(value_area);
+      sp1.setPreferredSize(new Dimension(BDDT_STACK_WIDTH,BDDT_STACK_VALUE_HEIGHT));
+      JSplitPane spl = new JSplitPane(JSplitPane.VERTICAL_SPLIT,true,pnl,sp1);
+      setContentPane(spl,null);
+    }
 
    setContentPane(pnl,null);
 
@@ -590,16 +607,16 @@ private static class TreeCellRenderer extends DefaultTreeCellRenderer {
 
 private class LabelUpdater implements TreeModelListener {
 
-   @Override public void treeNodesChanged(TreeModelEvent e) { 
+   @Override public void treeNodesChanged(TreeModelEvent e) {
       if (value_model == null || title_bar == null) return;
       String txt = value_model.getLabel();
       if (title_bar.getText().equals(txt)) return;
       title_bar.setText(txt);
     }
-   
+
    @Override public void treeNodesInserted(TreeModelEvent e) { }
    @Override public void treeNodesRemoved(TreeModelEvent e) { }
-   
+
    @Override public void treeStructureChanged(TreeModelEvent e) {
       if (value_model == null || title_bar == null) return;
       title_bar.setText(value_model.getLabel());

@@ -120,7 +120,7 @@ int BUBBLE_DISPLAY_VIEW_HEIGHT = 600;
 /**
  *	Y location of the initial viewport
  **/
-int BUBBLE_DISPLAY_START_Y= (int)((BUBBLE_DISPLAY_HEIGHT/2)-(BUBBLE_DISPLAY_VIEW_HEIGHT/2));
+int BUBBLE_DISPLAY_START_Y= ((BUBBLE_DISPLAY_HEIGHT/2)-(BUBBLE_DISPLAY_VIEW_HEIGHT/2));
 
 /**
  *	Height of the top bar on the display

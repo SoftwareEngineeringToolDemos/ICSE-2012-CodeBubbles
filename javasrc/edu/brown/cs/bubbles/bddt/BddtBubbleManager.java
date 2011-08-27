@@ -179,21 +179,6 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	 ypos = r.y;
 	 link = bd.getBubble();
        }
-      else if (bd.getBubbleType() == BubbleType.BDDT) {
-	 int wd0 = r.x + r.width;
-	 for (BubbleData bdx : bubble_map.values()) {
-	    switch (bdx.getBubbleType()) {
-	       case CONSOLE :
-	       case HISTORY :
-	       case THREADS :
-		  Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
-		  wd0 = Math.max(wd0,rx.x + rx.width);
-		  continue;
-	     }
-	  }
-	 xpos = wd0 + 40;
-	 ypos = r.y;
-       }
       else if (r != null) {
 	 // xpos = r.x + r.width + 40;
 	 // ypos = r.y;
@@ -212,6 +197,16 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
     }
    else {
       xpos = 100;
+      for (BubbleData bdx : bubble_map.values()) {
+	 switch (bdx.getBubbleType()) {
+	    case CONSOLE :
+	    case HISTORY :
+	    case THREADS :
+	       Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
+	       xpos = Math.max(xpos,rx.x + rx.width + 40);
+	       continue;
+	  }
+       }
       ypos = 100;
     }
 
@@ -256,7 +251,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
       if (link != null && link.isShowing()) {
 	 LinkPort port0;
 	 if (link instanceof BddtLibraryBubble || linkline <= 0) {
-	    port0 = new BudaDefaultPort(BudaPortPosition.BORDER_E,true);
+	    port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
 	 }
 	 else {
 	    port0 = BaleFactory.getFactory().findPortForLine(link,linkline);

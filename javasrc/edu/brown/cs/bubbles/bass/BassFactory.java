@@ -465,18 +465,17 @@ static BassTreeModelBase getModelBase(BassRepository br)
 private static class ProjectProps implements BassPopupHandler {
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,
-        			       String fullname,BassName bn) {
+				       String fullname,BassName bn) {
       if (bn != null) return;
       if (fullname.startsWith("@")) return;
-   
+
       int idx = fullname.indexOf(":");
       if (idx <= 0) return;
       String proj = fullname.substring(0,idx);
       fullname = fullname.substring(idx+1);
-   
+
       menu.add(new EclipseProjectAction(proj));
-      if (System.getProperty("user.name").equals("spr"))
-         menu.add(new ProjectAction(proj,bb,where));
+      menu.add(new ProjectAction(proj,bb,where));
       menu.add(new NewProjectAction());
       menu.add(new BassImportProjectAction());
     }
@@ -515,8 +514,7 @@ private static class ProjectAction extends AbstractAction {
    private static final long serialVersionUID = 1;
 
    ProjectAction(String proj,BudaBubble rel,Point pt) {
-      super("TESTING PROPERTIES OF " + proj);
-      // super("Edit Properties of Project " + proj);
+      super("Edit Properties of Project " + proj);
       for_project = proj;
       rel_bubble = rel;
       rel_point = pt;

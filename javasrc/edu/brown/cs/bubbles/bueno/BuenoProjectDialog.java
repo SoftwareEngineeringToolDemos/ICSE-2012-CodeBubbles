@@ -386,6 +386,7 @@ private class EditPathEntryBubble extends BudaBubble implements ActionListener {
 	    break;
        }
       pnl.addBoolean("Exported",for_path.isExported(),this);
+      pnl.addBoolean("Optional",for_path.isOptional(),this);
 
       setContentPane(pnl);
     }
@@ -408,6 +409,10 @@ private class EditPathEntryBubble extends BudaBubble implements ActionListener {
 	 JCheckBox cbx = (JCheckBox) evt.getSource();
 	 for_path.setExported(cbx.isSelected());
        }
+      else if (cmd.equals("Optional")) {
+	 JCheckBox cbx = (JCheckBox) evt.getSource();
+	 for_path.setOptional(cbx.isSelected());
+       }
     }
 
 }	// end of inner class NewPathEntryBubble
@@ -428,6 +433,7 @@ private static class PathEntry implements Comparable<PathEntry> {
    private String binary_path;
    private String javadoc_path;
    private boolean is_exported;
+   private boolean is_optional;
    private boolean is_nested;
    private boolean is_new;
    private boolean is_modified;
@@ -442,6 +448,7 @@ private static class PathEntry implements Comparable<PathEntry> {
       entry_id = IvyXml.getAttrInt(e,"ID");
       is_exported = IvyXml.getAttrBool(e,"EXPORTED");
       is_nested = IvyXml.getAttrBool(e,"NESTED");
+      is_optional = IvyXml.getAttrBool(e,"OPTIONAL");
       is_new = false;
       is_modified = false;
     }
@@ -452,6 +459,7 @@ private static class PathEntry implements Comparable<PathEntry> {
       output_path = null;
       binary_path = f.getPath();
       is_exported = false;
+      is_optional = false;
       is_nested = false;
       is_new = true;
       is_modified = true;
@@ -464,6 +472,7 @@ private static class PathEntry implements Comparable<PathEntry> {
    String getSourcePath()				{ return source_path; }
    String getJavadocPath()				{ return javadoc_path; }
    boolean isExported() 				{ return is_exported; }
+   boolean isOptional()					{ return is_optional; }
    boolean hasChanged() 				{ return is_new || is_modified; }
 
    void setBinaryPath(String p) {
@@ -490,6 +499,12 @@ private static class PathEntry implements Comparable<PathEntry> {
       is_modified = true;
     }
 
+   void setOptional(boolean fg) {
+      if (fg == is_optional) return;
+      is_optional = fg;
+      is_modified = true;
+    }
+
    void outputXml(IvyXmlWriter xw,boolean del) {
       xw.begin("PATH");
       if (del) xw.field("DELETE",true);
@@ -498,6 +513,7 @@ private static class PathEntry implements Comparable<PathEntry> {
       xw.field("NEW",is_new);
       xw.field("MODIFIED",is_modified);
       xw.field("EXPORTED",is_exported);
+      xw.field("OPTIONAL",is_optional);
       if (source_path != null) xw.textElement("SOURCE",source_path);
       if (output_path != null) xw.textElement("OUTPUT",output_path);
       if (binary_path != null) xw.textElement("BINARY",binary_path);
@@ -725,7 +741,6 @@ private boolean anythingChanged()
 private class ProjectEditor implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
-      if (!anythingChanged()) return;
       Set<PathEntry> dels = new HashSet<PathEntry>(initial_paths);
 
       IvyXmlWriter xw = new IvyXmlWriter();
@@ -744,7 +759,9 @@ private class ProjectEditor implements ActionListener {
       closeWindow(problem_panel);
 
       BumpClient bc = BumpClient.getBump();
-      bc.editProject(project_name,xw.toString());
+
+      if (anythingChanged())
+	 bc.editProject(project_name,xw.toString());
     }
 
 }	// end of inner class ProjectEditor

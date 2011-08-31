@@ -161,9 +161,12 @@ void dispose()
 /********************************************************************************/
 
 BumpThread getThread()			{ return root_node.getThread(); }
+BumpStackFrame getFrame()               { return root_node.getFrame(); }
 
 
 String getLabel()			{ return root_node.getLabel(); }
+
+BumpRunValue getRunValue()              { return root_node.getRunValue(); }
 
 
 boolean hasBeenFrozen() 		{ return root_node.isFrozen(); }
@@ -696,6 +699,8 @@ private class RootNode extends AbstractNode {
    @Override BumpThread getThread()			{ return base_node.getThread(); }
    @Override public BumpStackFrame getFrame()		{ return base_node.getFrame(); }
    @Override public BumpRunValue getRunValue()		{ return base_node.getRunValue(); }
+   @Override public boolean showValueArea()		{ return base_node.showValueArea(); }
+   
    boolean isFrozen()					{ return is_frozen; }
 
    @Override public TreeNode getParent()		{ return null; }
@@ -1058,6 +1063,7 @@ private abstract class ValueNode extends AbstractNode {
    @Override BumpThread getThread()		{ return for_value.getThread(); }
    @Override public BumpStackFrame getFrame()	{ return for_value.getFrame(); }
    @Override public BumpRunValue getRunValue()	{ return for_value; }
+   @Override public boolean showValueArea()     { return true; }
 
    @Override String getLabel() {
       return getThread().getName() + " :: " + getFrame().getMethod() +

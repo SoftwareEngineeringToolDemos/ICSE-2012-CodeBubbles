@@ -96,6 +96,8 @@ private Collection<BudaBubble> moving_bubbles;
 private static final long serialVersionUID = 1;
 
 
+
+
 /********************************************************************************/
 /*										*/
 /*	Constructors								*/

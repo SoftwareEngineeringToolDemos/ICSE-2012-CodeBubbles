@@ -295,7 +295,7 @@ private class ValuesAction extends AbstractAction {
       BddtStackView sv = new BddtStackView(launch_control,for_thread);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
       bba.addBubble(sv,BddtThreadView.this,null,
-            PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+	    PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
     }
 
 }	// end of inner class ValuesAction
@@ -317,15 +317,15 @@ private class SourceAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BudaBubble bb = null;
       if (for_frame.getFile() != null && for_frame.getFile().exists()) {
-         String proj = for_frame.getThread().getLaunch().getConfiguration().getProject();
-         String mid = for_frame.getMethod() + for_frame.getSignature();
-         bb = BaleFactory.getFactory().createMethodBubble(proj,mid);
+	 String proj = for_frame.getThread().getLaunch().getConfiguration().getProject();
+	 String mid = for_frame.getMethod() + for_frame.getSignature();
+	 bb = BaleFactory.getFactory().createMethodBubble(proj,mid);
       }
       if (bb != null) {
-         BoardMetrics.noteCommand("BDDT","ThreadSource");
-         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
-         bba.addBubble(bb,BddtThreadView.this,null,
-               PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+	 BoardMetrics.noteCommand("BDDT","ThreadSource");
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
+	 bba.addBubble(bb,BddtThreadView.this,null,
+	       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
       }
       }
 
@@ -349,7 +349,7 @@ private class HistoryAction extends AbstractAction {
       BudaBubble bb = new BddtStopTraceBubble(launch_control,for_thread);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
       bba.addBubble(bb,BddtThreadView.this,null,
-            PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+	    PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
     }
 
 }	// end of inner class HistoryAction
@@ -742,6 +742,7 @@ private static class CellDrawer implements TableCellRenderer {
 	 cmp.setOpaque(true);
       }
       else {
+	 // might want to color thread by state in general
 	 cmp.setOpaque(false);
       }
       return cmp;

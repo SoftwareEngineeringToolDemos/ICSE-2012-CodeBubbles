@@ -70,6 +70,7 @@ private ValueTable		value_component;
 private RunEventHandler 	event_handler;
 private Expander		tree_expander;
 private LabelUpdater		label_updater;
+private ValueUpdater		value_updater;
 private JLabel			title_bar;
 private JTextArea		value_area;
 
@@ -122,13 +123,44 @@ BddtStackView(BddtLaunchControl ctrl,BumpStackFrame frm)
 
 
 
-BddtStackView(BddtLaunchControl ctrl,BumpRunValue val)
+BddtStackView(BddtLaunchControl ctrl,BumpRunValue val,boolean freeze)
 {
    launch_control = ctrl;
    for_thread = null;
-   is_frozen = true;
    is_extinct = false;
-   value_model = new BddtStackModel(val);
+
+   BddtStackModel xmdl = new BddtStackModel(val);
+   ValueTreeNode xtn = (ValueTreeNode) xmdl.getRoot();
+
+   if (!freeze) {
+      BddtStackModel pmdl = new BddtStackModel(val.getThread());
+      BddtStackModel fmdl = new BddtStackModel(val.getFrame());
+      ValueTreeNode fnd = (ValueTreeNode) fmdl.getRoot();
+      Object root = pmdl.getRoot();
+      ValueTreeNode frame = null;
+      for (int i = 0; i < pmdl.getChildCount(root); ++i) {
+	 ValueTreeNode vtn = (ValueTreeNode) pmdl.getChild(root,i);
+	 if (vtn.getKey().equals(fnd.getKey())) {
+	    frame = vtn;
+	    break;
+	  }
+       }
+      if (frame != null) {
+	 for (int i = 0; i < pmdl.getChildCount(frame); ++i) {
+	    ValueTreeNode vtn = (ValueTreeNode) pmdl.getChild(frame,i);
+	    if (vtn.getKey().equals(xtn.getKey())) {
+	       is_frozen = false;
+	       value_model = new BddtStackModel(pmdl,vtn);
+	       break;
+	    }
+          }
+       }
+    }
+
+   if (value_model == null) {
+      is_frozen = true;
+      value_model = xmdl;
+    }
 
    setupBubble();
 }
@@ -160,9 +192,15 @@ private void setupBubble()
    value_component.addMouseListener(new ClickHandler());
 
    value_area = null;
+   value_updater = null;
 
    if (value_model.showValueArea()) {
-      // if single variable, setup value area
+      value_area = new JTextArea();
+      value_area.setEditable(false);
+      value_area.setLineWrap(true);
+      value_updater = new ValueUpdater();
+      value_model.addTreeModelListener(value_updater);
+      updateValueArea();
     }
 
    tree_expander = new Expander(value_component.getTree());
@@ -191,8 +229,6 @@ private void setupBubble()
       setContentPane(spl,null);
     }
 
-   setContentPane(pnl,null);
-
    value_component.addMouseListener(new FocusOnEntry());
 }
 
@@ -200,7 +236,16 @@ private void setupBubble()
 @Override protected void localDispose()
 {
    detachHandler();
-   if (value_model != null) value_model.dispose();
+   if (value_model != null) {
+      if (value_updater != null) value_model.removeTreeModelListener(value_updater);
+      if (tree_expander != null) value_model.removeTreeModelListener(tree_expander);
+      if (label_updater != null) value_model.removeTreeModelListener(label_updater);
+    }
+   if (value_component != null) {
+      if (tree_expander != null) value_component.removeTreeExpansionListener(tree_expander);
+    }
+
+   value_model.dispose();
    value_model = null;
 }
 
@@ -601,7 +646,7 @@ private static class TreeCellRenderer extends DefaultTreeCellRenderer {
 
 /********************************************************************************/
 /*										*/
-/*	Tree Expansion maintenance						*/
+/*	Tree Update Management							*/
 /*										*/
 /********************************************************************************/
 
@@ -622,7 +667,25 @@ private class LabelUpdater implements TreeModelListener {
       title_bar.setText(value_model.getLabel());
     }
 
-}
+}	// end of inner class LabelUpdaer
+
+
+
+private class ValueUpdater implements TreeModelListener {
+
+   @Override public void treeNodesChanged(TreeModelEvent e) {
+      updateValueArea();
+    }
+
+   @Override public void treeNodesInserted(TreeModelEvent e) { }
+   @Override public void treeNodesRemoved(TreeModelEvent e) { }
+
+   @Override public void treeStructureChanged(TreeModelEvent e) {
+      updateValueArea();
+    }
+
+}	// end of inner class ValueUpdater
+
 
 
 private static class Expander implements TreeExpansionListener, TreeModelListener {
@@ -695,6 +758,39 @@ private static class ExpandNodes implements Runnable {
     }
 
 }	// end of inner class ExpandNodes
+
+
+
+
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle value area management						*/
+/*										*/
+/********************************************************************************/
+
+private void updateValueArea()
+{
+    if (value_area == null || value_model == null) return;
+
+    ValueTreeNode vtn = (ValueTreeNode) value_model.getRoot();
+    if (value_component.getSelectedRow() >= 0) {
+       // use selection ???
+     }
+
+    BumpRunValue rv = vtn.getRunValue();
+    BumpStackFrame frm = vtn.getFrame();
+    String id = vtn.getKey();
+
+    String txt = launch_control.getEvaluationString(frm,rv,id);
+    if (txt == null) return;
+
+    value_area.setText(txt);
+}
+
 
 
 

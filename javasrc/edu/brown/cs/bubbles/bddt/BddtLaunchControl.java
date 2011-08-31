@@ -1120,7 +1120,7 @@ private class ValueEvalListener implements BumpEvaluationHandler, Runnable {
    @Override public void evaluationError(String eid,String ex,String er) { }
 
    @Override public void run() {
-      BddtStackView bsv = new BddtStackView(BddtLaunchControl.this,run_value);
+      BddtStackView bsv = new BddtStackView(BddtLaunchControl.this,run_value,false);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtLaunchControl.this);
       bba.addBubble(bsv,config_context.getEditor(),null,
 	    PLACEMENT_BELOW|PLACEMENT_LOGICAL|PLACEMENT_GROUPED|PLACEMENT_MOVETO);

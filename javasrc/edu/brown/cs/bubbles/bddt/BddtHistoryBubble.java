@@ -265,7 +265,7 @@ private class GotoValueAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BDDT","HistoryValue");
-      BddtStackView sv = new BddtStackView(for_control,for_value);
+      BddtStackView sv = new BddtStackView(for_control,for_value,false);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtHistoryBubble.this);
       bba.addBubble(sv,BddtHistoryBubble.this,null,
 		       PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_GROUPED|PLACEMENT_MOVETO);

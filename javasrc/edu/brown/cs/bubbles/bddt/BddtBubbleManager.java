@@ -197,17 +197,19 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
     }
    else {
       xpos = 100;
+      ypos = 100;
       for (BubbleData bdx : bubble_map.values()) {
 	 switch (bdx.getBubbleType()) {
+	    case BDDT :
 	    case CONSOLE :
 	    case HISTORY :
 	    case THREADS :
 	       Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
 	       xpos = Math.max(xpos,rx.x + rx.width + 40);
+	       ypos = Math.min(ypos,rx.y);
 	       continue;
 	  }
        }
-      ypos = 100;
     }
 
    if (ypos < 0) ypos = 0;
@@ -544,6 +546,7 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
 	 long btim = bd.getLastTime();
 	 if (btim < 0) continue;
 	 switch (bd.getBubbleType()) {
+	    case BDDT :
 	    case CONSOLE :
 	    case HISTORY :
 	    case THREADS :

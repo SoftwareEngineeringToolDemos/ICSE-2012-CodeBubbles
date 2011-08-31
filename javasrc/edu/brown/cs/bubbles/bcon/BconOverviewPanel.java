@@ -156,8 +156,10 @@ private void addAllBubbles()
 
 private void computeRegion()
 {
+   if (bubble_area == null) return;
+
    Rectangle newrgn = bubble_area.computeRegion(drawing_area);
-   if (newrgn.equals(focus_region)) return;
+   if (newrgn == null || newrgn.equals(focus_region)) return;
 
    focus_region = new Rectangle(newrgn);
    addAllBubbles();

@@ -1012,8 +1012,8 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
     }
 
    if (pkg != null) {
+      String ppth = "/" + pkg.replace(".","/");
       try {
-	 String ppth = "/" + pkg.replace(".","/");
 	 for (IPackageFragmentRoot ipr : ijp.getPackageFragmentRoots()) {
 	    IPath rpath = ipr.getPath();
 	    Path npath = new Path(rpath.toString() + ppth);
@@ -1024,8 +1024,8 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
 	     }
 	  }
        }
-      catch (JavaModelException e) {
-	 BedrockPlugin.logE("Problem getting package fragments: " + e);
+      catch (Exception e) {
+	 BedrockPlugin.logE("Problem getting package fragments for " + ppth + ": " + e);
        }
     }
    else if (havejp) {

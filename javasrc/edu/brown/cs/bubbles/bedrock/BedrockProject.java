@@ -52,7 +52,7 @@ import org.w3c.dom.*;
 
 import java.io.*;
 import java.util.*;
-
+import java.net.*;
 
 
 
@@ -339,8 +339,8 @@ void localEditProject(Element pxml,IvyXmlWriter xw) throws BedrockException
 private void updatePathElement(List<IClasspathEntry> ents,Element xml)
 {
    IClasspathEntry oent = null;
-   int id = IvyXml.getAttrInt(xml,"ID");
-   if (id > 0) {
+   int id = IvyXml.getAttrInt(xml,"ID",0);
+   if (id != 0) {
       for (IClasspathEntry ent : ents) {
 	 if (ent.hashCode() == id) {
 	    oent = ent;
@@ -348,16 +348,61 @@ private void updatePathElement(List<IClasspathEntry> ents,Element xml)
 	  }
        }
     }
+
+   BedrockPlugin.logD("UPDATE PATH ELEMENT " + oent + " " + IvyXml.convertXmlToString(xml));
+
    if (IvyXml.getAttrString(xml,"TYPE").equals("LIBRARY")) {
-      // if DELETE=true, just remove from ents
-      // create IPath for binary
-      // create IPath for source if present
-      // create IPath for javadoc
-      // if javadoc/optional, create extra attributes
-      // get access rules from original or xml
-      // JavaCore.newLibraryEntry(...)
-      // if oent != null, replace oent with this entry in ents
-      // else add this entry to ents
+      if (IvyXml.getAttrBool(xml,"DELETE")) {
+	 ents.remove(oent);
+       }
+      else if (IvyXml.getAttrBool(xml,"MODIFIED") || IvyXml.getAttrBool(xml,"NEW")) {
+	 String f = IvyXml.getTextElement(xml,"BINARY");
+	 IPath bin = (f == null ? null : Path.fromOSString(f));
+	 f = IvyXml.getTextElement(xml,"SOURCE");
+	 IPath src = (f == null ? null : Path.fromOSString(f));
+	 boolean optfg = IvyXml.getAttrBool(xml,"OPTIONAL");
+	 boolean export = IvyXml.getAttrBool(xml,"EXPORTED");
+	 IAccessRule [] rls = null;
+	 URL docu = null;
+	 String doc = IvyXml.getTextElement(xml,"JAVADOC");
+	 if (doc != null) {
+	    try {
+	       docu = new URL(doc);
+	     }
+	    catch (MalformedURLException e) { }
+	    if (docu == null) {
+	       try {
+		  docu = new URL("file://" + doc);
+		}
+	       catch (MalformedURLException e) { }
+	     }
+	  }
+	 if (oent != null) {
+	    rls = oent.getAccessRules();
+	  }
+
+	 IClasspathAttribute [] xatts = null;
+	 List<IClasspathAttribute> els = new ArrayList<IClasspathAttribute>();
+	 if (optfg) els.add(JavaCore.newClasspathAttribute(IClasspathAttribute.OPTIONAL,"true"));
+	 if (docu != null) {
+	    els.add(JavaCore.newClasspathAttribute(
+		       IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME,docu.toString()));
+	  }
+	 if (!els.isEmpty()) {
+	    xatts = new IClasspathAttribute[els.size()];
+	    xatts = els.toArray(xatts);
+	  }
+
+	 IClasspathEntry nent = JavaCore.newLibraryEntry(bin,src,null,rls,xatts,export);
+
+	 if (IvyXml.getAttrBool(xml,"MODIFIED") && oent != null) {
+	    int idx = ents.indexOf(oent);
+	    ents.set(idx,nent);
+	  }
+	 else {
+	    ents.add(nent);
+	  }
+       }
     }
 }
 
@@ -1100,6 +1145,15 @@ private void addPath(IvyXmlWriter xw,IJavaProject jp,IClasspathEntry ent,boolean
    if (f2 != null) xw.textElement("OUTPUT",f2.getAbsolutePath());
    if (f3 != null) xw.textElement("SOURCE",f3.getAbsolutePath());
    if (jdp != null) xw.textElement("JAVADOC",jdp);
+
+   IAccessRule [] rls = ent.getAccessRules();
+   for (IAccessRule ar : rls) {
+      xw.begin("ACCESS");
+      xw.field("KIND",ar.getKind());
+      xw.field("PATTERN",ar.getPattern().toString());
+      xw.field("IGNOREIFBETTER",ar.ignoreIfBetter());
+      xw.end("ACCESS");
+    }
 
    xw.end("PATH");
 }

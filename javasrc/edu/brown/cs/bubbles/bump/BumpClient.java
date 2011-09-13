@@ -340,6 +340,8 @@ private void ensureRunning()
 
 public void stopIDE()
 {
+   run_manager.terminateAll();
+
    synchronized (this) {
       eclipse_active = false;
       doing_exit = true;
@@ -2798,7 +2800,8 @@ private class EclipseHandler implements MintHandler {
 	    BoardLog.logE("BUMP","Bad eclipse message:" + msg.getText());
 	  }
 	 else if (doing_exit) {
-	    msg.replyTo("<OK/>");
+	    if (cmd.equals("PING")) msg.replyTo();
+	    else msg.replyTo("<OK/>");
 	  }
 	 else if (cmd.equals("ELISION")) {
 	    handleElision(IvyXml.getAttrString(e,"BID"),

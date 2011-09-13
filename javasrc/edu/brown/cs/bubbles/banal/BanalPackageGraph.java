@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -46,6 +46,8 @@ class BanalPackageGraph extends BanalDefaultVisitor implements BanalConstants
 private String			project_name;
 private String			package_name;
 private Map<String,ClassData>	class_nodes;
+private Map<String,MethodData>	method_nodes;
+
 
 
 
@@ -55,11 +57,14 @@ private Map<String,ClassData>	class_nodes;
 /*										*/
 /********************************************************************************/
 
-BanalPackageGraph(String proj,String pkg)
+BanalPackageGraph(String proj,String pkg,boolean usemethods)
 {
    project_name = proj;
    package_name = pkg;
    class_nodes = new HashMap<String,ClassData>();
+
+   if (usemethods) method_nodes = new HashMap<String,MethodData>();
+   else method_nodes = null;
 }
 
 
@@ -77,6 +82,17 @@ Collection<BanalPackageClass> getClassNodes()
 
 
 
+Collection<BanalPackageNode> getAllNodes()
+{
+   List<BanalPackageNode> rslt = new ArrayList<BanalPackageNode>();
+   rslt.addAll(class_nodes.values());
+   if (method_nodes != null) rslt.addAll(method_nodes.values());
+
+   return rslt;
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Visitors to handle start/stop/checking relevance			*/
@@ -90,7 +106,7 @@ Collection<BanalPackageClass> getClassNodes()
    return project_name.equals(proj);
 }
 
-								
+
 
 
 @Override public boolean checkUseClass(String cls)
@@ -136,6 +152,21 @@ private ClassData findClass(BanalClass bc)
 }
 
 
+private MethodData findMethod(BanalMethod bm)
+{
+   if (method_nodes == null) return null;
+
+   String k = bm.getFullName();
+   MethodData md = method_nodes.get(k);
+   if (md == null) {
+      md = new MethodData(k);
+      method_nodes.put(k,md);
+    }
+
+   return md;
+}
+
+
 
 private boolean isClassRelevant(BanalClass bc)
 {
@@ -152,6 +183,49 @@ private LinkData findLink(BanalClass frm,BanalClass to)
    ClassData tc = findClass(to);
 
    LinkData ld = fc.createLinkTo(tc);
+
+   return ld;
+}
+
+
+private LinkData findLink(BanalMethod frm,BanalMethod to)
+{
+   MethodData fm = findMethod(frm);
+   MethodData tm = findMethod(to);
+   if (fm == null || tm == null) {
+      return findLink(frm.getOwnerClass(),to.getOwnerClass());
+    }
+
+   LinkData ld = fm.createLinkTo(tm);
+
+   return ld;
+}
+
+
+private LinkData findLink(BanalMethod frm,BanalClass to)
+{
+   MethodData fm = findMethod(frm);
+   if (fm == null) {
+      return findLink(frm.getOwnerClass(),to);
+    }
+   ClassData tc = findClass(to);
+
+   LinkData ld = fm.createLinkTo(tc);
+
+   return ld;
+}
+
+
+
+private LinkData findLink(BanalClass frm,BanalMethod to)
+{
+   MethodData tm = findMethod(to);
+   if (tm == null) {
+      return findLink(frm,to.getOwnerClass());
+    }
+   ClassData fc = findClass(frm);
+
+   LinkData ld = fc.createLinkTo(tm);
 
    return ld;
 }
@@ -210,7 +284,31 @@ void outputXml(IvyXmlWriter xw)
 
 /********************************************************************************/
 /*										*/
-/*	Access visiting methods 					*/
+/*	Method and field handling						*/
+/*										*/
+/********************************************************************************/
+
+@Override public void visitClassMethod(BanalMethod bm,String gen,int acc,BanalClass [] excepts)
+{
+   MethodData md = findMethod(bm);
+   if (md == null) return;
+
+   md.setAccess(acc);
+
+   LinkData ld = findLink(bm,bm.getOwnerClass());
+   ld.addRelation(PackageRelationType.CLASSMETHOD);
+}
+
+
+
+@Override public void visitClassField(BanalField bf,BanalClass bc,String gen,int acc,Object val)
+{ }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Access visiting methods 						*/
 /*										*/
 /********************************************************************************/
 
@@ -221,7 +319,7 @@ void outputXml(IvyXmlWriter xw)
    if (frm == to) return;
    if (!isClassRelevant(to)) return;
 
-   LinkData ld = findLink(frm,to);
+   LinkData ld = findLink(bm,to);
    if (ld != null) ld.addRelation(PackageRelationType.ACCESSES);
 }
 
@@ -233,7 +331,7 @@ void outputXml(IvyXmlWriter xw)
    if (!isClassRelevant(bc)) return;
    if (frm == bc) return;
 
-   LinkData ld = findLink(frm,bc);
+   LinkData ld = findLink(bm,bc);
    if (ld != null) ld.addRelation(PackageRelationType.FIELD);
 }
 
@@ -246,7 +344,7 @@ void outputXml(IvyXmlWriter xw)
    if (!isClassRelevant(bc)) return;
    if (frm == bc) return;
 
-   LinkData ld = findLink(frm,bc);
+   LinkData ld = findLink(bm,bc);
    if (ld != null) ld.addRelation(PackageRelationType.LOCAL);
 }
 
@@ -258,7 +356,7 @@ void outputXml(IvyXmlWriter xw)
    BanalClass tc = cld.getOwnerClass();
    if (!isClassRelevant(tc) || tc == fc) return;
 
-   LinkData ld = findLink(fc,tc);
+   LinkData ld = findLink(frm,cld);
    if (ld != null) ld.addRelation(PackageRelationType.CALLS);
 }
 
@@ -269,7 +367,7 @@ void outputXml(IvyXmlWriter xw)
    BanalClass fc = bm.getOwnerClass();
    if (!isClassRelevant(allocd) || fc == allocd) return;
 
-   LinkData ld = findLink(fc,allocd);
+   LinkData ld = findLink(bm,allocd);
    if (ld != null) ld.addRelation(PackageRelationType.ALLOCATES);
 }
 
@@ -280,7 +378,7 @@ void outputXml(IvyXmlWriter xw)
    BanalClass fc = bm.getOwnerClass();
    if (!isClassRelevant(exc) || fc == exc) return;
 
-   LinkData ld = findLink(fc,exc);
+   LinkData ld = findLink(bm,exc);
    if (ld != null) ld.addRelation(PackageRelationType.CATCHES);
 }
 
@@ -289,27 +387,27 @@ void outputXml(IvyXmlWriter xw)
 
 /********************************************************************************/
 /*										*/
-/*	Class information							*/
+/*	Node information							*/
 /*										*/
 /********************************************************************************/
 
-private class ClassData implements BanalPackageClass {
+private abstract class NodeData implements BanalPackageNode {
 
-   private String class_name;
-   private Map<ClassData,LinkData> out_links;
-   private Map<ClassData,LinkData> in_links;
+   private String node_name;
+   private Map<NodeData,LinkData> out_links;
+   private Map<NodeData,LinkData> in_links;
    private int class_access;
-   private Set<ClassType> class_types;
+   protected Set<ClassType> class_types;
 
-   ClassData(String nm) {
-      class_name = nm;
-      out_links = new HashMap<ClassData,LinkData>();
-      in_links = new HashMap<ClassData,LinkData>();
+   NodeData(String nm) {
+      node_name = nm;
+      out_links = new HashMap<NodeData,LinkData>();
+      in_links = new HashMap<NodeData,LinkData>();
       class_access = -1;
       class_types = null;
     }
 
-   @Override public String getName()		{ return class_name; }
+   @Override public String getName()		{ return node_name; }
    @Override public int getModifiers()		{ return class_access; }
    @Override public Collection<BanalPackageLink> getInLinks() {
       return new ArrayList<BanalPackageLink>(in_links.values());
@@ -317,31 +415,33 @@ private class ClassData implements BanalPackageClass {
    @Override public Collection<BanalPackageLink> getOutLinks() {
       return new ArrayList<BanalPackageLink>(out_links.values());
     }
+   
+   @Override public String getProjectName()	{ return project_name; }
+   @Override public String getMethodName()	{ return null; }
+   @Override public String getClassName()	{ return null; }
+   @Override public String getPackageName() {
+      String nm = getClassName();
+      int idx = nm.lastIndexOf(".");
+      if (idx < 0) return null;
+      return nm.substring(0,idx);
+    }
 
-   @Override public Set<ClassType> getTypes() {
-      if (class_types != null) return class_types;
+   protected Set<ClassType> getBasicTypes() {
+      Set<ClassType> rslt = EnumSet.noneOf(ClassType.class);
+
       int mod = class_access;
       if (mod == -1) mod = Modifier.PUBLIC;
-      class_types = EnumSet.noneOf(ClassType.class);
-      if ((mod & Opcodes.ACC_PRIVATE) != 0) class_types.add(ClassType.PRIVATE);
-      else if ((mod & Opcodes.ACC_PROTECTED) != 0) class_types.add(ClassType.PROTECTED);
-      else if ((mod & Opcodes.ACC_PUBLIC) != 0) class_types.add(ClassType.PUBLIC);
-      else class_types.add(ClassType.PACKAGE_PROTECTED);
-      if ((mod & Opcodes.ACC_ENUM) != 0) class_types.add(ClassType.ENUM);
-      else if ((mod & Opcodes.ACC_INTERFACE) != 0) class_types.add(ClassType.INTERFACE);
-      else if ((mod & Opcodes.ACC_ANNOTATION) != 0) class_types.add(ClassType.ANNOTATION);
-      else class_types.add(ClassType.CLASS);
-      if ((mod & Opcodes.ACC_STATIC) != 0) class_types.add(ClassType.STATIC);
-      if ((mod & Opcodes.ACC_ABSTRACT) != 0) class_types.add(ClassType.ABSTRACT);
-      if ((mod & Opcodes.ACC_FINAL) != 0) class_types.add(ClassType.FINAL);
 
-      String s = getName();
-      int idx = s.indexOf("<");
-      if (idx >= 0) s = s.substring(0,idx);
-      idx = s.indexOf("$");
-      if (idx >= 0) class_types.add(ClassType.INNER);
-      if (isThrowable()) class_types.add(ClassType.THROWABLE);
-      return class_types;
+      if ((mod & Opcodes.ACC_PRIVATE) != 0) rslt.add(ClassType.PRIVATE);
+      else if ((mod & Opcodes.ACC_PROTECTED) != 0) rslt.add(ClassType.PROTECTED);
+      else if ((mod & Opcodes.ACC_PUBLIC) != 0) rslt.add(ClassType.PUBLIC);
+      else rslt.add(ClassType.PACKAGE_PROTECTED);
+
+      if ((mod & Opcodes.ACC_STATIC) != 0) rslt.add(ClassType.STATIC);
+      if ((mod & Opcodes.ACC_ABSTRACT) != 0) rslt.add(ClassType.ABSTRACT);
+      if ((mod & Opcodes.ACC_FINAL) != 0) rslt.add(ClassType.FINAL);
+
+      return rslt;
     }
 
    void setAccess(int acc) {
@@ -353,7 +453,7 @@ private class ClassData implements BanalPackageClass {
       return Modifier.isInterface(class_access);
     }
 
-   LinkData createLinkTo(ClassData cd) {
+   LinkData createLinkTo(NodeData cd) {
       if (cd == this || cd == null) return null;
       LinkData ld = out_links.get(cd);
       if (ld == null) {
@@ -366,7 +466,7 @@ private class ClassData implements BanalPackageClass {
 
    void outputXml(IvyXmlWriter xw) {
       xw.begin("CLASS");
-      xw.field("NAME",class_name);
+      xw.field("NAME",node_name);
       if (class_access != -1) xw.field("MOD",class_access);
       for (LinkData ld : out_links.values()) {
 	 ld.outputXml(xw);
@@ -375,16 +475,16 @@ private class ClassData implements BanalPackageClass {
     }
 
    @Override public String toString() {
-      return "[" + class_name + "]";
+      return "[" + node_name + "]";
     }
 
-   private boolean isThrowable() {
-      if (class_name.equals("java.lang.Throwable")) return true;
-      if (class_name.equals("java.lang.Error")) return true;
-      if (class_name.equals("java.lang.Exception")) return true;
+   protected boolean isThrowable() {
+      if (node_name.equals("java.lang.Throwable")) return true;
+      if (node_name.equals("java.lang.Error")) return true;
+      if (node_name.equals("java.lang.Exception")) return true;
       for (LinkData ld : out_links.values()) {
 	 if (ld.getTypes().containsKey(PackageRelationType.SUPERCLASS)) {
-	    ClassData cd =  (ClassData) ld.getToClass();
+	    ClassData cd =  (ClassData) ld.getToNode();
 	    return cd.isThrowable();
 	  }
        }
@@ -392,6 +492,68 @@ private class ClassData implements BanalPackageClass {
     }
 
 }	// end of inner class ClassData
+
+
+
+private class ClassData extends NodeData implements BanalPackageClass {
+
+   ClassData(String nm) {
+      super(nm);
+    }
+
+   @Override public String getClassName()		{ return getName(); }
+
+   @Override public Set<ClassType> getTypes() {
+      if (class_types != null) return class_types;
+
+      class_types = getBasicTypes();
+
+      int mod = getModifiers();
+      if ((mod & Opcodes.ACC_ENUM) != 0) class_types.add(ClassType.ENUM);
+      else if ((mod & Opcodes.ACC_INTERFACE) != 0) class_types.add(ClassType.INTERFACE);
+      else if ((mod & Opcodes.ACC_ANNOTATION) != 0) class_types.add(ClassType.ANNOTATION);
+      else class_types.add(ClassType.CLASS);
+
+      String s = getName();
+      int idx = s.indexOf("<");
+      if (idx >= 0) s = s.substring(0,idx);
+      idx = s.indexOf("$");
+      if (idx >= 0) class_types.add(ClassType.INNER);
+      if (isThrowable()) class_types.add(ClassType.THROWABLE);
+      return class_types;
+    }
+
+}	// end of inner class ClassData
+
+
+
+
+private class MethodData extends NodeData implements BanalPackageMethod {
+
+   MethodData(String nm) {
+      super(nm);
+    }
+
+   @Override public Set<ClassType> getTypes() {
+      if (class_types != null) return class_types;
+      class_types = getBasicTypes();
+      class_types.add(ClassType.METHOD);
+      return class_types;
+    }
+
+   @Override public String getMethodName() {
+      return getName();
+    }
+
+   @Override public String getClassName() {
+      String nm = getName();
+      int idx1 = nm.indexOf("(");
+      int idx2 = (idx1 < 0 ? nm.lastIndexOf(".") : nm.lastIndexOf(".",idx1));
+      return nm.substring(0,idx2);
+    }
+
+}
+
 
 
 
@@ -403,18 +565,18 @@ private class ClassData implements BanalPackageClass {
 
 private class LinkData implements BanalPackageLink {
 
-   private ClassData from_class;
-   private ClassData to_class;
+   private NodeData from_class;
+   private NodeData to_class;
    private Map<PackageRelationType,Integer> type_count;
 
-   LinkData(ClassData fn,ClassData tn) {
+   LinkData(NodeData fn,NodeData tn) {
       from_class = fn;
       to_class = tn;
       type_count = new EnumMap<PackageRelationType,Integer>(PackageRelationType.class);
     }
 
-   @Override public BanalPackageClass getFromClass()		{ return from_class; }
-   @Override public BanalPackageClass getToClass()		{ return to_class; }
+   @Override public BanalPackageNode getFromNode()		{ return from_class; }
+   @Override public BanalPackageNode getToNode()		{ return to_class; }
    @Override public Map<PackageRelationType,Integer> getTypes() { return type_count; }
 
    void addRelation(PackageRelationType rt) {

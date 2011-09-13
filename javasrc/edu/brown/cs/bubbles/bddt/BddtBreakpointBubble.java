@@ -80,7 +80,6 @@ private static final long serialVersionUID = 1;
 /*										*/
 /********************************************************************************/
 
-
 BddtBreakpointBubble()
 {
    super(null,BudaBorder.RECTANGLE);
@@ -103,8 +102,8 @@ BddtBreakpointBubble()
    scroll.setCursor(Cursor.getDefaultCursor());
 
    JPanel mainpanel = new JPanel(new BorderLayout());
-   mainpanel.add(tool_bar, BorderLayout.SOUTH);
-   mainpanel.add(scroll, BorderLayout.CENTER);
+   mainpanel.add(tool_bar,BorderLayout.SOUTH);
+   mainpanel.add(scroll,BorderLayout.CENTER);
    setContentPane(mainpanel);
    mainpanel.addMouseListener(this);
    BumpClient.getBump().addBreakpointHandler(null, this);

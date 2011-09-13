@@ -210,6 +210,21 @@ void removeThreadFilter(BumpThread bt,BumpThreadFilter btf)
 
 
 
+void terminateAll()
+{
+   List<ProcessData> acts;
+
+   synchronized (active_processes) {
+      acts = new ArrayList<ProcessData>(active_processes.values());
+    }
+
+   for (ProcessData pd : acts) {
+      bump_client.terminate(pd);
+    }
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Launch configuration methods						*/
@@ -1575,6 +1590,42 @@ private class StackFrame implements BumpStackFrame {
 
    @Override public boolean evaluateInternal(String expr,BumpEvaluationHandler hdlr) {
       return bump_client.evaluateExpression(this,expr,true,false,hdlr);
+    }
+
+   @Override public boolean match(BumpStackFrame frm) {
+      if (frm == null) return false;
+      if (getThread() != frm.getThread()) return false;
+      if (getMethod() != null) {
+	 if (!getMethod().equals(frm.getMethod())) return false;
+       }
+      else if (frm.getMethod() != null) return false;
+
+      if (getSignature() != null) {
+	 if (!getSignature().equals(frm.getSignature())) return false;
+       }
+      else if (frm.getSignature() != null) return false;
+      if (getLineNumber() != frm.getLineNumber()) return false;
+
+      return true;
+    }
+
+   @Override public String getDisplayString() {
+      String mnm = getMethod();
+      String cnm = null;
+      int idx = mnm.lastIndexOf(".");
+      if (idx > 0) {
+	 cnm = mnm.substring(0,idx);
+	 mnm = mnm.substring(idx+1);
+       }
+      StringBuffer buf = new StringBuffer();
+      buf.append(getLineNumber());
+      buf.append(" @ ");
+      buf.append(mnm);
+      if (cnm != null) {
+	 buf.append(" / ");
+	 buf.append(cnm);
+       }
+      return buf.toString();
     }
 
 

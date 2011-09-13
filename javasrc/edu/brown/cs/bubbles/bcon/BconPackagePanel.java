@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -179,6 +179,7 @@ private class NodeTab extends JPanel implements ActionListener {
       addClassButton("Abstract",ClassType.ABSTRACT);
       addClassButton("Enumerations",ClassType.ENUM);
       addClassButton("Exceptions",ClassType.THROWABLE);
+      addClassButton("Methods",ClassType.METHOD);
       // add(new JSeparator()); -- make it fixed size
       JCheckBox cbx = new JCheckBox("Show Labels",graph_panel.getShowLabels());
       cbx.setToolTipText("Show node labels");
@@ -253,6 +254,7 @@ private class EdgeTab extends JPanel implements ActionListener {
       addRelationButton("Constant",ArcType.CONSTANT);
       addRelationButton("Field",ArcType.FIELD);
       addRelationButton("Local",ArcType.LOCAL);
+      addRelationButton("Members",ArcType.MEMBER_OF);
 
       // add(new JSeparator()); -- make it fixed size
       JCheckBox cbx = new JCheckBox("Show Labels",graph_panel.getShowArcLabels());

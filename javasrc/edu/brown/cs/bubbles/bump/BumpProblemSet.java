@@ -158,7 +158,7 @@ void handleErrors(String proj,File forfile,int eid,Element ep)
 	    BumpProblemImpl bp = it.next();
 	    if (found.contains(bp)) continue;
 	    if (!fileMatch(forfile,bp)) continue;
-	    if (bp.getErrorType() == BumpErrorType.NOTICE) continue;	// TODOs not returned on recompile
+	    // if (bp.getErrorType() == BumpErrorType.NOTICE) continue;	// notes not returned on recompile -- seems fixed
 	    if (deled == null) deled = new ArrayList<BumpProblemImpl>();
 	    deled.add(bp);
 	    it.remove();

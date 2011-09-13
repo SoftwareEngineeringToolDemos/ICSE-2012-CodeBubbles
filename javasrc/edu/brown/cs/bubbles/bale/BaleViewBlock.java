@@ -509,7 +509,8 @@ private void drawElisionTrigger(Graphics g,Rectangle alloc,boolean fg)
       super.forwardUpdate(ec, e, a, f);
     }
    catch (Throwable t) {
-      BoardLog.logE("BALE","Problem with event updating for " + getBaleElement(),t);
+      BoardLog.logE("BALE","Problem with event updating for " + ec + " " + e + " " + e.getOffset() + " " +
+		       e.getLength() + " " + getBaleElement(),t);
       return;
     }
 

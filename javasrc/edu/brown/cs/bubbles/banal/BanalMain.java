@@ -128,7 +128,7 @@ private void process()
 private void processPackage()
 {
    BanalProjectManager bpm = new BanalProjectManager();
-   BanalPackageGraph pg = new BanalPackageGraph(project_name,"edu.brown.cs.bubbles.bass");
+   BanalPackageGraph pg = new BanalPackageGraph(project_name,"edu.brown.cs.bubbles.bass",true);
    BanalStaticLoader bsl = new BanalStaticLoader(bpm,pg);
    bsl.process();
 

@@ -208,7 +208,7 @@ private static class BbookAction extends AbstractAction {
       Rectangle r0 = new Rectangle(pt);
       BbookRegion tr = getFactory().findTaskRegion(bba,r0);
       if (tr == null) {
-	 getFactory().task_manager.createTaskCreator(bba,null,pt,null);
+	 getFactory().task_manager.createTaskSelector(bba,null,pt,null);
        }
       else if (tr.getTask() != null) {
 	 getFactory().task_manager.createTaskNoter(bba,null,pt,tr.getTask().getProject(),tr.getTask());

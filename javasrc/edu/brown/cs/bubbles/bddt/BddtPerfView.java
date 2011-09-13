@@ -153,8 +153,14 @@ private void setupBubble()
 
 @Override public void handlePopupMenu(MouseEvent e)
 {
+   JPopupMenu menu = new JPopupMenu();
+
    // option of goto source
    // reset option
+
+   menu.add(getFloatBubbleAction());
+
+   menu.show(this,e.getX(),e.getY());
 }
 
 
@@ -222,8 +228,8 @@ private class PerfTable extends SwingTreeTable implements BudaConstants.BudaBubb
       setOpaque(false);
       setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-         TableColumn tc = e.nextElement();
-         tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
+	 TableColumn tc = e.nextElement();
+	 tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
        }
       cell_drawer = new CellDrawer[getColumnModel().getColumnCount()];
       JTree tr = getTree();

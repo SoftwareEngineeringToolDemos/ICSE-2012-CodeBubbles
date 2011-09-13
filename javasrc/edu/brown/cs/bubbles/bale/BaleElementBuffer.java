@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -29,6 +29,7 @@ import edu.brown.cs.bubbles.board.BoardLog;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
+import javax.swing.event.DocumentEvent;
 
 import java.awt.Color;
 import java.util.*;
@@ -278,13 +279,13 @@ void updateProblems()
       for (Iterator<Map.Entry<BumpProblem,ProblemData>> it = problem_map.entrySet().iterator(); it.hasNext(); ) {
 	 Map.Entry<BumpProblem,ProblemData> ent = it.next();
 	 if (!found.contains(ent.getKey())) {
-	    ent.getValue().clear();
+	    ent.getValue().clear(false);
 	    it.remove();
 	  }
        }
 
       for (ProblemData pd : problem_map.values()) {
-	 pd.setup(root_element,base_document);
+	 pd.setup(root_element,base_document,false);
        }
     }
 }
@@ -315,7 +316,7 @@ private void clearProblems()
 {
    synchronized (problem_map) {
       for (ProblemData pd : problem_map.values()) {
-	 pd.clear();
+	 pd.clear(false);
        }
     }
 }
@@ -786,11 +787,12 @@ private static class ProblemData {
       problem_region = doc.getRegionFromEclipse(bp.getStart(),bp.getEnd());
     }
 
-   void clear() {
+   void clear(boolean chng) {
       if (use_elements != null) {
 	 for (BaleElement be : use_elements) {
 	    be.removeAttribute(BOARD_ATTR_HIGHLIGHT_STYLE);
 	    be.removeAttribute(BOARD_ATTR_HIGHLIGHT_COLOR);
+	    if (chng) generateChange(be);
 	  }
 	 use_elements = null;
        }
@@ -802,7 +804,7 @@ private static class ProblemData {
       return false;
     }
 
-   void setup(BaleElement.Branch root,BaleDocument doc) {
+   void setup(BaleElement.Branch root,BaleDocument doc,boolean chng) {
       if (use_elements != null) return; 	// already setup
       if (hilite_style == null || hilite_style == BoardHighlightStyle.NONE) return;
       if (problem_region == null) return;
@@ -836,7 +838,16 @@ private static class ProblemData {
       for (BaleElement be : use_elements) {
 	 be.addAttribute(BOARD_ATTR_HIGHLIGHT_STYLE,hilite_style);
 	 be.addAttribute(BOARD_ATTR_HIGHLIGHT_COLOR,hilite_color);
+	 if (chng) generateChange(be);
        }
+    }
+
+   private void generateChange(BaleElement elt) {
+      BaleDocument doc = elt.getBaleDocument();
+      int off = elt.getStartOffset();
+      int len = elt.getEndOffset() - elt.getStartOffset();
+      if (len <= 0) return;
+      doc.reportEvent(doc,off,len,DocumentEvent.EventType.CHANGE,null,null);
     }
 
 }	// end of inner class ProblemData

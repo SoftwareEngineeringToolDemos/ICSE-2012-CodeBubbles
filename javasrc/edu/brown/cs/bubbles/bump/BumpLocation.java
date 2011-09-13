@@ -329,6 +329,7 @@ public static boolean compareParameters(String s0,String s1)
       String p0 = lp0.get(i);
       String p1 = lp1.get(i);
       if (p0.equals(p1)) continue;
+      if (p1.equals("java.lang.Object") && p0.length() == 1) continue;	// handle generics
       if (!p1.endsWith(p0)) return false;
       int p0len = p0.length();
       int p1len = p1.length();

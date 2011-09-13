@@ -62,8 +62,8 @@ private List<TaskImpl>	all_tasks;
 private long		id_count;
 private long		next_id;
 private long		id_request;
-private Boolean		use_begin;
-private boolean		use_streams;
+private Boolean 	use_begin;
+private boolean 	use_streams;
 
 private static Set<String>	ignore_fields;
 
@@ -121,7 +121,7 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
 
    long eid = getNextId();
    if (eid == 0) return null;
-   
+
    if (proj == null) proj = (String) values.get("PROJECT");
    String unm = null;
    if (values.get("USER") != null) unm = values.get("USER").toString();
@@ -135,6 +135,11 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
 	 String ds = (String) values.remove("DESCRIPTION");
 	 task = defineTask(nm,proj,ds);
 	 break;
+    }
+
+   if (task != null) {
+      TaskImpl ti = (TaskImpl) task;
+      ti.noteUse();
     }
 
    try {
@@ -270,14 +275,14 @@ File getAttachment(String aid)
 String getAttachmentAsString(String aid)
 {
    long id = 0;
-   
+
    try {
       id = Long.parseLong(aid);
     }
    catch (NumberFormatException e) {
       return null;
     }
-   
+
    try {
       String q = "SELECT A.data FROM Attachment A WHERE A.id = ?";
       PreparedStatement s = note_conn.prepareStatement(q);
@@ -285,14 +290,14 @@ String getAttachmentAsString(String aid)
       s.executeQuery();
       ResultSet rs = s.executeQuery();
       if (!rs.next()) return null;
-      Blob data = rs.getBlob(1); 
+      Blob data = rs.getBlob(1);
       byte [] bytes = data.getBytes(0,(int) data.length());
       String rslt = new String(bytes);
       return rslt;
     }
-   catch (SQLException e) { 
+   catch (SQLException e) {
     }
-      
+
    return null;
 }
 
@@ -312,7 +317,7 @@ TaskImpl defineTask(String name,String proj,String desc)
 
    long tid = getNextId();
    if (tid == 0) return null;
-   
+
    String q = "INSERT INTO Task VALUES (?,?,?,?)";
 
    try {
@@ -589,7 +594,7 @@ private long getNextId()
 	 BoardLog.logE("BNOTE","Problem getting more ids: ",e);
        }
     }
-   
+
    if (id_count == 0) return 0;
 
    --id_count;
@@ -610,12 +615,16 @@ private class TaskImpl implements BnoteTask, BnoteValue {
    private String task_name;
    private String task_project;
    private String task_description;
+   private Date start_date;
+   private Date end_date;
 
    TaskImpl(long tid,String nm,String p,String d) {
       task_id = tid;
       task_name = nm;
       task_project = p;
       task_description = d;
+      start_date = null;
+      end_date = null;
     }
 
    @Override public long getTaskId()			{ return task_id; }
@@ -627,6 +636,27 @@ private class TaskImpl implements BnoteTask, BnoteValue {
 
    @Override public String getDatabaseValue() {
       return Long.toString(task_id);
+    }
+
+   @Override public Date getFirstTime() {
+      if (start_date == null) loadDates();
+      return start_date;
+    }
+
+   @Override public Date getLastTime() {
+      if (end_date == null) loadDates();
+      return end_date;
+    }
+
+   void noteUse()					{ end_date = new Date(); }
+
+   private void loadDates() {
+      List<Date> dts = getDatesForTask(task_project,this);
+      if (dts == null || dts.size() == 0) start_date = end_date = new Date();
+      else {
+	 start_date = dts.get(0);
+	 end_date = dts.get(dts.size()-1);
+       }
     }
 
 }	// end of inner class TaskImpl

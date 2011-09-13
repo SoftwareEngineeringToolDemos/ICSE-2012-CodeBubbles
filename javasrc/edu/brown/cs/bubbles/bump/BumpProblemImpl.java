@@ -75,6 +75,7 @@ BumpProblemImpl(Element d,String id,int eid,String proj)
    problem_id = id;
    problem_msgid = IvyXml.getAttrInt(d,"MSGID");
    problem_message = IvyXml.getTextElement(d,"MESSAGE");
+   problem_message = IvyXml.decodeXmlString(problem_message);
    for_project = proj;
    String fnm = IvyXml.getTextElement(d,"FILE");
    if (fnm == null) file_name = null;
@@ -125,6 +126,7 @@ void setEditId(int eid) 				{ edit_id = eid; }
 void update(Element e)
 {
    problem_message = IvyXml.getTextElement(e,"MESSAGE");
+   problem_message = IvyXml.decodeXmlString(problem_message);
    end_position = IvyXml.getAttrInt(e,"END");
    setupFixes(e);
 }

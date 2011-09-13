@@ -286,6 +286,7 @@ private class TaskSelector extends TaskDialog implements ActionListener {
       task_box.removeAllItems();
       task_box.addItem("< New Task >");
       List<BnoteTask> tasks = BnoteFactory.getFactory().getTasksForProject(current_project);
+      Collections.sort(tasks,new TaskTimeCompare());
 
       if (tasks != null && tasks.size() > 0) {
 	 for (BnoteTask t : tasks) {
@@ -308,6 +309,21 @@ private class TaskSelector extends TaskDialog implements ActionListener {
     }
 
 }	// end of inner class TaskSelector
+
+
+
+private static class TaskTimeCompare implements Comparator<BnoteTask> {
+
+   @Override public int compare(BnoteTask t1,BnoteTask t2) {
+      long v1 = t1.getFirstTime().getTime();
+      long v2 = t2.getLastTime().getTime();
+      if (v2 > v1) return 1;
+      if (v2 < v1) return -1;
+      return 0;
+    }
+
+}	// end of inner class TaskTimeCompare
+
 
 
 
@@ -339,6 +355,7 @@ private class TaskCreator extends TaskDialog implements ActionListener {
       desc_field = addTextArea("Description",null,6,32,null);
       desc_field.setLineWrap(true);
 
+      // add a button for use existing task
       addBottomButton("Cancel","Cancel",this);
       addBottomButton("Create","Create",this);
       addBottomButtons();

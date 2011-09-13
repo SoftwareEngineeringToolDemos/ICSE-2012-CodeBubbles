@@ -892,7 +892,7 @@ void findByKey(String proj,String bid,String key,String file,IvyXmlWriter xw)
    ICompilationUnit icu = fd.getEditableUnit(bid);
 
    IJavaElement elt1 = null;
-   
+
    // elt1 = JavaCore.create(key,icu.getOwner());
 
    elt1 = findElementForKey(icu,key);
@@ -1134,6 +1134,7 @@ private synchronized FileData findFile(String proj,String file,String bid,String
       icu = our_plugin.getProjectManager().getCompilationUnit(proj,file);
       if (icu == null && proj != null) {
 	 icu = our_plugin.getProjectManager().getCompilationUnit(null,file);
+	 if (icu != null) proj = null;
        }
 
       if (icu == null) return null;
@@ -1256,7 +1257,7 @@ private class FileData implements IBufferChangedListener {
 
    FileData(String proj,String nm,ICompilationUnit cu) {
       try {
-	 for_project = our_plugin.getProjectManager().findProject(proj);
+	 for_project = our_plugin.getProjectManager().findProjectForFile(proj,nm);
        }
       catch (BedrockException e) { }
       if (for_project == null) BedrockPlugin.logE("File " + nm + " has no associated project");
@@ -1387,6 +1388,10 @@ private class FileData implements IBufferChangedListener {
 	    default_buffer.addBufferChangedListener(this);
 	    buf = default_buffer;
 	    last_ast = null;
+	    if (buf.getContents().equals(txt)) {
+	       BedrockPlugin.logD("Buffer contents not changed");
+	       return;
+	     }
 	    // BedrockPlugin.logD("New buffer contents:\n" + buf.getContents());
 	    // BedrockPlugin.logD("End of contents");
 	  }
@@ -1835,3 +1840,4 @@ private static class ParamSettings {
 
 
 /* end of BedrockEditor.java */
+

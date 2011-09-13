@@ -16,6 +16,7 @@
 <entry key="Threads.float">true</entry>
 <entry key="History.float">true</entry>
 <entry key="ExecutionAnnotation.color">#4000ff00</entry>
+<entry key="FrameAnnotation.color">#40ffff00</entry>
 <entry key="Bddt.buttons.StepInto">true</entry>
 <entry key="Bddt.buttons.StepUser">true</entry>
 <entry key="Bddt.buttons.DropToFrame">true</entry>
@@ -25,4 +26,6 @@
 <entry key="Bddt.show.values">true</entry>
 <entry key="Bddt.show.library.bubbles">false</entry>
 <entry key="Bddt.show.user.bubble">true</entry>
+<entry key="Evaluation.float">true</entry>
+<entry key="Interaction.float">true</entry>
 </properties>

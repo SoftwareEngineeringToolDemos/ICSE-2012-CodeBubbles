@@ -191,7 +191,7 @@ private void setupPanel()
        }
     }
 
-   if (popup.getComponentCount() == 0) return;
+   popup.add(getFloatBubbleAction());
 
    popup.show(draw_area,pt.x,pt.y);
 }

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -233,7 +233,7 @@ void setHasFocus(boolean fg)
 boolean getHasFocus()				{ return has_focus; }
 
 
-void setEndTypes(BudaPortEndType st,BudaPortEndType et)
+public void setEndTypes(BudaPortEndType st,BudaPortEndType et)
 {
    if (st != null) start_type = st;
    if (et != null) finish_type = et;
@@ -325,7 +325,7 @@ void drawLink(Graphics2D g,boolean overview)
    if (has_focus) g.setColor(focus_color);
    else g.setColor(link_color);
    g.draw(pa);
-   
+
    if (link_data != null) {
       // draw link name here
     }

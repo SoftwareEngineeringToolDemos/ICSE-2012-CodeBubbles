@@ -59,7 +59,7 @@ protected BanalDefaultVisitor() 				{ }
 @Override public void visitClassAnnotation(BanalClass bc,BanalClass annot,boolean visible)	{ }
 @Override public void visitInnerClass(BanalClass ocls,BanalClass icls,int access)	{ }
 
-@Override public void visitClassField(BanalField bf,BanalClass typ,String gen,Object value)	{ }
+@Override public void visitClassField(BanalField bf,BanalClass typ,String gen,int acc,Object value)	{ }
 @Override public void visitFieldAnnotation(BanalField bm,BanalClass annot,boolean visible)	{ }
 
 @Override public void visitClassMethod(BanalMethod bm,String signature,int access,BanalClass [] excepts) { }

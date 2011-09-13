@@ -71,6 +71,7 @@ private RunEventHandler 	event_handler;
 private Expander		tree_expander;
 private LabelUpdater		label_updater;
 private ValueUpdater		value_updater;
+private Selector		node_selector;
 private JLabel			title_bar;
 private JTextArea		value_area;
 
@@ -153,7 +154,7 @@ BddtStackView(BddtLaunchControl ctrl,BumpRunValue val,boolean freeze)
 	       value_model = new BddtStackModel(pmdl,vtn);
 	       break;
 	    }
-          }
+	  }
        }
     }
 
@@ -208,6 +209,8 @@ private void setupBubble()
    value_model.addTreeModelListener(tree_expander);
    label_updater = new LabelUpdater();
    value_model.addTreeModelListener(label_updater);
+   node_selector = new Selector();
+   value_component.getSelectionModel().addListSelectionListener(node_selector);
 
    JScrollPane sp = new JScrollPane(value_component);
    sp.setPreferredSize(new Dimension(BDDT_STACK_WIDTH,BDDT_STACK_HEIGHT));
@@ -243,9 +246,10 @@ private void setupBubble()
     }
    if (value_component != null) {
       if (tree_expander != null) value_component.removeTreeExpansionListener(tree_expander);
+      if (node_selector != null) value_component.getSelectionModel().removeListSelectionListener(node_selector);
     }
 
-   value_model.dispose();
+   if (value_model != null) value_model.dispose();
    value_model = null;
 }
 
@@ -486,6 +490,10 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
       cell_drawer = new CellDrawer[2];
       JTree tr = getTree();
       tr.setCellRenderer(new TreeCellRenderer());
+
+      setRowSelectionAllowed(true);
+      setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
       setToolTipText("");
     }
 
@@ -761,8 +769,22 @@ private static class ExpandNodes implements Runnable {
 
 
 
+private class Selector implements ListSelectionListener {
 
+   @Override public void valueChanged(ListSelectionEvent evt) {
+      int row = evt.getFirstIndex();
+      Object v0 = value_component.getValueAt(row,-1);
+      ValueTreeNode tn = null;
+      if (v0 instanceof ValueTreeNode) tn = (ValueTreeNode) v0; 
+      if (tn != null) {
+	 BumpStackFrame frm = tn.getFrame();
+	 if (frm != null) {
+	    launch_control.setActiveFrame(frm);
+          }
+       }
+    }
 
+}	// end of inner class Selector
 
 
 

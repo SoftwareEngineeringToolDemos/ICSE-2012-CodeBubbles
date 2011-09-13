@@ -195,7 +195,7 @@ Color BDDT_PERF_BOTTOM_COLOR = Color.WHITE;
 //amc6
 
 /**
- * Initial size of the BbptBubble
+ * Initial size of the breakpoint bubble
  **/
 Dimension BDDT_BREAKPOINT_INITIAL_SIZE = new Dimension(320,130);
 
@@ -248,6 +248,8 @@ Insets BDDT_BREAKPOINT_BUTTON_MARGIN = new Insets(0,0,0,0);
  *	Color for execution annotations
  **/
 String BDDT_EXECUTE_ANNOT_COLOR = "ExecutionAnnotation.color";
+String BDDT_FRAME_ANNOT_COLOR = "FrameAnnotation.color";
+
 
 Color BDDT_LAUNCH_OVERVIEW_COLOR = new Color(182,182,255);
 
@@ -255,6 +257,34 @@ Color BDDT_LAUNCH_OVERVIEW_COLOR = new Color(182,182,255);
  *	Color for debug focus annotations
  **/
 Color BDDT_DEBUG_FOCUS_ANNOT_COLOR = new Color(0x20ffff00,true);
+
+
+
+interface BddtFrameListener extends EventListener {
+
+   void setActiveFrame(BumpStackFrame frm);
+
+}	// end of interface BddtFrameListener
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Evaluation area constants						*/
+/*										*/
+/********************************************************************************/
+
+/**
+ * Initial size of the evaluation bubble
+ **/
+
+Dimension BDDT_EVALUATION_INITIAL_SIZE = new Dimension(320,130);
+
+String BDDT_PROPERTY_FLOAT_EVALUATION = "Evaluation.float";
+
+
+Dimension BDDT_INTERACTION_INITIAL_SIZE = new Dimension(320,130);
+String BDDT_PROPERTY_FLOAT_INTERACTION = "Interaction.float";
 
 
 
@@ -321,6 +351,18 @@ interface ValueTreeNode extends TreeNode {
 
 }	// end of inner interface ValueTreeNode
 
+
+
+
+interface ExpressionValue {
+
+   BumpRunValue getResult();
+   String getError();
+   boolean isValid();
+
+   String formatResult();
+
+}	// end of inner interface ExpressionValue
 
 
 
@@ -425,6 +467,7 @@ enum BubbleType {
    THREADS,		// thread view
    CONSOLE,		// console
    HISTORY,
+   EVAL,		// evaluation/interaction
    EXEC,		// bubble for current execution point
    FRAME,		// bubble for user selection up the call stack
    VALUES,		// stack frame values bubble

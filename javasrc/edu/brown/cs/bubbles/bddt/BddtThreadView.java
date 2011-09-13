@@ -179,16 +179,18 @@ Point getPosition(BumpThread t)
 	 popup.add(new HistoryAction(thread));
        }
       popup.add(new ProcessAction(thread.getProcess(),"Terminate"));
-      popup.add(getFloatBubbleAction());
-      popup.show(threads_table, pt.x, pt.y);
+
       BumpThreadStack stk = thread.getStack();
       if (stk != null && stk.getNumFrames() > 0) {
 	 BumpStackFrame frm = stk.getFrame(0);
 	 if (frm.getFile() != null && frm.getFile().exists()) {
 	    popup.add(new SourceAction(frm));
-	 }
-      }
+	  }
+       }
     }
+
+   popup.add(getFloatBubbleAction());
+   popup.show(threads_table, pt.x, pt.y);
 }
 
 

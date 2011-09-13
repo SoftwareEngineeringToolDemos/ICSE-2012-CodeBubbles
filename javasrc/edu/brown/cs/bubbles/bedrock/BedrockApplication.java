@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -114,7 +114,7 @@ static void stopApplication()
       the_app.notifyAll();
     }
 
-   BedrockPlugin.logD("BEDROCK STOP CHECK " + PlatformUI.isWorkbenchRunning() + the_app.exit_ctr);
+   BedrockPlugin.logD("BEDROCK STOP CHECK " + PlatformUI.isWorkbenchRunning() + " " + the_app.exit_ctr);
 
    if (PlatformUI.isWorkbenchRunning()) {
       int ctr = the_app.exit_ctr;

@@ -161,12 +161,12 @@ void dispose()
 /********************************************************************************/
 
 BumpThread getThread()			{ return root_node.getThread(); }
-BumpStackFrame getFrame()               { return root_node.getFrame(); }
+BumpStackFrame getFrame()		{ return root_node.getFrame(); }
 
 
 String getLabel()			{ return root_node.getLabel(); }
 
-BumpRunValue getRunValue()              { return root_node.getRunValue(); }
+BumpRunValue getRunValue()		{ return root_node.getRunValue(); }
 
 
 boolean hasBeenFrozen() 		{ return root_node.isFrozen(); }
@@ -700,7 +700,7 @@ private class RootNode extends AbstractNode {
    @Override public BumpStackFrame getFrame()		{ return base_node.getFrame(); }
    @Override public BumpRunValue getRunValue()		{ return base_node.getRunValue(); }
    @Override public boolean showValueArea()		{ return base_node.showValueArea(); }
-   
+
    boolean isFrozen()					{ return is_frozen; }
 
    @Override public TreeNode getParent()		{ return null; }
@@ -932,22 +932,7 @@ private class FrameNode extends AbstractNode {
     }
 
    @Override String getName() {
-      String mnm = for_frame.getMethod();
-      String cnm = null;
-      int idx = mnm.lastIndexOf(".");
-      if (idx > 0) {
-	 cnm = mnm.substring(0,idx);
-	 mnm = mnm.substring(idx+1);
-       }
-      StringBuffer buf = new StringBuffer();
-      buf.append(for_frame.getLineNumber());
-      buf.append(" @ ");
-      buf.append(mnm);
-      if (cnm != null) {
-	 buf.append(" / ");
-	 buf.append(cnm);
-       }
-      return buf.toString();
+      return for_frame.getDisplayString();
     }
 
    @Override public String getKey()	{ return for_frame.getMethod(); }
@@ -1063,7 +1048,7 @@ private abstract class ValueNode extends AbstractNode {
    @Override BumpThread getThread()		{ return for_value.getThread(); }
    @Override public BumpStackFrame getFrame()	{ return for_value.getFrame(); }
    @Override public BumpRunValue getRunValue()	{ return for_value; }
-   @Override public boolean showValueArea()     { return true; }
+   @Override public boolean showValueArea()	{ return true; }
 
    @Override String getLabel() {
       return getThread().getName() + " :: " + getFrame().getMethod() +

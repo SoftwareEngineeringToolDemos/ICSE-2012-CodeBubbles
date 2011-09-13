@@ -328,7 +328,6 @@ void handleContextMenu(MouseEvent evt)
 
    JPopupMenu menu = new JPopupMenu();
    if (bd.isOrphan()) {
-      // TODO: Handle orphan menu
       return;
    }
 

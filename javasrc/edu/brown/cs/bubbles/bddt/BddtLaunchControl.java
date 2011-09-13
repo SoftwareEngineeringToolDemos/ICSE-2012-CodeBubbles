@@ -32,7 +32,7 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.swing.SwingGridPanel;
+import edu.brown.cs.ivy.swing.*;
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import javax.swing.*;
@@ -68,8 +68,11 @@ private LaunchState		launch_state;
 private RunEventHandler 	event_handler;
 private EditorContextListener	editor_handler;
 private Map<BumpThread,ExecutionAnnot> exec_annots;
+private BumpStackFrame		active_frame;
+private FrameAnnot		frame_annot;
 private BddtBubbleManager	bubble_manager;
 private int			freeze_count;
+private SwingEventListenerList<BddtFrameListener> frame_listeners;
 
 private JPanel			launch_panel;
 
@@ -88,7 +91,10 @@ BddtLaunchControl(BumpLaunchConfig blc)
    cur_process = null;
    launch_state = LaunchState.READY;
    exec_annots = new ConcurrentHashMap<BumpThread,ExecutionAnnot>();
+   active_frame = null;
+   frame_annot = null;
    freeze_count = 0;
+   frame_listeners = new SwingEventListenerList<BddtFrameListener>(BddtFrameListener.class);
 
    setupPanel();
 
@@ -167,6 +173,8 @@ private void setupPanel()
    bblbar.add(new ThreadsAction());
    if (bp.getBoolean("Bddt.bubbons.History",true)) bblbar.add(new HistoryAction());
    if (bp.getBoolean("Bddt.buttons.Performance",true)) bblbar.add(new PerformanceAction());
+   bblbar.add(new EvalBubbleAction());
+   bblbar.add(new InteractionBubbleAction());
    bblbar.add(new NewChannelAction());
    bblbar.addSeparator();
    bblbar.add(new StopAction());
@@ -191,6 +199,7 @@ void setupKeys()
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
 
    registerKey(bba,new StepUserAction(),KeyStroke.getKeyStroke(KeyEvent.VK_F5,0));
+   registerKey(bba,new StepIntoAction(),KeyStroke.getKeyStroke(KeyEvent.VK_F5,InputEvent.SHIFT_DOWN_MASK));
    registerKey(bba,new StepOverAction(),KeyStroke.getKeyStroke(KeyEvent.VK_F6,0));
    registerKey(bba,new StepReturnAction(),KeyStroke.getKeyStroke(KeyEvent.VK_F7,0));
    registerKey(bba,new PlayAction(),KeyStroke.getKeyStroke(KeyEvent.VK_F8,0));
@@ -273,7 +282,7 @@ private class PlayAction extends AbstractAction {
 
    PlayAction() {
       super("Play",BoardImage.getIcon("debug/play"));
-      putValue(SHORT_DESCRIPTION,"Start or continue execution");
+      putValue(SHORT_DESCRIPTION,"Start or continue execution (F8)");
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -311,7 +320,7 @@ private class PauseAction extends AbstractAction {
 
    PauseAction() {
       super("Pause",BoardImage.getIcon("debug/pause"));
-      putValue(SHORT_DESCRIPTION,"Pause execution");
+      putValue(SHORT_DESCRIPTION,"Pause execution (shift-F8)");
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -373,7 +382,7 @@ private class StepIntoAction extends AbstractAction {
 
    StepIntoAction() {
       super("Step Into",BoardImage.getIcon("debug/stepin"));
-      putValue(SHORT_DESCRIPTION,"Step into");
+      putValue(SHORT_DESCRIPTION,"Step into (Shift-F5)");
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -407,7 +416,7 @@ private class StepUserAction extends AbstractAction {
 
    StepUserAction() {
       super("Step User",BoardImage.getIcon("debug/stepuser"));
-      putValue(SHORT_DESCRIPTION,"Step into user code");
+      putValue(SHORT_DESCRIPTION,"Step into user code (F5)");
    }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -442,7 +451,7 @@ private class StepOverAction extends AbstractAction {
 
    StepOverAction() {
       super("Step Over",BoardImage.getIcon("debug/stepover"));
-      putValue(SHORT_DESCRIPTION,"Step over");
+      putValue(SHORT_DESCRIPTION,"Step over (F6)");
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -478,7 +487,7 @@ private class StepReturnAction extends AbstractAction {
 
    StepReturnAction() {
       super("Step Return",BoardImage.getIcon("debug/stepreturn"));
-      putValue(SHORT_DESCRIPTION,"Step until end of frame and return");
+      putValue(SHORT_DESCRIPTION,"Step until end of frame and return (F7)");
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -638,6 +647,45 @@ private class PerformanceAction extends AbstractAction {
    }
 
 }	// end of inner class PerformanceAction
+
+
+
+
+private class EvalBubbleAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   EvalBubbleAction() {
+      super("Evaluation",BoardImage.getIcon("debug/eval"));
+      putValue(SHORT_DESCRIPTION,"Bring up evaluation bubble");
+   }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BoardMetrics.noteCommand("BDDT","CreateEvaluationBubble");
+      BddtFactory.getFactory().makeEvaluationBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+   }
+
+}	// end of inner class EvalBubbleAction
+
+
+
+
+
+private class InteractionBubbleAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   InteractionBubbleAction() {
+      super("Interaction",BoardImage.getIcon("debug/interact"));
+      putValue(SHORT_DESCRIPTION,"Bring up interaction bubble");
+   }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BoardMetrics.noteCommand("BDDT","CreateInteractionBubble");
+      BddtFactory.getFactory().makeInteractionBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+   }
+
+}	// end of inner class InteractionBubbleAction
 
 
 
@@ -841,6 +889,7 @@ private void addExecutionAnnot(BumpThread bt)
 	 ExecutionAnnot ea = new ExecutionAnnot(bt,bsf);
 	 exec_annots.put(bt,ea);
 	 BaleFactory.getFactory().addAnnotation(ea);
+	 setActiveFrame(bsf);
       }
     }
 }
@@ -851,6 +900,38 @@ private void removeExecutionAnnot(BumpThread bt)
    ExecutionAnnot ea = exec_annots.remove(bt);
    if (ea != null) BaleFactory.getFactory().removeAnnotation(ea);
 }
+
+
+void setActiveFrame(BumpStackFrame frm)
+{
+   if (frm == null) {
+      active_frame = null;
+      if (frame_annot != null) {
+	 BaleFactory.getFactory().removeAnnotation(frame_annot);
+	 frame_annot = null;
+       }
+    }
+   else if (active_frame != null && active_frame.match(frm)) ;
+   else {
+      if (frame_annot != null) {
+	 BaleFactory.getFactory().removeAnnotation(frame_annot);
+	 frame_annot = null;
+       }
+      active_frame = frm;
+      if (frm.getLevel() != 0) {
+	 frame_annot = new FrameAnnot(frm);
+	 BaleFactory.getFactory().addAnnotation(frame_annot);
+       }
+      for (BddtFrameListener fl : frame_listeners) {
+	 fl.setActiveFrame(active_frame);
+       }
+    }
+}
+
+
+BumpStackFrame getActiveFrame() 		{ return active_frame; }
+void addFrameListener(BddtFrameListener fl)	{ frame_listeners.add(fl); }
+void removeFrameListener(BddtFrameListener fl)	{ frame_listeners.remove(fl); }
 
 
 
@@ -907,6 +988,62 @@ private class ExecutionAnnot implements BaleAnnotation {
    @Override public void addPopupButtons(JPopupMenu m)		{ }
 
 }	// end of inner class ExecutionAnnot
+
+
+
+private class FrameAnnot implements BaleAnnotation {
+
+   private BumpThread for_thread;
+   private BumpStackFrame for_frame;
+   private BaleFileOverview for_document;
+   private Position execute_pos;
+   private Color annot_color;
+   private File for_file;
+
+   FrameAnnot(BumpStackFrame frm) {
+      for_thread = frm.getThread();
+      for_frame = frm;
+      for_file = frm.getFile();
+      for_document = BaleFactory.getFactory().getFileOverview(null,for_file);
+      int off = for_document.findLineOffset(frm.getLineNumber());
+      BoardProperties bp = BoardProperties.getProperties("Bddt");
+      annot_color = bp.getColor(BDDT_FRAME_ANNOT_COLOR,new Color(0x4000ff00,true));
+
+      execute_pos = null;
+      try {
+	 execute_pos = for_document.createPosition(off);
+       }
+      catch (BadLocationException e) {
+	 BoardLog.logE("BDDT","Bad execution position",e);
+       }
+    }
+
+
+
+   @Override public int getDocumentOffset()	{ return execute_pos.getOffset(); }
+   @Override public File getFile()		{ return for_file; }
+
+   @Override public Icon getIcon() {
+      return BoardImage.getIcon("exec");
+    }
+
+   @Override public String getToolTip() {
+      return "Thread " + for_thread.getName() + " frame at " + for_frame.getLineNumber();
+    }
+
+   @Override public Color getLineColor()			{ return annot_color; }
+
+   @Override public boolean getForceVisible(BudaBubble bb) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
+      BudaBubbleArea bba1 = BudaRoot.findBudaBubbleArea(BddtLaunchControl.this);
+      return (bba == bba1);
+    }
+
+   @Override public int getPriority()				{ return 20; }
+
+   @Override public void addPopupButtons(JPopupMenu m)		{ }
+
+}	// end of inner class FrameAnnot
 
 
 
@@ -974,7 +1111,28 @@ String getEvaluationString(BumpStackFrame frm,BumpRunValue rv,String id)
    EvaluationListener el = new EvaluationListener();
    if (frm.evaluateInternal(expr,el)) {
       //TODO: format the result a bit if it is too long
-      return IvyXml.xmlSanitize(el.getResult());
+      BumpRunValue rrv = el.getResult();
+      if (rrv != null) return IvyXml.xmlSanitize(rrv.getValue());
+    }
+
+   return null;
+}
+
+
+
+
+ExpressionValue evaluateExpression(BumpStackFrame frm,String uexpr)
+{
+   if (frm == null) return null;
+
+   String expr = uexpr;
+
+   BumpThreadState ts = frm.getThread().getThreadState();
+   if (!ts.isStopped()) return null;
+
+   EvaluationListener el = new EvaluationListener();
+   if (frm.evaluateInternal(expr,el)) {
+      return el;
     }
 
    return null;
@@ -1065,28 +1223,43 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 }	// end of inner class EditorContextListener
 
 
-private class EvaluationListener implements BumpEvaluationHandler {
+
+
+/********************************************************************************/
+/*										*/
+/*	Evaluation handlers							*/
+/*										*/
+/********************************************************************************/
+
+private class EvaluationListener implements BumpEvaluationHandler, ExpressionValue {
 
    private boolean is_done;
-   private String  result_value;
+   private BumpRunValue result_value;
+   private String  error_value;
 
    EvaluationListener() {
       is_done = false;
       result_value = null;
+      error_value = null;
     }
 
-   synchronized String getResult() {
-      while (!is_done) {
-	 try {
-	    wait(1000l);
-	  }
-	 catch (InterruptedException e) { }
-       }
+   @Override public BumpRunValue getResult() {
+      waitForResult();
       return result_value;
     }
 
+   @Override public String getError() {
+      waitForResult();
+      return error_value;
+    }
+
+   @Override public boolean isValid() {
+      waitForResult();
+      return error_value == null;
+    }
+
    @Override public void evaluationResult(String eid,String expr,BumpRunValue v) {
-      result_value = v.getValue();
+      result_value = v;
       synchronized (this) {
 	 is_done = true;
 	 notifyAll();
@@ -1094,13 +1267,30 @@ private class EvaluationListener implements BumpEvaluationHandler {
     }
 
    @Override public void evaluationError(String eid,String expr,String error) {
+      error_value = error;
       synchronized (this) {
 	 is_done = true;
 	 notifyAll();
        }
     }
 
+   @Override public String formatResult() {
+      // this should be much more sophisticated
+      return result_value.getValue();
+    }
+
+   private synchronized void waitForResult() {
+      while (!is_done) {
+	 try {
+	    wait(1000l);
+	  }
+	 catch (InterruptedException e) { }
+       }
+    }
+
 }	// end of class EvaluationListener
+
+
 
 
 private class ValueEvalListener implements BumpEvaluationHandler, Runnable {

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -334,12 +334,13 @@ interface BconToken {
 /********************************************************************************/
 
 enum NodeType {
+   METHOD,
    CLASS,
    INTERFACE,
    ENUM,
    ANNOTATION,
    THROWABLE,
-   PACKAGE
+   PACKAGE,
 }
 
 
@@ -359,6 +360,7 @@ enum ArcType {
    FIELD,			// has a field of
    LOCAL,			// has a local of
    PACKAGE,			// in package
+   MEMBER_OF			// is a member of
 }
 
 
@@ -376,7 +378,7 @@ interface BconRelationData {
 interface BconGraphNode {
 
    String getFullName();
-   String getDisplayName();
+   String getLabelName();
 
    NodeType getNodeType();
    boolean isInnerClass();
@@ -406,6 +408,8 @@ interface BconGraphArc {
    boolean useTargetArrow();
 
    String getLabel();
+
+   void update();
 }
 
 

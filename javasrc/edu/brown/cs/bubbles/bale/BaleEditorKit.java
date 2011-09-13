@@ -597,7 +597,7 @@ private static boolean matchesText(BaleEditorPane target,int pos,String match)
       txt = target.getText(pos-delta,delta+1);
     }
    catch (BadLocationException e) { return false; }
-   
+
    if (txt == null) return false;
 
    for (int i = txt.length()-1; i >= 0; --i) {
@@ -2163,7 +2163,7 @@ private static class GotoSearchAction extends TextAction {
       int searchsize = 200;
       Point pt = new Point(r.x+r.width+BUBBLE_CREATION_SPACE,r.y);
       if (pt.x + searchsize > r2.x + r2.width) pt.x = r.x - BUBBLE_CREATION_SPACE - searchsize;
-      
+
       br.createMergedSearchBubble(pt,bd.getProjectName(),nm);
       BoardMetrics.noteCommand("BALE","GoToSearch");
     }

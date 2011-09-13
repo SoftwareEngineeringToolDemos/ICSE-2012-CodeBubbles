@@ -66,7 +66,7 @@ private static boolean	delete_old = true;
 BddtBubbleManager(BddtLaunchControl blc)
 {
    launch_control = blc;
-   bubble_area = BudaRoot.findBudaBubbleArea(blc);
+   bubble_area = null;
    bubble_map = new HashMap<BudaBubble,BubbleData>();
 }
 
@@ -87,10 +87,14 @@ void createExecBubble(BumpThread bt)
       if (frm != null) {
 	 BubbleData bd = findClosestBubble(bt,stk,frm);
 	 if (bd != null && bd.match(bt,stk,frm)) return;
-	 for (int i = 1; i < stk.getNumFrames(); ++i) {
+	 int lvl = bd.aboveLevel(bt,stk,frm);
+	 int mx = stk.getNumFrames();
+	 if (lvl > 0) mx = mx-lvl;
+
+	 for (int i = 1; i < mx; ++i) {
 	    BumpStackFrame frame = stk.getFrame(i);
-	    if (frame.getFile() != null && frame.getFile().exists() &&
-		     !frame.isSystem()) {
+	    if (bd != null && bd.getFrame() != null && matchFrameMethod(bd.getFrame(),frame)) break;
+	    if (frame.getFile() != null && frame.getFile().exists() && !frame.isSystem()) {
 	       bb = createSourceBubble(stk,i,BubbleType.EXEC,false);
 	       break;
 	    }
@@ -154,11 +158,11 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    int ypos = -1;
    BudaBubble link = null;
    int linkline = -1;
+   boolean linkto = true;
 
    BubbleData bd = findClosestBubble(bt,stk,frame);
    if (bd != null && bd.match(bt,stk,frame)) {
       if (bd.getBubbleType() == BubbleType.USER) createUserStackBubble(bd);
-      BoardLog.logD("BDDT","Existing bubbles found for " + bd.getBubble().getContentName());
       bd.update(stk,frame);
       showBubble(bd.getBubble());
       return null;
@@ -174,10 +178,15 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
        }
       else if (r != null && bd.getBubbleType() == BubbleType.EXEC && bd.getThread() == bt) {
 	 xpos = r.x + r.width + 40;
-	 xpos = r.x - 300;
-	 if (xpos < 0) xpos = 0;
 	 ypos = r.y;
 	 link = bd.getBubble();
+	 linkline = bd.getLineNumber();
+	 linkto = false;
+//	 xpos = r.x + r.width + 40;
+//	 xpos = r.x - 300;
+//	 if (xpos < 0) xpos = 0;
+//	 ypos = r.y;
+//	 link = bd.getBubble();
        }
       else if (r != null) {
 	 // xpos = r.x + r.width + 40;
@@ -204,6 +213,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	    case CONSOLE :
 	    case HISTORY :
 	    case THREADS :
+	    case EVAL :
 	       Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
 	       xpos = Math.max(xpos,rx.x + rx.width + 40);
 	       ypos = Math.min(ypos,rx.y);
@@ -263,6 +273,9 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	    BudaBubbleLink lnk = new BudaBubbleLink(link,port0,bb,port1);
 	    lnk.setColor(BDDT_LINK_COLOR);
 	    root.addLink(lnk);
+	    if (!linkto) {
+	       lnk.setEndTypes(BudaPortEndType.END_ARROW,BudaPortEndType.END_NONE);
+	     }
 	 }
       }
       bb.markBubbleAsNew();
@@ -287,6 +300,7 @@ void restart()
 	 case THREADS :
 	 case CONSOLE :
 	 case HISTORY :
+	 case EVAL :
 	    break;
 	 case EXEC :
 	 case FRAME :
@@ -495,6 +509,7 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
       }
    }
 
+
    if (best == null) {
       // alternatively, try to find a bubble we are below
       int blvl = -1;
@@ -551,6 +566,7 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
 	    case HISTORY :
 	    case THREADS :
 	    case STOP_TRACE :
+	    case EVAL :
 	       continue;
 	  }
 	 if (best == null) {
@@ -668,6 +684,8 @@ private static class BubbleData {
       else if (bb instanceof BddtThreadView) bubble_type = BubbleType.THREADS;
       else if (bb instanceof BddtHistoryBubble) bubble_type = BubbleType.HISTORY;
       else if (bb instanceof BddtStopTraceBubble) bubble_type = BubbleType.STOP_TRACE;
+      else if (bb instanceof BddtEvaluationBubble) bubble_type = BubbleType.EVAL;
+      else if (bb instanceof BddtInteractionBubble) bubble_type = BubbleType.EVAL;
       else bubble_type = BubbleType.USER;
       last_used = System.currentTimeMillis();
       can_remove = false;

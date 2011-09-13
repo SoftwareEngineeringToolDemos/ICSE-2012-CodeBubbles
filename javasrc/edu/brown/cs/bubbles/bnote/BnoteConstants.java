@@ -95,6 +95,8 @@ interface BnoteTask {
    String getName();
    String getProject();
    String getDescription();
+   Date getFirstTime();
+   Date getLastTime();
 
 }	// end of interface BnoteTask
 

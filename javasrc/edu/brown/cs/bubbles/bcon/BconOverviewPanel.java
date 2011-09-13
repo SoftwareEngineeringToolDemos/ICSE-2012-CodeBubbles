@@ -179,6 +179,7 @@ private void computeRegion()
    focus_class = null;
 
    if (bb == null) return;
+   if (BudaRoot.findBudaBubbleArea(bb) != bubble_area) return;
 
    Collection<BconRegion> rgns = findBubbleRegions(bb);
    if (rgns != null && rgns.size() > 0) {
@@ -196,6 +197,8 @@ private void computeRegion()
 
 @Override public void bubbleAdded(BudaBubble bb)
 {
+   if (BudaRoot.findBudaBubbleArea(bb) != bubble_area) return;
+
    computeRegion();
 
    checkAddFile(bb);
@@ -213,6 +216,8 @@ private void computeRegion()
 
 @Override public void bubbleRemoved(BudaBubble bb)
 {
+   if (BudaRoot.findBudaBubbleArea(bb) != bubble_area) return;
+
    computeRegion();
 
    Collection<BconRegion> rgns = findBubbleRegions(bb);

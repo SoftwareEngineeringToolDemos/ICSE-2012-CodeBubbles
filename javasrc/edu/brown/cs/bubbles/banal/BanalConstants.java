@@ -53,6 +53,8 @@ enum PackageRelationType {
    FIELD,			// has a field of
    LOCAL,			// has a local of
    PACKAGE,			// in package
+   CLASSMETHOD, 		// method of a class
+   OVERRIDES,			// method overriding method of superclass
 }
 
 
@@ -71,13 +73,14 @@ enum ClassType {
    STATIC,
    ABSTRACT,
    FINAL,
-   THROWABLE
+   THROWABLE,
+   METHOD
 }
 
 
 
 
-interface BanalPackageClass {
+interface BanalPackageNode {
 
    String getName();
    int getModifiers();
@@ -85,13 +88,30 @@ interface BanalPackageClass {
    Collection<BanalPackageLink> getOutLinks();
    Set<ClassType> getTypes();
 
-}
+   String getMethodName();
+   String getClassName();
+   String getPackageName();
+   String getProjectName();
+
+}	// end of inner class BanalPackageNode
+
+
+
+interface BanalPackageClass extends BanalPackageNode {
+
+
+}	// end of inner class BanalPackageClass
+
+
+interface BanalPackageMethod  extends BanalPackageNode {
+
+}	// end of inner class BanalPackageMethod
 
 
 interface BanalPackageLink {
 
-   BanalPackageClass getFromClass();
-   BanalPackageClass getToClass();
+   BanalPackageNode getFromNode();
+   BanalPackageNode getToNode();
    Map<PackageRelationType,Integer> getTypes();
 
 }
@@ -159,6 +179,7 @@ interface BanalMethod {
    String getName();			// simple name
    BanalClass [] getArgumentTypes();	// set of argument types
    BanalClass getReturnType();
+   String getFullName();
 
 }      // end of inner interface BanalMethod
 
@@ -184,7 +205,7 @@ interface BanalVisitor {
    void visitClassAnnotation(BanalClass bc,BanalClass annot,boolean visible);
    void visitInnerClass(BanalClass ocls,BanalClass icls,int access);
 
-   void visitClassField(BanalField bf,BanalClass typ,String gen,Object value);
+   void visitClassField(BanalField bf,BanalClass typ,String gen,int acc,Object value);
    void visitFieldAnnotation(BanalField bm,BanalClass annot,boolean visible);
 
    void visitClassMethod(BanalMethod bm,String signature,int access,BanalClass [] excepts);

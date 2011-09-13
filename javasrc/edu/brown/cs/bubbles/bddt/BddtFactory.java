@@ -480,6 +480,60 @@ BudaBubble makePerformanceBubble(BudaBubble src,BddtLaunchControl ctrl)
 
 
 
+BudaBubble makeEvaluationBubble(BudaBubble src,BddtLaunchControl ctrl)
+{
+   if (ctrl == null) return null;
+
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   BudaBubble bb = null;
+   bb = new BddtEvaluationBubble(ctrl);
+
+   Rectangle r = src.getBounds();
+   int x = r.x + BDDT_CONSOLE_WIDTH + 20;
+   int y = r.y + r.height + 20;
+
+   BudaConstraint bc;
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_EVALUATION)) {
+      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+    }
+   else {
+      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+    }
+
+   bba.add(bb,bc);
+
+   return bb;
+}
+
+
+
+BudaBubble makeInteractionBubble(BudaBubble src,BddtLaunchControl ctrl)
+{
+   if (ctrl == null) return null;
+
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   BudaBubble bb = null;
+   bb = new BddtInteractionBubble(ctrl);
+
+   Rectangle r = src.getBounds();
+   int x = r.x + BDDT_STACK_WIDTH + 20;
+   int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + 20;
+
+   BudaConstraint bc;
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_INTERACTION)) {
+      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+    }
+   else {
+      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+    }
+
+   bba.add(bb,bc);
+
+   return bb;
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Button handling 							*/

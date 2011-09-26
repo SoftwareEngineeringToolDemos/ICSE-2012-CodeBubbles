@@ -178,6 +178,10 @@ Point getPosition(BumpThread t)
 	 popup.add(new ProcessAction(thread.getProcess(),"Pause"));
 	 popup.add(new HistoryAction(thread));
        }
+      if (thread.getThreadState().isException()) {
+	 popup.add(new ExceptionAction(thread));
+       }
+
       popup.add(new ProcessAction(thread.getProcess(),"Terminate"));
 
       BumpThreadStack stk = thread.getStack();
@@ -322,16 +326,46 @@ private class SourceAction extends AbstractAction {
 	 String proj = for_frame.getThread().getLaunch().getConfiguration().getProject();
 	 String mid = for_frame.getMethod() + for_frame.getSignature();
 	 bb = BaleFactory.getFactory().createMethodBubble(proj,mid);
-      }
+       }
       if (bb != null) {
 	 BoardMetrics.noteCommand("BDDT","ThreadSource");
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
 	 bba.addBubble(bb,BddtThreadView.this,null,
 	       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
-      }
-      }
+       }
+    }
 
-}
+}	// end of inner class SourceAction
+
+
+
+private class ExceptionAction extends AbstractAction {
+
+   private BumpThread for_thread;
+
+   private static final long serialVersionUID = 1;
+
+   ExceptionAction(BumpThread bt) {
+      super("Goto Exception");
+      for_thread = bt;
+   }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubble bb = null;
+      String typ = for_thread.getExceptionType();
+      bb = BaleFactory.getFactory().createClassBubble(null,typ);
+      if (bb == null) {
+	 bb = BudaRoot.createDocumentationBubble(typ);
+       }
+      if (bb != null) {
+	 BoardMetrics.noteCommand("BDDT","ThreadSource");
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
+	 bba.addBubble(bb,BddtThreadView.this,null,
+	       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+       }
+    }
+
+}	// end of inner class ExceptionAction
 
 
 

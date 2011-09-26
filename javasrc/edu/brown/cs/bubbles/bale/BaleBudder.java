@@ -356,8 +356,9 @@ private class FragmentAction extends TextAction {
 
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
 	 bba.addBubble(bb,target,null,
+			  PLACEMENT_NEW |
 			  PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-	
+
 	 /*************
 	 BudaRoot broot = BudaRoot.findBudaRoot(target);
 	 Rectangle loc = BudaRoot.findBudaLocation(target);
@@ -372,7 +373,6 @@ private class FragmentAction extends TextAction {
 	 broot.addLink(lnk);
 	 *************/
 
-	 bb.markBubbleAsNew();
 	 bb.grabFocus();
 	 BoardMetrics.noteCommand("BALE","Fragment");
        }

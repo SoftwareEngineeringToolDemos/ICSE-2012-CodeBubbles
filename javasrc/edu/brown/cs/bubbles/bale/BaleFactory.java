@@ -314,6 +314,7 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
    if (add) {
       int place = PLACEMENT_RIGHT | PLACEMENT_MOVETO;
       if (near) place |= PLACEMENT_GROUPED;
+      if (marknew) place |= PLACEMENT_NEW;
 
       BudaBubble obbl = BudaRoot.findBudaBubble(src);
       // BudaRoot root = BudaRoot.findBudaRoot(src);
@@ -344,8 +345,6 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 	 bba.addBubble(bb,src,null,place);
 	 // root.add(bb,new BudaConstraint(loc.x+loc.width+offset,loc.y));
        }
-
-      if (marknew) bb.markBubbleAsNew();
     }
 
    return bb;
@@ -734,7 +733,7 @@ BaleDocumentIde getDocument(String proj,File f)
 }
 
 
-@Override public void handlePropertyChange()                    { }
+@Override public void handlePropertyChange()			{ }
 
 
 /********************************************************************************/

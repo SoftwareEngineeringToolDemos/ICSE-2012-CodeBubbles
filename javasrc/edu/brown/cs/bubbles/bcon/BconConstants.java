@@ -265,7 +265,7 @@ String	BCON_CLASS_FONT_SIZE = "Bcon.class.font.size";
  *	The name of the context overview button in the root menu.
  **/
 
-String BCON_BUTTON = "Bubble.Create Overview";
+String BCON_BUTTON = "Bubble.Create File Overview";
 
 
 
@@ -382,6 +382,7 @@ interface BconGraphNode {
 
    NodeType getNodeType();
    boolean isInnerClass();
+   boolean isSubclass();
    Set<BanalConstants.ClassType> getClassType();
    boolean getIncludeChildren();
    void setIncludeChildren(boolean fg);

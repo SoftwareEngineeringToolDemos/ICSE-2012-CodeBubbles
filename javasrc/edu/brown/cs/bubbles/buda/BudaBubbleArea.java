@@ -82,6 +82,7 @@ private boolean 	  routes_valid;
 private BudaBubble	  focus_bubble;
 private BudaChannelSet	  channel_set;
 private Cursor		  palm_cursor;
+private boolean 	  first_time;
 
 private Map<BudaBubble,Point> floating_bubbles;
 private Map<BudaBubble,BudaBubbleDock[]> docked_bubbles;
@@ -110,6 +111,7 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    layout_manager = new BudaLayoutManager();
    setLayout(layout_manager);
    setOpaque(true);
+   first_time = true;
 
    active_bubbles = new HashSet<BudaBubble>();
    bubble_groups = new HashSet<BudaBubbleGroup>();
@@ -945,6 +947,17 @@ public int getRegionSpace()
 {
    validate();
 
+   if (first_time) {
+      first_time = false;
+      synchronized (active_bubbles) {
+	 for (Component c : getComponents()) {
+	    if (c instanceof BudaBubble) {
+	       active_bubbles.add(((BudaBubble) c));
+	     }
+	  }
+       }
+    }
+
    if (scale_factor != 1.0 && g instanceof Graphics2D) {
       Graphics2D g1 = (Graphics2D) g.create();
       g1.scale(scale_factor,scale_factor);
@@ -1471,32 +1484,32 @@ private Point setDockedLocation(BudaBubble bb)
 	 if (havehadhoriz) {
 	    bb.setSize(cur_viewport.width, bb.getHeight());
 	    bb.setLocation(new Point(cur_viewport.x,p.y));
-	 }
+	  }
 	 else bb.setLocation(new Point(cur_viewport.x + cur_viewport.width
-		  - bb.getWidth(),p.y));
+					  - bb.getWidth(),p.y));
 	 havehadhoriz = true;
-      }
+       }
       else if (bbdi == BudaBubbleDock.WEST) {
 	 if (havehadhoriz) bb.setSize(cur_viewport.width, bb.getHeight());
 	 bb.setLocation(new Point(cur_viewport.x,p.y));
 	 havehadhoriz = true;
-      }
+       }
       else if (bbdi == BudaBubbleDock.NORTH) {
 	 if (havehadvert) bb.setSize(bb.getWidth(), cur_viewport.height);
 	 bb.setLocation(new Point(p.x,cur_viewport.y));
 	 havehadvert = true;
-      }
+       }
       else if (bbdi == BudaBubbleDock.SOUTH) {
 	 if (havehadvert) {
 	    bb.setSize(bb.getWidth(), cur_viewport.height);
 	    bb.setLocation(new Point(p.x,cur_viewport.y));
-	 }
+	  }
 	 else bb.setLocation(new Point(p.x,cur_viewport.y + cur_viewport.height
-		  - bb.getHeight()));
+					  - bb.getHeight()));
 	 havehadvert = true;
-      }
+       }
       p = bb.getLocation();
-   }
+    }
    p.x -= cur_viewport.x;
    p.y -= cur_viewport.y;
    floating_bubbles.put(bb, p);
@@ -1881,7 +1894,12 @@ private void handleScrollEvent(MouseWheelEvent e)
 private void handleMouseMoved(MouseEvent e)
 {
    MouseRegion mr = new MouseRegion(e);
-   setFocusBubble(mr.in_bubble, true);
+
+   if (focus_bubble != mr.in_bubble && mr.in_bubble != null) {
+      if (focus_bubble != null) setFocusBubble(focus_bubble,false);
+      setFocusBubble(mr.in_bubble,true);
+    }
+
    last_mouse = mr;
 
    switch (mr.getRegion()) {

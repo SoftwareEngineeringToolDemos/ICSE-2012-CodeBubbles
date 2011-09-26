@@ -258,7 +258,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
       BubbleData nbd = new BubbleData(bb,bt,stk,frame,typ);
       bubble_map.put(bb,nbd);
       BudaRoot root = BudaRoot.findBudaRoot(bubble_area);
-      bubble_area.addBubble(bb,null,new Point(xpos,ypos),PLACEMENT_EXPLICIT);
+      bubble_area.addBubble(bb,null,new Point(xpos,ypos),PLACEMENT_EXPLICIT|PLACEMENT_NEW);
 
       if (link != null && link.isShowing()) {
 	 LinkPort port0;
@@ -278,7 +278,6 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	     }
 	 }
       }
-      bb.markBubbleAsNew();
       showBubble(bb);
     }
 

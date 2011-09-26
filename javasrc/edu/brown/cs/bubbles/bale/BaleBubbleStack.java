@@ -208,7 +208,7 @@ private void setupStack()
    BussBubble bb = bussf.createBubbleStack(entries, contentwidth + title_width);
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_bubble);
-   int place = PLACEMENT_RIGHT|PLACEMENT_MOVETO;
+   int place = PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW;
    if (place_near) place |= PLACEMENT_GROUPED;
    bba.addBubble(bb,source_bubble,source_point,place);
 
@@ -221,7 +221,6 @@ private void setupStack()
       bb.setSourceBubbleInfomation(obbl, p0);
     }
 
-   bb.markBubbleAsNew();
    BudaRoot.addBubbleViewCallback(new EditorBubbleCallback(bb));
 }
 

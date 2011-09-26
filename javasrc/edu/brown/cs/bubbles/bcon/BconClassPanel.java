@@ -295,6 +295,7 @@ private void setupPanel()
 
    JTextField tfld = new JTextField();
    class_panel.addGBComponent(tfld,0,3,0,1,10,0);
+   tfld.addActionListener(new FilterAction());
 
    class_panel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
@@ -1383,6 +1384,17 @@ private class ResetAction extends AbstractAction {
     }
    
 }       // end of inner class ResetAction
+
+
+private class FilterAction implements ActionListener {
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      JTextField tfld = (JTextField) evt.getSource();
+      String txt = tfld.getText();
+      if (txt == null || txt.length() == 0) return;
+      // TODO: handle typein in class panel
+    }
+}
 
 }	// end of class BconClassPanel
 

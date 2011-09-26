@@ -320,7 +320,9 @@ String HELP_VIDEO_BUTTON = "Bubble.Help.Show Help Video";
  **/
 String HELP_WIKI_BUTTON = "Bubble.Help.Show Code Bubbles Wiki Page";
 
+String HELP_TUTORIAL_BUTTON = "Bubble.Help.Show Bubbles Tutorial";
 
+String HELP_KEY_BUTTON = "Bubble.Help.Show Key Bindings";
 
 /**
  *	URL of the help video
@@ -328,6 +330,7 @@ String HELP_WIKI_BUTTON = "Bubble.Help.Show Code Bubbles Wiki Page";
 String HELP_VIDEO_URL = "http://www.cs.brown.edu/people/spr/codebubbles/demovideo.mov";
 String HELP_HOME_URL = "http://www.cs.brown.edu/people/spr/codebubbles/";
 String HELP_WIKI_URL = "http://conifer.cs.brown.edu:8000/bubbles/wiki/OverView";
+String HELP_TUTORIAL_URL = "http://wwwacs.brown.edu/people/spr/codebubbles/tutorial";
 
 
 

@@ -324,9 +324,10 @@ private void createEntryBubble(BussEntry be,BudaRoot root,Rectangle loc)
 {
    BudaBubble bb = be.getBubble();
    BussBubble bbl = (BussBubble) BudaRoot.findBudaBubble(this);
+   if (bb == null) return;
 
    BudaBubble sbb = bbl.getSourceBubble();
-   if (sbb != null && sbb.getContentName() != null && sbb.getContentFile() != null &&
+   if (sbb != null && sbb.getContentName() != null && sbb.getContentFile() != null && 
 	    sbb.getContentName().equals(bb.getContentName()) &&
 	    sbb.getContentFile().equals(bb.getContentFile()))
       return;

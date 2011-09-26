@@ -508,8 +508,7 @@ void addAndLocateBubble(BudaBubble bb, int ypos)
    }
 
    if (bb != null) {
-      bba.addBubble(bb,null,new Point(loc.x,loc.y),PLACEMENT_LOGICAL);
-      bb.markBubbleAsNew();
+      bba.addBubble(bb,null,new Point(loc.x,loc.y),PLACEMENT_LOGICAL|PLACEMENT_NEW);
     }
 }
 

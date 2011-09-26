@@ -84,6 +84,8 @@ BconPackagePanel(String proj,String pkg)
 
    pnl.addGBComponent(graph_panel,0,1,1,1,10,10);
    JTextField tfld = new JTextField();
+   tfld.addActionListener(new FilterAction());
+   
    pnl.addGBComponent(tfld,0,2,1,1,10,0);
    JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM,JTabbedPane.SCROLL_TAB_LAYOUT);
    pnl.addGBComponent(tabs,1,1,1,1,0,1);
@@ -365,6 +367,34 @@ private class LayoutAction implements ActionListener {
 
 
 
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Handle typein filtering                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+private class FilterAction implements ActionListener {
+   
+   @Override public void actionPerformed(ActionEvent evt) {
+      JTextField tfld = (JTextField) evt.getSource();
+      String txt = tfld.getText();
+      if (txt == null || txt.length() == 0) return;
+      String [] args = txt.split("\\s");
+      if (args.length == 0) return;
+      graph_panel.removeSelections();
+      for (BconGraphNode gn : package_graph.getNodes()) {
+         String nm = gn.getFullName();
+         boolean fnd = true;
+         for (String s : args) {
+            if (nm.contains(s)) fnd = false;
+          }
+         if (fnd) graph_panel.addSelection(gn);
+       }
+    }
+
+}
 
 /********************************************************************************/
 /*										*/

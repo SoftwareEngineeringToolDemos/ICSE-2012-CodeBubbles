@@ -100,7 +100,7 @@ public static synchronized BdocFactory getFactory()
 {
    if (the_factory == null) the_factory = new BdocFactory();
    return the_factory;
-}	
+}
 
 
 
@@ -129,23 +129,10 @@ private BdocFactory()			{ }
 
 public BudaBubble createDocBubble(String name)
 {
-   return createDocBubble(name,true);
-}
-
-
-
-/**
- *	Create a documentation bubble for the given item.  The caller can decide
- *	if the created bubble will be highlightd as new.
- **/
-
-public BudaBubble createDocBubble(String name,boolean shownew)
-{
    try {
       BdocReference ref = bdoc_repository.findReferenceFromName(name);
       if (ref != null) {
 	 BudaBubble bb = new BdocBubble(ref);
-	 if (shownew) bb.markBubbleAsNew();
 	 return bb;
        }
     }

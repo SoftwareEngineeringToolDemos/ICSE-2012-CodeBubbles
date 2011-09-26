@@ -48,7 +48,7 @@ private Set<ClassType>	class_options;
 private Set<ArcType>	arc_options;
 private boolean 	include_children;
 
-private String		start_node;
+private Set<String>     start_nodes;
 private Set<String>	exclude_set;
 private Set<String>	include_set;
 
@@ -120,7 +120,7 @@ BconPackageGraph(String proj,String pkg)
    arc_options = EnumSet.allOf(ArcType.class);
    include_children = false;
 
-   start_node = null;
+   start_nodes = null;
    exclude_set = new HashSet<String>();
    include_set = null;
 
@@ -183,18 +183,18 @@ void setIncludeChildren(boolean fg)		{ include_children = fg; }
 
 
 
-void collapseNode(BconGraphNode nd,ArcType prt)
+void collapseNode(BconGraphNode nd,Set<ArcType> prt)
 {
    // should find node for parent and save it here
    String nm = nd.getFullName();
    int idx0 = nm.indexOf("(");
    int idx = (idx0 < 0 ? nm.lastIndexOf(".") : nm.lastIndexOf(".",idx0));
-   if (idx0 >= 0 && prt != ArcType.MEMBER_OF) {
+   if (idx0 >= 0 && prt.contains(ArcType.MEMBER_OF)) {
       idx0 = idx;
       idx = nm.lastIndexOf(".",idx);
     }
    int idx1 = (idx0 < 0 ? nm.lastIndexOf("$") : nm.lastIndexOf("$",idx0));
-   if (idx1 > 0 && prt == ArcType.INNERCLASS) idx = idx1;
+   if (idx1 > 0 && prt.contains(ArcType.INNERCLASS)) idx = idx1;
    if (idx < 0) return;
 
    nm = nm.substring(0,idx);
@@ -245,12 +245,19 @@ boolean isArcRelevant(PackageRelationType rt)
 
 private void addCollapse(String nm,ArcType typ)
 {
+   addCollapse(nm,EnumSet.of(typ));
+}
+
+
+
+private void addCollapse(String nm,Set<ArcType> typ)
+{
    Set<ArcType> typs = collapse_nodes.get(nm);
    if (typs == null) {
-      typs = EnumSet.of(typ);
+      typs = EnumSet.copyOf(typ);
       collapse_nodes.put(nm,typs);
     }
-   else typs.add(typ);
+   else typs.addAll(typ);
 }
 
 
@@ -293,29 +300,35 @@ private String findCollapse(String nm,ArcType typ)
 
 void showAllNodes()
 {
-   start_node = null;
+   start_nodes = null;
    exclude_set.clear();
 }
 
 
-void removeStartNode()
+void removeStartNodes()
 {
-   setStartNode(null);
-}
-
-
-void setStartNode(String nm)
-{
-   if (start_node != null && start_node.equals(nm)) return;
-   if (start_node == null && nm == null) return;
-
-   start_node = nm;
+   if (start_nodes == null) return;
+   
+   start_nodes = null;
    include_set = null;
    need_recompute = true;
 }
 
 
-String getStartNode()			{ return start_node; }
+void addStartNode(String nm)
+{
+   if (nm == null) return;
+   if (start_nodes != null && start_nodes.contains(nm)) return;
+   
+   if (start_nodes == null) start_nodes = new HashSet<String>();
+
+   start_nodes.add(nm);
+   include_set = null;
+   need_recompute = true;
+}
+
+
+Set<String> getStartNode()		{ return start_nodes; }
 
 
 
@@ -345,7 +358,7 @@ Collection<BconGraphNode> getNodes()
 	 include_set = null;
        }
 
-      if (start_node == null) include_set = null;
+      if (start_nodes == null) include_set = null;
       else if (include_set == null) computeIncludes();
 
       cur_nodes = new ArrayList<BconGraphNode>();
@@ -506,7 +519,7 @@ private void collapseNodes()
    for (BconGraphNode gn : cur_nodes) {
       if (gn.isInnerClass()) {
 	 ++ict;
-	 collapseNode(gn,ArcType.INNERCLASS);
+	 collapseNode(gn,EnumSet.of(ArcType.INNERCLASS));
 	 need_recompute = true;
       }
    }
@@ -778,6 +791,18 @@ private abstract class GraphNode implements BconGraphNode {
     }
 
    @Override public boolean isInnerClass()	{ return false; }
+   
+   @Override public boolean isSubclass() {
+      for (BanalPackageNode cls : node_set) {
+         for (BanalPackageLink lnk : cls.getOutLinks()) {
+            if (lnk.getTypes().containsKey(PackageRelationType.SUPERCLASS) ||
+                  lnk.getTypes().containsKey(PackageRelationType.IMPLEMENTS) ||
+                  lnk.getTypes().containsKey(PackageRelationType.EXTENDS)) return true;
+          }
+       }
+      return false;
+    }
+      
 
 }	// end of inner abstract class GraphNode
 
@@ -1097,38 +1122,60 @@ private static class RelationData implements BconRelationData {
 
 void computeIncludes()
 {
-   if (start_node == null) {
+   if (start_nodes == null) {
       include_set = null;
       return;
     }
 
    include_set = new HashSet<String>();
-   BanalPackageNode nd = findNodeByName(start_node);
-   if (nd != null) addToIncludes(nd);
-   else addToIncludes(start_node);
+   for (String st : start_nodes) {
+      BanalPackageNode nd = findNodeByName(st);
+      if (nd != null) addToIncludes(nd,true,true);
+      else addToIncludes(st);
+    }
 
    if (include_set.isEmpty()) include_set = null;
 }
 
 
-private void addToIncludes(BanalPackageNode nd)
+private void addToIncludes(BanalPackageNode nd,boolean in,boolean out)
 {
    if (!include_set.add(nd.getName())) return;
 
    for (BanalPackageLink lnk : nd.getInLinks()) {
-      if (useEdge(lnk)) addToIncludes(lnk.getFromNode());
+      if (useIncludeEdge(lnk,in,out)) addToIncludes(lnk.getFromNode(),true,false);
     }
 
    for (BanalPackageLink lnk : nd.getOutLinks()) {
-      if (useEdge(lnk)) addToIncludes(lnk.getToNode());
+      if (useIncludeEdge(lnk,out,in)) addToIncludes(lnk.getToNode(),false,true);
     }
 }
+
+
+private boolean useIncludeEdge(BanalPackageLink lnk,boolean dir,boolean flip)
+{
+   if (!useClass(lnk.getFromNode())) return false;
+   if (!useClass(lnk.getToNode())) return false;
+      
+   Map<PackageRelationType,Integer> typs = lnk.getTypes();
+   for (Map.Entry<PackageRelationType,Integer> ent : typs.entrySet()) {
+      PackageRelationType prt = ent.getKey();
+      ArcType at = relation_map.get(prt);
+      if (!arc_options.contains(at)) continue;
+      if (ent.getValue() > 0 && dir) return true;
+      else if (ent.getValue() < 0 && flip) return true;
+    }
+   
+   return false;
+}
+      
 
 
 private void addToIncludes(String s)
 {
    if (!include_set.add(s)) return;
 
+   // handle package nodes: include super packages as well
    int idx = s.lastIndexOf(".");
    if (idx < 0) return;
    String p = s.substring(0,idx);

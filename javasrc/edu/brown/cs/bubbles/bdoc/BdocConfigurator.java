@@ -59,7 +59,7 @@ class BdocConfigurator implements BdocConstants, BudaConstants.BubbleConfigurato
    if (typ.equals("JAVADOC")) {
       BdocFactory bf = BdocFactory.getFactory();
       String name = IvyXml.getAttrString(cnt,"NAME");
-      bb = bf.createDocBubble(name,false);
+      bb = bf.createDocBubble(name);
     }
 
    return bb;

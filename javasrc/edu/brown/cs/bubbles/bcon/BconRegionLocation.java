@@ -160,10 +160,10 @@ String getShortRegionName()
 	 else nm += "(...)";
        }
     }
-   
+
    return nm;
 }
-      
+
 
 int getModifiers()
 {
@@ -192,8 +192,8 @@ boolean createBubble(Component src)
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
 
-   bba.addBubble(bb,src,null,BudaConstants.PLACEMENT_RIGHT|BudaConstants.PLACEMENT_LOGICAL);
-   bb.markBubbleAsNew();
+   bba.addBubble(bb,src,null,BudaConstants.PLACEMENT_RIGHT|BudaConstants.PLACEMENT_LOGICAL|
+		    BudaConstants.PLACEMENT_NEW);
 
    return true;
 }

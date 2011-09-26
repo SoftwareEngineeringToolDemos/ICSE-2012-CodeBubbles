@@ -245,7 +245,9 @@ void startBattServer()
       for (int i = 0; i < 100; ++i) {
 	 MintDefaultReply rply = new MintDefaultReply();
 	 mc.send("<BATT DO='PING' />",rply,MINT_MSG_FIRST_NON_NULL);
-	 String rslt = rply.waitForString();
+	 String rslt;
+	 if (i == 0) rslt = rply.waitForString(1000);
+	 else rslt = rply.waitForString();
 	 if (rslt != null) {
 	    server_running = true;
 	    break;

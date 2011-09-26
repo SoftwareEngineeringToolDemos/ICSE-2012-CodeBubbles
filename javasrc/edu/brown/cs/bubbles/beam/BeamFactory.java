@@ -124,6 +124,8 @@ public static void setup()
    BudaRoot.registerMenuButton(HELP_HOME_BUTTON,getFactory());
    BudaRoot.registerMenuButton(HELP_VIDEO_BUTTON,getFactory());
    BudaRoot.registerMenuButton(HELP_WIKI_BUTTON,getFactory());
+   BudaRoot.registerMenuButton(HELP_TUTORIAL_BUTTON,getFactory());
+   BudaRoot.registerMenuButton(HELP_KEY_BUTTON,getFactory());
 }
 
 
@@ -263,6 +265,18 @@ private static Icon imageToFlagIcon(String path)
       catch (Throwable t) {
 	 BoardLog.logE("BEAM","Problem showing wiki page",t);
        }
+    }
+   else if (id.equals(HELP_TUTORIAL_BUTTON)) {
+      try {
+	 URI u = new URI(HELP_TUTORIAL_URL);
+	 Desktop.getDesktop().browse(u);
+       }
+      catch (Throwable t) {
+	 BoardLog.logE("BEAM","Problem showing wiki page",t);
+       }
+    }
+   else if (id.equals(HELP_KEY_BUTTON)) {
+      bb = new BeamKeyBubble();
     }
 
    if (br != null && bb != null) {

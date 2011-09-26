@@ -1743,9 +1743,7 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
       BudaBubble bb = BaleFactory.getFactory().createMethodBubble(proj,name);
       if (bb == null) return;
-      bba.addBubble(bb,null,p,PLACEMENT_MOVETO);
-      // bba.add(bb,new BudaConstraint(p));
-      bb.markBubbleAsNew();
+      bba.addBubble(bb,null,p,PLACEMENT_MOVETO|PLACEMENT_NEW);
    }
 
 }	// end of inner class ExtractMethodAction
@@ -2060,7 +2058,7 @@ private static class GotoDocAction extends TextAction {
 	     }
 	    else port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
 
-	    bba.addBubble(bb,target,lp,PLACEMENT_RIGHT|PLACEMENT_MOVETO);
+	    bba.addBubble(bb,target,lp,PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW);
 
 	    /****************
 	    BudaRoot root = BudaRoot.findBudaRoot(target);
@@ -2072,7 +2070,6 @@ private static class GotoDocAction extends TextAction {
 	    BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
 	    BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
 	    bba.addLink(lnk);
-	    bb.markBubbleAsNew();
 	    BoardMetrics.noteCommand("BALE","GoToDocumentation");
 	    return;
 	  }

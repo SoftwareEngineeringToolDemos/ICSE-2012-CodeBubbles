@@ -148,7 +148,7 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
 	  }
        }
     }
-   
+
    int delta;
    if ((place & PLACEMENT_GROUPED) != 0) delta = BUBBLE_CREATION_NEAR_SPACE;
    else delta = BUBBLE_CREATION_SPACE;
@@ -250,6 +250,10 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
 
    if ((place & PLACEMENT_MOVETO) != 0) {
       bubble_area.scrollBubbleVisible(bbl);
+    }
+
+   if ((place & PLACEMENT_NEW) != 0) {
+      bbl.markBubbleAsNew();
     }
 
    if (uu != null) uu.start();

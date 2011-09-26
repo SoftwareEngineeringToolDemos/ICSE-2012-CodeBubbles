@@ -2,4 +2,5 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <entry key="Bdoc.javadoc.0">http://download.oracle.com/javase/6/docs/api/</entry>
+<entry key="Bdoc.check.dates">true</entry>
 </properties>

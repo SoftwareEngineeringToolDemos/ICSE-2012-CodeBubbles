@@ -40,6 +40,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.util.*;
+import java.util.List;
 
 
 
@@ -208,6 +209,41 @@ void setLayoutType(LayoutType t)
 
 
 
+
+
+void addSelection(BconGraphNode nd)
+{
+   for (PetalNode pn : petal_model.getNodes()) {
+      if (pn instanceof BconPetalNode) {
+	 BconPetalNode bpn = (BconPetalNode) pn;
+	 if (bpn.getGraphNode() == nd) {
+	    petal_model.select(pn);
+	  }
+       }
+    }
+}
+
+void removeSelections()
+{
+   petal_model.deselectAll();
+}
+
+
+List<BconGraphNode> getSelections()
+{
+   List<BconGraphNode> rslt = new ArrayList<BconGraphNode>();
+   for (PetalNode pn : petal_model.getSelectedNodes()) {
+      if (pn instanceof BconPetalNode) {
+	 BconPetalNode bpn = (BconPetalNode) pn;
+	 BconGraphNode gn = bpn.getGraphNode();
+	 if (gn != null) rslt.add(gn);
+       }
+    }
+
+
+   return rslt;
+}
+
 void relayout()
 {
    layout_needed = true;
@@ -268,6 +304,13 @@ void handlePopupMenu(MouseEvent e)
       m.add(new HomeAction());
       ++ct;
     }
+   Collection<BconGraphNode> sels = getSelections();
+   if (sels != null && sels.size() > 0) {
+      m.add(new RemoveSelectAction(sels));
+      m.add(new RestrictSelectAction(sels));
+      ct += 2;
+    }
+
 
    if (ct == 0) return;
 
@@ -466,6 +509,7 @@ private class BconPetalNode extends PetalNodeDefault {
 
    String getSortName() 			{ return graph_node.getFullName(); }
    int getArcCount()				{ return graph_node.getArcCount(); }
+   BconGraphNode getGraphNode() 		{ return graph_node; }
 
    void resetGraphics() {
       setComponent(getDisplayComponent(graph_node));
@@ -476,30 +520,34 @@ private class BconPetalNode extends PetalNodeDefault {
       SwingUtilities.convertPointFromScreen(p0,BconPackageDisplay.this);
       JPopupMenu m = new JPopupMenu();
       if (package_graph.getCollapsedType(graph_node) != ArcType.NONE) {
-	 m.add(new ExpandAction(graph_node));
+         m.add(new ExpandAction(graph_node));
        }
       String pnm = graph_node.getFullName();
       if (graph_node.isInnerClass()) {
-	 m.add(new CompactAction(graph_node,ArcType.INNERCLASS));
-	 int idx = pnm.lastIndexOf(".");
-	 if (idx >= 0) pnm = pnm.substring(0,idx);
+         m.add(new CompactAction(graph_node,ArcType.INNERCLASS));
+         int idx = pnm.lastIndexOf(".");
+         if (idx >= 0) pnm = pnm.substring(0,idx);
        }
       if (graph_node.getClassType().contains(ClassType.METHOD)) {
-	 m.add(new CompactAction(graph_node,ArcType.MEMBER_OF));
+         m.add(new CompactAction(graph_node,ArcType.MEMBER_OF));
        }
       if (pnm.contains(".")) {
-	 m.add(new CompactAction(graph_node,ArcType.PACKAGE));
+         m.add(new CompactAction(graph_node,ArcType.PACKAGE));
+       }
+      if (graph_node.isSubclass()) {
+         m.add(new CompactAction(graph_node,ArcType.SUBCLASS,
+               ArcType.IMPLEMENTED_BY,ArcType.EXTENDED_BY));
        }
       m.add(new InducedAction(graph_node));
       m.add(new ExcludeAction(graph_node));
-
+   
       if (graph_node.getClassType().contains(ClassType.METHOD)) {
-	 m.add(new SourceAction(graph_node));
+         m.add(new SourceAction(graph_node));
        }
       else {
-	 m.add(new SearchAction(graph_node));
+         m.add(new SearchAction(graph_node));
        }
-
+   
       m.show(BconPackageDisplay.this,p0.x,p0.y);
    }
 
@@ -779,7 +827,6 @@ private class ExpandAction extends AbstractAction  {
 
    ExpandAction(BconGraphNode gn) {
       super("Expand node");
-
       for_node = gn;
    }
 
@@ -797,14 +844,16 @@ private class ExpandAction extends AbstractAction  {
 private class CompactAction extends AbstractAction {
 
    private BconGraphNode for_node;
-   private ArcType compact_type;
+   private Set<ArcType> compact_type;
 
-   CompactAction(BconGraphNode gn,ArcType at) {
-      super("Compact node for " + at.toString());
+   CompactAction(BconGraphNode gn,ArcType ... at ) {
+      super("Compact node for " + at[0].toString());
       for_node = gn;
-      compact_type = at;
-   }
-
+      compact_type = EnumSet.of(at[0]);
+      for (int i = 1; i < at.length; ++i) 
+         compact_type.add(at[i]);
+    }
+   
    @Override public void actionPerformed(ActionEvent e) {
       package_graph.collapseNode(for_node,compact_type);
       relayout();
@@ -823,7 +872,8 @@ private class InducedAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      package_graph.setStartNode(for_node.getFullName());
+      package_graph.removeStartNodes();
+      package_graph.addStartNode(for_node.getFullName());
       relayout();
     }
 
@@ -863,6 +913,49 @@ private class HomeAction extends AbstractAction {
 }	// end of inner class HomeAction
 
 
+private class RemoveSelectAction extends AbstractAction {
+
+   private Collection<BconGraphNode> select_nodes;
+
+   RemoveSelectAction(Collection<BconGraphNode> sels) {
+      super("Remove Selected Nodes");
+      select_nodes = sels;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      for (BconGraphNode gn : select_nodes) {
+	 package_graph.addExclusion(gn.getFullName());
+       }
+      relayout();
+    }
+
+}	// end of inner class RemoveSelectAction
+
+
+
+private class RestrictSelectAction extends AbstractAction {
+
+   private Collection<BconGraphNode> select_nodes;
+
+   RestrictSelectAction(Collection<BconGraphNode> sels) {
+      super("Show Selected Subgraph");
+      select_nodes = sels;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      package_graph.removeStartNodes();
+      for (BconGraphNode gn : select_nodes) {
+	 package_graph.addStartNode(gn.getFullName());
+       }
+      relayout();
+    }
+
+}	// end of inner class RemoveSelectAction
+
+
+
+
+
 
 
 private class SourceAction extends AbstractAction {
@@ -871,6 +964,7 @@ private class SourceAction extends AbstractAction {
 
    SourceAction(BconGraphNode gn) {
       super("Go to source of " + gn.getLabelName());
+      for_node = gn;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
@@ -895,6 +989,7 @@ private class SearchAction extends AbstractAction {
 
    SearchAction(BconGraphNode gn) {
       super("Search in " + gn.getLabelName());
+      for_node = gn;
     }
 
    @Override public void actionPerformed(ActionEvent e) {

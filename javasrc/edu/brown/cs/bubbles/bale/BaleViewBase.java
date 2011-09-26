@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -79,7 +79,7 @@ protected BaleViewBase(BaleElement e)
 @Override protected void childAllocation(int idx,Rectangle alloc)
 {
    computeLayout();
-   
+
    if (alloc == null) return;
 
    alloc.x += view_data[idx].xOffset();
@@ -208,14 +208,14 @@ protected void setViewSizes()
     }
    else {
       switch (direction) {
-	 case WEST:
+	 case WEST :
 	    pos = Math.max(0, pos - 1);
 	    break;
-	 case EAST:
+	 case EAST :
 	    pos = Math.min(pos + 1, getDocument().getLength()-1);
 	    break;
-	 case NORTH:
-	 case SOUTH:
+	 case NORTH :
+	 case SOUTH :
 	    JTextComponent target = (JTextComponent) getContainer();
 	    Caret c = target.getCaret();
 	    Point mcp = null;
@@ -252,9 +252,9 @@ private int findPosition(JTextComponent c, int pos, boolean down) throws BadLoca
    Rectangle initview = c.modelToView(0);
    Rectangle posview = c.modelToView(pos);
    int front, back;
-   
+
    if (initview.x > 3) initview.x = 3;
-   
+
    if (posview != null) {
       int dy = Math.max(posview.height,initview.height) + 2;
       if (down) {
@@ -293,7 +293,7 @@ private int findPosition(JTextComponent c, int pos, boolean down) throws BadLoca
       if (down) bestoff = front;
       else bestoff = back;
    }
-   
+
    return bestoff;
 }
 

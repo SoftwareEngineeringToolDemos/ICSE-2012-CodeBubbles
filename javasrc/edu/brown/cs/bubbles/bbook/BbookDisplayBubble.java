@@ -43,6 +43,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.net.*;
+import java.io.*;
 
 
 
@@ -114,7 +115,11 @@ private class Linker implements HyperlinkListener {
    @Override public void hyperlinkUpdate(HyperlinkEvent e) {
       if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
          URL u = e.getURL();
-         System.err.println("HANDLE LINK TO " + u);
+         try {
+            Desktop.getDesktop().browse(u.toURI());
+         }
+         catch (IOException ex) { }
+         catch (URISyntaxException ex) { }
        }
     }
    

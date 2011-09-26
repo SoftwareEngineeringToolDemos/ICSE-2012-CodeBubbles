@@ -501,10 +501,22 @@ private boolean doAction(IThread thrd,String fname,BedrockDebugAction act) throw
 	    if (topfrm instanceof IDropToFrame) {
 	       IDropToFrame idtf = (IDropToFrame) topfrm;
 	       if (idtf.canDropToFrame()) idtf.dropToFrame();
-	       else return false;
+	       else {
+		  BedrockPlugin.logD("Drop to frame failed for " +
+					topfrm.getThread() + " " +
+					topfrm.getName() + " " +
+					topfrm.getLineNumber());
+		  for (IStackFrame frame : thrd.getStackFrames()) {
+		     BedrockPlugin.logD("Current frames include: " +
+					   frame.getThread() + " " +
+					   frame.getName() + " " +
+					   frame.getLineNumber());
+		   }
+		  return false;
+		}
 	     }
 	    else {
-	       BedrockPlugin.log("No support for drop to frame " + thrd);
+	       BedrockPlugin.logD("No support for drop to frame " + thrd);
 	       return false;
 	     }
 	    break;

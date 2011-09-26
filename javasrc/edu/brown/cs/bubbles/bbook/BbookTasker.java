@@ -39,13 +39,16 @@ package edu.brown.cs.bubbles.bbook;
 
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bnote.*;
+import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.swing.*;
 
 
 import javax.swing.*;
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
 import java.util.*;
 import java.util.List;
 import java.io.*;
@@ -407,6 +410,7 @@ private class TaskNoter extends TaskDialog implements ActionListener {
 
    private JTextArea  note_field;
    private JTextField attach_field;
+   private JCheckBox screen_shot;
    private BnoteTask current_task;
    private String current_project;
    private int result_status;
@@ -425,6 +429,8 @@ private class TaskNoter extends TaskDialog implements ActionListener {
 
       note_field = addTextArea("Task Notes",null,4,40,null);
       attach_field = addFileField("Attachment",(String) null,0,null,null);
+      screen_shot = addBoolean("Attach Screen Shot",false,null);
+
       addBottomButton("Cancel","Cancel",this);
       addBottomButton("Change Task","Change Task",this);
       addBottomButton("New Task","New Task",this);
@@ -439,6 +445,7 @@ private class TaskNoter extends TaskDialog implements ActionListener {
 	 closeDialog(evt);
        }
       else if (cmd.equals("Done")) {
+	 BudaRoot br = BudaRoot.findBudaRoot(this);
 	 closeDialog(evt);
 	 if (note_field != null && note_field.getText().length() > 0) {
 	    BnoteStore.log(current_project,current_task,BnoteEntryType.NOTE,"NOTE",note_field.getText());
@@ -447,6 +454,13 @@ private class TaskNoter extends TaskDialog implements ActionListener {
 	    File f1 = new File(attach_field.getText());
 	    if (f1.exists() && f1.canRead()) {
 	       BnoteStore.attach(current_task,f1);
+	     }
+	  }
+	 if (screen_shot != null && screen_shot.isSelected()) {
+	    File f1 = getScreenShot(br);
+	    if (f1.exists() && f1.canRead()) {
+	       BnoteStore.attach(current_task,f1);
+	       f1.delete();
 	     }
 	  }
        }
@@ -477,6 +491,34 @@ private class TaskNoter extends TaskDialog implements ActionListener {
     }
 
 }	// end of inner class TaskNoter
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Screen shot methods							*/
+/*										*/
+/********************************************************************************/
+
+File getScreenShot(BudaRoot br)
+{
+   Dimension sz = br.getSize();
+   BufferedImage bi = new BufferedImage(sz.width,sz.height,BufferedImage.TYPE_INT_RGB);
+   Graphics2D g2 = bi.createGraphics();
+   br.paint(g2);
+
+   try {
+      File f = File.createTempFile("BubblesScreenShot",".png");
+      f.deleteOnExit();
+      ImageIO.write(bi,"png",f);
+      return f;
+    }
+   catch (IOException e) {
+      BoardLog.logE("BBOOK","Problem dumping screen",e);
+    }
+
+   return null;
+}
 
 
 

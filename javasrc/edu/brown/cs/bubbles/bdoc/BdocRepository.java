@@ -594,6 +594,8 @@ private boolean loadXml(File f)
 
    Set<String> sources = new HashSet<String>();
    BoardProperties bp = BoardProperties.getProperties("Bdoc");
+   boolean check = bp.getBoolean("Bdoc.check.dates",true);
+
    long dlm = f.lastModified();
    for (String pnm : bdoc_props) {
       String nm = bp.getProperty(pnm);
@@ -603,7 +605,7 @@ private boolean loadXml(File f)
 	    URI u = new URI(nm);
 	    if (u.getScheme().equals("file")) {
 	       File f0 = new File(u.getPath());
-	       if (!f0.exists() || f0.lastModified() > dlm) {
+	       if (!f0.exists() || (check && f0.lastModified() > dlm)) {
 		  BoardLog.logD("BDOC","Update doc because of " + f0);
 		  return false;
 		}
@@ -616,7 +618,7 @@ private boolean loadXml(File f)
 		  int cd = c.getResponseCode();
 		  if (cd == HttpURLConnection.HTTP_OK) {
 		     long ndlm = c.getLastModified();
-		     if (ndlm > dlm) {
+		     if (check && ndlm > dlm) {
 			BoardLog.logD("BDOC","Update doc because of " + u);
 			return false;
 		      }

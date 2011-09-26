@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Hsu-Sheng Ko 	      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -78,18 +78,16 @@ BaleOpenEditorHandler(BudaRoot budaRoot)
 {
    BudaBubble bubble = null;
 
-   if("Function".equals(type)) {
+   if ("Function".equals(type)) {
       bubble = BaleFactory.getFactory().createMethodBubble(projname, resourcepath);
     }
    else {
       bubble = BaleFactory.getFactory().createClassBubble(projname, resourcepath);
     }
 
-   if(bubble == null)
-      return;
+   if (bubble == null) return;
 
-   if(buda_root.getState()!= Frame.NORMAL)
-      buda_root.setState(Frame.NORMAL);
+   if (buda_root.getState()!= Frame.NORMAL) buda_root.setState(Frame.NORMAL);
 
    buda_root.toFront();
    buda_root.repaint();
@@ -100,11 +98,10 @@ BaleOpenEditorHandler(BudaRoot budaRoot)
       ie.printStackTrace();
     }
 
-   bubble.markBubbleAsNew();
-
    Point pos = buda_root.getCurrentBubbleArea().getViewPosition();
 
    buda_root.getCurrentBubbleArea().addBubble(bubble, pos.x, pos.y);
+   bubble.markBubbleAsNew();
 
    bubble.requestFocus();
 

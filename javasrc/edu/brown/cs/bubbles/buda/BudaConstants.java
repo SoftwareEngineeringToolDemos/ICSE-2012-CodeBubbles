@@ -284,7 +284,7 @@ Color NEW_COLOR = new Color(0x80ffc000,true);
 /**
  *	Total amount of time (in ms) that the new overlay for a bubble will show
  **/
-int   NEW_BUBBLE_SHOW_TIME = 2500;
+int   NEW_BUBBLE_SHOW_TIME = 3500;
 
 
 /**
@@ -589,6 +589,7 @@ int	PLACEMENT_LOGICAL = 0x40;
 int	PLACEMENT_ADJACENT = 0x80;	// adjacent to window, not group
 int	PLACEMENT_ADGROUP  = 0x100;	// adjacent to group, not window
 int	PLACEMENT_USER = 0x200; 	// give user time to place the window
+int	PLACEMENT_NEW = 0x400;		// mark as new window
 int	PLACEMENT_EXPLICIT = 0x10000;	// no default placements
 
 

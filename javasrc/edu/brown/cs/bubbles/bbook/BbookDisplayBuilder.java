@@ -53,6 +53,7 @@ import javax.imageio.ImageIO;
 import java.util.*;
 import java.io.*;
 import java.awt.image.*;
+import java.text.SimpleDateFormat;
 
 
 
@@ -74,6 +75,7 @@ private String			for_method;
 
 private Orderings		order_by;
 
+private static final SimpleDateFormat date_format = new SimpleDateFormat("dd MMM yy @ HH:mm");
 
 
 
@@ -338,7 +340,7 @@ private void outputEntryData(BnoteEntry ent,GenContext ctx,StringBuffer buf)
    long ld = ctx.getLastTime();
    if (ld > 0 && when - ld > 1000*60*30) {
       setState(ctx,ContextState.INFO,buf);
-      buf.append("<h3>Date: " + ent.getTime() + "</h3>");
+      buf.append("<h3>Date: " + date_format.format(ent.getTime()) + "</h3>");
     }
    ctx.setLastTime(when);
 

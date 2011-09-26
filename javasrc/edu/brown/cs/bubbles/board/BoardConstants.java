@@ -399,7 +399,8 @@ String [] BOARD_LIBRARY_EXTRAS = new String [] {
    "LagHunter-4.jar",
    "LagHunterBootClasses_4.jar",
    "LiLaConfiguration.ini",
-   "bbookbkg.gif"
+   "bbookbkg.gif",
+   "keybindings.csv"
 };
 
 

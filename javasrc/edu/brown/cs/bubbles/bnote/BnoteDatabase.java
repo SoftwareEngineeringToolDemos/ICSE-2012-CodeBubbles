@@ -103,6 +103,12 @@ BnoteDatabase()
 
    if (note_conn == null) return;
 
+   try {
+      Statement st = note_conn.createStatement();
+      st.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+    }
+   catch (SQLException e) { }
+
    loadTasks();
 }
 
@@ -577,14 +583,13 @@ private long getNextId()
 	 Statement st = note_conn.createStatement();
 	 if (use_begin) {
 	    st.executeUpdate("BEGIN");
-	    st.executeUpdate("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
 	  }
 	 ResultSet rs = st.executeQuery("SELECT nextid FROM IdNumber");
 	 if (rs.next()) next_id = rs.getLong(1);
 	 else next_id = 0;
 	 id_count = id_request;
 	 long next = next_id + id_request;
-	 String upd = "UPDATE IdNumber SET NextId = " + next;
+	 String upd = "UPDATE IdNumber SET nextid = " + next;
 	 st.executeUpdate(upd);
 	 if (use_begin) {
 	    st.executeUpdate("COMMIT");

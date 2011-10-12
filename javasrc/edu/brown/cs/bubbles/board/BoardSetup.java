@@ -87,6 +87,7 @@ public static void main(String [] args)
 
 private BoardProperties system_properties;
 private boolean 	force_setup;
+private boolean 	force_metrics;
 private boolean 	ask_workspace;
 private boolean 	run_foreground;
 private boolean 	has_changed;
@@ -163,6 +164,7 @@ private BoardSetup()
    system_properties = BoardProperties.getProperties("System");
 
    force_setup = false;
+   force_metrics = false;
 
    install_path = system_properties.getProperty(BOARD_PROP_INSTALL_DIR);
    auto_update = system_properties.getBoolean(BOARD_PROP_AUTO_UPDATE,true);
@@ -232,6 +234,10 @@ private void scanArgs(String [] args)
       else if (args[i].startsWith("-")) {
 	 if (args[i].startsWith("-f")) {                                // -force
 	    force_setup = true;
+	    force_metrics = true;
+	  }
+	 else if (args[i].startsWith("-c")) {                           // -collect
+	    force_metrics = true;
 	  }
 	 else if (args[i].startsWith("-E") && i+1 < args.length) {      // -Eclipse <eclipse install directory>
 	    eclipse_directory = args[++i];
@@ -298,6 +304,13 @@ private void badArgs()
 public void setForceSetup(boolean fg)
 {
    force_setup = fg;
+   if (fg) force_metrics = true;
+}
+
+
+public void setForceMetrics(boolean fg)
+{
+   force_metrics = fg;
 }
 
 
@@ -1512,6 +1525,7 @@ private void restartBubbles()
 
       args.add(idx++,BOARD_RESTART_CLASS);
       args.add(idx++,"-nosetup");
+      if (force_metrics) args.add(idx++,"-collect");
       ProcessBuilder pb = new ProcessBuilder(args);
       pb.start();
     }
@@ -1944,7 +1958,7 @@ private Proxy getProxy(String d)
 
 
 
-private class ProxyManager extends ProxySelector {
+private static class ProxyManager extends ProxySelector {
 
    List<Proxy> proxy_list;
    List<Proxy> null_list;

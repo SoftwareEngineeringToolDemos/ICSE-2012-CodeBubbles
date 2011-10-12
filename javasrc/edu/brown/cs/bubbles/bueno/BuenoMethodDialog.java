@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -204,7 +204,7 @@ private void parseArguments(StreamTokenizer stok) throws BuenoException
        }
       else throw new BuenoException("Expected agrument name");
 
-      parms.add(new String(typ + " " + anm));
+      parms.add(typ + " " + anm);
 
       if (checkNextToken(stok,')')) break;
       else if (!checkNextToken(stok,',')) throw new BuenoException("Illegal argument name");

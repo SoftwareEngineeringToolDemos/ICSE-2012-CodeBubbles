@@ -33,8 +33,7 @@ import edu.brown.cs.bubbles.bump.BumpConstants;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 
 
 class BddtHistoryController implements BddtConstants, BumpConstants
@@ -222,7 +221,7 @@ private class HistoryHandler implements BumpConstants.BumpRunEventHandler {
 
 private static class HistoryData implements BddtHistoryData {
 
-   private Map<BumpThread,HistoryThread> thread_map;
+   private ConcurrentMap<BumpThread,HistoryThread> thread_map;
    private SwingEventListenerList<BddtHistoryListener> listener_list;
 
    HistoryData() {
@@ -231,14 +230,10 @@ private static class HistoryData implements BddtHistoryData {
     }
 
    HistoryThread startThread(BumpThread th,long when) {
-      synchronized (thread_map) {
-	 HistoryThread ht = thread_map.get(th);
-	 if (ht == null) {
-	    ht = new HistoryThread(th,when);
-	    thread_map.put(th,ht);
-	  }
-	 return ht;
-       }
+      HistoryThread ht = new HistoryThread(th,when);
+      HistoryThread xht = thread_map.putIfAbsent(th,ht);
+      if (xht != null) ht = xht;
+      return ht;
     }
 
    void add(BumpThread th,long when) {
@@ -252,10 +247,8 @@ private static class HistoryData implements BddtHistoryData {
     }
 
    void endThread(BumpThread th,long when) {
-      synchronized (thread_map) {
-	 HistoryThread ht = thread_map.get(th);
-	 if (ht != null) ht.endAt(when);
-       }
+      HistoryThread ht = thread_map.get(th);
+      if (ht != null) ht.endAt(when);
       // historyUpdated();
     }
 

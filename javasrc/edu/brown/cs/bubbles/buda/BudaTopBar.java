@@ -897,7 +897,7 @@ private class Mouser extends MouseAdapter {
 /*										*/
 /********************************************************************************/
 
-private class ShelfMenu extends JMenu {
+private static class ShelfMenu extends JMenu {
 
    private static final long serialVersionUID = 1L;
 

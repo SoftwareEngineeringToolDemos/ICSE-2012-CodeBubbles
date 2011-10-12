@@ -510,7 +510,7 @@ void handleOpenEditor(String proj, String filePath, int lineNumber)
 	 if (path.toString().startsWith(ploc)) {
 	    String relativePath = path.toString().substring(ln);
 	    IFile iFile = project.getFile(relativePath);
-	    Integer lineNumberInt = new Integer(lineNumber);
+	    Integer lineNumberInt = Integer.valueOf(lineNumber);
 
 	    if (workbenchPage != null) {
 	       workbenchWindow.getShell().getDisplay().syncExec(new OpenEditorRunnable(workbenchWindow, workbenchPage, iFile, lineNumberInt));
@@ -522,7 +522,7 @@ void handleOpenEditor(String proj, String filePath, int lineNumber)
 
 
 
-private class OpenEditorRunnable implements Runnable {
+private static class OpenEditorRunnable implements Runnable {
 
    private IWorkbenchPage workbench_page;
    private IWorkbenchWindow workbench_window;

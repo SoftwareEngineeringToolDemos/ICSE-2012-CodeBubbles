@@ -106,6 +106,7 @@ private synchronized static void setupTableModel()
 	 mdl.addRow(strs);
        }
       table_model = mdl;
+      br.close();
     }
    catch (IOException e) { }
 }
@@ -154,7 +155,7 @@ private static Vector<String> tokenize(String cmd)
 /*										*/
 /********************************************************************************/
 
-private class KeyTable extends JTable {
+private static class KeyTable extends JTable {
 
    private static final long serialVersionUID = 1;
 

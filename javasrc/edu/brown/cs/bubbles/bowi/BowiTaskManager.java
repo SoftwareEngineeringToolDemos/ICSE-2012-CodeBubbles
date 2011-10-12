@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Ian Strickman		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bowi;
@@ -26,11 +26,11 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 import java.util.HashSet;
 
 class BowiTaskManager {
-   
+
    private BudaRoot buda_root;
    private int wait_cursor;
    private HashSet<BowiTaskType> is_happening;
-   
+
    BowiTaskManager(BudaRoot br) {
       buda_root = br;
       is_happening = new HashSet<BowiTaskType>();
@@ -39,14 +39,14 @@ class BowiTaskManager {
       }
       wait_cursor = 0;
    }
-   
+
    void startTask(BowiTaskType btt) {
       //if(!is_happening.contains(btt)) {
       switch(btt) {
-      	case SAVE:
+	case SAVE:
 	case EXPAND_ELLISONS:
 	case CREATE_BUBBLE:
-	case LOGIN_TO_CHAT:      
+	case LOGIN_TO_CHAT:	
 	case FIND_ALL_REFERENCES:
 	case GO_TO_DEFINITION:
 	case TEXT_SEARCH:
@@ -56,17 +56,17 @@ class BowiTaskManager {
 	      wait_cursor++;
 	      break;
       }
-	 //is_happening.put(btt, new Boolean(true));
+	 //is_happening.put(btt, Boolean.TRUE);
       //}
    }
-   
+
    void stopTask(BowiTaskType btt) {
       //if(is_happening.get(btt)) {
       switch(btt) {
-    	case SAVE:
+	case SAVE:
 	case EXPAND_ELLISONS:
 	case CREATE_BUBBLE:
-	case LOGIN_TO_CHAT:      
+	case LOGIN_TO_CHAT:	
 	case FIND_ALL_REFERENCES:
 	case GO_TO_DEFINITION:
 	case TEXT_SEARCH:
@@ -76,8 +76,8 @@ class BowiTaskManager {
 	   if(wait_cursor == 0) buda_root.stopWaitCursor();
 	      break;
       }
-	 //is_happening.put(btt, new Boolean(false));
+	 //is_happening.put(btt, Boolean.FALSE);
       //}
    }
-   
+
 }

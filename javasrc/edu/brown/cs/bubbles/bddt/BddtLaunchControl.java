@@ -163,8 +163,10 @@ private void setupPanel()
 
    pnl.addGBComponent(new JSeparator(),0,y++,0,1,1,0);
 
-   state_label = new JLabel(launch_state.toString());
-   pnl.addGBComponent(state_label,0,y++,0,1,1,0);
+   synchronized (this) {
+      state_label = new JLabel(launch_state.toString());
+      pnl.addGBComponent(state_label,0,y++,0,1,1,0);
+    }
 
    pnl.addGBComponent(new JSeparator(),0,y++,0,1,1,0);
 
@@ -562,8 +564,8 @@ private class StartDebug implements Runnable {
       br.handleSaveAllRequest();
       String id = "B_" + Integer.toString(((int)(Math.random() * 100000)));
       BumpProcess bp = bump_client.startDebug(launch_config,id);
-      if (bp != null) setLaunchState(LaunchState.RUNNING);
       cur_process = bp;
+      if (bp != null) setLaunchState(LaunchState.RUNNING);
     }
 
 }	// end of inner class StartDebug
@@ -766,8 +768,9 @@ private class RunEventHandler implements BumpRunEventHandler {
    @Override synchronized public void handleProcessEvent(BumpRunEvent evt) {
       switch (evt.getEventType()) {
 	 case PROCESS_ADD :
+	    BumpLaunchConfig elc = evt.getLaunchConfiguration();
 	    if (cur_process == null && launch_state == LaunchState.STARTING &&
-		   evt.getLaunchConfiguration() == launch_config) {
+		   (elc == null || elc == launch_config)) {
 	       cur_process = evt.getProcess();
 	       last_stopped = null;
 	       BddtFactory.getFactory().getConsoleControl().clearConsole(cur_process);
@@ -1231,7 +1234,7 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 /*										*/
 /********************************************************************************/
 
-private class EvaluationListener implements BumpEvaluationHandler, ExpressionValue {
+private static class EvaluationListener implements BumpEvaluationHandler, ExpressionValue {
 
    private boolean is_done;
    private BumpRunValue result_value;
@@ -1310,7 +1313,9 @@ private class ValueEvalListener implements BumpEvaluationHandler, Runnable {
    @Override public void evaluationError(String eid,String ex,String er) { }
 
    @Override public void run() {
+      if (run_value == null) return;
       BddtStackView bsv = new BddtStackView(BddtLaunchControl.this,run_value,false);
+      if (!bsv.isStackValid()) return;
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtLaunchControl.this);
       bba.addBubble(bsv,config_context.getEditor(),null,
 	    PLACEMENT_BELOW|PLACEMENT_LOGICAL|PLACEMENT_GROUPED|PLACEMENT_MOVETO);

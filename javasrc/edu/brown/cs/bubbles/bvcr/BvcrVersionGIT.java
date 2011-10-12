@@ -46,7 +46,6 @@ class BvcrVersionGIT extends BvcrVersionManager implements BvcrConstants
 
 private File		git_root;
 private String		git_command;
-private String		git_name;
 private String		origin_name;
 
 private static BoardProperties bvcr_properties = BoardProperties.getProperties("Bvcr");
@@ -125,7 +124,6 @@ File getRootDirectory() 		{ return git_root; }
 
 String getRepositoryName()
 {
-   if (git_name != null) return git_name;
    return super.getRepositoryName();
 }
 

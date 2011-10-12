@@ -155,7 +155,7 @@ private boolean setupAccess()
 
 /********************************************************************************/
 /*										*/
-/*	Access methods         							*/
+/*	Access methods								*/
 /*										*/
 /********************************************************************************/
 
@@ -194,7 +194,7 @@ Connection getLogDatabase()
    if (bnote_conn != null) return bnote_conn;
 
    if (database_default == null) ;
-   if (database_default.startsWith("?")) {
+   else if (database_default.startsWith("?")) {
       StringTokenizer tok = new StringTokenizer(database_default,"?&=");
       while (tok.hasMoreTokens()) {
 	 String k = tok.nextToken();
@@ -228,7 +228,7 @@ Connection getLogDatabase()
 	 conn.close();
 	 bnote_conn = DriverManager.getConnection(url,props);
        }
-      catch (SQLException e) { 
+      catch (SQLException e) {
 	 BoardLog.logE("BNOTE","Problem creating log database",e);
       }
     }

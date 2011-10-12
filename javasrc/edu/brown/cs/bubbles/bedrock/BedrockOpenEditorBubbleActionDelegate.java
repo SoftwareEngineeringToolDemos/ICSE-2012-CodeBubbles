@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Hsu-Sheng Ko 	      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -69,7 +69,7 @@ private IWorkbenchWindow our_window;
 
       IFileEditorInput fileEditorInput = (IFileEditorInput)fileEditor.getEditorInput();
       String path = fileEditorInput.getFile().getProjectRelativePath().toOSString();
-      String filePath = new String(path);
+      String filePath = path;
       IProject project = fileEditorInput.getFile().getProject();
 
       IJavaProject javaProject = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProject(project.getName());
@@ -152,7 +152,7 @@ private IWorkbenchWindow our_window;
 
 	       String[] aryPath = new String[list.size()];
 	       list.toArray(aryPath);
-					
+				
 	       for(int i=aryPath.length-1; i>=0; i--) {
 		  path += ("$" + aryPath[i]);
 		}

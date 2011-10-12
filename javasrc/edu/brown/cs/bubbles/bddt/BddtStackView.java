@@ -65,6 +65,7 @@ private BddtLaunchControl	launch_control;
 private BumpThread		for_thread;
 private boolean 		is_frozen;
 private boolean 		is_extinct;
+private boolean 		is_valid;
 private BddtStackModel		value_model;
 private ValueTable		value_component;
 private RunEventHandler 	event_handler;
@@ -89,6 +90,7 @@ BddtStackView(BddtLaunchControl ctrl,BumpThread thr)
    for_thread = thr;
    is_frozen = false;
    is_extinct = false;
+   is_valid = true;
    value_model = new BddtStackModel(thr);
 
    setupBubble();
@@ -102,6 +104,7 @@ BddtStackView(BddtLaunchControl ctrl,BumpThreadStack stk)
    for_thread = stk.getThread();
    is_frozen = true;
    is_extinct = false;
+   is_valid = true;
    value_model = new BddtStackModel(stk);
 
    setupBubble();
@@ -116,6 +119,7 @@ BddtStackView(BddtLaunchControl ctrl,BumpStackFrame frm)
    for_thread = frm.getThread();
    is_frozen = true;
    is_extinct = false;
+   is_valid = true;
    value_model = new BddtStackModel(frm);
 
    setupBubble();
@@ -129,11 +133,12 @@ BddtStackView(BddtLaunchControl ctrl,BumpRunValue val,boolean freeze)
    launch_control = ctrl;
    for_thread = null;
    is_extinct = false;
+   is_valid = true;
 
    BddtStackModel xmdl = new BddtStackModel(val);
    ValueTreeNode xtn = (ValueTreeNode) xmdl.getRoot();
 
-   if (!freeze) {
+   if (!freeze && xtn != null && val != null) {
       BddtStackModel pmdl = new BddtStackModel(val.getThread());
       BddtStackModel fmdl = new BddtStackModel(val.getFrame());
       ValueTreeNode fnd = (ValueTreeNode) fmdl.getRoot();
@@ -157,6 +162,7 @@ BddtStackView(BddtLaunchControl ctrl,BumpRunValue val,boolean freeze)
 	  }
        }
     }
+   else if (xtn == null || val == null) is_valid = false;
 
    if (value_model == null) {
       is_frozen = true;
@@ -264,6 +270,16 @@ private void detachHandler()
       event_handler = null;
     }
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Access methods								*/
+/*										*/
+/********************************************************************************/
+
+boolean isStackValid()				{ return is_valid; }
 
 
 
@@ -707,11 +723,13 @@ private static class Expander implements TreeExpansionListener, TreeModelListene
     }
 
    @Override public void treeCollapsed(TreeExpansionEvent evt) {
+      BoardMetrics.noteCommand("BDDT","StackViewCollapse");
       ValueTreeNode tn = (ValueTreeNode) evt.getPath().getLastPathComponent();
       expand_set.remove(tn.getKey());
     }
 
    @Override public void treeExpanded(TreeExpansionEvent evt) {
+      BoardMetrics.noteCommand("BDDT","StackViewExpand");
       ValueTreeNode tn = (ValueTreeNode) evt.getPath().getLastPathComponent();
       expand_set.add(tn.getKey());
     }
@@ -775,12 +793,12 @@ private class Selector implements ListSelectionListener {
       int row = evt.getFirstIndex();
       Object v0 = value_component.getValueAt(row,-1);
       ValueTreeNode tn = null;
-      if (v0 instanceof ValueTreeNode) tn = (ValueTreeNode) v0; 
+      if (v0 instanceof ValueTreeNode) tn = (ValueTreeNode) v0;
       if (tn != null) {
 	 BumpStackFrame frm = tn.getFrame();
 	 if (frm != null) {
 	    launch_control.setActiveFrame(frm);
-          }
+	  }
        }
     }
 

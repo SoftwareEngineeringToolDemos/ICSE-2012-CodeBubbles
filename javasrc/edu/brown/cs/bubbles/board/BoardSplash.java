@@ -225,8 +225,8 @@ private class BubblePanel extends JPanel implements Runnable {
    private int		bubble_stepper;
    private int [][]	bubble_record;
 
-   final private int MAX_BUBBLES = 125;
-   final private long SLEEP_TIME = 50;
+   final static private int MAX_BUBBLES = 125;
+   final static private long SLEEP_TIME = 50;
 
    private static final long serialVersionUID = 1;
 

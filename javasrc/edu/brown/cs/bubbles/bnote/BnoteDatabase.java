@@ -106,6 +106,7 @@ BnoteDatabase()
    try {
       Statement st = note_conn.createStatement();
       st.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+      st.close();
     }
    catch (SQLException e) { }
 
@@ -157,6 +158,7 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
       s.setString(4,type.toString());
       s.setString(5,unm);
       s.executeUpdate();
+      s.close();
 
       for (Map.Entry<String,Object> ent : values.entrySet()) {
 	 if (ignore_fields.contains(ent.getKey())) continue;
@@ -165,6 +167,7 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
 	 s.setString(2,ent.getKey());
 	 s.setString(3,ent.getValue().toString());
 	 s.executeUpdate();
+	 s.close();
        }
     }
    catch (SQLException e) {
@@ -207,6 +210,7 @@ long saveAttachment(String anm,InputStream ins,int len)
 	 else s.setBinaryStream(3,ins);
        }
       s.executeUpdate();
+      s.close();
     }
    catch (SQLException e) {
       BoardLog.logE("BNOTE","Problem saving attachment",e);
@@ -234,7 +238,6 @@ File getAttachment(String aid)
       String q = "SELECT A.source,A.data FROM Attachment A WHERE A.id = ?";
       PreparedStatement s = note_conn.prepareStatement(q);
       s.setLong(1,id);
-      s.executeQuery();
       ResultSet rs = s.executeQuery();
       if (!rs.next()) return null;
       String snm = rs.getString(1);
@@ -263,6 +266,7 @@ File getAttachment(String aid)
        }
       ins.close();
       fos.close();
+      s.close();
     }
    catch (SQLException e) {
       outf = null;
@@ -293,12 +297,12 @@ String getAttachmentAsString(String aid)
       String q = "SELECT A.data FROM Attachment A WHERE A.id = ?";
       PreparedStatement s = note_conn.prepareStatement(q);
       s.setLong(1,id);
-      s.executeQuery();
       ResultSet rs = s.executeQuery();
       if (!rs.next()) return null;
       Blob data = rs.getBlob(1);
       byte [] bytes = data.getBytes(0,(int) data.length());
       String rslt = new String(bytes);
+      s.close();
       return rslt;
     }
    catch (SQLException e) {
@@ -333,6 +337,7 @@ TaskImpl defineTask(String name,String proj,String desc)
       s.setString(3,desc);
       s.setString(4,proj);
       s.executeUpdate();
+      s.close();
       ti = new TaskImpl(tid,name,proj,desc);
       // if server, need to send new task message
       all_tasks.add(ti);
@@ -363,6 +368,7 @@ private void loadTasks()
 	 // if server, need to send new task message
 	 all_tasks.add(ti);
        }
+      s.close();
     }
    catch (SQLException e) {
       BoardLog.logE("BNOTE","Problem loading tasks",e);
@@ -416,6 +422,7 @@ List<String> getUsersForTask(String proj,BnoteTask task)
 	 String unm = rs.getString(1);
 	 rslt.add(unm);
        }
+      s.close();
     }
    catch (SQLException e) {
       BoardLog.logE("BNOTE","Problem getting user set",e);
@@ -455,6 +462,7 @@ List<Date> getDatesForTask(String proj,BnoteTask task)
 	 Date unm = rs.getTimestamp(1);
 	 rslt.add(unm);
        }
+      s.close();
     }
    catch (SQLException e) {
       BoardLog.logE("BNOTE","Problem getting user set",e);
@@ -494,6 +502,7 @@ List<String> getNamesForTask(String proj,BnoteTask task)
 	 String unm = rs.getString(1);
 	 rslt.add(unm);
        }
+      s.close();
     }
    catch (SQLException e) {
       BoardLog.logE("BNOTE","Problem getting name set",e);
@@ -533,6 +542,7 @@ List<BnoteEntry> getEntriesForTask(String proj,BnoteTask task)
 	 EntryImpl ei = new EntryImpl(rs);
 	 rslt.add(ei);
        }
+      s.close();
     }
    catch (SQLException e) {
       BoardLog.logE("BNOTE","Problem getting name set",e);
@@ -594,6 +604,7 @@ private long getNextId()
 	 if (use_begin) {
 	    st.executeUpdate("COMMIT");
 	  }
+	 st.close();
        }
       catch (SQLException e) {
 	 BoardLog.logE("BNOTE","Problem getting more ids: ",e);
@@ -730,6 +741,7 @@ private class EntryImpl implements BnoteEntry {
 	    String v = rs.getString(2);
 	    prop_set.put(k,v);
 	  }
+	 s.close();
        }
       catch (SQLException e) {
 	 BoardLog.logE("BNOTE","Problem getting properties",e);

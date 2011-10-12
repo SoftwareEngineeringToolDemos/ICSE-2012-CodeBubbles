@@ -34,7 +34,7 @@ import java.net.*;
 import java.util.*;
 
 
-public class BandaidController implements BandaidConstants {
+public final class BandaidController implements BandaidConstants {
 
 
 

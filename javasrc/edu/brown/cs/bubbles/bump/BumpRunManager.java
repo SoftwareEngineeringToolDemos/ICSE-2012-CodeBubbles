@@ -41,7 +41,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.regex.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 
 
@@ -58,10 +58,10 @@ class BumpRunManager implements BumpConstants, BumpConstants.BumpRunModel, Banda
 
 private BumpClient	bump_client;
 private Map<String,LaunchConfig> known_configs;
-private Map<String,LaunchData> active_launches;
-private Map<String,ProcessData> active_processes;
-private Map<String,ProcessData> named_processes;
-private Map<String,ThreadData> active_threads;
+private ConcurrentMap<String,LaunchData> active_launches;
+private ConcurrentMap<String,ProcessData> active_processes;
+private ConcurrentMap<String,ProcessData> named_processes;
+private ConcurrentMap<String,ThreadData> active_threads;
 private Map<BumpThread,SwingEventListenerList<BumpThreadFilter>> thread_filters;
 private Map<String,File>	source_map;
 
@@ -214,9 +214,7 @@ void terminateAll()
 {
    List<ProcessData> acts;
 
-   synchronized (active_processes) {
-      acts = new ArrayList<ProcessData>(active_processes.values());
-    }
+   acts = new ArrayList<ProcessData>(active_processes.values());
 
    for (ProcessData pd : acts) {
       bump_client.terminate(pd);
@@ -233,9 +231,7 @@ void terminateAll()
 
 @Override public Iterable<BumpLaunchConfig> getLaunchConfigurations()
 {
-   synchronized (known_configs) {
-      return new ArrayList<BumpLaunchConfig>(known_configs.values());
-    }
+   return new ArrayList<BumpLaunchConfig>(known_configs.values());
 }
 
 
@@ -459,22 +455,20 @@ void handleLaunchEvent(Element xml)
 
    ConfigEvent evt = null;
 
-   synchronized (known_configs) {
-      if (reason.equals("REMOVE")) {
-	 LaunchConfig lc = known_configs.remove(id);
-	 if (lc != null) evt = new ConfigEvent(BumpRunEventType.LAUNCH_REMOVE,lc);
+   if (reason.equals("REMOVE")) {
+      LaunchConfig lc = known_configs.remove(id);
+      if (lc != null) evt = new ConfigEvent(BumpRunEventType.LAUNCH_REMOVE,lc);
+    }
+   else {
+      LaunchConfig lc = known_configs.get(id);
+      if (lc == null) {
+	 lc = new LaunchConfig(cnf);
+	 known_configs.put(lc.getId(),lc);
+	 evt = new ConfigEvent(BumpRunEventType.LAUNCH_ADD,lc);
        }
       else {
-	 LaunchConfig lc = known_configs.get(id);
-	 if (lc == null) {
-	    lc = new LaunchConfig(cnf);
-	    known_configs.put(lc.getId(),lc);
-	    evt = new ConfigEvent(BumpRunEventType.LAUNCH_ADD,lc);
-	  }
-	 else {
-	    lc.update(cnf);
-	    evt = new ConfigEvent(BumpRunEventType.LAUNCH_CHANGE,lc);
-	  }
+	 lc.update(cnf);
+	 evt = new ConfigEvent(BumpRunEventType.LAUNCH_CHANGE,lc);
        }
     }
 
@@ -578,33 +572,31 @@ private void handleProcessEvent(Element xml)
 
    ProcessEvent evt = null;
 
-   synchronized (active_processes) {
-      switch (kind) {
-	 case TERMINATE :
-	    pd = active_processes.remove(id);
-	    if (pd != null) {
-	       if (pd.getName() != null) named_processes.remove(pd.getName());
-	       evt = new ProcessEvent(BumpRunEventType.PROCESS_REMOVE,pd);
-	     }
-	    break;
-	 case CREATE :
-	 case CHANGE :
-	    pd = active_processes.get(id);
-	    if (pd == null) {
-	       pd = new ProcessData(proc);
-	       active_processes.put(id,pd);
-	       evt = new ProcessEvent(BumpRunEventType.PROCESS_ADD,pd);
-	     }
-	    else {
-	       pd.updateProcess(proc);
-	       evt = new ProcessEvent(BumpRunEventType.PROCESS_CHANGE,pd);
-	     }
-	    break;
-	 default :
-	    BoardLog.logW("BUMP","Unexpeced process event for Process " +
-			     IvyXml.convertXmlToString(proc));
-	    break;
-       }
+   switch (kind) {
+      case TERMINATE :
+	 pd = active_processes.remove(id);
+	 if (pd != null) {
+	    if (pd.getName() != null) named_processes.remove(pd.getName());
+	    evt = new ProcessEvent(BumpRunEventType.PROCESS_REMOVE,pd);
+	  }
+	 break;
+      case CREATE :
+      case CHANGE :
+	 pd = active_processes.get(id);
+	 if (pd == null) {
+	    pd = new ProcessData(proc);
+	    active_processes.put(id,pd);
+	    evt = new ProcessEvent(BumpRunEventType.PROCESS_ADD,pd);
+	  }
+	 else {
+	    pd.updateProcess(proc);
+	    evt = new ProcessEvent(BumpRunEventType.PROCESS_CHANGE,pd);
+	  }
+	 break;
+      default :
+	 BoardLog.logW("BUMP","Unexpeced process event for Process " +
+			  IvyXml.convertXmlToString(proc));
+	 break;
     }
 
    if (evt != null) {
@@ -666,63 +658,61 @@ private void handleThreadEvent(Element xml,long when)
 
    ThreadEvent evt = null;
 
-   synchronized (active_threads) {
-      BumpThreadState ost = null;
-      td = active_threads.get(id);
-      if (td == null) {
-	 td = new ThreadData(thrd);
-	 td.updateThread(thrd);
-	 active_threads.put(id,td);
-	 evt = new ThreadEvent(BumpRunEventType.THREAD_ADD,td,when);
-	 ost = td.getThreadState();
-       }
-      else {
-	 ost = td.getThreadState();
-	 td.updateThread(thrd);
-	 evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
-       }
+   BumpThreadState ost = null;
+   td = active_threads.get(id);
+   if (td == null) {
+      td = new ThreadData(thrd);
+      td.updateThread(thrd);
+      active_threads.put(id,td);
+      evt = new ThreadEvent(BumpRunEventType.THREAD_ADD,td,when);
+      ost = td.getThreadState();
+    }
+   else {
+      ost = td.getThreadState();
+      td.updateThread(thrd);
+      evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
+    }
 
-      // TODO: the set thread states below somewhat duplicate the updateThread call above
+   // TODO: the set thread states below somewhat duplicate the updateThread call above
 
-      switch (kind) {
-	 case CREATE :
-	    switch (td.getThreadState()) {
-	       case NONE :
-	       case NEW :
-		  td.setThreadState(BumpThreadState.RUNNING);
-		  break;
-	    }
-	    break;
-	 case CHANGE :
-	    break;
-	 case RESUME :
-	    if (dtl == BumpThreadStateDetail.EVALUATION_IMPLICIT) return;
-	    td.setThreadState(ost.getRunState(),dtl);
-	    break;
-	 case SUSPEND :
-	    if (checkException(td,thrd)) {
-	       td.setThreadState(ost.getExceptionState(),dtl);
-	     }
-	    else if (!td.getThreadState().isStopped()) {
-	       td.setThreadState(ost.getStopState(),dtl);
-	     }
-	    else if (dtl == BumpThreadStateDetail.BREAKPOINT) {
-	       td.setThreadState(BumpThreadState.STOPPED,dtl);
-	     }
-	    else if (dtl == BumpThreadStateDetail.EVALUATION_IMPLICIT) return;
-	    break;
-	 case TERMINATE :
-	    td.setThreadState(BumpThreadState.DEAD);
-	    evt = new ThreadEvent(BumpRunEventType.THREAD_REMOVE,td,when);
-	    active_threads.remove(id);
-	    thread_filters.remove(td);
-	    break;
-	 default :
-	    BoardLog.logW("BUMP","Unexpeced process event for Thread " +
-			     IvyXml.convertXmlToString(xml));
-	    evt = null;
-	    break;
-       }
+   switch (kind) {
+      case CREATE :
+	 switch (td.getThreadState()) {
+	    case NONE :
+	    case NEW :
+	       td.setThreadState(BumpThreadState.RUNNING);
+	       break;
+	  }
+	 break;
+      case CHANGE :
+	 break;
+      case RESUME :
+	 if (dtl == BumpThreadStateDetail.EVALUATION_IMPLICIT) return;
+	 td.setThreadState(ost.getRunState(),dtl);
+	 break;
+      case SUSPEND :
+	 if (checkException(td,thrd)) {
+	    td.setThreadState(ost.getExceptionState(),dtl);
+	  }
+	 else if (!td.getThreadState().isStopped()) {
+	    td.setThreadState(ost.getStopState(),dtl);
+	  }
+	 else if (dtl == BumpThreadStateDetail.BREAKPOINT) {
+	    td.setThreadState(BumpThreadState.STOPPED,dtl);
+	  }
+	 else if (dtl == BumpThreadStateDetail.EVALUATION_IMPLICIT) return;
+	 break;
+      case TERMINATE :
+	 td.setThreadState(BumpThreadState.DEAD);
+	 evt = new ThreadEvent(BumpRunEventType.THREAD_REMOVE,td,when);
+	 active_threads.remove(id);
+	 thread_filters.remove(td);
+	 break;
+      default :
+	 BoardLog.logW("BUMP","Unexpeced process event for Thread " +
+			  IvyXml.convertXmlToString(xml));
+	 evt = null;
+	 break;
     }
 
    BumpRunEvent revt = evt;
@@ -1088,14 +1078,11 @@ LaunchData findLaunch(Element xml)
 
    String id = IvyXml.getAttrString(xml,"ID");
 
-   synchronized (active_launches) {
-      LaunchData ld = active_launches.get(id);
-      if (ld == null) {
-	 ld = new LaunchData(xml);
-	 active_launches.put(id,ld);
-       }
-      return ld;
-    }
+   LaunchData ld = new LaunchData(xml);
+   LaunchData xld = active_launches.putIfAbsent(id,ld);
+   if (xld != null) ld = xld;
+
+   return ld;
 }
 
 
@@ -1179,7 +1166,7 @@ private class ProcessData implements BumpProcess {
 
    @Override public String getId()			{ return process_id; }
 
-   String getName()					{ return process_name; }
+   synchronized String getName()			{ return process_name; }
    synchronized void setName(String id) {
       if (process_name != null) named_processes.remove(process_name);
       process_name = id;
@@ -1640,7 +1627,6 @@ private class ValueData implements BumpRunValue {
    private String val_name;
    private String val_type;
    private String val_value;
-   private String recv_type;
    private String decl_type;
    private boolean has_values;
    private boolean is_local;
@@ -1681,7 +1667,7 @@ private class ValueData implements BumpRunValue {
    @Override public String getType()		{ return val_type; }
    @Override public String getValue()		{ return val_value; }
    @Override public String getDeclaredType()	{ return decl_type; }
-   @Override public String getActualType()	{ return recv_type; }
+   @Override public String getActualType()	{ return null; }
    @Override public boolean hasContents()	{ return has_values; }
    @Override public boolean isLocal()		{ return is_local; }
    @Override public boolean isStatic()		{ return is_static; }
@@ -1773,7 +1759,7 @@ private class StepUserFilter implements BumpThreadFilter {
       }
 
       File f = frm.getFile();
-      if (f != null && f.exists() && frm.getLineNumber() > 0) {
+      if (f != null && f.exists() && frm.getLineNumber() > 0 && !isTempFile(f)) {
 	 removeThreadFilter(bt,this);
 	 return evt;
       }
@@ -1787,6 +1773,16 @@ private class StepUserFilter implements BumpThreadFilter {
    }
 
 }	// end of inner class StepUserFilter
+
+
+
+private boolean isTempFile(File f)
+{
+   String d = System.getProperty("java.io.tmpdir");
+   if (f.getParent().equals(d)) return true;
+   if (f.getName().startsWith("BUBBLES_")) return true;
+   return false;
+}
 
 
 

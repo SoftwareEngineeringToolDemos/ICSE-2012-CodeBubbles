@@ -25,8 +25,7 @@
 package edu.brown.cs.bubbles.batt;
 
 
-import java.util.EventListener;
-
+import java.util.*;
 
 
 public interface BattConstants {
@@ -93,7 +92,6 @@ enum TestState {
 }
 
 
-
 enum RunType {
    ALL,
    FAIL,
@@ -128,11 +126,74 @@ interface BattModelListener extends EventListener {
 }
 
 
+/********************************************************************************/
+/*										*/
+/*	Test case finding and creation definitions				*/
+/*										*/
+/********************************************************************************/
+
+enum UseMode {
+   NONE,
+   UNKNOWN,
+   DIRECT,
+   INDIRECT
+}
+
+
+enum NewTestMode {
+   INPUT_OUTPUT,
+   CALL_SEQUENCE,
+   USER_CODE
+}
+
+
 
 /********************************************************************************/
-/*                                                                              */
-/*      Text status display constants                                           */
-/*                                                                              */
+/*										*/
+/*	New Test definitions							*/
+/*										*/
+/********************************************************************************/
+
+enum NewTestOp {
+
+   EQL("=="),
+   NEQ("!="),
+   SAVE("==>"),
+   IGNORE("???"),
+   THROW("throws"),
+   SAME("==="),
+   DIFF("!==="),
+   SHOW("< ?? >");
+
+   private String op_text;
+
+   private NewTestOp(String t) {
+      op_text = t;
+    }
+
+   public String toString()		{ return op_text; }
+
+}	// end of enum NewTestOp
+
+
+
+
+enum NewStatus {
+   UNCHECKED,
+   UNUSED,
+   CHECKING,
+   BAD,
+   OK
+}
+
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Text status display constants						*/
+/*										*/
 /********************************************************************************/
 
 int BATT_STATUS_COL_MIN_WIDTH = 55;

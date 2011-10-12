@@ -173,7 +173,7 @@ private void outputProposal(IJavaCompletionProposal p,IvyXmlWriter xw)
    xw.field("INFO",p.getAdditionalProposalInfo());
    xw.field("ID",System.identityHashCode(p));
    xw.end("FIX");
-}				
+}			
 
 
 
@@ -183,7 +183,7 @@ private void outputProposal(IJavaCompletionProposal p,IvyXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-private class FixContext implements IInvocationContext {
+private static class FixContext implements IInvocationContext {
 
    private CompilationUnit ast_root;
    private ICompilationUnit comp_unit;
@@ -219,7 +219,7 @@ private class FixContext implements IInvocationContext {
 /*										*/
 /********************************************************************************/
 
-private class ProblemContext implements IProblemLocation {
+private static class ProblemContext implements IProblemLocation {
 
    private CategorizedProblem for_problem;
    private Map<CompilationUnit,NodeFinder> finder_map;

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009-2010 Brown University --  Yu Li	      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -130,7 +130,7 @@ BudaTaskShelf(BudaTopBar topbar, BudaTask [] tasks, Point popuppoint)
 /*										*/
 /********************************************************************************/
 
-private class IconCellRenderer extends DefaultTreeCellRenderer implements TreeCellRenderer
+private static class IconCellRenderer extends DefaultTreeCellRenderer implements TreeCellRenderer
 {
 
    private static final long serialVersionUID = 1;

@@ -72,21 +72,22 @@ BoppOptionSet(BudaRoot br)
    tab_map = new HashMap<String,List<BoppOptionNew>>();
    all_options = new ArrayList<BoppOptionBase>();
    changed_options = new LinkedHashMap<String,String>();
-   
+   buda_root = br;
+
    Element xml = IvyXml.loadXmlFromStream(BoardProperties.getLibraryFile(PREFERENCES_XML_FILENAME_NEW));
    for (Element op : IvyXml.children(xml,"PACKAGE")) {
       loadXmlPackage(op);
     }
-   
+
    for (BoppOptionBase op : all_options) op.setOptionSet(this);
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
 Collection<String> getTabNames()
@@ -104,9 +105,9 @@ List<BoppOptionNew> getOptionsForTab(String tab)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Search Methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Search Methods								*/
+/*										*/
 /********************************************************************************/
 
 List<BoppOptionNew> search(String text)
@@ -114,28 +115,28 @@ List<BoppOptionNew> search(String text)
    String[] words = text.split(" ");
    Pattern[] patterns = new Pattern[words.length];
    List<BoppOptionNew> rslt = new ArrayList<BoppOptionNew>();
-   
+
    for (int i = 0; i < words.length; i++) {
       try {
-         patterns[i] = (Pattern.compile(words[i], Pattern.CASE_INSENSITIVE));
+	 patterns[i] = (Pattern.compile(words[i], Pattern.CASE_INSENSITIVE));
        }
       catch (PatternSyntaxException e) {
-         patterns[i] = null;
+	 patterns[i] = null;
        }
     }
    for (BoppOptionNew opt : all_options) {
       if (opt.search(patterns)) rslt.add(opt);
-    }   
-   
+    }
+
    return rslt;
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Update methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Update methods								*/
+/*										*/
 /********************************************************************************/
 
 void saveOptions()
@@ -150,10 +151,10 @@ void saveOptions()
    for (String p : pkgs) {
       BoardProperties bp = BoardProperties.getProperties(p);
       try {
-         if (bp != null) bp.save();
+	 if (bp != null) bp.save();
        }
-      catch (IOException e) { 
-         BoardLog.logE("BOPP","Problem saving properties",e);
+      catch (IOException e) {
+	 BoardLog.logE("BOPP","Problem saving properties",e);
        }
     }
    changed_options.clear();
@@ -174,7 +175,7 @@ void revertOptions()
       if (val == null) bp.remove(prop);
       else bp.setProperty(prop,val);
     }
-   changed_options.clear();   
+   changed_options.clear();
 }
 
 
@@ -182,19 +183,19 @@ void revertOptions()
 void noteChange(String pkg,String prop)
 {
    String key = pkg + "@" + prop;
-   
+
    if (changed_options.containsKey(key)) return;
-   
+
    String val = null;
    BoardProperties bp = BoardProperties.getProperties(pkg);
    val = bp.getProperty(prop);
-   
+
    changed_options.put(key,val);
 }
 
 
 void finishChanges()
-{ 
+{
    if (buda_root != null) {
       buda_root.handlePropertyChange();
       buda_root.repaint();
@@ -204,9 +205,9 @@ void finishChanges()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Loading methods                                                         */
-/*                                                                              */
+/*										*/
+/*	Loading methods 							*/
+/*										*/
 /********************************************************************************/
 
 private void loadXmlPackage(Element px)
@@ -227,8 +228,8 @@ private void loadXmlOption(Element ox,String pkgname)
    for (String tnm : bopt.getOptionTabs()) {
       List<BoppOptionNew> lopt = tab_map.get(tnm);
       if (lopt == null) {
-         lopt = new ArrayList<BoppOptionNew>();
-         tab_map.put(tnm,lopt);
+	 lopt = new ArrayList<BoppOptionNew>();
+	 tab_map.put(tnm,lopt);
        }
       lopt.add(bopt);
     }

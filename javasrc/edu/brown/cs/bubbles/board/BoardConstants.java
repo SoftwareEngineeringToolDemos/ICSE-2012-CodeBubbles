@@ -510,22 +510,6 @@ String BOARD_PROP_DEFAULT_METRICS = "Board.metrics.default";
 
 
 /**
- * Blur the screen shot or not
- **/
-String BOARD_BLUR_SCREENSHOT = "Board.blur.screenshot";
-
-/**
- * Blur matrix
- **/
-
-float[] BLUR_MATRIX = {
-      0.111f, 0.111f, 0.111f,
-      0.111f, 0.111f, 0.111f,
-      0.111f, 0.111f, 0.111f,
-};
-
-
-/**
  *	Property indicating random user id for metrics
  **/
 

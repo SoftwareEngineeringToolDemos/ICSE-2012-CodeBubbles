@@ -148,11 +148,12 @@ void setViewPosition(Rectangle r)
    double scaley = sz.getHeight() / fsz.getHeight();
 
    Paint p = new GradientPaint(0f, 0f, OVERVIEW_TOP_COLOR, 0f, BUBBLE_OVERVIEW_HEIGHT, OVERVIEW_BOTTOM_COLOR);
-   g.setPaint(p);
-
-   g.fillRect(0,0,sz.width,sz.height);
 
    if (g != null) {
+      g.setPaint(p);
+
+      g.fillRect(0,0,sz.width,sz.height);
+
       g.scale(scalex,scaley);
 
       bubble_area.paintOverview(g);

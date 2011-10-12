@@ -300,6 +300,7 @@ void editProject(String proj,boolean lcl,Element xml,IvyXmlWriter xw) throws Bed
     }
    catch (Throwable t) {
       BedrockPlugin.logE("BEDROCK: problem finding window: " + t,t);
+      return;
     }
 
    SelProvider sp = new SelProvider(ip,ww.getShell());

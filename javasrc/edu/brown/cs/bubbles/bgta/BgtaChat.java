@@ -418,7 +418,7 @@ private String getName(String username)
  */
 private String whiteSpaceAwareReplace(String input,String toreplace)
 {
-   String current = new String(input);
+   String current = input;
    while (current.indexOf(toreplace) != -1) {
       if (current.charAt(current.indexOf(toreplace) + 1) != ' ') {
 	 String back = current.substring(current.indexOf(toreplace) + 1);
@@ -466,7 +466,7 @@ private String wrapHTML(String text)
  */
 private String replace(String input,String toreplace,String replacewith)
 {
-   String current = new String(input);
+   String current = input;
    int pos = current.indexOf(toreplace);
    if (pos != -1) {
       current = current.substring(0,pos) + replacewith + replace(current.substring(pos + toreplace.length()),toreplace,replacewith);
@@ -740,7 +740,7 @@ private class ChatHistory {
  * to be a interface and have subclasses which represent
  * different events: messages, login, logout, metadata.
  */
-private class ChatHistoryItem {
+private static class ChatHistoryItem {
 
     private String item_from;
     private String item_to;
@@ -767,28 +767,28 @@ private class ChatHistoryItem {
      *
      * @return the name of this message's sender.
      */
-    String getFrom() { return item_from; }
+    // String getFrom() { return item_from; }
 
     /**
      * Returns the name of this message's recipient.
      *
      * @return the name of this message's recipient.
      */
-    public String getTo() { return item_to; }
+    // public String getTo() { return item_to; }
 
     /**
      * Returns the body of this message.
      *
      * @return the body of this message.
      */
-    public String getText() { return item_text; }
+    // public String getText() { return item_text; }
 
     /**
      * Returns the time at which this message occurred.
      *
      * @return the time at which this message occurred.
      */
-    public String getTime() { return item_time; }
+    // public String getTime() { return item_time; }
 
     /**
      * Writes this history to a file so it can be loaded later.

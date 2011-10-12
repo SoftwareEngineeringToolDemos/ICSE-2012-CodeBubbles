@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -23,6 +23,8 @@
 
 
 package edu.brown.cs.bubbles.batt;
+
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.file.IvyFormat;
@@ -78,14 +80,14 @@ BattTestCase(String name)
 /*										*/
 /********************************************************************************/
 
-String getName()			{ return test_name; }
-String getClassName()			{ return class_name; }
-String getMethodName()			{ return method_name; }
-TestStatus getStatus()			{ return test_status; }
-TestState getState()			{ return test_state; }
+synchronized String getName()			{ return test_name; }
+synchronized String getClassName()		{ return class_name; }
+synchronized String getMethodName()		{ return method_name; }
+synchronized TestStatus getStatus()		{ return test_status; }
+synchronized TestState getState()		{ return test_state; }
 
-void setStatus(TestStatus sts)		{ test_status = sts; }
-void setState(TestState st)		{ test_state = st; }
+synchronized void setStatus(TestStatus sts)	{ test_status = sts; }
+synchronized void setState(TestState st)	{ test_state = st; }
 
 
 
@@ -153,7 +155,7 @@ synchronized boolean handleTestState(Element e)
    if (ost != test_state) chng = true;
 
    Element xe = IvyXml.getChild(e,"COVERAGE");
-   if (xe != null) count_data = new CountData(e);
+   if (xe != null) count_data = new CountData(xe);
 
    return chng;
 }
@@ -174,18 +176,24 @@ synchronized void handleTestCounts(Element e)
 /*										*/
 /********************************************************************************/
 
-FileState usesClasses(Map<String,FileState> clsmap)
+synchronized FileState usesClasses(Map<String,FileState> clsmap)
 {
    FileState fs = null;
 
    fs = clsmap.get(class_name);
-
    if (count_data == null) return fs;
 
    return count_data.usesClasses(clsmap,fs);
 }
 
 
+
+synchronized UseMode usesMethod(String mthd)
+{
+   if (count_data == null) return UseMode.UNKNOWN;
+
+   return count_data.getMethodUsage(mthd);
+}
 
 
 /********************************************************************************/
@@ -235,7 +243,7 @@ synchronized void longReport(IvyXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-String getToolTip()
+synchronized String getToolTip()
 {
    StringBuffer buf = new StringBuffer();
    buf.append("<html>");
@@ -295,10 +303,10 @@ private static class CountData {
 
    CountData(Element e) {
       method_data = new HashMap<String,MethodCountData>();
-
+   
       for (Element me : IvyXml.children(e,"METHOD")) {
-	 MethodCountData mcd = new MethodCountData(me);
-	 method_data.put(mcd.getName(),mcd);
+         MethodCountData mcd = new MethodCountData(me);
+         method_data.put(mcd.getName(),mcd);
        }
     }
 
@@ -307,6 +315,34 @@ private static class CountData {
 	 st = mcd.usesClasses(clsset,st);
        }
       return st;
+    }
+
+   UseMode getMethodUsage(String mthd) {
+      MethodCountData mcd = method_data.get(mthd);
+      if (mcd == null) {
+	 int idx0 = mthd.indexOf("(");
+	 if (idx0 < 0) return UseMode.NONE;
+	 String mthd0 = mthd.substring(0,idx0);
+	 String mthd1 = mthd.substring(idx0);
+	 for (Map.Entry<String,MethodCountData> ent : method_data.entrySet()) {
+	    String nm = ent.getKey();
+	    nm = nm.replace('/','.');
+	    int idx = nm.indexOf("(");
+	    if (idx < 0) continue;
+	    if (mthd0.equals(nm.substring(0,idx))) {
+	       if (BumpLocation.compareParameters(mthd1,nm.substring(idx))) {
+		  mcd = ent.getValue();
+		  method_data.put(mthd,mcd);
+		  break;
+		}
+	    }
+	  }
+       }
+
+      if (mcd == null) return UseMode.NONE;
+      if (mcd.getTopCount() > 0) return UseMode.DIRECT;
+      if (mcd.getCalledCount() > 0) return UseMode.INDIRECT;
+      return UseMode.NONE;
     }
 
    void report(IvyXmlWriter xw) {
@@ -327,6 +363,7 @@ private static class MethodCountData {
    private int start_line;
    private int end_line;
    private int called_count;
+   private int top_count;
    private Map<String,Integer> calls_counts;
    private Map<Integer,BlockCountData> block_data;
 
@@ -336,23 +373,27 @@ private static class MethodCountData {
       start_line = IvyXml.getAttrInt(e,"START");
       end_line = IvyXml.getAttrInt(e,"END");
       called_count = IvyXml.getAttrInt(e,"COUNT");
+      top_count = IvyXml.getAttrInt(e,"TOP");
       calls_counts = new HashMap<String,Integer>();
       block_data = new HashMap<Integer,BlockCountData>();
       for (Element be : IvyXml.children(e,"CALLS")) {
-	 int ct = IvyXml.getAttrInt(be,"CALLCOUNT");
-	 String nm = computeMethodName(be);
-	 calls_counts.put(nm,ct);
+         int ct = IvyXml.getAttrInt(be,"CALLCOUNT");
+         String nm = computeMethodName(be);
+         calls_counts.put(nm,ct);
        }
       for (Element be : IvyXml.children(e,"BLOCK")) {
-	 BlockCountData bcd = new BlockCountData(be);
-	 block_data.put(bcd.getBlockIndex(),bcd);
+         BlockCountData bcd = new BlockCountData(be);
+         block_data.put(bcd.getBlockIndex(),bcd);
        }
     }
 
    String getName()			{ return method_name; }
+   int getCalledCount() 		{ return called_count; }
+   int getTopCount()			{ return top_count; }
 
    private String computeMethodName(Element e) {
       String nm = IvyXml.getAttrString(e,"NAME");
+      nm = nm.replace('/','.');
       String dsc = IvyXml.getAttrString(e,"SIGNATURE");
       if (dsc != null) {
 	 int idx = dsc.lastIndexOf(")");
@@ -382,6 +423,7 @@ private static class MethodCountData {
       xw.field("START",start_line);
       xw.field("END",end_line);
       xw.field("COUNT",called_count);
+      xw.field("TOP",top_count);
       for (Map.Entry<String,Integer> ent : calls_counts.entrySet()) {
 	 xw.begin("CALLS");
 	 xw.field("NAME",ent.getKey());

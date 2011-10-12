@@ -482,7 +482,6 @@ void relocateFindBar()
 
 @Override public void annotationAdded(BaleAnnotation ba)
 {
-   System.err.println("ADD ANNOTATION " + ba);
    if (ba.getFile() == null) return;
    if (!ba.getFile().equals(getDocument().getFile())) return;
 

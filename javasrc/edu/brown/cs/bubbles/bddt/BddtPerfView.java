@@ -165,7 +165,7 @@ private void setupBubble()
 
 
 
-private class ClickHandler extends MouseAdapter {
+private static class ClickHandler extends MouseAdapter {
 
    @Override public void mouseClicked(MouseEvent e) {
       if (e.getClickCount() == 2) {

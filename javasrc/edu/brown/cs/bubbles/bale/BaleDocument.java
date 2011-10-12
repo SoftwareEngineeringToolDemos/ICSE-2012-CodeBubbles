@@ -82,7 +82,10 @@ BaleDocument(AbstractDocument.Content data)
    element_buffer = null;
    dummy_element = null;
    elide_mode = BaleElideMode.ELIDE_CHECK_ONCE;
-   if (BALE_PROPERTIES.getBoolean(BALE_EDITOR_NO_ELISION)) elide_mode = BaleElideMode.ELIDE_NONE;
+   if (BALE_PROPERTIES.getBoolean(BALE_EDITOR_NO_ELISION))
+      elide_mode = BaleElideMode.ELIDE_NONE;
+   else if (BALE_PROPERTIES.getBoolean(BALE_EDITOR_ALWAYS_ELIDE))
+      elide_mode = BaleElideMode.ELIDE_CHECK_ALWAYS;
    tab_handler = new BaleTabHandler();
    our_indenter = null;
 }

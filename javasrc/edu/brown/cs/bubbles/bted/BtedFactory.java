@@ -55,7 +55,8 @@ public class BtedFactory implements BtedConstants, BumpConstants,
 
 private HashMap<String, Document>      active_documents;
 private HashMap<Document, Integer>     document_count;
-private static HashMap<String, String> file_extensions;
+
+private static HashMap<String, String> file_extensions = new HashMap<String,String>();
 
 private static BtedFactory	     the_factory;
 private static BoardProperties	 bted_props = BoardProperties.getProperties("Bted");
@@ -81,7 +82,6 @@ private BtedFactory()
 {
    active_documents = new HashMap<String, Document>();
    document_count = new HashMap<Document, Integer>();
-   file_extensions = new HashMap<String, String>();
 }
 
 
@@ -260,7 +260,7 @@ void loadFileIntoEditor(File file,JEditorPane editor,UndoableEditListener listen
 	 Reader fileRead = new FileReader(file);
 	 editor.read(fileRead, null);
 	 active_documents.put(file.getPath(), editor.getDocument());
-	 document_count.put(editor.getDocument(), new Integer(1));
+	 document_count.put(editor.getDocument(), Integer.valueOf(1));
       }
       catch (IOException e) {
 	 e.printStackTrace();

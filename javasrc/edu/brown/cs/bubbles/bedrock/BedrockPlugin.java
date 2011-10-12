@@ -982,7 +982,7 @@ static void log(BedrockLogLevel lvl,String msg,Throwable t)
       System.err.println("BEDROCK: " + msg);
       if (t != null) t.printStackTrace();
     }
-   log_file.flush();
+   if (log_file != null) log_file.flush();
 }
 
 

@@ -252,6 +252,30 @@ double getPriority()
 }
 
 
+public String getMethodName()
+{
+   BaleElement be = this;
+   // first find containing parent method block
+   for ( ; be != null; be = be.getBaleParent()) {
+      if (be.getName().equals("Method") || be.getName().equals("DeclSet")) 
+         break;
+      if (be.getBubbleType() != BaleFragmentType.NONE) return null;
+    }
+   BaleElement ce = be;
+   while (ce != null && !ce.isLeaf()) ce = ce.getBaleElement(0);
+   while (ce != null) {
+      if (ce.getName().equals("MethodDeclId")) {
+         return ce.getFullName();
+       }
+      if (ce.getName().equals("Block")) break;
+      if (ce.getTokenType() == BaleTokenType.LPAREN) break;
+      ce = ce.getNextCharacterElement();
+    }
+   
+   return null;
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -620,7 +644,7 @@ static class Branch extends BaleElement {
    void remove(int frm,int to) {
       int nsz = to - frm + 1;
       for (int i = frm; i < num_children - nsz; ++i) {
-	 children_elts[i] = children_elts[i+nsz];
+         children_elts[i] = children_elts[i+nsz];
        }
       for (int i = num_children-nsz; i < num_children; ++i) children_elts[i] = null;
       num_children -= nsz;

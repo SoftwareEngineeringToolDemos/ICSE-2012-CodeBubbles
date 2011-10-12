@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -159,7 +159,7 @@ List<BumpProcess> getProcesses()
 /*										*/
 /********************************************************************************/
 
-private class StopAction extends AbstractAction {
+private static class StopAction extends AbstractAction {
 
    private BumpProcess the_launch;
    private static final long serialVersionUID = 1;
@@ -221,23 +221,23 @@ private class ProcessHandler implements BumpRunEventHandler
    @Override public void handleProcessEvent(BumpRunEvent evt) {
       BumpProcess blp;
       switch (evt.getEventType()) {
-         case PROCESS_ADD :
-            blp=evt.getProcess();
-            if (blp!=null) {
-               active_processes.add(blp);
-             }
-            break;
-         case PROCESS_REMOVE :
-            blp=evt.getProcess();
-            if (blp!=null) {
-               active_processes.remove(blp);
-             }
-            break;
-         case PROCESS_CHANGE :
-            //TODO: Update process
-            break;
-         case PROCESS_PERFORMANCE :
-            break;
+	 case PROCESS_ADD :
+	    blp=evt.getProcess();
+	    if (blp!=null) {
+	       active_processes.add(blp);
+	     }
+	    break;
+	 case PROCESS_REMOVE :
+	    blp=evt.getProcess();
+	    if (blp!=null) {
+	       active_processes.remove(blp);
+	     }
+	    break;
+	 case PROCESS_CHANGE :
+	    //TODO: Update process
+	    break;
+	 case PROCESS_PERFORMANCE :
+	    break;
        }
       process_model.fireTableDataChanged();
    }

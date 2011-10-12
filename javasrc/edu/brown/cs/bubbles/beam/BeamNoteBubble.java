@@ -321,6 +321,7 @@ private void loadNoteFromFile(File f,boolean force)
 	 cbuf.append(buf,0,ln);
        }
       cnts = cbuf.toString();
+      fr.close();
     }
    catch (IOException e) {
       if (force) BoardLog.logE("BEAM","Problem reading note file",e);

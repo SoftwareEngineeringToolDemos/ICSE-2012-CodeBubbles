@@ -1,23 +1,23 @@
 /********************************************************************************/
 /*										*/
 /*		BeduTAXMPPClient.java						*/
-/*    Bubbles for Education                                                     */
-/*                                                                              */
-/* This class implements an XMPP chat bot that is used to       		*/
-/*    facilitate help requests and chatting between students         		*/
-/*    and TAs in a course                    					*/
+/*    Bubbles for Education							*/
+/*										*/
+/* This class implements an XMPP chat bot that is used to			*/
+/*    facilitate help requests and chatting between students			*/
+/*    and TAs in a course							*/
 /********************************************************************************/
 /*	Copyright 2011 Brown University -- Andrew Kovacs			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bedu.chat;
@@ -47,32 +47,32 @@ import org.jivesoftware.smack.packet.Presence;
 
 /**
  * This class implements the bulk of the system of ticket handling
- * and chatting with students. 
- * 
+ * and chatting with students.
+ *
  * TAs all login to the same XMPP account, but they all use different
  * resource names, currently the resource name is the hostname of the machine
  * (this means it is problematic to for someone to log into the same course
  * account as a TA on multiple instances on the same machine).
- * 
+ *
  * Once logged in TA clients implement the following protocol:
  * ACCEPTING:<string hash>			Sent to other TAs to alert them that the given client is
- * 			     			accepting the ticket with the given hash of its text string.
- * 						Other clients are expected to remove the ticket from their
- * 						lists of open tickets
- * 
- * REQUEST-TICKETS				Send to another TA to request all of its tickets. This is 
- * 						used upon login to find out about all the tickets that
- * 						have been submitted in the time before the client logged in
- * 
- * TICKET-FORWARD:<student jid>:<ticket text>	Sent to another TA to alert that client about a ticket that 
- * 						the given client knows about. This is called every time a client
- * 						receives a ticket from a student (because the priorities are arranged
- * 						such that only the longest logged in TA will receive the ticket messages).
- * 						TAs who receive this should add the ticket to their lists.
- * 
- * TICKET:<ticket text>				Sent by students to the TA with the highest priority. This TA client
- * 						should add the ticket to its list and forward the ticket to the other TAs
- * 
+ *						accepting the ticket with the given hash of its text string.
+ *						Other clients are expected to remove the ticket from their
+ *						lists of open tickets
+ *
+ * REQUEST-TICKETS				Send to another TA to request all of its tickets. This is
+ *						used upon login to find out about all the tickets that
+ *						have been submitted in the time before the client logged in
+ *
+ * TICKET-FORWARD:<student jid>:<ticket text>	Sent to another TA to alert that client about a ticket that
+ *						the given client knows about. This is called every time a client
+ *						receives a ticket from a student (because the priorities are arranged
+ *						such that only the longest logged in TA will receive the ticket messages).
+ *						TAs who receive this should add the ticket to their lists.
+ *
+ * TICKET:<ticket text> 			Sent by students to the TA with the highest priority. This TA client
+ *						should add the ticket to its list and forward the ticket to the other TAs
+ *
  * @author akovacs
  *
  */
@@ -82,7 +82,7 @@ private ConnectionConfiguration xmpp_config;
 private XMPPConnection	  xmpp_conn;
 
 private String		  resource_name;
-private BeduCourse.TACourse     my_course;
+private BeduCourse.TACourse	my_course;
 private Map<String, BeduTAChat> chats_map;	 // maps jids to Chat objects
 private Set<String>	     permitted_jids;
 
@@ -112,7 +112,7 @@ BeduCourse getCourse()
 
 /**
  * Connect the bot to the xmpp service
- * with the given name as the resource name 
+ * with the given name as the resource name
  * @throws XMPPException
  */
 void connectAndLogin(String name) throws XMPPException
@@ -202,8 +202,8 @@ void endChatSession(BgtaChat c)
 }
 
 /**
- * Opens a chat sesion with the student who subbmitted the 
- * given ticket and returns a BgtaChat with the student 
+ * Opens a chat sesion with the student who subbmitted the
+ * given ticket and returns a BgtaChat with the student
  * @param t
  * @return
  */
@@ -345,22 +345,28 @@ private class StudentXMPPBotMessageListener implements MessageListener {
 }
 }
 
-private class BeduTAChat extends BgtaChat {
-private String newest_msg;
+private static class BeduTAChat extends BgtaChat {
 
-public BeduTAChat(XMPPConnection conn,Chat c)
-{
-   super(conn.getUser(),c.getParticipant(),null,ChatServer.fromServer(conn
-	    .getServiceName()),c,null);
-   newest_msg = "";
-}
+   private String newest_msg;
 
-void logOutsideMessage(String msg)
-{
-   if (!msg.equals(newest_msg)) logMessage(msg);
+   BeduTAChat(XMPPConnection conn,Chat c) {
+      super(conn.getUser(),c.getParticipant(),null,ChatServer.fromServer(
+	       conn.getServiceName()),c,null);
+      newest_msg = "";
+    }
 
-   newest_msg = msg;
-}
-}
+   void logOutsideMessage(String msg) {
+      if (!msg.equals(newest_msg)) logMessage(msg);
 
-}
+      newest_msg = msg;
+    }
+
+}	// end of inner class BeduTAChat
+
+
+
+}	// end of class BeduTAXMPPClient
+
+
+
+/* end of BedutTAXMPPClient.java */

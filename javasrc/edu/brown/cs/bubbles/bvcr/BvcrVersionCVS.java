@@ -45,7 +45,6 @@ class BvcrVersionCVS extends BvcrVersionManager implements BvcrConstants
 
 private File		cvs_root;
 private String		cvs_command;
-private String		cvs_name;
 
 private static BoardProperties bvcr_properties = BoardProperties.getProperties("Bvcr");
 
@@ -105,7 +104,6 @@ File getRootDirectory() 		{ return cvs_root; }
 
 String getRepositoryName()
 {
-   if (cvs_name != null) return cvs_name;
    return super.getRepositoryName();
 }
 
@@ -229,7 +227,7 @@ void findHistory(File f,IvyXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-protected class CvsDiffAnalyzer implements CommandCallback {
+protected static class CvsDiffAnalyzer implements CommandCallback {
 
    BvcrDifferenceSet diff_set;
    private int source_line;

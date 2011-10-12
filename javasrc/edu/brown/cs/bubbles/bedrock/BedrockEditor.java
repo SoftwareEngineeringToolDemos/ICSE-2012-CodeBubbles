@@ -538,7 +538,7 @@ void rename(String proj,String bid,String file,int start,int end,String name,Str
       if (doedit && chng != null) {
 	 chng.perform(new NullProgressMonitor());
        }
-      else {
+      else if (chng != null) {
 	 xw.begin("EDITS");
 	 BedrockUtil.outputChange(chng,xw);
 	 xw.end("EDITS");
@@ -681,7 +681,7 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
 	throws BedrockException
 {
    if (file == null) {
-      IProject ip = our_plugin.getProjectManager().findProjectForFile(proj,file);
+      IProject ip = our_plugin.getProjectManager().findProjectForFile(proj,null);
       IType ityp = null;
       IJavaProject ijp = JavaCore.create(ip);
       try {
@@ -1613,7 +1613,9 @@ private class BufferData {
 	    comp_unit.save(new BedrockProgressMonitor(our_plugin,"Saving"),false);
 	    // try this for now
 	    try {
-	       comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+	       comp_unit = comp_unit.getWorkingCopy(
+		  copy_owner,
+		  new BedrockProgressMonitor(our_plugin,"Updating"));
 	     }
 	    catch (Throwable t) {
 	       BedrockPlugin.logE("Problem get working copy after a save",t);
@@ -1708,10 +1710,12 @@ private class ProblemHandler implements IProblemRequestor {
 	 xw.field("FILE",file_data.getFileName());
 	 xw.field("ID",for_id);
        }
-      else {
+      else if (file_data != null) {
 	 xw = our_plugin.beginMessage("FILEERROR",bedrock_id);
 	 xw.field("FILE",file_data.getFileName());
        }
+      else return;
+
       if (file_data != null && file_data.getProject() != null) {
 	 xw.field("PROJECT",file_data.getProject().getName());
        }

@@ -281,7 +281,7 @@ private Map<Integer,Collection<BaleAnnotation>> setupAnnotationMap()
 
 
 
-private class AnnotComparator implements Comparator<BaleAnnotation> {
+private static class AnnotComparator implements Comparator<BaleAnnotation> {
 
    @Override public int compare(BaleAnnotation a1,BaleAnnotation a2) {
       int d1 = a1.getPriority() - a2.getPriority();

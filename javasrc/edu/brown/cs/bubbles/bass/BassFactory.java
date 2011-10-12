@@ -111,7 +111,7 @@ private BassFactory()
  *	Called by initialization to ensure that the search package is set up correctly.
  **/
 
-public static void setup()
+public static synchronized void setup()
 {
    if (use_repositories != null) return;
 
@@ -472,7 +472,6 @@ private static class ProjectProps implements BassPopupHandler {
       int idx = fullname.indexOf(":");
       if (idx <= 0) return;
       String proj = fullname.substring(0,idx);
-      fullname = fullname.substring(idx+1);
 
       menu.add(new EclipseProjectAction(proj));
       menu.add(new ProjectAction(proj,bb,where));

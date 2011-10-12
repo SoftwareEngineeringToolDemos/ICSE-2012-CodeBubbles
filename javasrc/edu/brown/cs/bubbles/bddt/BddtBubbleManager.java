@@ -87,7 +87,8 @@ void createExecBubble(BumpThread bt)
       if (frm != null) {
 	 BubbleData bd = findClosestBubble(bt,stk,frm);
 	 if (bd != null && bd.match(bt,stk,frm)) return;
-	 int lvl = bd.aboveLevel(bt,stk,frm);
+	 int lvl = -1;
+	 if (bd != null) lvl = bd.aboveLevel(bt,stk,frm);
 	 int mx = stk.getNumFrames();
 	 if (lvl > 0) mx = mx-lvl;
 
@@ -454,11 +455,54 @@ BumpStackFrame getFrameForBubble(BudaBubble bb)
 {
    BubbleData bd = bubble_map.get(bb);
    if (bd == null) return null;
+   if (bd.getFrame() == null) {
+      BumpStackFrame frm = launch_control.getActiveFrame();
+      if (bd.getBubble().getContentType() == BudaContentNameType.METHOD) {
+	 String s1 = bd.getBubble().getContentName();
+	 if (s1 != null) {
+	    int idx1 = s1.indexOf("(");
+	    String s1a = s1.substring(0,idx1);
+	    String s1b = s1.substring(idx1);
+	    BumpThread bt = frm.getThread();
+	    BumpThreadStack stk = bt.getStack();
+	    BumpStackFrame xfrm = null;
+	    for (int i = 0; i < stk.getNumFrames(); ++i) {
+	       BumpStackFrame sfrm = stk.getFrame(i);
+	       if (sameMethod(s1a,sfrm.getMethod()) && BumpLocation.compareParameters(s1b,sfrm.getSignature())) {
+		  if (xfrm == null || sfrm == frm) xfrm = sfrm;
+	       }
+	    }
+	    if (xfrm != null) bd.update(stk,xfrm);
+	 }
+      }
+    }
 
    return bd.getFrame();
 }
 
 
+
+
+private static boolean sameMethod(String m1,String m2)
+{
+   if (m1.equals(m2)) return true;
+   int idx1 = m1.indexOf(".<init>");
+   int idx2 = m2.indexOf(".<init>");
+   if (idx1 < 0 && idx2 < 0) return false;
+   if (idx1 >= 0 && idx2 >= 0) return false;
+   if (idx1 >= 0) {
+      int idx1a = m1.lastIndexOf(".",idx1-1);
+      String nm = m1.substring(idx1a+1,idx1);
+      m1 = m1.substring(0,idx1+1) + nm;
+   }
+   if (idx2 >= 0) {
+      int idx2a = m2.lastIndexOf(".",idx2-1);
+      String nm = m2.substring(idx2a+1,idx2);
+      m2 = m2.substring(0,idx2+1) + nm;
+   }
+   return m1.equals(m2);
+}
+      
 
 
 /********************************************************************************/
@@ -753,7 +797,7 @@ private static class BubbleData {
       int idx1 = s1.indexOf("(");
       String s1a = s1.substring(0,idx1);
       String s1b = s1.substring(idx1);
-      if (!s1a.equals(frm.getMethod())) return false;
+      if (!sameMethod(s1a,frm.getMethod())) return false;
       if (!BumpLocation.compareParameters(s1b,frm.getSignature())) return false;
 
       int lvl = -1;

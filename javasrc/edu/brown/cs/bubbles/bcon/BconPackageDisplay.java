@@ -75,7 +75,7 @@ private Map<BconGraphArc,BconPetalArc>	 arc_map;
 
 private static Map<NodeType,CompShape> shape_map;
 
-private final double SCALE_FACTOR = 1.125;
+private final static double SCALE_FACTOR = 1.125;
 
 enum CompShape {
    SQUARE,
@@ -520,34 +520,34 @@ private class BconPetalNode extends PetalNodeDefault {
       SwingUtilities.convertPointFromScreen(p0,BconPackageDisplay.this);
       JPopupMenu m = new JPopupMenu();
       if (package_graph.getCollapsedType(graph_node) != ArcType.NONE) {
-         m.add(new ExpandAction(graph_node));
+	 m.add(new ExpandAction(graph_node));
        }
       String pnm = graph_node.getFullName();
       if (graph_node.isInnerClass()) {
-         m.add(new CompactAction(graph_node,ArcType.INNERCLASS));
-         int idx = pnm.lastIndexOf(".");
-         if (idx >= 0) pnm = pnm.substring(0,idx);
+	 m.add(new CompactAction(graph_node,ArcType.INNERCLASS));
+	 int idx = pnm.lastIndexOf(".");
+	 if (idx >= 0) pnm = pnm.substring(0,idx);
        }
       if (graph_node.getClassType().contains(ClassType.METHOD)) {
-         m.add(new CompactAction(graph_node,ArcType.MEMBER_OF));
+	 m.add(new CompactAction(graph_node,ArcType.MEMBER_OF));
        }
       if (pnm.contains(".")) {
-         m.add(new CompactAction(graph_node,ArcType.PACKAGE));
+	 m.add(new CompactAction(graph_node,ArcType.PACKAGE));
        }
       if (graph_node.isSubclass()) {
-         m.add(new CompactAction(graph_node,ArcType.SUBCLASS,
-               ArcType.IMPLEMENTED_BY,ArcType.EXTENDED_BY));
+	 m.add(new CompactAction(graph_node,ArcType.SUBCLASS,
+	       ArcType.IMPLEMENTED_BY,ArcType.EXTENDED_BY));
        }
       m.add(new InducedAction(graph_node));
       m.add(new ExcludeAction(graph_node));
-   
+
       if (graph_node.getClassType().contains(ClassType.METHOD)) {
-         m.add(new SourceAction(graph_node));
+	 m.add(new SourceAction(graph_node));
        }
       else {
-         m.add(new SearchAction(graph_node));
+	 m.add(new SearchAction(graph_node));
        }
-   
+
       m.show(BconPackageDisplay.this,p0.x,p0.y);
    }
 
@@ -632,7 +632,7 @@ private class BconPetalArc extends PetalArcDefault {
 /*										*/
 /********************************************************************************/
 
-private class GraphComponent extends JPanel {
+private static class GraphComponent extends JPanel {
 
    private CompShape	use_shape;
    private Polygon	poly_shape;
@@ -850,10 +850,10 @@ private class CompactAction extends AbstractAction {
       super("Compact node for " + at[0].toString());
       for_node = gn;
       compact_type = EnumSet.of(at[0]);
-      for (int i = 1; i < at.length; ++i) 
-         compact_type.add(at[i]);
+      for (int i = 1; i < at.length; ++i)
+	 compact_type.add(at[i]);
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       package_graph.collapseNode(for_node,compact_type);
       relayout();

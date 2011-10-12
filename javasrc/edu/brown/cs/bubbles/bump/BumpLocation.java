@@ -280,6 +280,25 @@ public String getParameters()
 }
 
 
+/**
+ *	return the return type of a function or constructor
+ **/
+
+public String getReturnType()
+{
+   switch (symbol_type) {
+      case CONSTRUCTOR :
+      case FUNCTION :
+	 String knm = symbol_key;
+	 int idx1 = knm.lastIndexOf(")");
+	 String rtyp = knm.substring(idx1+1);
+	 return IvyFormat.formatTypeName(rtyp);
+    }
+
+   return null;
+}
+
+
 /********************************************************************************/
 /*										*/
 /*	Name matching methods							*/
@@ -329,7 +348,7 @@ public static boolean compareParameters(String s0,String s1)
       String p0 = lp0.get(i);
       String p1 = lp1.get(i);
       if (p0.equals(p1)) continue;
-      if (p1.equals("java.lang.Object") && p0.length() == 1) continue;	// handle generics
+      if (p1.equals("java.lang.Object") && p0.length() == 1) continue;  // handle generics
       if (!p1.endsWith(p0)) return false;
       int p0len = p0.length();
       int p1len = p1.length();
@@ -381,9 +400,9 @@ public void update()
       List<BumpLocation> rslt = BumpClient.getBump().findByKey(project_name,symbol_handle,
 								  file_location);
       if (rslt == null || rslt.size() == 0) return;
-      
+
       BumpLocation newl = rslt.get(0);
-//      BoardLog.logD("BUMP","UPDATE CHECK " + this + " :: " + newl + " :: " +
+//	BoardLog.logD("BUMP","UPDATE CHECK " + this + " :: " + newl + " :: " +
 //	       symbol_offset + "/" + symbol_length + " " +
 //	       newl.symbol_offset + "/" + newl.symbol_length);
       symbol_offset = newl.symbol_offset;

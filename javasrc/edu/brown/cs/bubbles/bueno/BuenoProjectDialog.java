@@ -330,7 +330,7 @@ private class NewPathEntryBubble extends BudaBubble implements ActionListener {
 
 
 
-private class BinaryFileFilter extends FileFilter {
+private static class BinaryFileFilter extends FileFilter {
 
    @Override public String getDescription()	{ return "Java Class File Directory"; }
 
@@ -369,7 +369,7 @@ private boolean hasClassFiles(File f)
 /*										*/
 /********************************************************************************/
 
-private class EditPathEntryBubble extends BudaBubble implements ActionListener {
+private static class EditPathEntryBubble extends BudaBubble implements ActionListener {
 
    private PathEntry	for_path;
 
@@ -472,7 +472,7 @@ private static class PathEntry implements Comparable<PathEntry> {
    String getSourcePath()				{ return source_path; }
    String getJavadocPath()				{ return javadoc_path; }
    boolean isExported() 				{ return is_exported; }
-   boolean isOptional()					{ return is_optional; }
+   boolean isOptional() 				{ return is_optional; }
    boolean hasChanged() 				{ return is_new || is_modified; }
 
    void setBinaryPath(String p) {

@@ -779,7 +779,6 @@ private void handleEvent(DocumentEvent e,BaleElementEvent ee)
    int ln = getLength();
    if (ln <= 0) {
       BoardLog.logD("BALE","Making orphan");
-      ln = getLength(); // for debugging
       is_orphan = true;
     }
 }

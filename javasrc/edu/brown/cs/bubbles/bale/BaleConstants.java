@@ -455,6 +455,7 @@ String BALE_EDITOR_DO_GRADIENT = "Bale.editor.do.gradient";
  *  Boolean: should we do elision?
  */
 String BALE_EDITOR_NO_ELISION = "Bale.editor.no.elision";
+String BALE_EDITOR_ALWAYS_ELIDE = "Bale.editor.always.elide";
 
 
 /**
@@ -1231,6 +1232,7 @@ interface BaleContextConfig {
    int getDocumentOffset();
    String getToken();
    BaleContextType getTokenType();
+   String getMethodName();
 
 }	// end of interface BaleContextConfig
 

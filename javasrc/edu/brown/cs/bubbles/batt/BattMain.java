@@ -320,6 +320,19 @@ synchronized void removeErrors(Set<String> clss)
 }
 
 
+void stopAllTests()
+{
+   if (test_mode != TestMode.ON_DEMAND) setMode(TestMode.ON_DEMAND);
+
+   synchronized (run_tests) {
+      run_tests.clear();
+      stopTests();
+    }
+}
+
+
+
+
 void stopTests()
 {
    // if (test_mode != TestMode.ON_DEMAND) setMode(TestMode.ON_DEMAND);
@@ -334,8 +347,6 @@ void stopTests()
        }
       current_test.destroy();
     }
-
-   // stop current test here
 }
 
 

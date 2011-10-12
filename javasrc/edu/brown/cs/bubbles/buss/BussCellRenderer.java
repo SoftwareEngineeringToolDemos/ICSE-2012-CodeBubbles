@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -135,7 +135,7 @@ BussCellRenderer(int contentwidth, BussBubble bussbubble)
 
       editorbubble.setLocation(selectedItemRect.getLocation());
 
-      buss_bubble.getLayeredPane().add(editorbubble, new Integer(1), 0);
+      buss_bubble.getLayeredPane().add(editorbubble, Integer.valueOf(1), 0);
       Dimension dim = (Dimension)buss_bubble.getStackBoxDim().clone();
       dim.height = dim.height + editorbubble.getPreferredSize().height - ent.getCompactComponent().getPreferredSize().height;
 

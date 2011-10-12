@@ -79,7 +79,7 @@ private static BdocRepository	bdoc_repository = null;
  *	package initialization.
  **/
 
-public static void setup()
+public static synchronized void setup()
 {
    if (bdoc_repository != null) return;
 

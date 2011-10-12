@@ -1,22 +1,22 @@
 /********************************************************************************/
-/*                                                                              */
-/*          BeduManageCoursesRepository.java                                    */
-/*                                                                              */
-/*    Bubbles for Education                                                     */
+/*										*/
+/*	    BeduManageCoursesRepository.java					*/
+/*										*/
+/*    Bubbles for Education							*/
 /*    Repository for providing the ability to pull up a bubble to manage courses*/
-/*                                                                              */
+/*										*/
 /********************************************************************************/
-/*    Copyright 2011 Brown University -- Andrew Kovacs                          */
+/*    Copyright 2011 Brown University -- Andrew Kovacs				*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bedu.chat;
@@ -44,34 +44,35 @@ class BeduManageCoursesRepository implements BassConstants.BassRepository {
    return br == this;
 }
 
-class BeduAddCoursesName extends BassNameBase {
-private static final String name_str = "Manage courses";
+private static class BeduAddCoursesName extends BassNameBase {
+   private static final String name_str = "Manage courses";
 
-@Override public BudaBubble createBubble()
-{
-   return new BeduManageCoursesBubble();
-}
+   @Override public BudaBubble createBubble() {
+      return new BeduManageCoursesBubble();
+    }
 
-@Override protected String getKey()
-{
-   return name_str;
-}
+   @Override protected String getKey() {
+      return name_str;
+    }
 
-@Override protected String getParameters()
-{
-   return null;
-}
+   @Override protected String getParameters() {
+      return null;
+    }
 
-@Override public String getProject()
-{
-   return null;
-}
+   @Override public String getProject() {
+      return null;
+    }
 
-@Override protected String getSymbolName()
-{
-   return BassConstants.BASS_COURSE_LIST_NAME + "." + name_str;
-}
+   @Override protected String getSymbolName() {
+      return BassConstants.BASS_COURSE_LIST_NAME + "." + name_str;
+    }
 
-}
+}	// end of inner class BeduAddCoursesName
 
-}
+
+}	// end of BeduManageCoursesRepository
+
+
+
+
+/* end of BeduManageCoursesRepository.java */

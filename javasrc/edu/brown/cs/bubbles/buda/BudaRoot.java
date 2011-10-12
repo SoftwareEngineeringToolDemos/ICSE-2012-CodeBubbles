@@ -1243,7 +1243,7 @@ private class SearchKeyHandler extends AbstractAction implements ActionListener 
 
 
 
-private class MetricsHandler extends AbstractAction implements ActionListener {
+private static class MetricsHandler extends AbstractAction implements ActionListener {
 
    private static final long serialVersionUID = 1;
 
@@ -1417,18 +1417,16 @@ public void saveConfiguration(File f) throws IOException
 
    BoardLog.logD("BUDA","Save configuration " + f);
 
-   if (hf != null) {
-      File hf1 = new File(hf.getPath() + ".new");
-      BudaXmlWriter hxw = new BudaXmlWriter(hf1);
-      outputHistory(hxw);
-      hxw.close();
-      hf.delete();
-      hf1.renameTo(hf);
-    }
+   File hf1 = new File(hf.getPath() + ".new");
+   BudaXmlWriter hxw = new BudaXmlWriter(hf1);
+   outputHistory(hxw);
+   hxw.close();
+   hf.delete();
+   hf1.renameTo(hf);
 
    File f1 = new File(f.getPath() + ".new");
    BudaXmlWriter xw = new BudaXmlWriter(f1);
-   outputXml(xw,hf == null);
+   outputXml(xw,false);
    xw.close();
    f.delete();
    f1.renameTo(f);

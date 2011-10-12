@@ -72,7 +72,7 @@ BbookDisplayBubble(BbookDisplayBuilder bld)
    display_builder = bld;
 
    JComponent pnl = setupDisplay();
-   
+
    Dimension d = pnl.getPreferredSize();
    if (d.width > 500) d.width = 500;
    if (d.height > 400) d.height = 400;
@@ -105,25 +105,25 @@ private JComponent setupDisplay()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Hyperlink management                                                         */
-/*                                                                              */
+/*										*/
+/*	Hyperlink management							*/
+/*										*/
 /********************************************************************************/
 
-private class Linker implements HyperlinkListener {
-   
+private static class Linker implements HyperlinkListener {
+
    @Override public void hyperlinkUpdate(HyperlinkEvent e) {
       if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-         URL u = e.getURL();
-         try {
-            Desktop.getDesktop().browse(u.toURI());
-         }
-         catch (IOException ex) { }
-         catch (URISyntaxException ex) { }
+	 URL u = e.getURL();
+	 try {
+	    Desktop.getDesktop().browse(u.toURI());
+	 }
+	 catch (IOException ex) { }
+	 catch (URISyntaxException ex) { }
        }
     }
-   
-}       // end of inner class Linker
+
+}	// end of inner class Linker
 
 
 

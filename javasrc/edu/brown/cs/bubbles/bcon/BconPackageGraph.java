@@ -48,7 +48,7 @@ private Set<ClassType>	class_options;
 private Set<ArcType>	arc_options;
 private boolean 	include_children;
 
-private Set<String>     start_nodes;
+private Set<String>	start_nodes;
 private Set<String>	exclude_set;
 private Set<String>	include_set;
 
@@ -210,7 +210,7 @@ void expandNode(BconGraphNode nd)
 }
 
 
-void expandNode(BconGraphNode nd,ArcType typ)
+synchronized void expandNode(BconGraphNode nd,ArcType typ)
 {
    need_recompute = true;
    removeCollapse(nd.getFullName(),typ);
@@ -292,6 +292,35 @@ private String findCollapse(String nm,ArcType typ)
 
 
 
+private BanalPackageNode getParentNode(BanalPackageNode nd)
+{
+   for (BanalPackageLink lnk : nd.getOutLinks()) {
+      BanalPackageNode par = lnk.getToNode();
+      if (lnk.getTypes().containsKey(PackageRelationType.SUPERCLASS) &&
+	    testCollapse(par.getName(),ArcType.SUBCLASS)) {
+	 return par;
+       }
+    }
+   for (BanalPackageLink lnk : nd.getOutLinks()) {
+      BanalPackageNode par = lnk.getToNode();
+      if (lnk.getTypes().containsKey(PackageRelationType.IMPLEMENTS) &&
+		  testCollapse(par.getName(),ArcType.IMPLEMENTED_BY)) {
+	 return par;
+       }
+    }
+   for (BanalPackageLink lnk : nd.getOutLinks()) {
+      BanalPackageNode par = lnk.getToNode();
+      if (lnk.getTypes().containsKey(PackageRelationType.EXTENDS) &&
+			testCollapse(par.getName(),ArcType.EXTENDED_BY)) {
+	 return par;
+       }
+    }
+
+   return null;
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Induced graph methods							*/
@@ -305,21 +334,21 @@ void showAllNodes()
 }
 
 
-void removeStartNodes()
+synchronized void removeStartNodes()
 {
    if (start_nodes == null) return;
-   
+
    start_nodes = null;
    include_set = null;
    need_recompute = true;
 }
 
 
-void addStartNode(String nm)
+synchronized void addStartNode(String nm)
 {
    if (nm == null) return;
    if (start_nodes != null && start_nodes.contains(nm)) return;
-   
+
    if (start_nodes == null) start_nodes = new HashSet<String>();
 
    start_nodes.add(nm);
@@ -391,7 +420,7 @@ Collection<BconGraphNode> getNodes()
 }
 
 
-private GraphNode createNode(BanalPackageNode bpc,Map<String,GraphNode> priors)
+private synchronized GraphNode createNode(BanalPackageNode bpc,Map<String,GraphNode> priors)
 {
    String nm = bpc.getName();
    GraphNode gn = active_nodes.get(nm);
@@ -453,6 +482,11 @@ private GraphNode createNode(BanalPackageNode bpc,Map<String,GraphNode> priors)
 	  }
 	 return pgn;
        }
+    }
+
+   BanalPackageNode par = getParentNode(bpc);
+   if (par != null) {
+      return createNode(par,priors);
     }
 
    gn = priors.get(bpc.getName());
@@ -736,7 +770,9 @@ private abstract class GraphNode implements BconGraphNode {
    }
 
    protected void addOutArcs() {
-      addLocalArcs();
+      synchronized (BconPackageGraph.this) {
+	 addLocalArcs();
+       }
       if (hasChildren()) {
 	 for (GraphNode cn : child_nodes) {
 	    cn.addOutArcs();
@@ -791,18 +827,18 @@ private abstract class GraphNode implements BconGraphNode {
     }
 
    @Override public boolean isInnerClass()	{ return false; }
-   
+
    @Override public boolean isSubclass() {
       for (BanalPackageNode cls : node_set) {
-         for (BanalPackageLink lnk : cls.getOutLinks()) {
-            if (lnk.getTypes().containsKey(PackageRelationType.SUPERCLASS) ||
-                  lnk.getTypes().containsKey(PackageRelationType.IMPLEMENTS) ||
-                  lnk.getTypes().containsKey(PackageRelationType.EXTENDS)) return true;
-          }
+	 for (BanalPackageLink lnk : cls.getOutLinks()) {
+	    if (lnk.getTypes().containsKey(PackageRelationType.SUPERCLASS) ||
+		  lnk.getTypes().containsKey(PackageRelationType.IMPLEMENTS) ||
+		  lnk.getTypes().containsKey(PackageRelationType.EXTENDS)) return true;
+	  }
        }
       return false;
     }
-      
+
 
 }	// end of inner abstract class GraphNode
 
@@ -1120,7 +1156,7 @@ private static class RelationData implements BconRelationData {
 /*										*/
 /********************************************************************************/
 
-void computeIncludes()
+synchronized void computeIncludes()
 {
    if (start_nodes == null) {
       include_set = null;
@@ -1156,7 +1192,7 @@ private boolean useIncludeEdge(BanalPackageLink lnk,boolean dir,boolean flip)
 {
    if (!useClass(lnk.getFromNode())) return false;
    if (!useClass(lnk.getToNode())) return false;
-      
+
    Map<PackageRelationType,Integer> typs = lnk.getTypes();
    for (Map.Entry<PackageRelationType,Integer> ent : typs.entrySet()) {
       PackageRelationType prt = ent.getKey();
@@ -1165,10 +1201,10 @@ private boolean useIncludeEdge(BanalPackageLink lnk,boolean dir,boolean flip)
       if (ent.getValue() > 0 && dir) return true;
       else if (ent.getValue() < 0 && flip) return true;
     }
-   
+
    return false;
 }
-      
+
 
 
 private void addToIncludes(String s)

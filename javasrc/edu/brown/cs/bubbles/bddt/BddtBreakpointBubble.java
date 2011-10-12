@@ -676,7 +676,7 @@ private class NewExceptionAction extends AbstractAction {
 
 
 
-private class NewFieldWatchAction extends AbstractAction {
+private static class NewFieldWatchAction extends AbstractAction {
 
    NewFieldWatchAction() {
       super("Create New Field Watch Breakpoing");

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Alex Hills			      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -61,7 +61,7 @@ private static BudaToolbar the_bar = new BudaToolbar();
  */
 static void addToolbarButton(String name, ActionListener l, String tooltip, Image i)
 {
-   the_buttons.add(the_bar.new MenuButton(name, l, tooltip, i));
+   the_buttons.add(new MenuButton(name, l, tooltip, i));
    addButton(name,l,tooltip,i);
 }
 
@@ -182,10 +182,10 @@ private class Toolbar extends BudaBubble implements NoFreeze
 
 
 
-private class MenuPanel extends JPanel {
+private static class MenuPanel extends JPanel {
 
    private String menu_name;
-   
+
    private static final long serialVersionUID = 1;
 
    MenuPanel(String name) {
@@ -200,8 +200,8 @@ private class MenuPanel extends JPanel {
       GridBagConstraints c;
       int i = 0;		// TODO: compute row here based on count
       c = new GridBagConstraints(GridBagConstraints.RELATIVE,i,
-        			    1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE,
-        			    new Insets(3, 3, 3, 3), 2, 2);
+				    1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.NONE,
+				    new Insets(3, 3, 3, 3), 2, 2);
       add(b,c);
     }
 
@@ -251,7 +251,7 @@ private static class MenuListener extends AbstractAction implements ActionListen
 
       Rectangle pnlrect = new Rectangle(r.x, r.y, pnl.getPreferredSize().width, pnl.getPreferredSize().height);
       Collection<BudaBubble> bubbles = bba.getBubblesInRegion(pnlrect);
-      if (bubbles.contains(for_root.getPackageExplorer(bba))) 
+      if (bubbles.contains(for_root.getPackageExplorer(bba)))
 	 bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,
 		  r.x + r.width - pnl.getPreferredSize().width, r.y);
 
@@ -276,7 +276,7 @@ private static class MenuListener extends AbstractAction implements ActionListen
 /*										*/
 /********************************************************************************/
 
-private class MenuButton
+private static class MenuButton
 {
    private String the_name;
    private ActionListener the_listener;

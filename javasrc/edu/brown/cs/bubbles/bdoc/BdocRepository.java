@@ -449,7 +449,7 @@ private void addHierarchyLinks()
 
 
 
-private class Hierarchy {
+private static class Hierarchy {
 
    private Map<String,Set<String>>	class_hierarchy;
 
@@ -489,7 +489,7 @@ private class Hierarchy {
 
 
 
-private class MemberInfo {
+private static class MemberInfo {
 
    private Map<String,Map<String,List<BdocReference>>> ref_byclass;
 

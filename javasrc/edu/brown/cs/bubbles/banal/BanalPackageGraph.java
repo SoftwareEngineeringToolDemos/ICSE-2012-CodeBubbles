@@ -216,7 +216,7 @@ private LinkData findLink(BanalMethod frm,BanalClass to)
 }
 
 
-
+/****************
 private LinkData findLink(BanalClass frm,BanalMethod to)
 {
    MethodData tm = findMethod(to);
@@ -229,6 +229,7 @@ private LinkData findLink(BanalClass frm,BanalMethod to)
 
    return ld;
 }
+*****************/
 
 
 
@@ -415,7 +416,7 @@ private abstract class NodeData implements BanalPackageNode {
    @Override public Collection<BanalPackageLink> getOutLinks() {
       return new ArrayList<BanalPackageLink>(out_links.values());
     }
-   
+
    @Override public String getProjectName()	{ return project_name; }
    @Override public String getMethodName()	{ return null; }
    @Override public String getClassName()	{ return null; }
@@ -563,7 +564,7 @@ private class MethodData extends NodeData implements BanalPackageMethod {
 /*										*/
 /********************************************************************************/
 
-private class LinkData implements BanalPackageLink {
+private static class LinkData implements BanalPackageLink {
 
    private NodeData from_class;
    private NodeData to_class;

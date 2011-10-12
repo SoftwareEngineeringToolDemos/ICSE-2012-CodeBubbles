@@ -101,7 +101,8 @@ enum BuenoKey {
    KEY_FILE,			// String
    KEY_FILETAIL,		// String
    KEY_PROJECT, 		// String
-   KEY_RETURN_STMT		// String
+   KEY_RETURN_STMT,		// String
+   KEY_ATTRIBUTES               // String
 }
 
 

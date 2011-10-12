@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*    BeduManageCoursesBubble.java                                              */
-/*                                                                              */
-/*    Bubble for adding, removing, and modifying courses                        */
-/*                                                                              */
+/*										*/
+/*    BeduManageCoursesBubble.java						*/
+/*										*/
+/*    Bubble for adding, removing, and modifying courses			*/
+/*										*/
 /********************************************************************************/
-/* Copyright 2011 Brown University -- Andrew Kovacs                             */
+/* Copyright 2011 Brown University -- Andrew Kovacs				*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bedu.chat;
@@ -55,7 +55,7 @@ private JComboBox	      combo_box;
 
 private static final long      serialVersionUID  = 1L;
 private static final Dimension DEFAULT_DIMENSION = new Dimension(400,200);
-private static final String    ADD_STUDENT_STR   = "Add course as student";
+private static final String    ADD_STUDENT_STR	 = "Add course as student";
 private static final String    ADD_TA_STR	= "Add course as TA";
 
 BeduManageCoursesBubble()
@@ -80,7 +80,7 @@ private ContentPane()
    combo_box.addItem(ADD_TA_STR);
 
    add(combo_box, BorderLayout.PAGE_START);
-   
+
    if (courserepo != null) {
       for (BassName n : courserepo.getAllNames()) {
 	 if (n.toString().length() >= 0 && n.toString().charAt(0) != '@') combo_box.addItem(n);
@@ -106,8 +106,8 @@ private ContentPane()
 
 private class ConfigPane extends JPanel implements ActionListener {
 private static final long serialVersionUID = 1L;
-private final String      delete_action    = "delete";
-private final String      save_action      = "save";
+private static final String	 delete_action	  = "delete";
+private static final String	 save_action	  = "save";
 
 private JTextField	name_field;
 private JTextField	jid_field;
@@ -273,6 +273,7 @@ public void actionPerformed(ActionEvent e)
 	 new_course = new BeduCourse.TACourse(name_field.getText(),jid_field.getText(),
 		  password_field.getText(),server_field.getText());
       }
+      else return;
 
       r.removeCourse(my_course);
 

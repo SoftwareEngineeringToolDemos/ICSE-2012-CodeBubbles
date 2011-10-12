@@ -351,7 +351,7 @@ private class CoverageSetup extends MethodAdapter {
       if (super_class != null) return;
       if (id < 128) super.visitIntInsn(Opcodes.BIPUSH,id);
       else if (id < 128*256) super.visitIntInsn(Opcodes.SIPUSH,id);
-      else super.visitLdcInsn(new Integer(id));
+      else super.visitLdcInsn(Integer.valueOf(id));
       super.visitMethodInsn(Opcodes.INVOKESTATIC,"edu/brown/cs/bubbles/batt/BattAgent",rtn,"(I)V");
     }
 
@@ -365,7 +365,7 @@ private class CoverageSetup extends MethodAdapter {
 /*										*/
 /********************************************************************************/
 
-private class Tracer extends TraceMethodVisitor {
+private static class Tracer extends TraceMethodVisitor {
 
    private String method_name;
 

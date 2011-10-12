@@ -97,6 +97,7 @@ public static void main(String [] args)
 private boolean 	restore_session;
 private boolean 	save_session;
 private boolean 	force_setup;
+private boolean 	force_metrics;
 private boolean 	skip_setup;
 private boolean 	skip_splash;
 private boolean 	allow_debug;
@@ -121,6 +122,7 @@ private BemaMain(String [] args)
    restore_session = true;
    save_session = true;
    force_setup = false;
+   force_metrics = false;
    skip_setup = false;
    skip_splash = false;
    allow_debug = false;
@@ -164,6 +166,9 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-f")) {                   // -force
 	    force_setup = true;
+	  }
+	 else if (args[i].startsWith("-c")) {                   // -collect
+	    force_metrics = true;
 	  }
 	 else if (args[i].startsWith("-w") && i+1 < ln) {       // -workspace <ws>
 	    use_workspace = args[++i];
@@ -227,6 +232,7 @@ private void start()
    BoardSetup bs = BoardSetup.getSetup();
    if (skip_setup) bs.setSkipSetup();
    if (force_setup) bs.setForceSetup(true);
+   if (force_metrics) bs.setForceMetrics(true);
    if (skip_splash) bs.setSkipSplash();
    if (allow_debug) bs.setAllowDebug();
    if (use_lila) bs.setUseLila();

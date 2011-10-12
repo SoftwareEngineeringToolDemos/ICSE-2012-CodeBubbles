@@ -253,12 +253,14 @@ private class TaskSelector extends TaskDialog implements ActionListener {
 	 bba = BudaRoot.findBudaBubbleArea(this);
 	 closeDialog(evt);
 	 result_status = 2;
-	 Object tobj = task_box.getSelectedItem();
-	 if (tobj == null) return;
-	 if (tobj instanceof BnoteTask) task = (BnoteTask) tobj;
-	 if (task_box != null && current_project != null) {
-	    if (tobj.equals("< New Task >")) result_status = 1;
-	  }
+	 if (task_box != null) {
+	    Object tobj = task_box.getSelectedItem();
+	    if (tobj == null) return;
+	    if (tobj instanceof BnoteTask) task = (BnoteTask) tobj;
+	    if (current_project != null) {
+	       if (tobj.equals("< New Task >")) result_status = 1;
+	     }
+	 }
        }
 
       switch (result_status) {
@@ -367,20 +369,20 @@ private class TaskCreator extends TaskDialog implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
       if (cmd.equals("Cancel")) {
-	 result_status = -1;
-	 closeDialog(evt);
+         result_status = -1;
+         closeDialog(evt);
        }
       else if (cmd.equals("Done") || cmd.equals("Create")) {
-	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-	 Rectangle loc = BudaRoot.findBudaLocation(this);
-	 closeDialog(evt);
-	 if (name_field != null && current_project != null && name_field.getText().length() > 0) {
-	    BnoteTask task = BnoteStore.defineTask(name_field.getText(),current_project,
-						      desc_field.getText());
-	    if (task != null) BbookFactory.getFactory().handleSetTask(task,bba,loc);
-	  }
+         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+         Rectangle loc = BudaRoot.findBudaLocation(this);
+         closeDialog(evt);
+         if (name_field != null && current_project != null && name_field.getText().length() > 0) {
+            BnoteTask task = BnoteStore.defineTask(name_field.getText(),current_project,
+        					      desc_field.getText());
+            if (task != null) BbookFactory.getFactory().handleSetTask(task,bba,loc);
+          }
        }
-
+   
       if (result_status == 0) updateButtons();
     }
 

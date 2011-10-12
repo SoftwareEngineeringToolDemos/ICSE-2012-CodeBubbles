@@ -134,6 +134,7 @@ public void showDialog()
    pnl.setFont(button_font);
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_component);
+   if (bba == null) return;
 
    bba.addBubble(bb,source_component,start_point,
          PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO|PLACEMENT_LOGICAL);
@@ -291,10 +292,10 @@ protected class ModifierButton extends JToggleButton implements ActionListener {
    @Override public void actionPerformed(ActionEvent e) {
       int v0 = property_set.getModifiers();
       if (isSelected()) {
-	 v0 |= modifier_value;
+         v0 |= modifier_value;
        }
       else {
-	 v0 &= ~modifier_value;
+         v0 &= ~modifier_value;
        }
       property_set.put(BuenoKey.KEY_MODIFIERS,v0);
     }

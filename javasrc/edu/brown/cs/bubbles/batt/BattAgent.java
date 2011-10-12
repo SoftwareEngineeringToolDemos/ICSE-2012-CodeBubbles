@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -292,6 +292,7 @@ private void enterMethod(int id)
       ThreadData td = getThreadData();
       RtMethod fm = td.enterMethod(rm);
       if (fm != null) fm.markCall(rm);
+      else rm.markTop();
     }
 }
 
@@ -466,6 +467,7 @@ private static class RtMethod extends RtItem {
    private String method_desc;
    private List<RtBlock> basic_blocks;
    private int entry_count;
+   private int top_count;
    private Map<RtMethod,Counter> calls_count;
 
    RtMethod(int idx,String cnm,String nm,String dc) {
@@ -477,6 +479,7 @@ private static class RtMethod extends RtItem {
       end_line = -1;
       basic_blocks = new ArrayList<RtBlock>();
       entry_count = 0;
+      top_count = 0;
       calls_count = null;
     }
 
@@ -494,11 +497,14 @@ private static class RtMethod extends RtItem {
       c.incr();
     }
 
+   void markTop()			{ ++top_count; }
+
    void outputCounts(XMLStreamWriter xw) throws XMLStreamException {
       if (entry_count == 0) return;
       xw.writeStartElement("METHOD");
       outputFields(xw);
-      xw.writeAttribute("CALLED",Integer.toString(entry_count));
+      xw.writeAttribute("COUNT",Integer.toString(entry_count));
+      xw.writeAttribute("TOP",Integer.toString(top_count));
       if (calls_count != null) {
 	 for (Map.Entry<RtMethod,Counter> ent : calls_count.entrySet()) {
 	    RtMethod cm = ent.getKey();
@@ -518,7 +524,7 @@ private static class RtMethod extends RtItem {
     }
 
    void outputFields(XMLStreamWriter xw) throws XMLStreamException {
-      xw.writeAttribute("NAME",class_name + "." + method_name);
+      xw.writeAttribute("NAME",class_name.replace('/','.') + "." + method_name);
       xw.writeAttribute("SIGNATURE",method_desc);
       if (start_line > 0) {
 	 xw.writeAttribute("START",Integer.toString(start_line));
@@ -687,7 +693,7 @@ private static class ThreadData {
 
    RtMethod enterMethod(RtMethod rm) {
       from_data = new ThreadData(rm,block_id,from_data);
-      RtMethod orm = rm;
+      RtMethod orm = method_id;
       method_id = rm;
       block_id = null;
       return orm;

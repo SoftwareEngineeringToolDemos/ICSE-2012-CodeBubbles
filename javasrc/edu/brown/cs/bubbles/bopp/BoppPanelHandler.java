@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Alexander Hills		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -572,7 +572,7 @@ private String getStringFromTab(TabName name)
 /*										*/
 /********************************************************************************/
 
-private class OptionTabsUI extends BasicTabbedPaneUI {
+private static class OptionTabsUI extends BasicTabbedPaneUI {
 
    @Override protected void paintTabBackground(Graphics g,int tabplacement,int tabindex,
 						  int x,int y,int w,int h,boolean isselected) {
@@ -645,7 +645,7 @@ private class OptionTabsUI extends BasicTabbedPaneUI {
 /*										*/
 /********************************************************************************/
 
-private class TabPanel extends JPanel {
+private static class TabPanel extends JPanel {
 
    private TabName    tab_name;
    private static final long serialVersionUID = 1;
@@ -834,8 +834,8 @@ private class SearchKeyListener extends KeyAdapter {
 
    @Override public void keyReleased(KeyEvent e) {
       if (((TabPanel) panel_tabs.getSelectedComponent()).getTabName() != TabName.SEARCH) {
-         panel_tabs.setSelectedComponent(search_tab);
-         changeToTab(search_tab);
+	 panel_tabs.setSelectedComponent(search_tab);
+	 changeToTab(search_tab);
        }
       search();
     }

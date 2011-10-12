@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -120,7 +120,7 @@ private MessageImpl createMessageImpl(String to)
 /*										*/
 /********************************************************************************/
 
-private class MessageImpl implements BoardMailMessage
+private static class MessageImpl implements BoardMailMessage
 {
    private String mail_to;
    private String subject_text;
@@ -154,7 +154,7 @@ private class MessageImpl implements BoardMailMessage
       int ct = addField(buf,"subject",subject_text,0);
       // TODO: do our own uuencoding of the body and an email attachment and see if it works
       ct = addField(buf,"body",body_text,ct);
-      ct = addField(buf,"attachment",attachment_file,ct);
+      addField(buf,"attachment",attachment_file,ct);
 
       try {
 	 System.err.println("Mail URI = " + buf.toString());

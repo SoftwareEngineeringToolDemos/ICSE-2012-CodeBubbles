@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -50,19 +50,19 @@ public class BgtaManager implements PacketListener {
 /*										*/
 /********************************************************************************/
 
-private XMPPConnection             the_connection;
-private static XMPPConnection      stat_con;
-private RosterListener             roster_listener;
-private BgtaRepository             the_repository;
+private XMPPConnection		   the_connection;
+private static XMPPConnection	   stat_con;
+private RosterListener		   roster_listener;
+private BgtaRepository		   the_repository;
 
-protected String                   user_name;
-protected String                   user_password;
-protected ChatServer               user_server;
-protected boolean                  being_saved;
-protected Vector<BgtaBubble>       existing_bubbles;
+protected String		   user_name;
+protected String		   user_password;
+protected ChatServer		   user_server;
+protected boolean		   being_saved;
+protected Vector<BgtaBubble>	   existing_bubbles;
 protected Map<String, BgtaChat>    existing_chats;
 protected Map<String, Document>    existing_docs;
-protected BgtaRoster               the_roster;
+protected BgtaRoster		   the_roster;
 
 
 
@@ -92,7 +92,7 @@ static BgtaManager getManager(String username,String password,ChatServer server,
 /*										*/
 /********************************************************************************/
 
-BgtaManager(String username,String password,ChatServer 
+BgtaManager(String username,String password,ChatServer
 server,BgtaRepository repo)
 {
    this(username,password,server);
@@ -129,9 +129,9 @@ String getPassword()				   { return user_password; }
 
 ChatServer getServer()				   { return user_server; }
 
-boolean isBeingSaved()           { return being_saved; }
+boolean isBeingSaved()		 { return being_saved; }
 
-void setBeingSaved(boolean bs)   { being_saved = bs; }
+void setBeingSaved(boolean bs)	 { being_saved = bs; }
 
 boolean isLoggedIn()
 {
@@ -159,7 +159,7 @@ boolean propertiesMatch(String un,String se)
 {
    if (!(o instanceof BgtaManager)) return false;
    BgtaManager man = (BgtaManager) o;
-	
+
    return user_name.equals(man.getUsername()) && user_password.equals(man.getPassword()) && user_server.equals(man.getServer());
 }
 
@@ -216,7 +216,7 @@ void login(String username,String password,ChatServer server) throws XMPPExcepti
    BoardLog.logD("BGTA", "Starting login process for " + username + " on server: " + server.server());
    String serv = server.server();
    String host = server.host();
-   
+
    // Set up extra security for Facebook.
    ConnectionConfiguration config = null;
    if (serv.equals(ChatServer.FACEBOOK.server())) {
@@ -235,17 +235,17 @@ void login(String username,String password,ChatServer server) throws XMPPExcepti
    // Make a connection and try to login.
    // Disconnect if login fails.
    try {
-   	the_connection.connect();
-   	the_connection.login(username, password);
+	the_connection.connect();
+	the_connection.login(username, password);
     } catch (XMPPException e) {
        try {
-    	  if (the_connection.isConnected())
-    	     the_connection.disconnect();
-        } catch (Exception ex) {
-            BoardLog.logE("BGTA", "Error disconnecting: " + ex.getMessage());
-        }
-        BoardLog.logE("BGTA","Error connecting to " + server.server() + ": " + e.getMessage());
-   	throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
+	  if (the_connection.isConnected())
+	     the_connection.disconnect();
+	} catch (Exception ex) {
+	    BoardLog.logE("BGTA", "Error disconnecting: " + ex.getMessage());
+	}
+	BoardLog.logE("BGTA","Error connecting to " + server.server() + ": " + e.getMessage());
+	throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
     }
     if (!the_connection.isAuthenticated()) throw new XMPPException("Could not login to " + server.server() + ". Please try again.");
 
@@ -264,7 +264,7 @@ void disconnect()
     BoardLog.logD("BGTA","Starting logout process for " + user_name + " on " + user_server.server());
     the_connection.disconnect();
     for (BgtaChat ch : existing_chats.values())
-        ch.close();
+	ch.close();
     existing_chats.clear();
     roster_listener = null;
     BoardLog.logD("BGTA","Successful logout for " + user_name + " on " + user_server.server());
@@ -274,7 +274,7 @@ void disconnect()
 
 /********************************************************************************/
 /*										*/
-/*	Bubble, Chat, & Doc Managers      					*/
+/*	Bubble, Chat, & Doc Managers						*/
 /*										*/
 /********************************************************************************/
 
@@ -309,7 +309,7 @@ List<BgtaBubble> getExistingBubbles(String username)
    List<BgtaBubble> bubbles = new Vector<BgtaBubble>();
    for (BgtaBubble bb : existing_bubbles) {
 	  if (bb.getUsername().equals(username))
-		 bubbles.add(bb); 
+		 bubbles.add(bb);
     }
    if (bubbles.size() == 0)
 	  return null;
@@ -328,11 +328,11 @@ BgtaChat startChat(String username,BgtaBubble using)
 {
     BgtaChat chat = null;
     if (!hasChat(username)) {
-        Chat ch = the_connection.getChatManager().createChat(username,null);
-        String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
-        chat = new BgtaChat(user_name,username,name,user_server,ch,getExistingDoc(username));
-        existing_chats.put(username,chat);
-        existing_docs.put(username,chat.getDocument());
+	Chat ch = the_connection.getChatManager().createChat(username,null);
+	String name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
+	chat = new BgtaChat(user_name,username,name,user_server,ch,getExistingDoc(username));
+	existing_chats.put(username,chat);
+	existing_docs.put(username,chat.getDocument());
      }
     existing_bubbles.add(using);
     return chat;
@@ -345,7 +345,7 @@ BgtaChat startChat(String username)
        Chat ch = the_connection.getChatManager().createChat(username,null);
        String name = username;
        if(the_connection.getRoster().getEntry(ch.getParticipant()) != null)
-          name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
+	  name = the_connection.getRoster().getEntry(ch.getParticipant()).getName();
        chat = new BgtaChat(user_name,username,name,user_server,ch,getExistingDoc(username));
        existing_chats.put(username,chat);
        existing_docs.put(username,chat.getDocument());
@@ -376,8 +376,8 @@ void removeChat(String username)
    if (!hasBubble(username)) {
       BgtaChat chat = getExistingChat(username);
       if (chat != null)
-         chat.close();
-      existing_chats.remove(chat);
+	 chat.close();
+      existing_chats.remove(username);
     }
 }
 
@@ -405,17 +405,17 @@ Document getExistingDoc(String username)
 
 public static Presence getPresence(String conname)
 {
-	if(stat_con != null)
-		return stat_con.getRoster().getPresence(conname);
-	else
-		return null;
+   if (stat_con != null)
+      return stat_con.getRoster().getPresence(conname);
+   else
+      return null;
 }
 
 /**
  * Returns the proper Icon depending on the type of the Presence.
- * 
+ *
  * @param pres A Presence
- * 
+ *
  * @return an Icon dependent on the type of the Presence
  */
 public static Icon iconFor(Presence pres)
@@ -456,23 +456,23 @@ public static Icon iconFor(Presence pres)
 {
    if (pack instanceof Message) {
       if (((Message) pack).getBody() == null)
-           return;
+	   return;
       if (((Message) pack).getBody().equals(""))
-           return;
+	   return;
       String from = pack.getFrom();
       if (from.lastIndexOf("/") != -1) from = from.substring(0, from.lastIndexOf("/"));
       if (from.equals(user_name)) return;
       BgtaChat chat = getExistingChat(from);
       if (chat != null) {
-         chat.messageReceived(pack);
-         return;
+	 chat.messageReceived(pack);
+	 return;
        }
       else {
-         BgtaFactory.createReceivedChatBubble(from, this);
-         chat = getExistingChat(from);
-         if (chat != null)
-            chat.messageReceived(pack);
-         return;
+	 BgtaFactory.createReceivedChatBubble(from, this);
+	 chat = getExistingChat(from);
+	 if (chat != null)
+	    chat.messageReceived(pack);
+	 return;
        }
     }
 }
@@ -498,18 +498,18 @@ private class BgtaRosterListener implements RosterListener {
 
 
 
-class BgtaXMPPRoster implements BgtaRoster {
-	
-   private Roster       our_roster;
-   
+private class BgtaXMPPRoster implements BgtaRoster {
+
+   private Roster	our_roster;
+
    BgtaXMPPRoster(Roster roster) {
       this.our_roster = roster;
     }
-   
+
    @Override public BgtaRosterEntry getEntry(String username) {
       return new BgtaXMPPRosterEntry(this.our_roster.getEntry(username));
     }
-   
+
    @Override public Collection<BgtaXMPPRosterEntry> getEntries() {
 	  Collection<RosterEntry> entries = null;
 	  Collection<RosterGroup> groups = this.our_roster.getGroups();
@@ -530,52 +530,54 @@ class BgtaXMPPRoster implements BgtaRoster {
 	   }
       return toreturn.subList(0, toreturn.size());
     }
-   
+
    @Override public Presence getPresence(String username) {
        return this.our_roster.getPresence(username);
     }
-   
+
 }   // end of inner class BgtaXMPPRoster
 
 
 
-class BgtaXMPPRosterEntry implements BgtaRosterEntry {
-	
-   private RosterEntry  the_entry;
-   
+private static class BgtaXMPPRosterEntry implements BgtaRosterEntry {
+
+   private RosterEntry	the_entry;
+
    BgtaXMPPRosterEntry(RosterEntry entry) {
       the_entry = entry;
     }
-   
+
    @Override public String getName() {
       String name = null;
 	  if (the_entry.getName() != null)
-         name = the_entry.getName();
+	 name = the_entry.getName();
 	  else
 	     name = the_entry.getUser();
       int idx = name.indexOf("@");
       if (idx > 0)
-          name = name.substring(0, idx);
+	  name = name.substring(0, idx);
       while (name.indexOf(".") != -1) {
-         if (name.charAt(name.indexOf(".") + 1) != ' ') {
-            String back = name.substring(name.indexOf(".") + 1);
-         	String front = name.substring(0, name.indexOf("."));
-         	name = front + " " + back;
-          }
-         else {
-            String back = name.substring(name.indexOf(".") + 1);
-            String front = name.substring(0, name.indexOf("."));
-            name = front + back;
-          }   
+	 if (name.charAt(name.indexOf(".") + 1) != ' ') {
+	    String back = name.substring(name.indexOf(".") + 1);
+		String front = name.substring(0, name.indexOf("."));
+		name = front + " " + back;
+	  }
+	 else {
+	    String back = name.substring(name.indexOf(".") + 1);
+	    String front = name.substring(0, name.indexOf("."));
+	    name = front + back;
+	  }
        }
       return name;
     }
-   
+
    @Override public String getUser() {
       return the_entry.getUser();
     }
-   
+
 }   // end of inner class BgtaXMPPRosterEntry
+
+
 }   // end of class BgtaManager
 
 

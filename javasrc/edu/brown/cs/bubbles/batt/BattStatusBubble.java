@@ -408,16 +408,16 @@ private class DisplayTable extends JTable implements MouseListener {
       setColumnSelectionAllowed(false);
       setDragEnabled(false);
       setFillsViewportHeight(true);
-      
+
       getColumnModel().getColumn(0).setMinWidth(BATT_STATUS_COL_MIN_WIDTH);
       getColumnModel().getColumn(0).setMaxWidth(BATT_STATUS_COL_MAX_WIDTH);
-      
+
       getColumnModel().getColumn(1).setMinWidth(BATT_STATE_COL_MIN_WIDTH);
       getColumnModel().getColumn(1).setMaxWidth(BATT_STATE_COL_MAX_WIDTH);
-      
+
       getColumnModel().getColumn(2).setPreferredWidth(BATT_CLASS_COL_PREF_WIDTH);
       getColumnModel().getColumn(3).setPreferredWidth(BATT_NAME_COL_PREF_WIDTH);
-      
+
       setCellSelectionEnabled(false);
       setRowSelectionAllowed(true);
       setColumnSelectionAllowed(false);
@@ -439,8 +439,8 @@ private class DisplayTable extends JTable implements MouseListener {
    @Override public void mouseExited(MouseEvent _e)			{ }
    @Override public void mouseReleased(MouseEvent e)			{ }
    @Override public void mousePressed(MouseEvent e)			{ }
-   
-   @Override public boolean isCellEditable(int r,int c)                 { return false; }
+
+   @Override public boolean isCellEditable(int r,int c) 		{ return false; }
 
    @Override public String getToolTipText(MouseEvent e) {
       BattTestCase btc = findTestCase(e.getPoint());
@@ -454,7 +454,7 @@ private class DisplayTable extends JTable implements MouseListener {
       BattTestCase btc = batt_model.getTestCase(row);
       return btc;
     }
-   
+
 }	// end of inner class DisplayTable
 
 
@@ -465,7 +465,7 @@ private class DisplayTable extends JTable implements MouseListener {
 /*										*/
 /********************************************************************************/
 
-private class SetupBatt implements Runnable {
+private static class SetupBatt implements Runnable {
 
    @Override public void run() {
       BattFactory.getFactory().startBattServer();
@@ -509,6 +509,7 @@ private class ModeAction extends JRadioButtonMenuItem implements ActionListener 
 
    ModeAction(TestMode md) {
       super(md.toString(),(md == current_mode));
+      test_mode = md;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
@@ -526,6 +527,7 @@ private class RunAction extends JRadioButtonMenuItem implements ActionListener {
 
    RunAction(RunType typ) {
       super(typ.toString(),(typ == current_runtype));
+      run_type = typ;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
@@ -537,7 +539,7 @@ private class RunAction extends JRadioButtonMenuItem implements ActionListener {
 
 
 
-private class StopAction extends AbstractAction {
+private static class StopAction extends AbstractAction {
 
    StopAction() {
       super("Stop current test");

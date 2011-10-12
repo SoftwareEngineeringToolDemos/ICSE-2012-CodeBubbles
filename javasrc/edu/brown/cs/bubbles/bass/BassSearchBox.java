@@ -405,10 +405,11 @@ private class Reseter implements Runnable {
       BowiFactory.startTask(BowiTaskType.SEARCH_TREE);
       try {
 	 for ( ; ; ) {
-	    while (reset_text != null) {
+	    for ( ; ; ) {
 	       String t;
 	       synchronized (this) {
 		  t = reset_text;
+		  if (t == null) break;
 		  reset_text = null;
 		}
 	       tree_model.reset(t,false);
@@ -853,7 +854,7 @@ protected void paintComponent(Graphics g)
 /*										*/
 /********************************************************************************/
 
-private class Transferer extends TransferHandler {
+private static class Transferer extends TransferHandler {
 
    private static final long serialVersionUID = 1;
 
@@ -882,7 +883,7 @@ private class Transferer extends TransferHandler {
 
 
 
-private class TransferBubble implements Transferable, BudaConstants.BudaDragBubble {
+private static class TransferBubble implements Transferable, BudaConstants.BudaDragBubble {
 
    private List<BassName> tree_entries;
 
@@ -1076,7 +1077,7 @@ private class Hoverer extends BudaHover {
 
 private static final Color TRANSPARENT = new Color(0,0,0,0);
 
-private class SearchBoxCellRenderer extends DefaultTreeCellRenderer implements TreeCellRenderer {
+private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer implements TreeCellRenderer {
 
    private static final long serialVersionUID = 1;
 
@@ -1153,7 +1154,7 @@ private class SearchBoxCellRenderer extends DefaultTreeCellRenderer implements T
 /*										*/
 /********************************************************************************/
 
-private class GradientTree extends JTree {
+private static class GradientTree extends JTree {
 
    private static final long serialVersionUID = 1;
 

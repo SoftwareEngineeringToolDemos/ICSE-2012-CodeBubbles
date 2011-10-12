@@ -355,7 +355,7 @@ private synchronized void handleShow()
       int y = p0.y + r.y + r.height + Y_DELTA;
       if (y + d1.height >= r2.height) y = p0.y + r.y - d1.height - Y_DELTA;
       cur_menu.setLocation(x,y);
-      
+
       cur_menu.setVisible(true);
       the_panel.setCurrentIndex(0);
       be.grabFocus();
@@ -666,7 +666,7 @@ private class CompletionPanel extends JPanel implements MouseListener {
 
 
 
-private class CompletionList extends JList {
+private static class CompletionList extends JList {
 
    CompletionModel item_model;
 
@@ -715,7 +715,7 @@ private static class CompletionModel extends DefaultListModel {
 
 
 
-private class CompletionListCellRenderer extends DefaultListCellRenderer {
+private static class CompletionListCellRenderer extends DefaultListCellRenderer {
 
    private static final long serialVersionUID = 1;
 

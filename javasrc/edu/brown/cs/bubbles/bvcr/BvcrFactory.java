@@ -56,7 +56,7 @@ private static BvcrFactory	the_factory = null;
 /*										*/
 /********************************************************************************/
 
-public static BvcrFactory getFactory()
+public synchronized static BvcrFactory getFactory()
 {
    if (the_factory == null) the_factory = new BvcrFactory();
    return the_factory;
@@ -165,7 +165,7 @@ void startBvcrServer()
       for (int i = 0; i < 100; ++i) {
 	 MintDefaultReply rply = new MintDefaultReply();
 	 mc.send("<BVCR DO='PING' />",rply,MINT_MSG_FIRST_NON_NULL);
-	 String rslt = rply.waitForString();
+	 String rslt = rply.waitForString(1000);
 	 if (rslt != null) {
 	    server_running = true;
 	    break;

@@ -87,7 +87,7 @@ void process()
       if (!user_visitor.checkUseClass(bcd.getName())) continue;
       processClass(bcd);
     }
-										
+									
    user_visitor.finish();
 }
 
@@ -222,23 +222,23 @@ private class AsmClassVisitor implements ClassVisitor {
    @Override public void visitSource(String src,String dbg)		{ }
 
    @Override public FieldVisitor visitField(int access,String name,String desc,String sign,
-        				       Object val) {
+					       Object val) {
       AsmField af = new AsmField(asm_data,name);
       user_visitor.visitClassField(af,findClass(desc,true),sign,access,val);
       return new AsmFieldVisitor(af);
     }
 
    @Override public MethodVisitor visitMethod(int access,String name,String desc,String sign,
-        					 String [] excs) {
+						 String [] excs) {
       AsmClass mcls = findClass(desc,true);
       AsmMethod mthd = findMethod(asm_data,name,mcls);
       AsmClass [] ecls;
       if (excs == null) ecls = new AsmClass[0];
       else {
-         ecls = new AsmClass[excs.length];
-         for (int i = 0; i < excs.length; ++i) {
-            ecls[i] = findInternalClass(excs[i],false);
-          }
+	 ecls = new AsmClass[excs.length];
+	 for (int i = 0; i < excs.length; ++i) {
+	    ecls[i] = findInternalClass(excs[i],false);
+	  }
        }
       user_visitor.visitClassMethod(mthd,sign,access,ecls);
       return new AsmMethodVisitor(mthd);
@@ -395,7 +395,7 @@ private class AsmMethodVisitor implements MethodVisitor {
 /*										*/
 /********************************************************************************/
 
-private class AsmClass implements BanalClass {
+private static class AsmClass implements BanalClass {
 
    private String class_name;
    private String java_name;
@@ -436,7 +436,7 @@ private class AsmClass implements BanalClass {
 /*										*/
 /********************************************************************************/
 
-private class AsmField implements BanalField {
+private static class AsmField implements BanalField {
 
    private AsmClass for_class;
    private String   field_name;
@@ -487,9 +487,9 @@ private class AsmMethod implements BanalMethod {
    @Override public String getName()			{ return method_name; }
    @Override public BanalClass [] getArgumentTypes()	{ return arg_types; }
    @Override public BanalClass getReturnType()		{ return return_type; }
-   @Override public String getFullName()                { return full_name; }
-   
-   
+   @Override public String getFullName()		{ return full_name; }
+
+
 
 }	// end of inner class AsmMethod
 

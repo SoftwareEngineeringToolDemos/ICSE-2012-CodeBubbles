@@ -1,22 +1,22 @@
 /********************************************************************************/
-/*                         							*/
-/*    		BeduCourse.java     	            				*/
-/*                            							*/
-/* 	Bubbles for Education   						*/
-/* 	Represents a school course		 	      			*/
-/* 				               					*/
+/*										*/
+/*		BeduCourse.java 						*/
+/*										*/
+/*	Bubbles for Education							*/
+/*	Represents a school course						*/
+/*										*/
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         		*/
+/*	Copyright 2011 Brown University -- Andrew Kovacs			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bedu.chat;
@@ -252,7 +252,7 @@ String getCourseName()
 {
    if (o instanceof BeduCourse) {
       BeduCourse c = (BeduCourse) o;
-      return (course_name == c.course_name && ta_chat_jid == c.ta_chat_jid);
+      return (course_name.equals(c.course_name) && ta_chat_jid.equals(c.ta_chat_jid));
    }
    else return false;
 }

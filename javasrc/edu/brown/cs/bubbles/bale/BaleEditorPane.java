@@ -183,7 +183,7 @@ void dispose()
        }
       finally { bd.baleWriteUnlock(); }
     }
-   else {
+   else if (d != null) {
       super.setDocument(d);
     }
 }
@@ -1131,11 +1131,18 @@ private class ContextData implements BaleContextConfig {
     }
 
    @Override public BaleContextType getTokenType() {
+      if (editor_element == null) return BaleContextType.NONE;
       String nm = editor_element.getName();
       BaleContextType t = context_types.get(nm);
       if (t != null) return t;
       return BaleContextType.NONE;
     }
+   
+   @Override public String getMethodName() {
+      if (editor_element == null) return null;
+      return editor_element.getMethodName();
+    }
+      
 
 }	// end of inner class ContextData
 

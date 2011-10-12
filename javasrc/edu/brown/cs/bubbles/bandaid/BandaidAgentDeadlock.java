@@ -201,7 +201,7 @@ private static class LockNode {
 
 
 
-private class Deadlock {
+private static class Deadlock {
 
    private Map<ThreadInfo,String> lock_set;
 

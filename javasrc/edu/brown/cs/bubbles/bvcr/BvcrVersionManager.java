@@ -157,7 +157,7 @@ protected String runCommand(String cmd,CommandCallback cb)
 	 if (ln == null) break;
 	 cb.handleLine(ln);
        }
-      ins.close();
+      br.close();
       cb.handleDone();
     }
    catch (IOException e) {

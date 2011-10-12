@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Ian Strickman, Steven P. Reiss	*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -160,7 +160,9 @@ String getFragmentName()			{ return fragment_name; }
 
    boolean smfg = BALE_PROPERTIES.getBoolean(BALE_CRUMB_SHOW_METHOD);
    if (smfg != show_method_name) {
-      force_rename = true;
+      synchronized (this) {
+	 force_rename = true;
+       }
       show_method_name = smfg;
       SwingUtilities.invokeLater(new CheckNames());
       recent_width = getWidth();
@@ -322,7 +324,7 @@ private class CheckNames implements Runnable {
 /*										*/
 /********************************************************************************/
 
-private void handleResize()
+private synchronized void handleResize()
 {
    int newwidth = getWidth();
    if (component_list == null) return;

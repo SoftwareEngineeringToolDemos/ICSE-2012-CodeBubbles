@@ -159,7 +159,7 @@ private BaleInfoBubble(BaleEditorPane target,String[] btnmsg,String bbmsg,
 
    MouseAdapter actionhandler = new ContextActionHandler();
 
-   if (btnmsg.length != 0 && btnmsg != null) {
+   if (btnmsg != null && btnmsg.length != 0) {
       JLabel lb;
       for (int i = 0; i < btnmsg.length; i++) {
 	 lb = new JLabel("<html><font color=blue><u>" + btnmsg[i] + "</u></font></html>",

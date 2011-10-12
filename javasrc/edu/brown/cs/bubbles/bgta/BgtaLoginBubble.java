@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Ian Strickman		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -71,17 +71,17 @@ public class BgtaLoginBubble extends BudaBubble implements BgtaConstants {
 /*										*/
 /********************************************************************************/
 
-private Vector<BgtaManager>            manager_list;
-private JButton                        sub_button;
-private JButton                        logout_button;
-private JTextField                     user_field;
-private JPasswordField                 pass_field;
-private JLabel                         server_field;
-private JLabel                         error_label;
-private BgtaRepository                 my_repository;
-private BgtaLoginName                  my_name;
-private ChatServer                     selected_server;
-private boolean                        rem_user;
+private Vector<BgtaManager>	       manager_list;
+private JButton 		       sub_button;
+private JButton 		       logout_button;
+private JTextField		       user_field;
+private JPasswordField		       pass_field;
+private JLabel			       server_field;
+private JLabel			       error_label;
+private BgtaRepository		       my_repository;
+private BgtaLoginName		       my_name;
+private ChatServer		       selected_server;
+private boolean 		       rem_user;
 private static Collection<BgtaManager> all_managers;
 
 private static final long   serialVersionUID = 1L;
@@ -102,8 +102,8 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    manager_list = mans;
    if (!all_managers.containsAll(mans)) {
       for (BgtaManager man : mans) {
-         if (!all_managers.contains(man))
-            all_managers.add(man);
+	 if (!all_managers.contains(man))
+	    all_managers.add(man);
        }
     }
    my_repository = repo;
@@ -139,7 +139,7 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    String[] serverStrings = new String[servers];
    servers = 0;
    for (ChatServer server : ChatServer.values()) {
-   	serverStrings[servers++] = server.selector();
+	serverStrings[servers++] = server.selector();
    }
    JComboBox serverchoice = new JComboBox(serverStrings);
    serverchoice.setFont(BoardFont.getFont(serverchoice.getFont().getFontName(),Font.PLAIN,10));
@@ -272,12 +272,12 @@ private class LogoutListener implements ActionListener {
       String username = user_field.getText();
       String servername = selected_server.server();
       if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
-      	username += selected_server.ending();
+	username += selected_server.ending();
       if (BgtaFactory.logoutAccount(username,servername)) removeBubble();
       // if not logged in in the first place, display a message saying so
       else {
-         error_label.setText("You weren't logged in yet.");
-         error_label.setVisible(true);
+	 error_label.setText("You weren't logged in yet.");
+	 error_label.setVisible(true);
        }
     }
 
@@ -297,7 +297,7 @@ private class LoginListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
       BowiFactory.startTask(BowiTaskType.LOGIN_TO_CHAT);
-      if (user_field.getText().equals("") || pass_field.getPassword().equals("")) {
+      if (user_field.getText().equals("") || pass_field.getPassword().length == 0) {
      BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
      return;
        }
@@ -307,44 +307,44 @@ private class LoginListener implements ActionListener {
      String username = user_field.getText();
      String password = new String(pass_field.getPassword());
      if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
-        username += selected_server.ending();
+	username += selected_server.ending();
      for (BgtaManager man : all_managers) {
-        if (man.propertiesMatch(username,selected_server.server())
-      		  && man.getPassword().equals(new String(password))) {
-           newman = man;
-      	  putin = false;
-         }
+	if (man.propertiesMatch(username,selected_server.server())
+		  && man.getPassword().equals(password)) {
+	   newman = man;
+	  putin = false;
+	 }
       }
      if (putin) {
-        newman = BgtaManager.getManager(username,password,selected_server,my_repository);
-        all_managers.add(newman);
+	newman = BgtaManager.getManager(username,password,selected_server,my_repository);
+	all_managers.add(newman);
       }
      else if (newman.isLoggedIn()) {
-        error_label.setText("Already logged in.");
-        error_label.setVisible(true);
-        BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
-        return;
+	error_label.setText("Already logged in.");
+	error_label.setVisible(true);
+	BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
+	return;
       }
      newman.login();
      manager_list.add(newman);
      my_repository.addNewRep(new BgtaBuddyRepository(newman));
      if (rem_user) {
-        BgtaFactory.addManagerProperties(username, password, selected_server);
-        newman.setBeingSaved(true);
+	BgtaFactory.addManagerProperties(username, password, selected_server);
+	newman.setBeingSaved(true);
      }
      else if (newman.isBeingSaved()) {
-        newman.setBeingSaved(false);
-        BgtaFactory.clearManagerProperties();
-        for (BgtaManager man : all_managers) {
-            if (man.isBeingSaved())
-               BgtaFactory.addManagerProperties(man.getUsername(),man.getPassword(),man.getServer());
-         }
+	newman.setBeingSaved(false);
+	BgtaFactory.clearManagerProperties();
+	for (BgtaManager man : all_managers) {
+	    if (man.isBeingSaved())
+	       BgtaFactory.addManagerProperties(man.getUsername(),man.getPassword(),man.getServer());
+	 }
       }
      removeBubble();
        }
       catch (XMPPException xmppe) {
-         error_label.setText("Login failed. Please try again.");
-         error_label.setVisible(true);
+	 error_label.setText("Login failed. Please try again.");
+	 error_label.setVisible(true);
        }
       BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
     }
@@ -372,17 +372,17 @@ private class EnterListener implements ActionListener {
 }	// end of inner class EnterListener
 
 
-private class FocusSelectionListener extends FocusAdapter {
-	
-	@Override public void focusGained(FocusEvent e) {
-		((JTextField) e.getSource()).selectAll();
-	}
-	
-	@Override public void focusLost(FocusEvent e) {
-		((JTextField) e.getSource()).setCaretPosition(0);
-		((JTextField) e.getSource()).moveCaretPosition(0);
-	}
-	
+private static class FocusSelectionListener extends FocusAdapter {
+
+   @Override public void focusGained(FocusEvent e) {
+      ((JTextField) e.getSource()).selectAll();
+    }
+
+   @Override public void focusLost(FocusEvent e) {
+      ((JTextField) e.getSource()).setCaretPosition(0);
+      ((JTextField) e.getSource()).moveCaretPosition(0);
+    }
+
 } // end of inner class FocusSelectionListener
 
 
@@ -393,7 +393,7 @@ private class FocusSelectionListener extends FocusAdapter {
 /*										*/
 /********************************************************************************/
 
-private class LoginPanel extends JPanel implements BgtaConstants {
+private static class LoginPanel extends JPanel implements BgtaConstants {
 
    private static final long serialVersionUID = 1L;
 
@@ -433,22 +433,22 @@ private class ServerListener implements ActionListener {
       String selection = (String) cb.getSelectedItem();
       selected_server = ChatServer.GMAIL;
       if (selection.equals(ChatServer.BROWN.selector())) {
-      	 selected_server = ChatServer.BROWN;
+	 selected_server = ChatServer.BROWN;
        }
       else if (selection.equals(ChatServer.FACEBOOK.selector())) {
-      	 selected_server = ChatServer.FACEBOOK;
+	 selected_server = ChatServer.FACEBOOK;
        }
       else if (selection.equals(ChatServer.AIM.selector())) {
-      	 selected_server = ChatServer.AIM;
+	 selected_server = ChatServer.AIM;
        }
       else if (selection.equals(ChatServer.JABBER.selector())) {
-      	 selected_server = ChatServer.JABBER;
+	 selected_server = ChatServer.JABBER;
        }
       server_field.setText(selected_server.display());
       if (selected_server == ChatServer.FACEBOOK || selected_server == ChatServer.AIM)
-      	 server_field.setVisible(false);
+	 server_field.setVisible(false);
       else
-      	 server_field.setVisible(true);
+	 server_field.setVisible(true);
     }
 
 }  // end of inner class ServerListener

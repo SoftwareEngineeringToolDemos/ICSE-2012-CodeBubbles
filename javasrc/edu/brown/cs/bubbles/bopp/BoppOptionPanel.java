@@ -244,7 +244,7 @@ private void search()
 	 if (c instanceof Window) break;
 	 if (c.getParent() instanceof BudaBubbleArea) break;
        }
-      c.setVisible(false);
+      if (c != null) c.setVisible(false);
     }
 }
 
@@ -256,7 +256,7 @@ private void search()
 /*										*/
 /********************************************************************************/
 
-private class SubPanel {
+private static class SubPanel {
 
    private String panel_name;
    private List<BoppOptionNew> panel_options;

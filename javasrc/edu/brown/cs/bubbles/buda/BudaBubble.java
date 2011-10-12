@@ -106,7 +106,7 @@ private Stroke		copy_stroke;
 
 private static final long serialVersionUID = 1L;
 
-protected static Cursor default_cursor = Cursor.getDefaultCursor();
+protected static final Cursor default_cursor = Cursor.getDefaultCursor();
 
 private static final Map<Object,Object> hint_map;
 

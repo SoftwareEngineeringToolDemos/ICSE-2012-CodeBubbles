@@ -705,7 +705,7 @@ private boolean fixElementPosition(NewLeafIter nli,BaleElement oelt)
 }
 
 
-private class NewLeafIter implements Iterator<BaleElement> {
+private static class NewLeafIter implements Iterator<BaleElement> {
 
    List<BaleElement> element_list;
    int cur_index;
@@ -879,7 +879,7 @@ private static Color getHighlightColor(BumpProblem bp)
 /*										*/
 /********************************************************************************/
 
-private class IdentifierMap {
+private static class IdentifierMap {
 
    private Map<Integer,BaleElement> id_map;
 

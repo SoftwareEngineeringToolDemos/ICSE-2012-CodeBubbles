@@ -210,18 +210,17 @@ private class RemoveAction extends AbstractAction {
 
 
 
-private class EditAction extends AbstractAction {
+private static class EditAction extends AbstractAction {
 
-   private EvalExpr for_expr;
+   // private EvalExpr for_expr;
 
    EditAction(EvalExpr ee) {
       super("Edit Expression");
-      for_expr = ee;
+      // for_expr = ee;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BDDT","EditExpression");
-      if (for_expr != null) ;
       // TODO: handle expression and property editing
     }
 
@@ -381,12 +380,12 @@ private class EvaluationTableModel extends AbstractTableModel {
 
    void updateForFrame(BumpStackFrame frm) {
       synchronized (eval_exprs) {
-         for (int i = 0; i < eval_exprs.size(); ++i) {
-            EvalExpr ee = eval_exprs.get(i);
-            if (ee.updateForFrame(frm)) {
-               fireTableRowsUpdated(i,i);
-             }
-          }
+	 for (int i = 0; i < eval_exprs.size(); ++i) {
+	    EvalExpr ee = eval_exprs.get(i);
+	    if (ee.updateForFrame(frm)) {
+	       fireTableRowsUpdated(i,i);
+	     }
+	  }
        }
     }
 

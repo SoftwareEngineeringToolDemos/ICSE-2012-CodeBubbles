@@ -659,7 +659,7 @@ private class FileGetServerHandler implements MintHandler {
 
 
 
-private class FileGetClientHandler implements MintHandler {
+private static class FileGetClientHandler implements MintHandler {
 
    private FileOutputStream file_writer;
    private boolean is_okay;

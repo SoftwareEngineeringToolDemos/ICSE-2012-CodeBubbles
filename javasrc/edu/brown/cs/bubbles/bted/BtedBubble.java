@@ -590,7 +590,7 @@ private class NextFindAction extends AbstractAction {
  * Subclasses JEditorPane to allow gradient painting.
  */
 
-private class BtedEditorPane extends JEditorPane {
+private static class BtedEditorPane extends JEditorPane {
 
    private static final long serialVersionUID = 1;
 

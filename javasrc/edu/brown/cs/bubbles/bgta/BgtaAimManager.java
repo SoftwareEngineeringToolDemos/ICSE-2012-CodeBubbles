@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                            */
-/*    BgtaAimManager.java                 */
-/*                            */
-/* Bubbles attribute and property management main setup routine      */
-/*                            */
+/*										*/
+/*		BgtaAimManger.java						*/
+/*										*/
+/*	Bubbles AIM chat mmanager						*/
+/*										*/
 /********************************************************************************/
-/* Copyright 2011 Brown University -- Sumner Warren            */
+/* Copyright 2011 Brown University -- Sumner Warren	       */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -74,20 +74,20 @@ private IcbmService the_service;
 /*										*/
 /********************************************************************************/
 
-BgtaAimManager(String username,String password,ChatServer 
+BgtaAimManager(String username,String password,ChatServer
 server)
 {
     super(username,password,ChatServer.AIM);
     if (!server.equals(ChatServer.AIM))
-        BoardLog.logE("BGTA","AIM manager created with ChatServer: " + server.server() + " instead of AIM.");
+	BoardLog.logE("BGTA","AIM manager created with ChatServer: " + server.server() + " instead of AIM.");
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access Methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access Methods								*/
+/*										*/
 /********************************************************************************/
 
 @Override boolean isLoggedIn()
@@ -101,9 +101,9 @@ server)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Connection Methods                                                      */
-/*                                                                              */
+/*										*/
+/*	Connection Methods							*/
+/*										*/
 /********************************************************************************/
 
 @Override void login() throws XMPPException
@@ -130,7 +130,7 @@ server)
 	 @Override
 	    public void openedServices(AimConnection arg0,
 					  Collection<? extends Service> arg1) { }
-	
+
        });
    the_connection.connect();
    if (the_connection.getState() == State.FAILED) {
@@ -172,7 +172,7 @@ server)
 
 	 @Override
 	    public void handleServiceReady(Service arg0) { }
-		
+
        });
    SsiService ssi = the_connection.getSsiService();
    if (ssi == null) {
@@ -205,20 +205,20 @@ server)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Chat Managers                                                           */
-/*                                                                              */
+/*										*/
+/*	Chat Managers								*/
+/*										*/
 /********************************************************************************/
 
 @Override BgtaChat startChat(String username,BgtaBubble using)
 {
     BgtaChat chat = null;
     if (!hasChat(username)) {
-        Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
-        String name = ((BgtaAIMRosterEntry) the_roster.getEntry(username)).getBuddy().getAlias();
-        chat = new BgtaChat(user_name,username,name,ChatServer.AIM,con,getExistingDoc(username));
-        existing_chats.put(username,chat);
-        existing_docs.put(username,chat.getDocument());
+	Conversation con = the_connection.getIcbmService().getImConversation(new Screenname(username));
+	String name = ((BgtaAIMRosterEntry) the_roster.getEntry(username)).getBuddy().getAlias();
+	chat = new BgtaChat(user_name,username,name,ChatServer.AIM,con,getExistingDoc(username));
+	existing_chats.put(username,chat);
+	existing_docs.put(username,chat.getDocument());
      }
     existing_bubbles.add(using);
     return chat;
@@ -235,14 +235,14 @@ server)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Service Listener                                                        */
-/*                                                                              */
+/*										*/
+/*	Service Listener							*/
+/*										*/
 /********************************************************************************/
 
 /**
  * A listener class for AIM Services. Only used to listen for new conversations.
- * 
+ *
  * @author Sumner Warren
  *
  */
@@ -253,7 +253,7 @@ class AIMServiceListener implements IcbmListener {
 
    @Override public void newConversation(IcbmService service, Conversation conv) {
       if (!hasChat(conv.getBuddy().getFormatted()))
-        BgtaFactory.createReceivedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
+	BgtaFactory.createReceivedChatBubble(conv.getBuddy().getFormatted(), BgtaAimManager.this);
     }
 
       @Override public void sendAutomaticallyFailed(IcbmService service, Message message,
@@ -263,9 +263,9 @@ class AIMServiceListener implements IcbmListener {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Roster Classes                                                          */
-/*                                                                              */
+/*										*/
+/*	Roster Classes								*/
+/*										*/
 /********************************************************************************/
 
 class BgtaAIMRoster implements BgtaRoster {
@@ -309,7 +309,7 @@ class BgtaAIMRoster implements BgtaRoster {
 }  // end of inner class BgtaAIMRoster
 
 
-class BgtaAIMRosterEntry implements BgtaRosterEntry {
+private static class BgtaAIMRosterEntry implements BgtaRosterEntry {
 
    private Buddy       the_entry;
 
@@ -346,7 +346,7 @@ class BgtaAIMRosterEntry implements BgtaRosterEntry {
    Screenname getScreenname() {
       return the_entry.getScreenname();
     }
-   
+
    Buddy getBuddy() {
        return the_entry;
     }

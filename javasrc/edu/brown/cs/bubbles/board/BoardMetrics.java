@@ -92,7 +92,7 @@ private long	next_feedback;
 private long	next_eclipse;
 private long	next_options;
 private long	next_workingset;
-private long   next_monitorlog;
+private long	next_monitorlog;
 
 private boolean default_metrics;
 
@@ -102,10 +102,17 @@ private static BoardMetrics	the_metrics = new BoardMetrics();
 private static String		run_id;
 private static Set<String>	bugs_reported = new HashSet<String>();
 
+private static final int BLUR_SIZE = 8;
+private static final float [] BLUR_MATRIX;
 
 
 static {
    run_id = Integer.toString(new Random().nextInt(1000000));
+
+   BLUR_MATRIX = new float[BLUR_SIZE * BLUR_SIZE];
+   for (int i = 0; i < BLUR_MATRIX.length; ++i) {
+      BLUR_MATRIX[i] = 1.0f / BLUR_MATRIX.length;
+    }
 }
 
 
@@ -353,14 +360,17 @@ private void setupOptions(boolean force)
     }
 
    setActive();
-   if (collect_screens) next_screen = SCREEN_DUMP_TIME;
-   setupCommandData();
-   next_command = COMMAND_DUMP_TIME;
-   if (collect_experience) next_feedback = USER_FEEDBACK_TIME;
-   if (collect_eclipse) next_eclipse = ECLIPSE_DUMP_TIME;
-   if (collect_options) next_options = OPTIONS_DUMP_TIME;
-   if (collect_workingset) next_workingset = WORKINGSET_DUMP_TIME;
-   if (collect_monitorlog) next_monitorlog = MONITORLOG_DUMP_TIME;
+
+   synchronized (this) {
+      if (collect_screens) next_screen = SCREEN_DUMP_TIME;
+      setupCommandData();
+      next_command = COMMAND_DUMP_TIME;
+      if (collect_experience) next_feedback = USER_FEEDBACK_TIME;
+      if (collect_eclipse) next_eclipse = ECLIPSE_DUMP_TIME;
+      if (collect_options) next_options = OPTIONS_DUMP_TIME;
+      if (collect_workingset) next_workingset = WORKINGSET_DUMP_TIME;
+      if (collect_monitorlog) next_monitorlog = MONITORLOG_DUMP_TIME;
+    }
 
    Runtime.getRuntime().addShutdownHook(new DumpAllTask());
 }
@@ -441,7 +451,7 @@ private class MetricsDialog extends JDialog implements ActionListener, CaretList
    private JCheckBox wrkst_checkbox;
    private JCheckBox mnlog_checkbox;
    private JCheckBox dumps_checkbox;
-   private JTextField userid_textfield;
+   // private JTextField userid_textfield;
    // private JButton ok_button;
 
    private static final long serialVersionUID = 1L;
@@ -454,7 +464,25 @@ private class MetricsDialog extends JDialog implements ActionListener, CaretList
       pnl.beginLayout();
       pnl.addBannerLabel("User Metrics Opt-In Options");
       pnl.addSeparator();
-      scrns_checkbox = pnl.addBoolean("Collect Periodic Screen Shots",collect_screens,null);
+
+      String comment = "<html>Code Bubbles can periodically collect information about ";
+      comment += "the use of the system.  This data will provide a basis for improving ";
+      comment += "the system and might be used for research purposes.\n";
+      comment += "<p>All information collected is anonymous and can not be used to identify ";
+      comment += "you or your project.  It also does not contain any information about the ";
+      comment += "code you are working on.";
+      comment += "<p>To reset these options, you can either remove the file ";
+      comment += "<i>~/.bubbles/Metrics.props</i> ";
+      comment += "or start bubbles with the <i>-collect</i> option";
+      comment += "<p>For more information, contact Steven Reiss (spr@cs.brown.edu).";
+      JEditorPane ep = new JEditorPane("text/html",comment);
+      ep.setEditable(false);
+      Dimension sz = new Dimension(350,270);
+      ep.setSize(sz);
+      ep.setPreferredSize(sz);
+      pnl.addLabellessRawComponent("COMMENT",ep);
+
+      scrns_checkbox = pnl.addBoolean("Collect Periodic Blurred Screen Shots",collect_screens,null);
       exprn_checkbox = pnl.addBoolean("Periodically ask for User Experiences",collect_experience,null);
       activ_checkbox = pnl.addBoolean("Determine % time environment is used",collect_active,null);
       cmmds_checkbox = pnl.addBoolean("Collect command execution data",collect_commands,null);
@@ -512,7 +540,7 @@ private class MetricsDialog extends JDialog implements ActionListener, CaretList
 	 collect_dumps = dumps_checkbox.isSelected();
 	 collect_monitorlog = mnlog_checkbox.isSelected();
 
-	 if (userid_textfield != null) user_id = userid_textfield.getText().trim();
+	 // if (userid_textfield != null) user_id = userid_textfield.getText();
 	 if (user_id == null || user_id.equals("")) user_id = getUserId();
 	 else user_id = user_id.replace(" ","_");
 
@@ -665,11 +693,8 @@ private class ScreenDumper implements Runnable {
 	 Graphics2D g2 = bi.createGraphics();
 	 root_window.paint(g2);
 
-	 BoardProperties bp = BoardProperties.getProperties("Board");
-	 if (bp.getBoolean(BOARD_BLUR_SCREENSHOT)) {
-	    BufferedImageOp op = new ConvolveOp(new Kernel(3, 3, BLUR_MATRIX));
-	    bi = op.filter(bi, null);
-	 }
+	 BufferedImageOp op = new ConvolveOp(new Kernel(BLUR_SIZE, BLUR_SIZE, BLUR_MATRIX));
+	 bi = op.filter(bi, null);
 
 	 File f = null;
 	 try {
@@ -691,7 +716,7 @@ private class ScreenDumper implements Runnable {
 	    dump_file.delete();
 	    dump_file = null;
 	  }
-	 catch (IOException e) { 
+	 catch (IOException e) {
 	    BoardLog.logE("BOARD","Problem sending screen image: " + e);
 	  }
        }
@@ -872,7 +897,10 @@ private void addBugMonitor(IvyXmlWriter xw)
 	 int wlen;
 	 if (monitor_length < 0) wlen = (int) elen;
 	 else wlen = (int) (elen - monitor_length);
-	 if (wlen == 0) return;
+	 if (wlen == 0) {
+	    ins.close();
+	    return;
+	  }
 
 	 if (monitor_length > 0) ins.skip(monitor_length);
 	 while (wlen > 0) {
@@ -969,8 +997,8 @@ private void setActive(long when)
 	    next_workingset = total_active + WORKINGSET_DUMP_TIME;
 	  }
 	 if (next_monitorlog > 0 && total_active > next_monitorlog)  {
-		 domonitorlog = true;
-		 next_monitorlog = total_active + MONITORLOG_DUMP_TIME;
+	    domonitorlog = true;
+	    next_monitorlog = total_active + MONITORLOG_DUMP_TIME;
 	 }
        }
 
@@ -1051,7 +1079,7 @@ private class CommandDumpTask implements Runnable {
 
 
 
-private class UserFeedbackTask implements Runnable {
+private static class UserFeedbackTask implements Runnable {
 
    @Override public void run() {
       // if active, put up user questionaire

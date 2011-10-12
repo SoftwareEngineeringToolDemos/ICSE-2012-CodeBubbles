@@ -500,11 +500,13 @@ private class TaskRegion implements BbookRegion
    private Rectangle region_area;
    private Set<BudaBubble> active_bubbles;
    private BudaWorkingSet working_set;
+   private boolean is_active;
 
    TaskRegion(BudaBubble bb) {
       bubble_area = BudaRoot.findBudaBubbleArea(bb);
       region_task = null;
       region_area = bubble_area.computeRegion(bb);
+      is_active = false;
       initializeBubbles(bb);
     }
 
@@ -512,20 +514,21 @@ private class TaskRegion implements BbookRegion
       bubble_area = bba;
       region_task = null;
       region_area = bubble_area.computeRegion(r);
+      is_active = false;
       initializeBubbles(null);
     }
 
    private void initializeBubbles(BudaBubble b0) {
       active_bubbles = new HashSet<BudaBubble>();
       for (BudaBubble bb : bubble_area.getBubblesInRegion(region_area)) {
-	 if (isBubbleRelevant(bb)) {
-	    if (b0 == null) b0 = bb;
-	    noteBubble(bb);
-	  }
+         if (isBubbleRelevant(bb)) {
+            if (b0 == null) b0 = bb;
+            noteBubble(bb);
+          }
        }
       working_set = null;
       if (b0 != null) {
-	 working_set = bubble_area.findWorkingSetForBubble(b0);
+         working_set = bubble_area.findWorkingSetForBubble(b0);
        }
     }
 
@@ -578,6 +581,7 @@ private class TaskRegion implements BbookRegion
     }
 
    void noteBubble(BudaBubble bb) {
+      is_active = true;
       active_bubbles.add(bb);
       Document d = bb.getContentDocument();
       if (d != null) d.addDocumentListener(change_listener);
@@ -587,12 +591,12 @@ private class TaskRegion implements BbookRegion
       if (!active_bubbles.remove(nbb)) return false;
       Rectangle r0 = null;
       for (BudaBubble bb : active_bubbles) {
-	 Rectangle r1 = BudaRoot.findBudaLocation(bb);
-	 if (r1 == null) continue;
-	 if (r0 == null) r0 = new Rectangle(r1);
-	 else r0 = r0.union(r1);
+         Rectangle r1 = BudaRoot.findBudaLocation(bb);
+         if (r1 == null) continue;
+         if (r0 == null) r0 = new Rectangle(r1);
+         else r0 = r0.union(r1);
        }
-      if (r0 == null) return true;
+      if (r0 == null) return is_active;
       region_area = bubble_area.computeRegion(r0);
       return false;
     }

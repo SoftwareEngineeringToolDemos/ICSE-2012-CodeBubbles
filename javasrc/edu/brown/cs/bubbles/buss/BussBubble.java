@@ -94,7 +94,7 @@ BussBubble(Collection<BussEntry> ents, int contentWidth)
    stack_box = new BussStackBox(tree_model, contentWidth, this);
 
    layered_pane = new JLayeredPane();
-   layered_pane.add(stack_box, new Integer(0), 0);
+   layered_pane.add(stack_box,Integer.valueOf(0), 0);
    layered_pane.setPreferredSize(stack_box.getPreferredSize());
    layered_pane.setSize(stack_box.getSize());
    layered_pane.setLayout(null);
@@ -307,7 +307,7 @@ public void updateEditorBubbleLocation()
 
       Rectangle selectedItemRect = stack_box.getRowBounds(stack_box.getSelectionRows()[0]);
       getEditorBubble().setLocation(selectedItemRect.getLocation());
-      getLayeredPane().add(getEditorBubble(), new Integer(1), 0);
+      getLayeredPane().add(getEditorBubble(), Integer.valueOf(1), 0);
     }
 }
 

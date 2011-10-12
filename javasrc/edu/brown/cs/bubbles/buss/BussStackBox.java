@@ -206,7 +206,7 @@ private class Transferer extends TransferHandler {
 
 
 
-private class TransferBubble implements Transferable, BudaConstants.BudaDragBubble {
+private static class TransferBubble implements Transferable, BudaConstants.BudaDragBubble {
 
    private List<BussEntry> tree_entries;
 
@@ -327,7 +327,7 @@ private void createEntryBubble(BussEntry be,BudaRoot root,Rectangle loc)
    if (bb == null) return;
 
    BudaBubble sbb = bbl.getSourceBubble();
-   if (sbb != null && sbb.getContentName() != null && sbb.getContentFile() != null && 
+   if (sbb != null && sbb.getContentName() != null && sbb.getContentFile() != null &&
 	    sbb.getContentName().equals(bb.getContentName()) &&
 	    sbb.getContentFile().equals(bb.getContentFile()))
       return;

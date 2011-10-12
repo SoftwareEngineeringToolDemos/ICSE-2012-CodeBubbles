@@ -201,7 +201,7 @@ private void createNewBubble(BdocReference br)
       // This can take a while and should be done outside the UI thread, the rest should be done in UI thread
       BdocBubble nbb = new BdocBubble(br);
       bba.addBubble(nbb,the_panel,null,
-            PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	    PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
       BudaBubbleLink lnk = new BudaBubbleLink(
 	 bb,
 	 new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true),
@@ -419,7 +419,7 @@ private class DescriptionView extends JEditorPane {
 }	// end of inner class DescriptionView
 
 
-	
+
 
 private class DocLinker implements HyperlinkListener {
 
@@ -448,7 +448,7 @@ private class DocLinker implements HyperlinkListener {
 /*										*/
 /********************************************************************************/
 
-private class ItemTree extends JTree {
+private static class ItemTree extends JTree {
 
    private static final long serialVersionUID = 1;
 

@@ -120,7 +120,7 @@ BddtRepository()
 /*										*/
 /********************************************************************************/
 
-private class ConfigName extends BassNameBase {
+private static class ConfigName extends BassNameBase {
 
    private BumpLaunchConfig for_config;
 
@@ -160,7 +160,7 @@ private class ConfigName extends BassNameBase {
 /*										*/
 /********************************************************************************/
 
-private class ProcessName extends BassNameBase {
+private static class ProcessName extends BassNameBase {
 
    private BumpProcess for_process;
 
@@ -291,7 +291,7 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
 
 
 
-private class CloneLaunchAction extends AbstractAction {
+private static class CloneLaunchAction extends AbstractAction {
 
    private BumpLaunchConfig for_config;
 
@@ -309,7 +309,7 @@ private class CloneLaunchAction extends AbstractAction {
 
 
 
-private class DeleteLaunchAction extends AbstractAction {
+private static class DeleteLaunchAction extends AbstractAction {
 
    private BumpLaunchConfig for_config;
 

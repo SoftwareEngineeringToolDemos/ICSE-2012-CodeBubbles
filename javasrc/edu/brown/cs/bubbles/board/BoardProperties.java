@@ -292,7 +292,7 @@ public String getString(String prop,String dflt)
 {
    String s = getProperty(prop);
    if (s == null) s = dflt;
-   return dflt;
+   return s;
 }
 
 

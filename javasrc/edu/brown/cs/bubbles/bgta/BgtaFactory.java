@@ -55,13 +55,13 @@ public class BgtaFactory implements BgtaConstants
 /*										*/
 /********************************************************************************/
 
-private static BgtaFactory		      the_factory = null;
+private static BgtaFactory		the_factory = null;
 private static Vector<BgtaManager>	chat_managers;
-private static BgtaRepository			buddy_list;
+private static BgtaRepository		buddy_list;
 private static BoardProperties		login_properties;
-private static BudaRoot					my_buda_root;
-private static boolean					rec_dif_back;
-private static JMenu						metadata_menu;
+private static BudaRoot 		my_buda_root;
+private static boolean			rec_dif_back;
+private static JMenu			metadata_menu;
 
 static {
    chat_managers = new Vector<BgtaManager>();
@@ -76,7 +76,7 @@ static {
 /********************************************************************************/
 
 /**
- * Sets up a new repository and configurator. Also creates and logs into 
+ * Sets up a new repository and configurator. Also creates and logs into
  * any chat accounts for which the user has saved login information.
  */
 public static void setup()
@@ -88,13 +88,13 @@ public static void setup()
    ChatServer server = null;
    try {
       for (int i = 1; i <= login_properties.getInt(BGTA_NUM_ACCOUNTS); ++i) {
-         username = login_properties.getProperty(BGTA_USERNAME_PREFIX + i);
-         String password = login_properties.getProperty(BGTA_PASSWORD_PREFIX + i);
-         server = ChatServer.fromServer(login_properties.getProperty(BGTA_SERVER_PREFIX + i));
-         BgtaManager man = BgtaManager.getManager(username,password,server,buddy_list);
-         man.setBeingSaved(true);
-         man.login();
-         chat_managers.add(man);
+	 username = login_properties.getProperty(BGTA_USERNAME_PREFIX + i);
+	 String password = login_properties.getProperty(BGTA_PASSWORD_PREFIX + i);
+	 server = ChatServer.fromServer(login_properties.getProperty(BGTA_SERVER_PREFIX + i));
+	 BgtaManager man = BgtaManager.getManager(username,password,server,buddy_list);
+	 man.setBeingSaved(true);
+	 man.login();
+	 chat_managers.add(man);
        }
     }
    catch (XMPPException e) {
@@ -105,7 +105,7 @@ public static void setup()
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_PEOPLE, buddy_list);
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_EXPLORER, buddy_list);
    BudaRoot.addBubbleConfigurator("BGTA", new BgtaConfigurator());
-   
+
 }
 
 /**
@@ -128,13 +128,15 @@ public static synchronized BgtaFactory getFactory()
  */
 public static void initialize(BudaRoot br)
 {
-	my_buda_root = br;
-	getFactory().addMetadataMenuItem();
+   my_buda_root = br;
+   addMetadataMenuItem();
 }
+
+
 
 /********************************************************************************/
 /*										*/
-/* Property adding methods */
+/*	Property adding methods 						*/
 /*										*/
 /********************************************************************************/
 
@@ -155,7 +157,7 @@ static void clearManagerProperties()
 {
 	login_properties.clear();
 	login_properties.setProperty(BGTA_NUM_ACCOUNTS,0);
-        login_properties.setProperty(BGTA_ALT_COLOR_UPON_RECEIVE,rec_dif_back);
+	login_properties.setProperty(BGTA_ALT_COLOR_UPON_RECEIVE,rec_dif_back);
 	try {
 		login_properties.save();
 	} catch (IOException e) {
@@ -201,9 +203,11 @@ static BoardProperties getBgtaProperties()
 	return login_properties;
 }
 
+
+
 /********************************************************************************/
 /*										*/
-/* Constructors */
+/*	Constructors								*/
 /*										*/
 /********************************************************************************/
 
@@ -213,7 +217,7 @@ private BgtaFactory()
 
 /********************************************************************************/
 /*										*/
-/* Bubble creation methods */
+/*	Bubble creation methods 						*/
 /*										*/
 /********************************************************************************/
 
@@ -244,7 +248,7 @@ public static List<String> getChatters()
 
 /**
  * Returns an Iterator of the existing managers.
- * 
+ *
  * @return an Iterator of the existing managers.
  */
 public static Iterator<BgtaManager> getManagers()
@@ -252,31 +256,33 @@ public static Iterator<BgtaManager> getManagers()
     return chat_managers.iterator();
 }
 
-private BudaBubble createMetadataChatBubble(String friendname,String url)
+private static BudaBubble createMetadataChatBubble(String friendname,String url)
 {
-	boolean isknownmanager = false;
-	BgtaManager man = buddy_list.getBuddyInfo(friendname).getManager();
-	for (BgtaManager m : chat_managers) {
-	   if (man == m) {
-	      isknownmanager = true;
-	      break;
-            }
-	 }
-	if (!isknownmanager) return null;
-        BgtaBubble bb = man.getExistingBubble(friendname);
-        if (bb == null) {
-           bb = new BgtaBubble(friendname,man);
-           Rectangle vp = my_buda_root.getViewport();
-           my_buda_root.add(bb,new BudaConstraint(vp.x,vp.y));
-         }
-	bb.sendMessage(url);
-	return bb;
+   boolean isknownmanager = false;
+   BgtaManager man = buddy_list.getBuddyInfo(friendname).getManager();
+   for (BgtaManager m : chat_managers) {
+      if (man == m) {
+	 isknownmanager = true;
+	 break;
+       }
+    }
+   if (!isknownmanager) return null;
+   BgtaBubble bb = man.getExistingBubble(friendname);
+   if (bb == null) {
+      bb = new BgtaBubble(friendname,man);
+      Rectangle vp = my_buda_root.getViewport();
+      my_buda_root.add(bb,new BudaConstraint(vp.x,vp.y));
+    }
+   bb.sendMessage(url);
+   return bb;
 }
+
+
 
 /**
  * Creates and returns a new BgtaBubble, with a non-standard gradient
  * if the user has selected that option.
- * 
+ *
  * @return a BgtaBubble
  */
 public static BgtaBubble createReceivedChatBubble(String username,BgtaManager man)
@@ -295,7 +301,7 @@ public static BgtaBubble createReceivedChatBubble(String username,BgtaManager ma
 
 /********************************************************************************/
 /*										*/
-/* Metadata adding methods */
+/*	Metadata adding methods 						*/
 /*										*/
 /********************************************************************************/
 
@@ -304,75 +310,79 @@ static void addTaskToRoot(Element xml)
 	my_buda_root.addTask(xml);
 }
 
-private void addMetadataMenuItem()
+
+
+private static void addMetadataMenuItem()
 {
-	metadata_menu = new JMenu("Send Working Set over Chat");
-	metadata_menu.addMenuListener(new SendMetadataChatListener());
-	my_buda_root.addTopBarMenuItem(metadata_menu,true);
+   metadata_menu = new JMenu("Send Working Set over Chat");
+   metadata_menu.addMenuListener(new SendMetadataChatListener());
+   my_buda_root.addTopBarMenuItem(metadata_menu,true);
 }
 
-private void addChatButton(JMenu menu,String id,String tt)
-{
-	JMenuItem itm = new JMenuItem(id);
-	itm.addActionListener(new ChatterListener());
-	if (tt != null) {
-		itm.setToolTipText(tt);
-		ToolTipManager.sharedInstance().registerComponent(itm);
-	}
-	menu.add(itm);
-}
 
-/********************************************************************************/
-/*										*/
-/* Listeners for chat */
-/*										*/
-/********************************************************************************/
 
-private class SendMetadataChatListener implements MenuListener
+private static void addChatButton(JMenu menu,String id,String tt)
 {
-
-@Override
-public void menuSelected(MenuEvent e)
-{
-   List<String> chatters = BgtaFactory.getChatters();
-   Collections.sort(chatters);
-   metadata_menu.removeAll();
-   for (String name : chatters) {
-      addChatButton(metadata_menu,name,null);
+   JMenuItem itm = new JMenuItem(id);
+   itm.addActionListener(new ChatterListener());
+   if (tt != null) {
+      itm.setToolTipText(tt);
+      ToolTipManager.sharedInstance().registerComponent(itm);
     }
+   menu.add(itm);
 }
 
-@Override
-public void menuCanceled(MenuEvent e)
-{
-}
 
-@Override
-public void menuDeselected(MenuEvent e)
-{
-}
 
-} // end of inner class SendMetadataChatListener
+/********************************************************************************/
+/*										*/
+/*	Listeners for chat							*/
+/*										*/
+/********************************************************************************/
 
-private class ChatterListener implements ActionListener
+private static class SendMetadataChatListener implements MenuListener
 {
 
-@Override
-public void actionPerformed(ActionEvent e)
+   @Override public void menuSelected(MenuEvent e) {
+      List<String> chatters = BgtaFactory.getChatters();
+      Collections.sort(chatters);
+      metadata_menu.removeAll();
+      for (String name : chatters) {
+	 addChatButton(metadata_menu,name,null);
+       }
+    }
+
+   @Override public void menuCanceled(MenuEvent e) { }
+
+   @Override public void menuDeselected(MenuEvent e) { }
+
+
+}	// end of inner class SendMetadataChatListener
+
+
+
+
+private static class ChatterListener implements ActionListener
 {
-	String cmd = e.getActionCommand();
-	String url = "";
-	try {
-		File f = my_buda_root.findCurrentWorkingSet().getDescription();
-                BoardUpload bup = new BoardUpload(f);
-		url = bup.getFileURL();
-	} catch (IOException e1) {
-	}
-	createMetadataChatBubble(cmd,url);
-}
 
-} // End of inner class ChatterListener
+   @Override public void actionPerformed(ActionEvent e) {
+      String cmd = e.getActionCommand();
+      String url = "";
+      try {
+	 File f = my_buda_root.findCurrentWorkingSet().getDescription();
+	 BoardUpload bup = new BoardUpload(f);
+	 url = bup.getFileURL();
+       }
+      catch (IOException e1) { }
+      createMetadataChatBubble(cmd,url);
+    }
 
-} // end of class BgtaFactory
+}	// End of inner class ChatterListener
+
+
+
+}	// end of class BgtaFactory
+
+
 
 /* end of BgtaFactory.java */

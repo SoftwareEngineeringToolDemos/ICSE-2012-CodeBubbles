@@ -94,12 +94,12 @@ public static void setup()
    BudaRoot.registerMenuButton(BDDT_CONFIG_BUTTON,the_factory);
    BudaRoot.registerMenuButton(BDDT_PROCESS_BUTTON,the_factory);
 
-   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, the_factory.new SaveButton(),
+   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, new SaveButton(),
 	 "Save all", BoardImage.getImage("save"));
 
-   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, the_factory.new BuildButton(),
+   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, new BuildButton(),
 				"Build all", BoardImage.getImage("build"));
-   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, the_factory.new RefreshButton(),
+   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, new RefreshButton(),
 				"Refresh", BoardImage.getImage("refresh"));
 
    BddtRepository rep = new BddtRepository();
@@ -266,7 +266,7 @@ private void setupDebugging(BudaRoot br)
 /*										*/
 /********************************************************************************/
 
-private class DebuggingPanel extends SwingGridPanel
+private static class DebuggingPanel extends SwingGridPanel
 {
    private static final long serialVersionUID = 1;
 
@@ -570,7 +570,7 @@ BudaBubble makeInteractionBubble(BudaBubble src,BddtLaunchControl ctrl)
 /*										*/
 /********************************************************************************/
 
-private class SaveButton implements ActionListener, Runnable
+private static class SaveButton implements ActionListener, Runnable
 {
    private BudaRoot buda_root;
 
@@ -594,7 +594,7 @@ private class SaveButton implements ActionListener, Runnable
 
 
 
-private class BuildButton implements ActionListener, Runnable
+private static class BuildButton implements ActionListener, Runnable
 {
    @Override public void actionPerformed(ActionEvent e)  {
       BoardThreadPool.start(this);
@@ -612,7 +612,7 @@ private class BuildButton implements ActionListener, Runnable
 
 
 
-private class RefreshButton implements ActionListener, Runnable
+private static class RefreshButton implements ActionListener, Runnable
 {
    @Override public void actionPerformed(ActionEvent e)  {
       BoardThreadPool.start(this);

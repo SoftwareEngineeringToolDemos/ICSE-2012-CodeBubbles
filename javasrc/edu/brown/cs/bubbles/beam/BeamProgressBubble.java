@@ -130,7 +130,7 @@ private synchronized void startProgress(String id,String task,long sid)
 {
    String tnm = task;
    if (subtask != null && subtask.length() > 0) tnm += " (" + subtask + ")";
-   
+
    // ensure we ignore items that are out of order
    Long lid = last_id.get(id);
    if (lid != null &&  sid <= lid) return;
@@ -141,7 +141,7 @@ private synchronized void startProgress(String id,String task,long sid)
 	 if (sid - l > MAX_RANGE) it.remove();
        }
     }
-   
+
    if (kind.equals("BEGIN")) {
       ProgressDisplay pd = all_displays.get(id);
       if (pd == null) startProgress(id,tnm,sid);
@@ -169,7 +169,7 @@ private synchronized void startProgress(String id,String task,long sid)
 
 
 
-private class Remover implements Runnable {
+private static class Remover implements Runnable {
 
    private ProgressDisplay for_display;
 

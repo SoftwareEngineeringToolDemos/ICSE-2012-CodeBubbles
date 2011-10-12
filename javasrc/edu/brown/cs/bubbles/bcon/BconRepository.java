@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -193,7 +193,7 @@ private static class BconName extends BassNameBase {
 
 
 
-private class PackageAction extends AbstractAction
+private static class PackageAction extends AbstractAction
 {
    private BudaBubble source_bubble;
    private Point      source_point;
@@ -211,9 +211,9 @@ private class PackageAction extends AbstractAction
    @Override public void actionPerformed(ActionEvent e) {
       // this should be done in a separate thread
       BudaBubble bb = BconFactory.getFactory().createPackageBubble(source_bubble,project_name,
-        							      package_name);
+								      package_name);
       if (bb == null) return;
-   
+
       BassFactory.getFactory().addNewBubble(source_bubble,source_point,bb);
     }
 

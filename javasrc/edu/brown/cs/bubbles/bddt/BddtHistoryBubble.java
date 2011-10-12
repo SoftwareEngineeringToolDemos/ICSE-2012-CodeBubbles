@@ -186,7 +186,7 @@ private void setupPanel()
     }
    else {
       GraphObject go = getObjectAtPoint(pt.x,pt.y);
-      if (go != null) {
+      if (go != null && go.getValue() != null) {
 	 popup.add(new GotoValueAction(go));
        }
     }
@@ -599,8 +599,11 @@ private void handlePaint(Graphics2D g)
    checkSizes();
    Dimension csz = draw_area.getSize();
 
-   synchronized (history_graph) {
+   synchronized (this) {
       if (update_needed) updateGraph();
+    }
+
+   synchronized (history_graph) {
       int nobj = history_graph.getNumObjects();
       double twid = nobj * GRAPH_OBJECT_WIDTH + 2 * GRAPH_LEFT_RIGHT_MARGIN +
 	 (nobj - 1) * GRAPH_OBJECT_H_SPACE;

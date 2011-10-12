@@ -207,7 +207,7 @@ private String getToolTip(BumpLaunchConfig blc)
 /*										*/
 /********************************************************************************/
 
-private class RunAction extends AbstractAction {
+private static class RunAction extends AbstractAction {
 
    private BumpLaunchConfig the_launch;
    private static final long serialVersionUID = 1;
@@ -229,7 +229,7 @@ private class RunAction extends AbstractAction {
 
 
 
-private class DebugAction extends AbstractAction {
+private static class DebugAction extends AbstractAction {
 
    private BumpLaunchConfig the_launch;
    private static final long serialVersionUID = 1;
@@ -253,7 +253,7 @@ private class DebugAction extends AbstractAction {
 
 
 
-private class NewAction extends AbstractAction {
+private static class NewAction extends AbstractAction {
 
    private static final long serialVersionUID = 1;
 

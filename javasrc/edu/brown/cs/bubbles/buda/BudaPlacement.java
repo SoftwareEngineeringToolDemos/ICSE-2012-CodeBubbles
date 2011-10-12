@@ -131,8 +131,7 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
     }
 
 
-   Rectangle r0 = null;
-   if (r != null) r0 = new Rectangle(r);
+   Rectangle r0 = new Rectangle(r);
 
    if ((place & PLACEMENT_ADGROUP) != 0) {
       expandForGroup(r,grpb);
@@ -153,7 +152,7 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
    if ((place & PLACEMENT_GROUPED) != 0) delta = BUBBLE_CREATION_NEAR_SPACE;
    else delta = BUBBLE_CREATION_SPACE;
 
-   if ((place & PLACEMENT_LOGICAL) != 0 && r != null) {
+   if ((place & PLACEMENT_LOGICAL) != 0) {
       BudaRoot br = BudaRoot.findBudaRoot(bubble_area);
       Rectangle r2 = br.getViewport();
       if (r.x - delta - bbl.getWidth() < r2.x) {

@@ -468,7 +468,7 @@ protected void methodText(StringBuffer buf,BuenoProperties props)
       pbuf.append(" * ${COMMENT}\n");
       pbuf.append("**/\n\n");
     }
-   pbuf.append("$(ITAB)$(MODIFIERS)$(RETURNS) $(NAME)($(PARAMETERS))");
+   pbuf.append("$(ITAB)$(ATTRIBUTES)$(MODIFIERS)$(RETURNS) $(NAME)($(PARAMETERS))");
 
    int mods = props.getModifiers();
    if (Modifier.isAbstract(mods) || Modifier.isNative(mods)) {
@@ -776,6 +776,10 @@ private String getValue(String key,BuenoProperties props,String eol)
    else if (key.equals("TAB")) {
       buf.append(props.getInitialIndentString());
       buf.append(props.getIndentString());
+    }
+   else if (key.equals("ATTRIBUTES")) {
+      String v = props.getStringProperty(BuenoKey.KEY_ATTRIBUTES);
+      if (v != null) buf.append(v + " ");
     }
    else {
       String pnm = BUENO_PROPERTY_HEAD + key;

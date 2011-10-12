@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -78,7 +78,7 @@ private Selector		cur_selector;
 private ClassListModel		list_model;
 private ClassList		class_list;
 private SwingEnumButton<Protections> protect_options;
-private boolean			inner_class;
+private boolean 		inner_class;
 
 private SwingGridPanel		class_panel;
 private Point			popup_point;
@@ -401,7 +401,7 @@ private void setupElements()
 	 p1 = bale_file.mapOffsetToJava(loc0.getEndOffset());
        }
     }
-     
+
    Segment s = new Segment();
    try {
       bale_file.getText(p0,p1-p0,s);
@@ -560,7 +560,7 @@ private void outputComment(int offset,BconToken start,BconToken end,boolean cpy,
    if (nm == null) nm = "<empty>";
 
    if (nm.startsWith("$") || cpy) jdoc = false;
-   
+
    int spos = start.getStart() + offset;
    int epos = end.getStart() + offset;
 
@@ -628,13 +628,13 @@ void addHeaderRegion(BumpLocation bl,RegionType rt,Segment s,int offset)
    int spos = bale_file.mapOffsetToJava(bl.getOffset())-offset;
    int epos = bale_file.mapOffsetToJava(bl.getEndOffset())-offset;
    if (spos < 0 || epos >= s.length()) return;
-   
+
    if (rt == RegionType.REGION_CLASS_HEADER) {
       for (BconRegion br : region_set) {
 	 if (br.getStartOffset() <= spos+offset && br.getEndOffset() > spos+offset) {
 	    spos = br.getEndOffset()-offset;
 	  }
-       } 
+       }
    }
 
    StringBuffer buf = new StringBuffer();
@@ -909,7 +909,7 @@ private class ClassListModel extends AbstractListModel {
 /*										*/
 /********************************************************************************/
 
-private class RegionRenderer extends DefaultListCellRenderer {
+private static class RegionRenderer extends DefaultListCellRenderer {
 
    private static final long serialVersionUID = 1;
 
@@ -1102,8 +1102,8 @@ private class ListTransfer implements Transferable, BudaConstants.BudaDragBubble
    @Override public BudaBubble [] createBubbles() {
       List<BudaBubble> bbls = new ArrayList<BudaBubble>();
       for (BconRegion br : list_regions) {
-         BudaBubble bb = br.makeBubble();
-         if (bb != null) bbls.add(bb);
+	 BudaBubble bb = br.makeBubble();
+	 if (bb != null) bbls.add(bb);
        }
       BudaBubble [] rslt = new BudaBubble[bbls.size()];
       rslt = bbls.toArray(rslt);
@@ -1113,8 +1113,8 @@ private class ListTransfer implements Transferable, BudaConstants.BudaDragBubble
    String getText(Component c) {
       StringBuffer buf = new StringBuffer();
       for (BconRegion br : list_regions) {
-         String rtxt = br.getRegionText();
-         if (rtxt != null) buf.append(rtxt);
+	 String rtxt = br.getRegionText();
+	 if (rtxt != null) buf.append(rtxt);
        }
       if (c == getComponent()) can_delete = true;
       return buf.toString();
@@ -1122,9 +1122,9 @@ private class ListTransfer implements Transferable, BudaConstants.BudaDragBubble
 
    void removeText() {
       if (can_delete) {
-         for (BconRegion br : list_regions) {
-            br.remove();
-          }
+	 for (BconRegion br : list_regions) {
+	    br.remove();
+	  }
        }
     }
 
@@ -1331,18 +1331,18 @@ private class TypeCreator extends AbstractCreator implements BuenoBubbleCreator 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Other Actions                                                           */
-/*                                                                              */
+/*										*/
+/*	Other Actions								*/
+/*										*/
 /********************************************************************************/
 
 
 private class ClassBubbleAction extends AbstractAction {
-   
+
    ClassBubbleAction() {
       super("Open Class Bubble");
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       BudaBubble bb = BaleFactory.getFactory().createClassBubble(for_project,for_class);
       if (bb == null) return;
@@ -1350,43 +1350,43 @@ private class ClassBubbleAction extends AbstractAction {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(class_panel);
       bba.addBubble(bb,r.x + r.width + 40, r.y);
     }
-   
-}       // end of inner class ClassBubbleAction
+
+}	// end of inner class ClassBubbleAction
 
 
 
 
-private class DeleteAction extends AbstractAction {
-   
+private static class DeleteAction extends AbstractAction {
+
    private BconRegion delete_region;
-   
+
    DeleteAction(BconRegion br) {
       super("Delete " + br.getShortRegionName());
       delete_region = br;
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       delete_region.remove();
     }
-   
-}       // end of inner class DeleteAction
+
+}	// end of inner class DeleteAction
 
 
 
 private class ResetAction extends AbstractAction {
-   
+
    ResetAction() {
       super("Update Regions");
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       setupElements();
     }
-   
-}       // end of inner class ResetAction
+
+}	// end of inner class ResetAction
 
 
-private class FilterAction implements ActionListener {
+private static class FilterAction implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
       JTextField tfld = (JTextField) evt.getSource();

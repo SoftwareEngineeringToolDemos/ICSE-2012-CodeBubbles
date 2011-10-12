@@ -261,7 +261,7 @@ private void addPopupItems(Point pt,List<MenuItem> itms,JComponent menu,String p
 /*										*/
 /********************************************************************************/
 
-private class MenuItem {
+private static class MenuItem {
 
    private String full_id;
    private String item_name;
@@ -420,7 +420,7 @@ private class MenuBtn extends JMenuItem implements MenuComponent, ActionListener
 
 
 
-private class MenuSubBtn extends JMenu implements MenuComponent {
+private static class MenuSubBtn extends JMenu implements MenuComponent {
 
    private static final long serialVersionUID = 1;
 
@@ -460,7 +460,7 @@ private static final char ARROW = '\u25b6';
 
 
 
-private class MenuSubBar extends JMenuBar implements MenuComponent {
+private static class MenuSubBar extends JMenuBar implements MenuComponent {
 
    private MenuSubBtn menu_btn;
 

@@ -97,6 +97,8 @@ void server()
 	 catch (InterruptedException e) { }
        }
     }
+
+   for_batt.stopAllTests();
 }
 
 

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -100,7 +100,7 @@ BaleViewport(JEditorPane editor,JPanel annot)
    JScrollBar sb = getVerticalScrollBar();
    sb.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 }
-		
+	
 
 
 /********************************************************************************/
@@ -155,10 +155,10 @@ private void checkScrollBars()
    if (pct <= 100 || ht1 == 0 || vsz.width == 0 || combined_panel == null) return;
    if (ht0 < BALE_SCROLL_MIN_HT) return;
 
-   if (ht1 * pct / 100 * 0.80 > ht0) {
+   if (ht1 * pct / 100.0 * 0.80 > ht0) {
       setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
     }
-   else if (ht1 * pct / 100 < ht0) {
+   else if (ht1 * pct / 100.0 < ht0) {
       setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_AS_NEEDED);
     }
 }

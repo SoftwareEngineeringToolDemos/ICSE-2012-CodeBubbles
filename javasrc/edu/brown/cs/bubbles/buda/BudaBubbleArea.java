@@ -1724,7 +1724,7 @@ private void mergeGroups(BudaBubbleGroup master,BudaBubbleGroup toadd)
 
 private boolean checkGroup(BudaBubbleGroup g)
 {
-   if (g.isEmpty()) {
+   if (g != null && g.isEmpty()) {
       removeBubbleGroup(g);
       return true;
     }
@@ -2131,7 +2131,9 @@ private class BubbleMoveContext extends MouseContext {
     }
 
    void next(MouseEvent e) {
-      if (for_bubble != null) for_bubble.forceFreeze();
+      if (for_bubble == null) return;
+
+      for_bubble.forceFreeze();
       if (docked_bubbles.containsKey(for_bubble)) {
 	 docked_bubbles.remove(for_bubble);
 	 for_bubble.setDocked(false);
@@ -2174,7 +2176,9 @@ private class BubbleMoveContext extends MouseContext {
 
    void finish() {
       super.finish();
-      if (for_bubble != null) for_bubble.unfreeze();
+      if (for_bubble == null) return;
+
+      for_bubble.unfreeze();
       for_bubble.grabFocus();
       setLayer(for_bubble,start_layer,0);
 
@@ -2220,7 +2224,9 @@ private class BubbleResizeContext extends MouseContext {
     }
 
    void next(MouseEvent e) {
-      if (for_bubble != null) for_bubble.unfreeze();
+      if (for_bubble == null) return;
+
+      for_bubble.unfreeze();
       ++resize_count;
       Point p0 = e.getPoint();
       int dx = p0.x - initial_mouse.x;

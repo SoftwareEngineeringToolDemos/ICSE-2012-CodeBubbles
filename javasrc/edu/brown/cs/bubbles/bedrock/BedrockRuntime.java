@@ -1197,7 +1197,7 @@ private void queueConsole(int pid,String txt,boolean err)
 
 
 
-private class ConsoleWrite {
+private static class ConsoleWrite {
 
    private String write_text;
    private boolean is_stderr;

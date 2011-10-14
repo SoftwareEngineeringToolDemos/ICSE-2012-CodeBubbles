@@ -141,7 +141,6 @@ private synchronized void setFileState(String file,FileState state)
     }
 
    if (state == FileState.CHANGED) {
-      for_batt.addErrors(rslt); 		// mark the classes as invalid until compile
       for (String s : rslt) changed_classes.put(s,state);
     }
    else if (state == FileState.ERRORS) {
@@ -157,6 +156,7 @@ private synchronized void setFileState(String file,FileState state)
       for_batt.removeErrors(rslt);
     }
    else if (state == FileState.EDITED) {
+      for_batt.addErrors(rslt); 		// mark the classes as invalid until compile
       for (String s : rslt) changed_classes.put(s,state);
     }
 

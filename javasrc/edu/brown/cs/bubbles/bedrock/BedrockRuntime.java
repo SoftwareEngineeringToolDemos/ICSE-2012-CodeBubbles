@@ -320,50 +320,44 @@ void runProject(String cfg,String mode,boolean build,boolean reg,String vmarg,St
 	throws BedrockException
 {
    try {
-      ILaunchManager lm = debug_plugin.getLaunchManager();
-      ILaunchConfiguration [] cnfg = lm.getLaunchConfigurations();
+      ILaunchConfiguration cnf = findLaunchConfig(cfg);
+      if (cnf == null) throw new BedrockException("Launch configuration " + cfg + " not found");
 
-      for (int i = 0; i < cnfg.length; ++i) {
-	 if (matchLaunchConfiguration(cfg,cnfg[i])) {
-	    ILaunchConfiguration cnf = cnfg[i];
-	    if (vmarg != null) {
-	       ILaunchConfigurationWorkingCopy ccnf = cnf.getWorkingCopy();
-	       String vmatt = "org.eclipse.jdt.launching.VM_ARGUMENTS";
-	       String ja = ccnf.getAttribute(vmatt,(String) null);
-	       if (ja == null || ja.length() == 0) ja = vmarg;
-	       else ja = ja + " " + vmarg;
-	       ccnf.setAttribute(BEDROCK_LAUNCH_IGNORE_PROP,"true");
-	       ccnf.setAttribute(vmatt,ja);
-	       cnf = ccnf;
+      if (vmarg != null) {
+	 ILaunchConfigurationWorkingCopy ccnf = cnf.getWorkingCopy();
+	 String vmatt = "org.eclipse.jdt.launching.VM_ARGUMENTS";
+	 String ja = ccnf.getAttribute(vmatt,(String) null);
+	 if (ja == null || ja.length() == 0) ja = vmarg;
+	 else ja = ja + " " + vmarg;
+	 ccnf.setAttribute(BEDROCK_LAUNCH_IGNORE_PROP,"true");
+	 ccnf.setAttribute(vmatt,ja);
+	 cnf = ccnf;
+       }
+
+      ILaunch lnch = cnf.launch(mode,null,build,reg);
+      if (lnch != null) {
+	 xw.begin("LAUNCH");
+	 xw.field("MODE",lnch.getLaunchMode());
+	 xw.field("TAG",lnch.toString());
+	 xw.field("ID",lnch.hashCode());
+	 IDebugTarget tgt = lnch.getDebugTarget();
+	 if (tgt != null) {		// will be null if doing a run rather than debug
+	    xw.field("TARGET",tgt.hashCode());
+	    xw.field("TARGETTAG",tgt.toString());
+	    xw.field("NAME",tgt.getName());
+	    IProcess ip = tgt.getProcess();
+	    if (ip != null) {
+	       xw.field("PROCESSTAG",ip.getLabel());
+	       xw.field("PROCESS",ip.hashCode());
+	       setupConsole(ip);
 	     }
-	    ILaunch lnch = cnf.launch(mode,null,build,reg);
-	    if (lnch == null) return;
-	    xw.begin("LAUNCH");
-	    xw.field("MODE",lnch.getLaunchMode());
-	    xw.field("TAG",lnch.toString());
-	    xw.field("ID",lnch.hashCode());
-	    IDebugTarget tgt = lnch.getDebugTarget();
-	    if (tgt != null) {				// will be null if doing a run rather than debug
-	       xw.field("TARGET",tgt.hashCode());
-	       xw.field("TARGETTAG",tgt.toString());
-	       xw.field("NAME",tgt.getName());
-	       IProcess ip = tgt.getProcess();
-	       if (ip != null) {
-		  xw.field("PROCESSTAG",ip.getLabel());
-		  xw.field("PROCESS",ip.hashCode());
-		  setupConsole(ip);
-		}
-	     }
-	    xw.end("LAUNCH");
-	    return;
 	  }
+	 xw.end("LAUNCH");
        }
     }
    catch (CoreException e) {
       throw new BedrockException("Launch failed: " + e);
     }
-
-   throw new BedrockException("Launch configuration not found");
 }
 
 

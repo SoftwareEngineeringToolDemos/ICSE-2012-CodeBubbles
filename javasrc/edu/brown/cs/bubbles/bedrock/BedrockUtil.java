@@ -66,7 +66,7 @@ class BedrockUtil implements BedrockConstants {
 /********************************************************************************/
 
 private static Set<String>	sources_sent;
-
+private static Map<Integer,String>  launch_ids;
 
 private static Map<String,Integer> resource_types;
 private static Map<String,Integer> delta_kinds;
@@ -78,6 +78,7 @@ private static Map<String,Integer> access_flags;
 
 static {
    sources_sent = new HashSet<String>();
+   launch_ids = new HashMap<Integer,String>();
 
    resource_types = new HashMap<String,Integer>();
    resource_types.put("FILE",1);
@@ -1446,11 +1447,21 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
 
 static String getId(ILaunchConfiguration li)
 {
-   String atr = Integer.toString(System.identityHashCode(li));
+   String atr = null;
    try {
       atr = li.getAttribute(BEDROCK_LAUNCH_ID_PROP,atr);
     }
    catch (CoreException e) { }
+
+   int ivl = System.identityHashCode(li);
+   if (atr == null) {
+      atr = launch_ids.get(ivl);
+      if (atr == null) atr = Integer.toString(System.identityHashCode(li));
+    }
+   else {
+      launch_ids.put(ivl,atr);
+    }
+
    return atr;
 }
 
@@ -1595,7 +1606,7 @@ static void outputValue(IValue val,IJavaVariable var,String name,int lvls,IvyXml
 	       catch (DebugException e) { break; }
 	     }
 	  }
-	
+
 
        }
       else if (val instanceof IJavaPrimitiveValue) {

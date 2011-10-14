@@ -224,6 +224,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
       bn = new JButton("New Directory");
       bn.addActionListener(this);
       addGBComponent(bn,1,y++,1,1,0,0);
+      // TODO: add JUNIT button
       edit_button = new JButton("Edit");
       edit_button.addActionListener(this);
       addGBComponent(edit_button,1,y++,1,1,0,0);

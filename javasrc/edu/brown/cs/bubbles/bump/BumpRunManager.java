@@ -947,7 +947,7 @@ private class LaunchConfig implements BumpLaunchConfig {
       main_class = getAttribute(xml,"org.eclipse.jdt.launching.MAIN_TYPE");
       program_args = getAttribute(xml,"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS");
       java_args = getAttribute(xml,"org.eclipse.jdt.launching.VM_ARGUMENTS");
-      test_case = getAttribute(xml,"TESTNAME");
+      test_case = getAttribute(xml,"org.eclipse.jdt.junit.TESTNAME");
       remote_host = "localhost";
       remote_port = 8000;
       String hmap = IvyXml.getAttrString(xml,"org.eclipse.jdt.launching.CONNECT_MAP");
@@ -1025,13 +1025,13 @@ private class LaunchConfig implements BumpLaunchConfig {
 
    @Override public BumpLaunchConfig setTestName(String name) {
       if (name == null) name = "";
-      Element x = bump_client.editRunConfiguration(getId(),"TESTNAME",name);
+      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.junit.TESTNAME",name);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setJunitKind(String name) {
       if (name == null) name = "";
-      Element x = bump_client.editRunConfiguration(getId(),"TEST_KIND","org.eclipse.jdt.junit.loader." + name);
+      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.junit.TEST_KIND","org.eclipse.jdt.junit.loader." + name);
       return getLaunchResult(x);
     }
 

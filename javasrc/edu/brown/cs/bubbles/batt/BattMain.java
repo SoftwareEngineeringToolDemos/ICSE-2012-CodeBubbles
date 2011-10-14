@@ -417,6 +417,7 @@ void processTests() throws InterruptedException
 
    while (rpt) {
       synchronized (run_tests) {
+	 System.err.println("BATT: Process tests " + run_tests.size());
 	 if (run_tests.size() == 0 && server_thread == null) return;
 	 int ct = 0;
 	 while (!canRunAny(run_tests)) {

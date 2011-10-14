@@ -141,6 +141,8 @@ private void setupPanel()
       batt_model.setDisplayMode(FAIL_MODE);
     }
    else if (cmd.equals("RUN")) {
+      BumpClient bc = BumpClient.getBump();
+      bc.saveAll();
       BattFactory.getFactory().runTests(current_runtype);
     }
    else if (cmd.equals("STOP")) {
@@ -218,7 +220,8 @@ private void setupPanel()
 
 private BumpLaunchConfig getLaunchConfigurationForTest(BattTestCase btc)
 {
-   BumpRunModel brm = BumpClient.getBump().getRunModel();
+   BumpClient bc = BumpClient.getBump();
+   BumpRunModel brm = bc.getRunModel();
 
    for (BumpLaunchConfig blc : brm.getLaunchConfigurations()) {
       if (!blc.isWorkingCopy() && blc.getConfigType() == BumpLaunchConfigType.JUNIT_TEST) {
@@ -228,14 +231,27 @@ private BumpLaunchConfig getLaunchConfigurationForTest(BattTestCase btc)
        }
     }
 
-   BumpLaunchConfig blc = brm.createLaunchConfiguration(btc.getName(),BumpLaunchConfigType.JUNIT_TEST);
+   String nm = btc.getName();
+   int idx = nm.indexOf("(");
+   if (idx >= 0) nm = nm.substring(0,idx);
+
+   String pnm = null;
+   String cnm = btc.getClassName();
+   List<BumpLocation> locs = bc.findAllClasses(cnm);
+   if (locs != null && locs.size() > 0) {
+      BumpLocation loc = locs.get(0);
+      pnm = loc.getProject();
+    }
+
+   BumpLaunchConfig blc = brm.createLaunchConfiguration(nm,BumpLaunchConfigType.JUNIT_TEST);
    if (blc == null) return null;
 
    BumpLaunchConfig blc1 = blc;
+   if (pnm != null) blc1 = blc1.setProject(pnm);
    blc1 = blc1.setMainClass(btc.getClassName());
    blc1 = blc1.setTestName(btc.getMethodName());
    blc1 = blc1.setJunitKind("junit4");
-   if (blc1 != blc) blc = blc1.save();
+   blc = blc1.save();
 
    return blc;
 }
@@ -448,11 +464,16 @@ private class DisplayTable extends JTable implements MouseListener {
       return btc.getToolTip();
     }
 
+   BattTestCase getActualTestCase(int row) {
+      RowSorter<?> rs = getRowSorter();
+      if (rs != null) row = rs.convertRowIndexToModel(row);
+      return batt_model.getTestCase(row);
+    }
+
    BattTestCase findTestCase(Point p) {
       int row = rowAtPoint(p);
       if (row < 0) return null;
-      BattTestCase btc = batt_model.getTestCase(row);
-      return btc;
+      return getActualTestCase(row);
     }
 
 }	// end of inner class DisplayTable

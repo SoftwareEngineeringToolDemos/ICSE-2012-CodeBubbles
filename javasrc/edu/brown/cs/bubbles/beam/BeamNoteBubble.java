@@ -45,7 +45,7 @@ import javax.swing.text.*;
 import javax.swing.text.html.HTMLEditorKit;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -120,7 +120,8 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("ctrl shift 7",new NoteEditorKit.AlignmentAction("align_right",StyleConstants.ALIGN_RIGHT)),
       new KeyItem("ctrl shift 8",new NoteEditorKit.AlignmentAction("align_justified",StyleConstants.ALIGN_JUSTIFIED)),
       new KeyItem("menu Z",BurpHistory.getUndoAction()),
-      new KeyItem("menu Y",BurpHistory.getRedoAction())
+      new KeyItem("menu Y",BurpHistory.getRedoAction()),
+      new KeyItem("menu S",new SaveAction())
 };
 
 
@@ -176,6 +177,8 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
       BaleFactory.getFactory().addAnnotation(annot);
       annot.setAnnotationFile(note_name);
     }
+
+   addComponentListener(new ComponentHandler());
 
    // if contents are null, then set the header part of the html with information about
    // the source of this bubble, date, dlm, title, etc.
@@ -525,8 +528,22 @@ private static class NoteEditorKit extends HTMLEditorKit
 
     }	// end of inner class NoteColorAction
 
-
 }	// end of inner class NoteEditorKit
+
+
+
+private static class SaveAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   @Override public void actionPerformed(ActionEvent e) {
+      Component c = (Component) e.getSource();
+      BeamNoteBubble bb = (BeamNoteBubble) BudaRoot.findBudaBubble(c);
+      if (bb == null) return;
+      bb.saveNote();
+    }
+
+}	// end of inner class SaveAction
 
 
 
@@ -559,6 +576,24 @@ private static class KeyItem {
     }
 
 }	// end of inner class KeyItem
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Callbacks to handle automatic saving					*/
+/*										*/
+/********************************************************************************/
+
+private class ComponentHandler extends ComponentAdapter {
+
+   @Override public void componentHidden(ComponentEvent e) {
+      if (note_name != null && note_area != null) {
+	 if (note_area.getText().length() > 0) saveNote();
+       }
+    }
+
+}	// end of inner class ComponentHandler
 
 
 

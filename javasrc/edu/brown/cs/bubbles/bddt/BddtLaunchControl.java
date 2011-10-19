@@ -979,6 +979,7 @@ private class ExecutionAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return annot_color; }
+   @Override public Color getBackgroundColor()                  { return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
@@ -1035,6 +1036,7 @@ private class FrameAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return annot_color; }
+   @Override public Color getBackgroundColor()                  { return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);

@@ -230,6 +230,8 @@ private class PortAnnotation implements BaleAnnotation {
    @Override public String getToolTip() 			{ return port_description; }
 
    @Override public Color getLineColor()			{ return BALE_PORT_ANNOT_COLOR; }
+   
+   @Override public Color getBackgroundColor()                  { return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
 

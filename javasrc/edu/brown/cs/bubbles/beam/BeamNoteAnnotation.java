@@ -143,6 +143,7 @@ BeamNoteAnnotation(Element xml)
 @Override public String getToolTip()			{ return "Note Bubble"; }
 
 @Override public Color getLineColor()			{ return annot_color; }
+@Override public Color getBackgroundColor()             { return null; }
 
 @Override public boolean getForceVisible(BudaBubble bbl) {
    return false;

@@ -640,6 +640,7 @@ private static class ProblemAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return null; }
+   @Override public Color getBackgroundColor()                  { return null; }
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
    @Override public int getPriority()				{ return 10; }
    @Override public void addPopupButtons(JPopupMenu m)		{ }
@@ -694,6 +695,7 @@ private static class BreakpointAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return null; }
+   @Override public Color getBackgroundColor()                  { return null; }
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
    @Override public int getPriority()				{ return 5; }
    @Override public void addPopupButtons(JPopupMenu m)		{ }

@@ -27,7 +27,9 @@ package edu.brown.cs.bubbles.board;
 
 import edu.brown.cs.ivy.exec.IvyExecQuery;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
+import edu.brown.cs.ivy.xml.*;
+
+import org.w3c.dom.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -425,7 +427,15 @@ private String getUserId()
     }
    rslt &= 0x7fffffff;
 
-   return "U" + Integer.toString(rslt);
+   String pfx = "U";
+   String cnm = BoardSetup.getSetup().getCourseName();
+   if (cnm != null) {
+      BoardProperties bp = BoardProperties.getProperties("Board");
+      String xpfx = bp.getProperty("Board.prefix." + cnm);
+      if (xpfx != null) pfx = xpfx;
+    }
+
+   return pfx + Integer.toString(rslt);
 }
 
 
@@ -842,10 +852,13 @@ private File[] getOptionsFiles()
 
 private void dumpWorkingset()
 {
-   File f = BoardSetup.getConfigurationFile();
+   File f = privatizeConfiguration();
    if (f != null && f.exists()) {
       try {
+	 // TODO: Rewrite config file to remove any names
+	 // CONTENT should only include TYPE and FRAGTYPE
 	 sendFile(f,"WORKINGSET",false);
+	 f.delete();
       }
       catch (IOException e) {
 	 BoardLog.logE("BOARD", "Error to upload workingset file");
@@ -854,9 +867,55 @@ private void dumpWorkingset()
 }
 
 
+private File privatizeConfiguration()
+{
+   File f1 = BoardSetup.getConfigurationFile();
+   if (f1 == null || !f1.exists()) return null;
+   try {
+      Element xml = IvyXml.loadXmlFromFile(f1);
+      privatizeXml(xml);
+      File f2 = File.createTempFile("BubblesConfig",".xml");
+      f2.deleteOnExit();
+      IvyXmlWriter xw = new IvyXmlWriter(f2);
+      xw.writeXml(xml);
+      xw.close();
+      return f2;
+    }
+   catch (IOException e) { }
+
+   return null;
+}
+
+
+
+private void privatizeXml(Element e)
+{
+   if (IvyXml.isElement(e,"CONTENT")) {
+      NamedNodeMap nnm = e.getAttributes();
+      for (int i = 0; i < nnm.getLength(); ) {
+	 Attr at = (Attr) nnm.item(i);
+	 if (at.getName().equals("TYPE") || at.getName().equals("FRAGTYPE")) ++i;
+	 else nnm.removeNamedItem(at.getName());
+       }
+      for ( ; ; ) {
+	 Node n = e.getFirstChild();
+	 if (n == null) break;
+	 e.removeChild(n);
+       }
+    }
+   else {
+      for (Element c : IvyXml.children(e)) {
+	 privatizeXml(c);
+       }
+    }
+}
+
+
+
+
 /********************************************************************************/
 /*										*/
-/*	Methods to handle uploading monitor log 				*/
+/*	Methods to handle uploading monitor log (from eclipse mylyn)		*/
 /*										*/
 /********************************************************************************/
 

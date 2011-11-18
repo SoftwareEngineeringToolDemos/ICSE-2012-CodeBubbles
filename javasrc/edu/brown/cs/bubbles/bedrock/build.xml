@@ -68,5 +68,10 @@
 		tofile='/home/spr/eclipse37x/eclipse/plugins/edu.brown.cs.bubbles.bedrock_1.0.0.jar' />
    </target>
 
+   <target name='eduplugin' depends='plugin' if='ivy.present'>
+      <copy file='bedrock.jar'
+		tofile='/research/people/spr/suds/eclipse-cs15/eclipse/plugins/edu.brown.cs.bubbles.bedrock_1.0.0.jar' />
+   </target>
+
 </project>
 

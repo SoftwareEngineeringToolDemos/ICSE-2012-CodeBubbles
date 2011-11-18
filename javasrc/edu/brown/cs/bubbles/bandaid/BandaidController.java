@@ -28,7 +28,7 @@ package edu.brown.cs.bubbles.bandaid;
 
 
 import java.io.*;
-import java.lang.instrument.Instrumentation;
+import java.lang.instrument.*;
 import java.lang.management.*;
 import java.net.*;
 import java.util.*;
@@ -99,8 +99,9 @@ private long		num_checks;
 private int		max_depth;
 private double		last_check;
 
-private BandaidAgentHistory	history_agent;
 private Map<String,BandaidAgent> agent_names;
+
+private Instrumentation 	class_inst;
 
 
 private static final double	CHECK_OVERHEAD = 1.000; 	// 1 ms for timer checks
@@ -120,6 +121,8 @@ private static BandaidController the_control = null;
 
 private BandaidController(String args,Instrumentation inst)
 {
+   class_inst = inst;
+
    start_time = System.currentTimeMillis();
    host_name = "localhost";
    port_number = BANDAID_PORT;
@@ -153,8 +156,8 @@ private BandaidController(String args,Instrumentation inst)
    defineAgent(new BandaidAgentThreadState(this));
    defineAgent(new BandaidAgentCpu(this));
    defineAgent(new BandaidAgentDeadlock(this));
-   history_agent = new BandaidAgentHistory(this);
-   defineAgent(history_agent);
+   defineAgent(new BandaidAgentHistory(this));
+   defineAgent(new BandaidAgentSwing(this));
 
    scanArgs(args);
 
@@ -199,6 +202,15 @@ private BandaidController(String args,Instrumentation inst)
    monitor_thread = new ClassMonitor();
    ignore_thread.set((int) monitor_thread.getId());
    monitor_thread.start();
+
+   if (class_inst != null) {
+      for (BandaidAgent ba : active_agents) {
+	 ClassFileTransformer cft = ba.getTransformer();
+	 if (cft != null) {
+	    class_inst.addTransformer(cft,true);
+	  }
+       }
+    }
 }
 
 
@@ -390,33 +402,27 @@ void sendMessage(String xml)
 
 private void processRequest(String rqst)
 {
-   String cmd = rqst;
+   String who = rqst;
+   String cmd = null;
    String args = null;
 
    int idx = rqst.indexOf(" ");
    if (idx > 0) {
-      cmd = rqst.substring(0,idx);
-      args = rqst.substring(idx+1).trim();
-    }
-
-   if (cmd == null) ;
-   else if (cmd.equals("HISTORY")) {
-      if (args != null) {
-	 try {
-	    BandaidXmlWriter xw = new BandaidXmlWriter();
-	    xw.begin("BANDAID");
-	    xw.field("HISTORY",process_id);
-	    xw.field("THREAD",args);
-	    if (history_agent.generateHistory(xw,args)) {
-	       xw.end();
-	       socket_client.sendMessage(xw.toString());
-	     }
-	  }
-	 catch (NumberFormatException e) { }
+      who = rqst.substring(0,idx);
+      cmd = rqst.substring(idx+1).trim();
+      idx = cmd.indexOf(" ");
+      if (idx > 0) {
+	 args = cmd.substring(idx+1).trim();
+	 cmd = cmd.substring(0,idx);
        }
     }
+
+   BandaidAgent agt = agent_names.get(who);
+   if (agt != null && cmd != null) {
+      agt.handleCommand(cmd,args);
+    }
    else {
-      System.err.println("BANDAID: Unknown command " + cmd);
+      System.err.println("BANDAID: Unknown command " + rqst);
     }
 }
 
@@ -456,6 +462,8 @@ long sendReport(long now)
 /********************************************************************************/
 
 long getStartTime()			{ return start_time; }
+
+String getProcessId()			{ return process_id; }
 
 long getThreadCpuTime(long id)		{ return thread_bean.getThreadCpuTime(id); }
 long getThreadUserTime(long id) 	{ return thread_bean.getThreadUserTime(id); }

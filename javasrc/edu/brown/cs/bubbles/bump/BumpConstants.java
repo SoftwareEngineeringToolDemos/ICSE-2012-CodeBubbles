@@ -585,6 +585,7 @@ enum BumpRunEventType {
    PROCESS_REMOVE,
    PROCESS_CHANGE,
    PROCESS_PERFORMANCE,
+   PROCESS_SWING,
    THREAD_ADD,
    THREAD_REMOVE,
    THREAD_CHANGE,
@@ -693,6 +694,7 @@ interface BumpProcess {
    Iterable<BumpThread> getThreads();
    String getId();
    boolean isRunning();
+   void requestSwingData(int x,int y);
 }	// end of inner interface BumpProcess
 
 

@@ -177,6 +177,7 @@ static void checkUpdate(String jarfile,List<String> javaargs)
    try {
       InputStream vins = BoardUpdate.class.getClassLoader().getResourceAsStream(VERSION_RESOURCE);
       Element ve = getVersionXml(vins);
+      if (ve == null) return;
       version_data = getMajor(ve) + "." + getMinor(ve) + " @ " + getBubblesDir(ve);
       vins.close();
       bubbles_dir = getBubblesDir(ve);
@@ -184,9 +185,13 @@ static void checkUpdate(String jarfile,List<String> javaargs)
       URL u = new URL(bubbles_dir + VERSION_URL);
       InputStream uins = u.openConnection(update_proxy).getInputStream();
       Element ue = getVersionXml(uins);
+      if (ue == null) return;
       uins.close();
 
       if (sameVersion(ue,ve)) return;		// we are up to date
+      if (System.getProperty("edu.brown.cs.bubbles.NO_UPDATE") != null) {
+	 return;
+       }
 
       BoardUpdate bu = new BoardUpdate(jarfile,javaargs);
       bu.startUpdate();
@@ -210,6 +215,7 @@ static void setVersion()
    try {
       InputStream vins = BoardUpdate.class.getClassLoader().getResourceAsStream(VERSION_RESOURCE);
       Element ve = getVersionXml(vins);
+      if (ve == null) return;
       version_data = getMajor(ve) + "." + getMinor(ve) + " @ " + getBubblesDir(ve);
       vins.close();
     }
@@ -231,6 +237,7 @@ static void updateVersionFile()
    try {
       InputStream ins = new FileInputStream(VERSION_FILE);
       Element v = getVersionXml(ins);
+      if (v == null) return;
       ins.close();
       int mj = getMajor(v);
       int mn = getMinor(v);
@@ -271,8 +278,7 @@ private static Element getVersionXml(InputStream ins) throws IOException
       throw new IOException("Can't parse xml",e);
     }
    catch (SAXException e) {
-      System.err.println("BOARD: Bad xml version file: " + e);
-      throw new IOException("Can't parse xml",e);
+      return null;			// network inaccessible
     }
 }
 
@@ -564,6 +570,8 @@ private static void copyFile(InputStream ins,OutputStream ots) throws IOExceptio
 
 private static int getMajor(Element e1)
 {
+   if (e1 == null) return -1;
+
    String v = e1.getAttribute("MAJOR");
    if (v == null) return -1;
    try {
@@ -577,6 +585,8 @@ private static int getMajor(Element e1)
 
 private static int getMinor(Element e1)
 {
+   if (e1 == null) return -1;
+
    String v = e1.getAttribute("MINOR");
    if (v == null) return -1;
    try {

@@ -106,8 +106,8 @@ protected String	option_name;
 protected String	option_description;
 protected String	package_name;
 protected List<String>	option_tabs;
-private String   	option_keywords;
-private BoppOptionSet   option_set;
+private String		option_keywords;
+private BoppOptionSet	option_set;
 
 
 
@@ -150,7 +150,7 @@ BoppOptionBase(String pkgname,Element ox)
 
 @Override public abstract OptionType getOptionType();
 
-void setOptionSet(BoppOptionSet os)             { option_set = os; }
+void setOptionSet(BoppOptionSet os)		{ option_set = os; }
 
 @Override public Collection<String> getOptionTabs()	{ return option_tabs; }
 
@@ -191,24 +191,24 @@ void finishChanges()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Search methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Search methods								*/
+/*										*/
 /********************************************************************************/
 
 @Override public boolean search(Pattern [] pats)
 {
    if (getOptionType() == OptionType.DIVIDER) return false;
-   
+
    for (Pattern p : pats) {
       if (p != null) {
-         Matcher m1 = p.matcher(option_name);
-         Matcher m2 = p.matcher(option_description);
-         Matcher m3 = p.matcher(option_keywords);
-         if (!(m1.find() || m2.find() || m3.find())) return false;
+	 Matcher m1 = p.matcher(option_name);
+	 Matcher m2 = p.matcher(option_description);
+	 Matcher m3 = p.matcher(option_keywords);
+	 if (!(m1.find() || m2.find() || m3.find())) return false;
        }
     }
-         
+	
    return true;
 }
 
@@ -292,13 +292,13 @@ private static class OptionColor extends BoppOptionBase implements ActionListene
    @Override public void actionPerformed(ActionEvent evt) {
       noteChange(from_name,to_name);
       if (to_name == null) {
-         SwingColorButton scb = (SwingColorButton) evt.getSource();
-         setFromValue(scb.getColor());
+	 SwingColorButton scb = (SwingColorButton) evt.getSource();
+	 setFromValue(scb.getColor());
        }
       else {
-         SwingColorRangeChooser scr = (SwingColorRangeChooser) evt.getSource();
-         setFromValue(scr.getFirstColor());
-         setToValue(scr.getSecondColor());
+	 SwingColorRangeChooser scr = (SwingColorRangeChooser) evt.getSource();
+	 setFromValue(scr.getFirstColor());
+	 setToValue(scr.getSecondColor());
        }
       finishChanges();
     }
@@ -415,13 +415,13 @@ private static class OptionDimension extends BoppOptionBase implements ActionLis
    @Override public void actionPerformed(ActionEvent evt) {
       noteChange(width_prop,height_prop);
       if (height_prop == null) {
-         SwingNumericField fld = (SwingNumericField) evt.getSource();
-         setWidthValue((int) fld.getValue());
+	 SwingNumericField fld = (SwingNumericField) evt.getSource();
+	 setWidthValue((int) fld.getValue());
        }
       else {
-         SwingDimensionChooser dim = (SwingDimensionChooser) evt.getSource();
-         setWidthValue(dim.getWidthValue());
-         setHeightValue(dim.getHeightValue());
+	 SwingDimensionChooser dim = (SwingDimensionChooser) evt.getSource();
+	 setWidthValue(dim.getWidthValue());
+	 setHeightValue(dim.getHeightValue());
        }
       finishChanges();
     }
@@ -544,7 +544,7 @@ private static class OptionFont extends BoppOptionBase implements ActionListener
       if (color_prop == null) return null;
       return getProperties().getColor(color_prop);
     }
-	
+
    private void setFont(Font ft) {
       if (font_prop != null) {
 	 getProperties().setProperty(font_prop,ft);
@@ -558,7 +558,7 @@ private static class OptionFont extends BoppOptionBase implements ActionListener
 
    private void setColor(Color c) {
       if (color_prop != null && c != null)
-         getProperties().setProperty(color_prop,c);
+	 getProperties().setProperty(color_prop,c);
     }
 
 }	// end of inner class OptionFont
@@ -576,23 +576,28 @@ private static class OptionInteger extends BoppOptionBase implements ChangeListe
 
    private int min_value;
    private int max_value;
+   private boolean range_ok;
 
    OptionInteger(String pkgname,Element ox) {
       super(pkgname,ox);
       min_value = IvyXml.getAttrInt(ox,"MIN",0);
       max_value = IvyXml.getAttrInt(ox,"MAX",0);
+      if (min_value >= max_value) range_ok = false;
+      else if (IvyXml.getAttrBool(ox,"SLIDER")) range_ok = true;
+      else if (max_value - min_value < 10 && max_value - min_value > 2) range_ok = true;
+      else range_ok = false;
     }
 
    @Override public OptionType getOptionType()		{ return OptionType.INTEGER; }
 
    @Override public void addButton(SwingGridPanel pnl) {
-      if (min_value < max_value && max_value - min_value < 10 && max_value - min_value > 2) {
-         int dec = (max_value - min_value)/100;
-         if (dec < 0) dec = 1;
-         pnl.addRange(option_description,min_value,max_value,dec,getValue(),this);
+      if (range_ok) {
+	 int dec = (max_value - min_value)/100;
+	 if (dec < 0) dec = 1;
+	 pnl.addRange(option_description,min_value,max_value,dec,getValue(),this);
        }
       else {
-         pnl.addNumericField(option_description,min_value,max_value,getValue(),this);
+	 pnl.addNumericField(option_description,min_value,max_value,getValue(),this);
        }
     }
 
@@ -602,7 +607,7 @@ private static class OptionInteger extends BoppOptionBase implements ChangeListe
       setValue((int) snf.getValue());
       finishChanges();
     }
-   
+
    @Override public void stateChanged(ChangeEvent evt) {
       SwingRangeSlider rs = (SwingRangeSlider) evt.getSource();
       setValue((int) rs.getScaledValue());
@@ -612,7 +617,7 @@ private static class OptionInteger extends BoppOptionBase implements ChangeListe
    private int getValue() {
       return getProperties().getInt(option_name);
     }
-	
+
    private void setValue(int v) {
       getProperties().setProperty(option_name,v);
     }

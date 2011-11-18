@@ -840,7 +840,8 @@ enum BudaContentNameType {
    CLASS,
    METHOD,
    FIELD,
-   CLASS_ITEM		// all fields or class prefix or class initializers
+   CLASS_ITEM,		// all fields or class prefix or class initializers
+   FILE
 }
 
 
@@ -887,6 +888,8 @@ interface BubbleViewCallback extends EventListener {
 
    public void workingSetAdded(BudaWorkingSet ws);
    public void workingSetRemoved(BudaWorkingSet ws);
+
+   public void copyFromTo(BudaBubble from,BudaBubble to);
 
 }
 

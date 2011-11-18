@@ -1,6 +1,6 @@
 /********************************************************************************/
 /*										*/
-/*		BeduChatManager.java						*/
+/*		BeduChatFactory.java						*/
 /*										*/
 /*	Bubbles for Education							*/
 /*	Keeps track of edu chat sessions					*/
@@ -25,7 +25,7 @@ import java.util.List;
 
 import java.util.ArrayList;
 
-import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.board.*;
 
 
 public class BeduChatFactory {
@@ -54,10 +54,15 @@ static {
 
 public static void setup()
 {
-   BoardProperties bp = BoardProperties.getProperties("Bedu");
-   if (bp.getProperty("enabled") == null) return;
+   String course = BoardSetup.getSetup().getCourseName();
+   if (course == null) return;
 
-   if (!bp.getProperty("enabled").equals("false"))
+   BoardProperties bp = BoardProperties.getProperties("Bedu");
+   String pnm = "Bedu.chat." + course;
+
+   if (bp.getProperty(pnm) == null) return;
+
+   if (!bp.getProperty(pnm).equals("false"))
       BeduCourseRepository.initialize();
 }
 
@@ -89,6 +94,8 @@ static BeduTAXMPPClient getTAXMPPClientForCourse(BeduCourse.TACourse course)
 
 }
 
-} // end of class EduchatManager
+} // end of class BeduChatFactgory
 
-/* end of EduchatManager.java */
+
+
+/* end of BeduChatFactory.java */

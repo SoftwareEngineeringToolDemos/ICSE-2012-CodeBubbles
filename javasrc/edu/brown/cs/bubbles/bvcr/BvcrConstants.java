@@ -73,6 +73,29 @@ boolean KEY_COMPRESS = true;
 
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      File change and line sets interfaces                                                         */
+/*                                                                              */
+/********************************************************************************/
+
+interface BvcrFileChange {
+   
+   int getSourceLine();
+   int getTargetLine();
+   String [] getDeletedLines();
+   String [] getAddedLines();
+   
+}       // end of interface BvcrFileChange
+
+
+interface BvcrLineChange {
+   
+   int getLineNumber();
+   
+}       // end of interface BvcrLineChange
+
+
 
 
 }	// end of interface BattConstants

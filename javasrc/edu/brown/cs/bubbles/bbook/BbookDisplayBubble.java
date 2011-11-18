@@ -117,7 +117,7 @@ private static class Linker implements HyperlinkListener {
 	 URL u = e.getURL();
 	 try {
 	    Desktop.getDesktop().browse(u.toURI());
-	 }
+	  }
 	 catch (IOException ex) { }
 	 catch (URISyntaxException ex) { }
        }

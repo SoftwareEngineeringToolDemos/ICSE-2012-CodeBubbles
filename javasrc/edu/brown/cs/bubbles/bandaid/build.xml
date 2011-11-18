@@ -18,10 +18,12 @@
       <path id='bubbles.classpath'>
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
+	 <pathelement location='${BUBBLES}/lib/bandaidasm.jar' />
       </path>
       <path id='test.classpath'>
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
+	 <pathelement location='${BUBBLES}/lib/bandaidasm.jar' />
       </path>
    </target>
 
@@ -43,10 +45,23 @@
    </target>
 
    <target name='jar' depends='compile'>
-      <jar destfile='bandaid.jar' manifest='manifest.mf'>
+      <jar destfile='bandaid.jar'>
+	 <manifest>
+	    <attribute name='Premain-Class' value='edu.brown.cs.bubbles.bandaid.BandaidController' />
+	    <attribute name='Agent-Class' value='edu.brown.cs.bubbles.bandaid.BandaidController' />
+	    <attribute name='Can-RedefineClasses' value='true' />
+	    <attribute name='Can-RetransformClasses' value='true' />
+	    <attribute name='Can-Set-Native-Method-Prefix' value='false' />
+	    <attribute name='Sealed' value='false' />
+	    <attribute name="Boot-Class-Path" value='bandaid.jar' />
+	 </manifest>
 	 <fileset dir='${BUBBLES}/java' includes='**/bandaid/*.class' />
+	 <zipfileset src="${BUBBLES}/lib/bandaidasm.jar" excludes="META-INF/*" />
       </jar>
       <copy file='bandaid.jar' tofile='${BUBBLES}/lib/bandaid.jar' />
    </target>
 
 </project>
+
+
+

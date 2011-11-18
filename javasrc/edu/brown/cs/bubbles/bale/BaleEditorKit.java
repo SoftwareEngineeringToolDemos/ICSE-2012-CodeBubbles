@@ -35,6 +35,8 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
+import edu.brown.cs.ivy.swing.SwingEditorPane;
+
 import javax.swing.*;
 import javax.swing.text.*;
 
@@ -1045,6 +1047,14 @@ private static class SmartPasteAction extends TextAction {
 	 }
 	 catch (BadLocationException ex) { }
 
+	 SwingEditorPane src = target.getClipboardSource();
+	 if (src != target && src != null) {
+	    BudaRoot br = BudaRoot.findBudaRoot(target);
+	    BudaBubble b1 = BudaRoot.findBudaBubble(src);
+	    BudaBubble b2 = BudaRoot.findBudaBubble(target);
+	    br.noteBubbleCopy(b1,b2);
+	  }
+
 	 target.paste();
 
 	 int slno = bd.findLineNumber(p0);
@@ -1684,7 +1694,7 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       BaleEditorPane target = getBaleEditor(e);
       BaleDocument bd = target.getBaleDocument();
       if (!checkEditor(target)) return;
-   
+
       int spos = target.getSelectionStart();
       int epos = target.getSelectionEnd();
       int slno = bd.findLineNumber(spos);
@@ -1694,47 +1704,47 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       String cnts;
       Point p;
       try {
-         cnts = bd.getText(spos,epos-spos);
-         Rectangle r = target.modelToView(spos);
-         p = new Point(r.x,r.y);
+	 cnts = bd.getText(spos,epos-spos);
+	 Rectangle r = target.modelToView(spos);
+	 p = new Point(r.x,r.y);
        }
       catch (BadLocationException ex) {
-         BoardLog.logE("BALE","Problem getting extract text",ex);
-         return;
+	 BoardLog.logE("BALE","Problem getting extract text",ex);
+	 return;
        }
-   
+
       BudaBubble bbl = BudaRoot.findBudaBubble(target);
-   
+
       String fnm = bd.getFragmentName();
       String aft = null;
       String cls = null;
       switch (bd.getFragmentType()) {
-         case FILE :
-         case NONE :
-            return;
-         case METHOD :
-            aft = fnm;
-            cls = fnm;
-            int idx1 = cls.indexOf("(");
-            if (idx1 >= 0) cls = cls.substring(0,idx1);
-            idx1 = cls.lastIndexOf(".");
-            if (idx1 >= 0) cls = cls.substring(0,idx1);
-            break;
-         case FIELDS :
-         case STATICS :
-         case HEADER :
-            cls = fnm;
-            int idx2 = cls.lastIndexOf(".");
-            cls = cls.substring(0,idx2);
-            break;
+	 case FILE :
+	 case NONE :
+	    return;
+	 case METHOD :
+	    aft = fnm;
+	    cls = fnm;
+	    int idx1 = cls.indexOf("(");
+	    if (idx1 >= 0) cls = cls.substring(0,idx1);
+	    idx1 = cls.lastIndexOf(".");
+	    if (idx1 >= 0) cls = cls.substring(0,idx1);
+	    break;
+	 case FIELDS :
+	 case STATICS :
+	 case HEADER :
+	    cls = fnm;
+	    int idx2 = cls.lastIndexOf(".");
+	    cls = cls.substring(0,idx2);
+	    break;
        }
-   
+
       if (cls == null) return;
-   
+
       BuenoProperties props = new BuenoProperties();
       props.put(BuenoConstants.BuenoKey.KEY_CONTENTS,cnts);
       BuenoLocation loc = BuenoFactory.getFactory().createLocation(bd.getProjectName(),cls,aft,true);
-   
+
       BuenoMethodDialog bmd = new BuenoMethodDialog(bbl,p,props,loc,this);
       bmd.setLabel("Enter Signature of Extracted Method");
       bmd.showDialog();

@@ -755,6 +755,17 @@ private void loadProperties(String id)
       f1 = new File(base_directory,id + "." + BOARD_ARCH + ".props");
       loadFileProps(f1);
     }
+
+   if (id.equals("System") || id.equals("Board")) return;
+
+   String cnm = BoardSetup.getSetup().getCourseName();
+   if (cnm != null) {
+      f1 = new File(base_directory,id + "." + cnm);
+      if (!loadFileProps(f1)) {
+	 f1 = new File(base_directory,id + "." + cnm + ".props");
+	 loadFileProps(f1);
+       }
+    }
 }
 
 
@@ -766,7 +777,6 @@ private boolean loadFileProps(File f)
    try {
       FileInputStream ins = new FileInputStream(f);
       loadFromXML(ins);
-      ins.close();
       prop_file = f;
       return true;
     }

@@ -173,6 +173,7 @@ Collection<BconRegion> findRegions(BudaConstants.BudaContentNameType typ,String 
 
    for (BconRegion br : region_set) {
       boolean ok = true;
+      boolean outer = false;
       boolean nameok = false;
       switch (br.getRegionType()) {
 	 case REGION_UNKNOWN :
@@ -196,12 +197,26 @@ Collection<BconRegion> findRegions(BudaConstants.BudaContentNameType typ,String 
 	    ok = (typ == BudaConstants.BudaContentNameType.CLASS_ITEM);
 	    break;
        }
+      
+      switch (typ) {
+	 case CLASS :
+	    ok = true;
+	    outer = true;
+	    break;
+	 case FILE :
+	    ok = true;
+	    nameok = true;
+	    break;
+       }
+      
       if (!ok) continue;
 
       String nm = br.getRegionName();
       if (nameok || br.nameMatch(name)) rslt.add(br);
       else if (nm.equals(name)) rslt.add(br);
       else if (nm.replace("$",".").equals(name)) rslt.add(br);
+      else if (outer && nm.startsWith(name + ".")) rslt.add(br);
+      else if (outer && nm.startsWith(name + "$")) rslt.add(br);
     }
 
    return rslt;

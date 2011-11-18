@@ -147,6 +147,10 @@ private class BubbleViewer implements BudaConstants.BubbleViewCallback
       config_done = true;
     }
 
+   @Override public void copyFromTo(BudaBubble f,BudaBubble t) {
+      handleBubbleCopy(f,t);
+    }
+
    private boolean isRelevant(BudaWorkingSet ws) {
       BudaBubbleArea bba = ws.getBubbleArea();
       if (!bba.isPrimaryArea()) return false;
@@ -353,6 +357,28 @@ private void handleBubbleRemoved(BudaBubble bb)
 }
 
 
+
+private void handleBubbleCopy(BudaBubble f,BudaBubble t)
+{
+   TaskRegion tr = findTaskRegion(t);
+   if (tr == null) return;
+
+   BnoteTask task = tr.getTask();
+   if (task != null) {
+      String b1 = t.getContentProject();
+      String b2 = t.getContentName();
+      File f3 = t.getContentFile();
+      String c1 = f.getContentName();
+
+      if (b1 != null && b2 != null && f3 != null && c1 != null) {
+	 BnoteStore.log(task.getProject(),task,BnoteEntryType.COPY,"INPROJECT",b1,
+			   "NAME",b2,"FILE",f3,"SOURCE",c1);
+       }
+    }
+}
+
+
+
 private void handleWorkingSetAdded(BudaWorkingSet ws)
 {
    synchronized (task_regions) {
@@ -521,14 +547,14 @@ private class TaskRegion implements BbookRegion
    private void initializeBubbles(BudaBubble b0) {
       active_bubbles = new HashSet<BudaBubble>();
       for (BudaBubble bb : bubble_area.getBubblesInRegion(region_area)) {
-         if (isBubbleRelevant(bb)) {
-            if (b0 == null) b0 = bb;
-            noteBubble(bb);
-          }
+	 if (isBubbleRelevant(bb)) {
+	    if (b0 == null) b0 = bb;
+	    noteBubble(bb);
+	  }
        }
       working_set = null;
       if (b0 != null) {
-         working_set = bubble_area.findWorkingSetForBubble(b0);
+	 working_set = bubble_area.findWorkingSetForBubble(b0);
        }
     }
 
@@ -591,10 +617,10 @@ private class TaskRegion implements BbookRegion
       if (!active_bubbles.remove(nbb)) return false;
       Rectangle r0 = null;
       for (BudaBubble bb : active_bubbles) {
-         Rectangle r1 = BudaRoot.findBudaLocation(bb);
-         if (r1 == null) continue;
-         if (r0 == null) r0 = new Rectangle(r1);
-         else r0 = r0.union(r1);
+	 Rectangle r1 = BudaRoot.findBudaLocation(bb);
+	 if (r1 == null) continue;
+	 if (r0 == null) r0 = new Rectangle(r1);
+	 else r0 = r0.union(r1);
        }
       if (r0 == null) return is_active;
       region_area = bubble_area.computeRegion(r0);

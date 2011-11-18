@@ -111,6 +111,7 @@ private void setProperties(Element d)
    break_props.put("TRACEPOINT",Boolean.valueOf(IvyXml.getAttrBool(d,"TRACEPOINT")));
    
    String typ = IvyXml.getAttrString(d,"TYPE");
+   if (typ == null) return;
    break_props.put("TYPE",typ);
 
    if (typ.equals("CLASSPREPARE")) {

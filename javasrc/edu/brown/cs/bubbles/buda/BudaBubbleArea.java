@@ -710,9 +710,9 @@ Collection<BudaWorkingSetImpl> getWorkingSets()
 /*										*/
 /********************************************************************************/
 
-void moveBubble(BudaBubble bb,Point loc)
+void moveBubble(BudaBubble bb,Point loc,boolean fg)
 {
-   move_animator.moveBubble(bb,loc,true);
+   move_animator.moveBubble(bb,loc,fg);
 }
 
 
@@ -726,6 +726,8 @@ void fixupBubble(BudaBubble bb)
    bs.makeRoomFor(bb);
 }
 
+
+
 private BudaBubbleGroup getBubbleGroup(BudaBubble bb)
 {
    if (bb == null) return null;
@@ -738,6 +740,7 @@ private BudaBubbleGroup getBubbleGroup(BudaBubble bb)
 
    return null;
 }
+
 
 
 void fixupBubbleGroup(BudaBubble bb)
@@ -806,6 +809,64 @@ void checkAreaDimensions()
    }
 }
 
+
+
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Handle collapsing links                                                 */
+/*                                                                              */
+/********************************************************************************/
+
+void collapseLinks(Collection<BudaBubbleLink> lnks0)
+{
+   List<BudaBubbleLink> lnks = new ArrayList<BudaBubbleLink>(lnks0);
+   Collections.sort(lnks,new LinkComparator());
+   Map<BudaBubble,Rectangle> done = new HashMap<BudaBubble,Rectangle>();
+   
+   for (BudaBubbleLink lnk : lnks) {
+      BudaBubble sb = lnk.getSource();
+      BudaBubble tb = lnk.getTarget();
+      if (sb == null || tb == null || done.containsKey(tb)) continue;
+      Point ps = lnk.getSourcePoint();
+      Point pt = lnk.getTargetPoint(ps);
+      Rectangle r1 = done.get(sb);
+      if (r1 == null) r1 = BudaRoot.findBudaLocation(sb);
+      Rectangle r2 = BudaRoot.findBudaLocation(tb);
+      int x = r1.x + r1.width + BUBBLE_CREATION_NEAR_SPACE;
+      int y = ps.y - pt.y + r2.y;
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(sb);
+      bba.moveBubble(tb,new Point(x,y),true);
+      done.put(tb,new Rectangle(x,y,r2.width,r2.height));
+    }
+}
+
+
+private static class LinkComparator implements Comparator<BudaBubbleLink> {
+   
+   @Override public int compare(BudaBubbleLink l1,BudaBubbleLink l2) {
+      BudaBubble b1 = l1.getSource();
+      BudaBubble b2 = l2.getSource();
+      Rectangle r1 = BudaRoot.findBudaLocation(b1);
+      Rectangle r2 = BudaRoot.findBudaLocation(b2);
+      if (r1.x < r2.x) return -1;
+      if (r1.x > r2.x) return 1;
+      if (r1.y < r2.y) return -1;
+      if (r1.y > r2.y) return 1;
+      b1 = l1.getTarget();
+      b2 = l2.getTarget();
+      r1 = BudaRoot.findBudaLocation(b1);
+      r2 = BudaRoot.findBudaLocation(b2);
+      if (r1.x < r2.x) return -1;
+      if (r1.x > r2.x) return 1;
+      if (r1.y < r2.y) return -1;
+      if (r1.y > r2.y) return 1;
+      return 0;
+    }
+   
+}       // end of inner class LinkComparator
 
 
 
@@ -1841,7 +1902,7 @@ private void handleMouseEvent(MouseEvent e)
 	 BudaBubble bubble = mr.getBubble();
 	 bubble = bubble.getActualBubble(e.getX(),e.getY(), true);
 	 if (!bubble.isFixed() || bubble.isUserPos()) mouse_context = new BubbleMoveContext(bubble,e);
-      }
+       }
       else if (mr.getGroup() != null) mouse_context = new GroupMoveContext(mr.getGroup(),e);
       else mouse_context = new AreaMoveContext(e);
     }
@@ -1851,6 +1912,9 @@ private void handleMouseEvent(MouseEvent e)
 	 Point pt = SwingUtilities.convertPoint(this,e.getPoint(),mr.getBubble());
 	 e.translatePoint(pt.x-e.getX(),pt.y-e.getY());
 	 mr.getBubble().getActualBubble(point.x, point.y, false).handlePopupMenu(e);
+       }
+      else if (mr.getLink() != null) {
+	 mr.getLink().handlePopupMenu(e);
        }
       else if (mr.getGroup() != null) {
 	 mr.getGroup().handlePopupMenu(e);

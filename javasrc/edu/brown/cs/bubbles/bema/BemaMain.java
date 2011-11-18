@@ -49,6 +49,7 @@ import javax.swing.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.jar.*;
 
 
 
@@ -107,6 +108,7 @@ private String		use_workspace;
 private Element 	load_config;
 private String []	java_args;
 private RunMode 	run_mode;
+private String		course_name;
 
 
 
@@ -131,6 +133,7 @@ private BemaMain(String [] args)
    java_args = args;
    use_lila = false;
    run_mode = RunMode.NORMAL;
+   course_name = null;
 
    scanArgs(args);
 }
@@ -166,6 +169,9 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-f")) {                   // -force
 	    force_setup = true;
+	  }
+	 else if (args[i].startsWith("-course") && i+1 < ln) {  // -course <course>
+	    course_name = args[++i];
 	  }
 	 else if (args[i].startsWith("-c")) {                   // -collect
 	    force_metrics = true;
@@ -211,7 +217,7 @@ private void scanArgs(String [] args)
 
 private void badArgs()
 {
-   System.err.println("BUBBLES: bubbles [-nosave] [-noresotre] [-force] [-workspace <workspace>]");
+   System.err.println("BUBBLES: bubbles [-nosave] [-norestore] [-force] [-workspace <workspace>]");
    System.exit(1);
 }
 
@@ -226,10 +232,10 @@ private void badArgs()
 
 private void start()
 {
-   BoardProperties bp = BoardProperties.getProperties("Bema");
 
    // first setup the environment
    BoardSetup bs = BoardSetup.getSetup();
+
    if (skip_setup) bs.setSkipSetup();
    if (force_setup) bs.setForceSetup(true);
    if (force_metrics) bs.setForceMetrics(true);
@@ -238,12 +244,15 @@ private void start()
    if (use_lila) bs.setUseLila();
    if (use_workspace != null) bs.setDefaultWorkspace(use_workspace);
    if (run_mode != null) bs.setRunMode(run_mode);
+   if (course_name != null) bs.setCourseName(course_name);
    bs.setJavaArgs(java_args);
    bs.doSetup();
 
    bs.setSplashTask("Setting up Metrics and Logging");
    BoardMetrics.setupMetrics(force_setup);
-
+   
+   BoardProperties bp = BoardProperties.getProperties("Bema");
+   
    if (use_web) {
       String url = bp.getProperty("Bema.web.url");
       if (url == null) {
@@ -288,7 +297,6 @@ private void start()
    bs.setSplashTask("Starting IDE (" + bc.getName() + ") and Updating Projects");
    bc.waitForIDE();
 
-
    // ensure various components are setup
 
    bs.setSplashTask("Initializing components");
@@ -307,7 +315,28 @@ private void start()
 
    String pinf = bp.getProperty("Bema.pluginfolder");
    if (pinf != null) {
-      //TODO: Load items in plugins folder
+      File dir = new File(pinf);
+      if (dir.exists() && dir.isDirectory()) {
+	 File [] cands = dir.listFiles(new JarFilter());
+	 if (cands != null) {
+	    for (File jfn : cands) {
+	       try {
+		  JarFile jf = new JarFile(jfn);
+		  Manifest mf = jf.getManifest();
+		  if (mf == null) continue;
+		  Attributes at = mf.getMainAttributes();
+		  String nm = at.getValue("Bubbles.start");
+		  System.err.println("BEMA: Load plugin " + jfn + " using " + nm);
+		  // need to create a class loader for this jar, then use it to load the given class and
+		  // use it to initialize things
+		  // TODO: load plugin in jar file
+		}
+	       catch (IOException e) {
+		  BoardLog.logE("BEMA","Can't access plugin jar file " + jfn);
+		}
+	     }
+	  }
+       }
     }
 
    bs.setSplashTask("Loading and Caching JavaDoc");
@@ -482,6 +511,21 @@ private static class SaveSession extends Thread {
     }
 
 }	// end of inner class SaveSession
+
+
+/********************************************************************************/
+/*										*/
+/*	Filter for jar files							*/
+/*										*/
+/********************************************************************************/
+
+private static class JarFilter implements FilenameFilter {
+
+   @Override public boolean accept(File dir,String name) {
+      return name.endsWith(".jar");
+   }
+
+}	// end of inner class JarFilter
 
 
 

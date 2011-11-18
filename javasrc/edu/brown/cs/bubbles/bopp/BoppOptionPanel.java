@@ -215,6 +215,8 @@ private void search()
    search_panel.replaceOptions(opts);
 }
 
+		
+
 /********************************************************************************/
 /*										*/
 /*	Button action methods							*/

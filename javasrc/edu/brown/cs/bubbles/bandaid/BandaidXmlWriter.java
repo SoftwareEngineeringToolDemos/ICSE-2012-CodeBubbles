@@ -197,6 +197,7 @@ void xmlText(String t)
 /*	Helper methods								*/
 /*										*/
 /********************************************************************************/
+
 private void indent()
 {
    if (indent_string != null) {

@@ -60,6 +60,7 @@ enum BnoteEntryType {
    SAVE,		// save files
    NOTE,		// user note
    ATTACHMENT,		// user attachment
+   COPY,		// copy from one editor to another
    NEW_TASK,
 }
 

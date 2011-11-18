@@ -37,6 +37,9 @@ public class BudaErrorBubble extends BudaBubble {
 /*										*/
 /********************************************************************************/
 
+private Color	text_color;
+
+
 private static final long serialVersionUID = 1L;
 
 
@@ -50,6 +53,17 @@ private static final long serialVersionUID = 1L;
 
 public BudaErrorBubble(final String errmsg)
 {
+   text_color = Color.RED;
+
+   setContentPane(new ErrorContentPane(errmsg));
+}
+
+
+
+public BudaErrorBubble(final String errmsg,Color c)
+{
+   text_color = c;
+
    setContentPane(new ErrorContentPane(errmsg));
 }
 
@@ -61,15 +75,15 @@ public BudaErrorBubble(final String errmsg)
 /*										*/
 /********************************************************************************/
 
-private static class ErrorContentPane extends JPanel
+private class ErrorContentPane extends JPanel
 {
    private static final long serialVersionUID = 1L;
-   private ErrorContentPane(String errmsg)
-   {
+
+   private ErrorContentPane(String errmsg) {
       JLabel errlabel = new JLabel(errmsg);
-	 errlabel.setForeground(Color.RED);
-	 add(new JLabel(errmsg));
-   }
+      errlabel.setForeground(text_color);
+      add(new JLabel(errmsg));
+    }
 
 }	// end of inner class ErrorContentPane
 

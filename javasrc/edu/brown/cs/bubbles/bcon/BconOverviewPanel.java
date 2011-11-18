@@ -177,10 +177,10 @@ private void computeRegion()
 @Override public void focusChanged(BudaBubble bb,boolean set)
 {
    focus_class = null;
-  
+
    if (bb == null) return;
    if (BudaRoot.findBudaBubbleArea(bb) != bubble_area) return;
-   
+
    Collection<BconRegion> rgns = findBubbleRegions(bb);
    if (rgns != null && rgns.size() > 0) {
       for (BconRegion br : rgns) {
@@ -216,8 +216,6 @@ private void computeRegion()
 
 @Override public void bubbleRemoved(BudaBubble bb)
 {
-   if (BudaRoot.findBudaBubbleArea(bb) != bubble_area) return;
-
    computeRegion();
 
    Collection<BconRegion> rgns = findBubbleRegions(bb);
@@ -238,7 +236,7 @@ private void computeRegion()
 @Override public void workingSetRemoved(BudaWorkingSet ws)	{ }
 
 @Override public void doneConfiguration()			{ }
-
+@Override public void copyFromTo(BudaBubble f,BudaBubble t)	{ }
 
 
 

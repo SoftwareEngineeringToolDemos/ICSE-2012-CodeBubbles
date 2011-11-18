@@ -392,6 +392,8 @@ void setup()
 				   new BandaidHandler());
    bs.getMintControl().register("<BANDAID HISTORY='_VAR_0' THREAD='_VAR_1'><_VAR_2 /></BANDAID>",
 				   new BandaidHistoryHandler());
+   bs.getMintControl().register("<BANDAID SWING='_VAR_0'><_VAR_1 /></BANDAID>",
+				   new BandaidSwingHandler());
 }
 
 
@@ -1175,6 +1177,13 @@ private class ProcessData implements BumpProcess {
 
    @Override public boolean isRunning() 		{ return is_running; }
 
+   @Override public void requestSwingData(int x,int y) {
+      String cmd = "SWING WHAT " + x + " " + y;
+      MintControl mc = BoardSetup.getSetup().getMintControl();
+      if (getName() == null) return;
+      mc.send("<BANDAID CMD='" + cmd + "' ID='" + getName() + "' />");
+    }
+
    void updateProcess(Element xml) {
       if (is_running && IvyXml.getAttrBool(xml,"TERMINATED")) is_running = false;
       for_launch = findLaunch(IvyXml.getChild(xml,"LAUNCH"));
@@ -1432,10 +1441,10 @@ private class ThreadData implements BumpThread {
 
 
    @Override public void requestHistory() {
-      String cmd = "HISTORY " + getName();
+      String cmd = "HISTORY DUMP " + getName();
       MintControl mc = BoardSetup.getSetup().getMintControl();
       if (for_process.getName() == null) return;
-
+   
       mc.send("<BANDAID CMD='" + cmd + "' ID='" + for_process.getName() + "' />");
     }
 
@@ -1867,6 +1876,12 @@ private static class ThreadHistoryEvent extends BaseEvent {
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Performance management							*/
+/*										*/
+/********************************************************************************/
+
 private static class ProcessPerfEvent extends BaseEvent {
 
    private ProcessData for_process;
@@ -1889,6 +1904,63 @@ private static class ProcessPerfEvent extends BaseEvent {
    @Override public Object getEventData()		{ return cpu_data; }
 
 }	// end of inner class ProcessPerfEvent
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Swing debugging management						*/
+/*										*/
+/********************************************************************************/
+
+private class BandaidSwingHandler implements MintHandler {
+
+   @Override public void receive(MintMessage msg,MintArguments args) {
+      String pid = args.getArgument(0);
+      ProcessData pd = named_processes.get(pid);
+      if (pd == null) return;
+      BoardLog.logD("BUMP","Swing return: " + msg.getText());
+   
+      Element xml = args.getXmlArgument(1);
+      SwingEvent se = new SwingEvent(pd,xml);
+      for (BumpRunEventHandler reh : event_handlers) {
+         try {
+            reh.handleProcessEvent(se);
+          }
+         catch (Throwable t) {
+            BoardLog.logE("BUMP","Problem handling swing event",t);
+          }
+       }
+    }
+
+}	// end of inner class BandaidHandler
+
+
+
+private static class SwingEvent extends BaseEvent {
+
+   private ProcessData for_process;
+   private Element swing_data;
+
+   SwingEvent(ProcessData pd,Element data) {
+      for_process = pd;
+      swing_data = data;
+    }
+
+   @Override public BumpRunEventType getEventType()	{ return BumpRunEventType.PROCESS_SWING; }
+   @Override public BumpProcess getProcess()		{ return for_process; }
+   @Override public BumpLaunch getLaunch()		{ return for_process.getLaunch(); }
+   @Override public BumpLaunchConfig getLaunchConfiguration() {
+      BumpLaunch bl = for_process.getLaunch();
+      if (bl == null) return null;
+      return bl.getConfiguration();
+    }
+   @Override public long getWhen()			{ return 0; }
+   @Override public Object getEventData()		{ return swing_data; }
+
+}	// end of inner class ThreadHistoryEvent
+
 
 
 

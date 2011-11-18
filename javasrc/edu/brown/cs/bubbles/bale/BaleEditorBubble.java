@@ -220,6 +220,7 @@ BaleEditorBubble(BaleFragmentEditor bfe)
 	 nty = BudaContentNameType.CLASS;
 	 break;
       case FILE :
+	 nty = BudaContentNameType.FILE;
 	 break;
       case FIELDS :
       case STATICS :

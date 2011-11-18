@@ -393,9 +393,24 @@ String getDigestedName()	 { return bdoc_name; }
 boolean matchName(String nm)
 {
    int idx = nm.indexOf("(");
-   if (idx < 0) return nm.equals(bdoc_name);
-   if (!nm.startsWith(bdoc_name)) return false;
-   if (bdoc_name.length() != idx) return false;
+   
+   String bnm = bdoc_name;
+   boolean mtch = nm.startsWith(bnm);
+   if (!mtch) {
+      int idx1 = bnm.indexOf('<');
+      if (idx1 > 1) {
+	 bnm = bnm.substring(0,idx1);
+	 mtch = nm.startsWith(bnm);
+       }
+    }
+   if (!mtch) return false;
+   
+   if (idx < 0) {
+      // if there are no parameters, insist on exact match
+      return (bnm.length() == nm.length());
+    }
+     
+   if (bnm.length() != idx) return false;
 
    return BumpLocation.compareParameters(name_parameters,nm.substring(idx));
 }

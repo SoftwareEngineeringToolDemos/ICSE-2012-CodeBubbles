@@ -1953,6 +1953,15 @@ boolean noteBubbleActionDone(BudaBubble bb)
 }
 
 
+public void noteBubbleCopy(BudaBubble frm,BudaBubble to)
+{
+   for (BubbleViewCallback cb : view_callbacks) {
+      cb.copyFromTo(frm,to);
+    }
+}
+
+
+
 void noteWorkingSetAdded(BudaWorkingSet ws)
 {
    for (BubbleViewCallback cb : view_callbacks) {

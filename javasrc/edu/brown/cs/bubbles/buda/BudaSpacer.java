@@ -119,7 +119,7 @@ void makeRoomFor(BudaBubble bb)
 	    Rectangle r = getInnerBounds(bp.getPlacement());
 	    bubble_area.addMovingBubble(bp.getBubble());
 	    del.add(bp.getBubble());
-	    bubble_area.moveBubble(bp.getBubble(),r.getLocation());
+	    bubble_area.moveBubble(bp.getBubble(),r.getLocation(),false);
 	  }
        }
       bubble_area.removeMovingBubbles(del);

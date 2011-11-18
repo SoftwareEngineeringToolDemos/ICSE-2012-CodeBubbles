@@ -289,14 +289,15 @@ private class TaskSelector extends TaskDialog implements ActionListener {
    private void setupTasks() {
       if (task_box == null || current_project == null) return;
       task_box.removeAllItems();
-      task_box.addItem("< New Task >");
       List<BnoteTask> tasks = BnoteFactory.getFactory().getTasksForProject(current_project);
       Collections.sort(tasks,new TaskTimeCompare());
-
       if (tasks != null && tasks.size() > 0) {
 	 for (BnoteTask t : tasks) {
 	    task_box.addItem(t);
 	  }
+       }
+      else {
+	 task_box.addItem("< New Task >");
        }
       task_box.setSelectedIndex(0);
       updateButtons();

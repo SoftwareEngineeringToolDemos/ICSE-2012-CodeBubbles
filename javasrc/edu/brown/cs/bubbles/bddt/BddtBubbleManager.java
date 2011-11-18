@@ -213,6 +213,8 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	    case BDDT :
 	    case CONSOLE :
 	    case HISTORY :
+	    case SWING :
+	    case PERF :
 	    case THREADS :
 	    case EVAL :
 	       Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
@@ -300,6 +302,8 @@ void restart()
 	 case THREADS :
 	 case CONSOLE :
 	 case HISTORY :
+	 case SWING :
+	 case PERF :
 	 case EVAL :
 	    break;
 	 case EXEC :
@@ -445,6 +449,49 @@ BudaBubble createHistoryBubble()
 
 
 
+BudaBubble createSwingBubble()
+{
+   setupBubbleArea();
+
+   Collection<BubbleData> bbls = new ArrayList<BubbleData>(bubble_map.values());
+   for (BubbleData bd : bbls) {
+      switch (bd.getBubbleType()) {
+	 case SWING :
+	    BudaBubble tbd = bd.getBubble();
+	    if (tbd.isFloating() && tbd.isShowing()) return tbd;
+	    if (tbd.isFloating()) {
+	       tbd.setVisible(true);
+	       return tbd;
+	     }
+	    break;
+	 default :
+	    break;
+       }
+    }
+
+   BudaRoot br = BudaRoot.findBudaRoot(launch_control);
+   BudaBubble bb = new BddtSwingPanel(launch_control);
+
+   Rectangle r = launch_control.getBounds();
+   int x = r.x + r.width + 20;
+   int y = r.y;
+
+   BudaConstraint bc;
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_SWING)) {
+      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+    }
+   else {
+      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+    }
+
+   br.add(bb,bc);
+
+   return bb;
+}
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Access methods								*/
@@ -465,14 +512,16 @@ BumpStackFrame getFrameForBubble(BudaBubble bb)
 	    String s1b = s1.substring(idx1);
 	    BumpThread bt = frm.getThread();
 	    BumpThreadStack stk = bt.getStack();
-	    BumpStackFrame xfrm = null;
-	    for (int i = 0; i < stk.getNumFrames(); ++i) {
-	       BumpStackFrame sfrm = stk.getFrame(i);
-	       if (sameMethod(s1a,sfrm.getMethod()) && BumpLocation.compareParameters(s1b,sfrm.getSignature())) {
-		  if (xfrm == null || sfrm == frm) xfrm = sfrm;
-	       }
-	    }
-	    if (xfrm != null) bd.update(stk,xfrm);
+	    if (stk != null) {
+	       BumpStackFrame xfrm = null;
+	       for (int i = 0; i < stk.getNumFrames(); ++i) {
+		  BumpStackFrame sfrm = stk.getFrame(i);
+		  if (sameMethod(s1a,sfrm.getMethod()) && BumpLocation.compareParameters(s1b,sfrm.getSignature())) {
+		     if (xfrm == null || sfrm == frm) xfrm = sfrm;
+		   }
+		}
+	       if (xfrm != null) bd.update(stk,xfrm);
+	     }
 	 }
       }
     }
@@ -502,7 +551,7 @@ private static boolean sameMethod(String m1,String m2)
    }
    return m1.equals(m2);
 }
-      
+
 
 
 /********************************************************************************/
@@ -607,6 +656,8 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
 	    case BDDT :
 	    case CONSOLE :
 	    case HISTORY :
+	    case SWING :
+	    case PERF :
 	    case THREADS :
 	    case STOP_TRACE :
 	    case EVAL :
@@ -693,6 +744,7 @@ private class BubbleUpdater implements BubbleViewCallback {
    @Override public void workingSetRemoved(BudaWorkingSet ws)		{ }
 
    @Override public void doneConfiguration()				{ }
+   @Override public void copyFromTo(BudaBubble f,BudaBubble t)		{ }
 
 }
 
@@ -726,6 +778,8 @@ private static class BubbleData {
       else if (bb instanceof BddtLaunchControl) bubble_type = BubbleType.BDDT;
       else if (bb instanceof BddtThreadView) bubble_type = BubbleType.THREADS;
       else if (bb instanceof BddtHistoryBubble) bubble_type = BubbleType.HISTORY;
+      else if (bb instanceof BddtSwingPanel) bubble_type = BubbleType.SWING;
+      else if (bb instanceof BddtPerfViewTable) bubble_type = BubbleType.PERF;
       else if (bb instanceof BddtStopTraceBubble) bubble_type = BubbleType.STOP_TRACE;
       else if (bb instanceof BddtEvaluationBubble) bubble_type = BubbleType.EVAL;
       else if (bb instanceof BddtInteractionBubble) bubble_type = BubbleType.EVAL;

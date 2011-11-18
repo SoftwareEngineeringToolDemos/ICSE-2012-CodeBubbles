@@ -139,25 +139,27 @@ private synchronized void setFileState(String file,FileState state)
    for (BattProject bp : project_set.values()) {
       rslt = bp.getClassesForFile(file,rslt);
     }
-
-   if (state == FileState.CHANGED) {
-      for (String s : rslt) changed_classes.put(s,state);
-    }
-   else if (state == FileState.ERRORS) {
-      for_batt.addErrors(rslt);
-    }
-   else if (state == FileState.STABLE) {
-      if (fs == FileState.CHANGED || fs == FileState.EDITED) {
-	 for (String s : rslt) {
-	    System.err.println("BATT: Changed class: " + s);
-	    changed_classes.put(s,state);
-	  }
+   
+   if (rslt != null) {
+      if (state == FileState.CHANGED) {
+	 for (String s : rslt) changed_classes.put(s,state);
        }
-      for_batt.removeErrors(rslt);
-    }
-   else if (state == FileState.EDITED) {
-      for_batt.addErrors(rslt); 		// mark the classes as invalid until compile
-      for (String s : rslt) changed_classes.put(s,state);
+      else if (state == FileState.ERRORS) {
+	 for_batt.addErrors(rslt);
+       }
+      else if (state == FileState.STABLE) {
+	 if (fs == FileState.CHANGED || fs == FileState.EDITED) {
+	    for (String s : rslt) {
+	       System.err.println("BATT: Changed class: " + s);
+	       changed_classes.put(s,state);
+	     }
+	  }
+	 for_batt.removeErrors(rslt);
+       }
+      else if (state == FileState.EDITED) {
+	 for_batt.addErrors(rslt); 		// mark the classes as invalid until compile
+	 for (String s : rslt) changed_classes.put(s,state);
+       }
     }
 
    file_states.put(file,state);

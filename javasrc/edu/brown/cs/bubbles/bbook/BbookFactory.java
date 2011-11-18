@@ -135,6 +135,25 @@ private static boolean isEnabled()
 
 /********************************************************************************/
 /*										*/
+/*	Logging methods 							*/
+/*										*/
+/********************************************************************************/
+
+public void log(Component src,BnoteEntryType type,Object ... args)
+{
+   if (src == null || !isEnabled()) return;
+   BudaBubble bb = BudaRoot.findBudaBubble(src);
+   BbookRegion tr = region_manager.findTaskRegion(bb);
+   if (tr == null) return;
+   BnoteTask task = tr.getTask();
+   if (task == null) return;
+   BnoteStore.log(task.getProject(),task,type,args);
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Bubble creation methods 						*/
 /*										*/
 /********************************************************************************/
@@ -162,8 +181,6 @@ void handleSetTask(BnoteTask task,BudaBubbleArea bba,Rectangle loc)
 {
    region_manager.handleSetTask(task,bba,loc);
 }
-
-
 
 
 

@@ -1296,7 +1296,7 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
       p.build(kind,new BedrockProgressMonitor(our_plugin,desc));
     }
    catch (Throwable t) {
-      throw new BedrockException("Build error: " + t);
+      throw new BedrockException("Build error: " + t,t);
     }
 }
 

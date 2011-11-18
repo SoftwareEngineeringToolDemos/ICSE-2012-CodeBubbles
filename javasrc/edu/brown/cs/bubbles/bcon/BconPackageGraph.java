@@ -276,6 +276,8 @@ private boolean testCollapse(String nm,ArcType typ)
    return typs.contains(typ);
 }
 
+		
+
 private String findCollapse(String nm,ArcType typ)
 {
    int idx = nm.lastIndexOf("(");
@@ -312,6 +314,14 @@ private BanalPackageNode getParentNode(BanalPackageNode nd)
       BanalPackageNode par = lnk.getToNode();
       if (lnk.getTypes().containsKey(PackageRelationType.EXTENDS) &&
 			testCollapse(par.getName(),ArcType.EXTENDED_BY)) {
+	 return par;
+       }
+    }
+   
+   for (BanalPackageLink lnk : nd.getOutLinks()) {
+      BanalPackageNode par = lnk.getToNode();
+      if (lnk.getTypes().containsKey(PackageRelationType.CLASSMETHOD) &&
+	       testCollapse(par.getName(),ArcType.MEMBER_OF)) {
 	 return par;
        }
     }
@@ -1177,21 +1187,26 @@ synchronized void computeIncludes()
 private void addToIncludes(BanalPackageNode nd,boolean in,boolean out)
 {
    if (!include_set.add(nd.getName())) return;
+   BanalPackageNode xnd = getParentNode(nd);
+   if (xnd != null && xnd != nd) {
+      addToIncludes(xnd,in,out);
+    }
 
    for (BanalPackageLink lnk : nd.getInLinks()) {
       if (useIncludeEdge(lnk,in,out)) addToIncludes(lnk.getFromNode(),true,false);
+      else if (useSubEdge(lnk)) addToIncludes(lnk.getFromNode(),in,out);
     }
 
    for (BanalPackageLink lnk : nd.getOutLinks()) {
       if (useIncludeEdge(lnk,out,in)) addToIncludes(lnk.getToNode(),false,true);
-    }
+     }
 }
 
 
 private boolean useIncludeEdge(BanalPackageLink lnk,boolean dir,boolean flip)
 {
-   if (!useClass(lnk.getFromNode())) return false;
-   if (!useClass(lnk.getToNode())) return false;
+   // if (!useClass(lnk.getFromNode())) return false;
+   // if (!useClass(lnk.getToNode())) return false;
 
    Map<PackageRelationType,Integer> typs = lnk.getTypes();
    for (Map.Entry<PackageRelationType,Integer> ent : typs.entrySet()) {
@@ -1202,6 +1217,22 @@ private boolean useIncludeEdge(BanalPackageLink lnk,boolean dir,boolean flip)
       else if (ent.getValue() < 0 && flip) return true;
     }
 
+   return false;
+}
+
+private boolean useSubEdge(BanalPackageLink lnk)
+{
+   for (Map.Entry<PackageRelationType,Integer> ent : lnk.getTypes().entrySet()) {
+      switch (ent.getKey()) {
+	 case CLASSMETHOD :
+	 case INNERCLASS :
+	 case SUPERCLASS :
+	 case IMPLEMENTS :
+	    if (ent.getValue() > 0) return true;
+	    break;
+      }
+   }
+   
    return false;
 }
 

@@ -117,6 +117,11 @@ BdocRepository()
    handleRemoteAccess();
 
    File f = BoardSetup.getDocumentationFile();
+   String cf = bp.getProperty("Bdoc.doc.file");
+   if (cf != null) {
+      File xf = new File(cf);
+      if (xf.exists()) f = xf;
+    }
 
    if (loadXml(f)) {
       ready_count = 0;

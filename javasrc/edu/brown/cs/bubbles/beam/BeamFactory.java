@@ -187,6 +187,7 @@ private static Icon imageToFlagIcon(String path)
 {
    BudaRoot br = BudaRoot.findBudaRoot(bba);
    BudaBubble bb = null;
+   BoardProperties bp = BoardProperties.getProperties("Beam");
 
    if (id.equals(NOTE_BUTTON)) {
       bb = new BeamNoteBubble();
@@ -241,7 +242,8 @@ private static Icon imageToFlagIcon(String path)
     }
    else if (id.equals(HELP_VIDEO_BUTTON)) {
       try {
-	 URI u = new URI(HELP_VIDEO_URL);
+	 String unm = bp.getProperty(HELP_VIDEO_KEY,HELP_VIDEO_URL);
+	 URI u = new URI(unm);
 	 Desktop.getDesktop().browse(u);
        }
       catch (Throwable t) {
@@ -250,7 +252,8 @@ private static Icon imageToFlagIcon(String path)
     }
    else if (id.equals(HELP_HOME_BUTTON)) {
       try {
-	 URI u = new URI(HELP_HOME_URL);
+	 String unm = bp.getProperty(HELP_HOME_KEY,HELP_HOME_URL);
+	 URI u = new URI(unm);
 	 Desktop.getDesktop().browse(u);
        }
       catch (Throwable t) {
@@ -259,7 +262,8 @@ private static Icon imageToFlagIcon(String path)
     }
    else if (id.equals(HELP_WIKI_BUTTON)) {
       try {
-	 URI u = new URI(HELP_WIKI_URL);
+	 String unm = bp.getProperty(HELP_WIKI_KEY,HELP_WIKI_URL);
+	 URI u = new URI(unm);
 	 Desktop.getDesktop().browse(u);
        }
       catch (Throwable t) {
@@ -268,7 +272,8 @@ private static Icon imageToFlagIcon(String path)
     }
    else if (id.equals(HELP_TUTORIAL_BUTTON)) {
       try {
-	 URI u = new URI(HELP_TUTORIAL_URL);
+	 String unm = bp.getProperty(HELP_TUTORIAL_KEY,HELP_TUTORIAL_URL);
+	 URI u = new URI(unm);
 	 Desktop.getDesktop().browse(u);
        }
       catch (Throwable t) {

@@ -73,6 +73,8 @@ private FrameAnnot		frame_annot;
 private BddtBubbleManager	bubble_manager;
 private int			freeze_count;
 private SwingEventListenerList<BddtFrameListener> frame_listeners;
+private Action			stepinto_action;
+private Action			stepuser_action;
 
 private JPanel			launch_panel;
 
@@ -151,8 +153,10 @@ private void setupPanel()
 
    JToolBar btnbar = new JToolBar();
    btnbar.add(new PlayAction());
-   if (bp.getBoolean("Bddt.buttons.StepInto",true)) btnbar.add(new StepIntoAction());
-   if (bp.getBoolean("Bddt.buttons.StepUser",true)) btnbar.add(new StepUserAction());
+   stepinto_action = new StepIntoAction();
+   stepuser_action = new StepUserAction();
+   if (bp.getBoolean("Bddt.buttons.StepInto",true)) btnbar.add(stepinto_action);
+   if (bp.getBoolean("Bddt.buttons.StepUser",true)) btnbar.add(stepuser_action);
    btnbar.add(new StepOverAction());
    btnbar.add(new StepReturnAction());
    btnbar.add(new PauseAction());
@@ -175,6 +179,8 @@ private void setupPanel()
    bblbar.add(new ThreadsAction());
    if (bp.getBoolean("Bddt.bubbons.History",true)) bblbar.add(new HistoryAction());
    if (bp.getBoolean("Bddt.buttons.Performance",true)) bblbar.add(new PerformanceAction());
+   if (bp.getBoolean("Bddt.buttons.Swing",false)) bblbar.add(new SwingAction());
+   
    bblbar.add(new EvalBubbleAction());
    bblbar.add(new InteractionBubbleAction());
    bblbar.add(new NewChannelAction());
@@ -422,6 +428,11 @@ private class StepUserAction extends AbstractAction {
    }
 
    @Override public void actionPerformed(ActionEvent evt) {
+      if ((evt.getModifiers() & ActionEvent.SHIFT_MASK) != 0) {
+	 stepinto_action.actionPerformed(evt);
+	 return;
+       }
+
       switch (launch_state) {
 	 case READY :
 	 case TERMINATED :
@@ -691,7 +702,23 @@ private class InteractionBubbleAction extends AbstractAction {
 
 
 
+private class SwingAction extends AbstractAction {
 
+   private static final long serialVersionUID = 1;
+
+   SwingAction() {
+      super("Swing",BoardImage.getIcon("debug/swing-icon"));
+      putValue(SHORT_DESCRIPTION,"Bring up swing debugging bubble");
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BoardMetrics.noteCommand("BDDT","CreateSwingBubble");
+      BddtFactory.getFactory().makeSwingBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+    }
+   
+}	// end of inner class SwingAction
+
+   
 
 private class NewChannelAction extends AbstractAction {
 
@@ -979,7 +1006,7 @@ private class ExecutionAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return annot_color; }
-   @Override public Color getBackgroundColor()                  { return null; }
+   @Override public Color getBackgroundColor()			{ return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
@@ -1036,7 +1063,7 @@ private class FrameAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return annot_color; }
-   @Override public Color getBackgroundColor()                  { return null; }
+   @Override public Color getBackgroundColor()			{ return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
@@ -1346,6 +1373,8 @@ private class ValueAction extends AbstractAction {
    }
 
 }	// end of inner class ValueAction
+
+
 
 
 

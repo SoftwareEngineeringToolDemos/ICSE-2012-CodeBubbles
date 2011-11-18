@@ -37,6 +37,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
 import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.swing.SwingEditorPane;
 
 import javax.accessibility.Accessible;
 import javax.swing.*;
@@ -53,7 +54,7 @@ import java.util.List;
 
 
 
-abstract class BaleEditorPane extends JEditorPane implements BaleConstants.BaleEditor,
+abstract class BaleEditorPane extends SwingEditorPane implements BaleConstants.BaleEditor,
 		BaleConstants
 {
 
@@ -1137,12 +1138,12 @@ private class ContextData implements BaleContextConfig {
       if (t != null) return t;
       return BaleContextType.NONE;
     }
-   
+
    @Override public String getMethodName() {
       if (editor_element == null) return null;
       return editor_element.getMethodName();
     }
-      
+
 
 }	// end of inner class ContextData
 

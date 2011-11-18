@@ -52,6 +52,7 @@ class BudaMoveAnimator implements ActionListener, BudaConstants
 private BudaBubbleArea		bubble_area;
 private Collection<Movement>	move_bubbles;
 private Timer			move_timer;
+private List<BudaBubble>  refresh_set;
 
 private static final int	FRAME_DELAY = 10;
 private static final int	FRAME_MOVE = 16;
@@ -71,6 +72,7 @@ BudaMoveAnimator()
    bubble_area = null;
 
    move_bubbles = new ArrayList<Movement>();
+   refresh_set = null;
 
    move_timer.addActionListener(this);
    move_timer.setActionCommand("BUDAANIMATE");
@@ -87,13 +89,19 @@ BudaMoveAnimator()
 /*										*/
 /********************************************************************************/
 
-synchronized void moveBubble(BudaBubble m,Point target,boolean changegroupcolor)
+synchronized void moveBubble(BudaBubble m,Point target,boolean update)
 {
-   move_bubbles.add(new Movement(m,target,changegroupcolor));
+   move_bubbles.add(new Movement(m,target));
 
    if (move_bubbles.size() == 1) {
+      refresh_set = null;
       if (bubble_area == null) bubble_area = BudaRoot.findBudaBubbleArea(m);
       move_timer.start();
+    }
+   
+   if (update) {
+      if (refresh_set == null) refresh_set = new ArrayList<BudaBubble>();
+      refresh_set.add(m);
     }
 }
 
@@ -115,18 +123,29 @@ synchronized boolean isActive()
 @Override public void actionPerformed(ActionEvent e)
 {
    boolean stop = false;
+   List<BudaBubble> upds = null;
 
    synchronized (this) {
       for (Iterator<Movement> it = move_bubbles.iterator(); it.hasNext(); ) {
 	 Movement mb = it.next();
 	 if (mb.nextMove()) it.remove();
        }
-      if (move_bubbles.size() == 0) stop = true;
+      if (move_bubbles.size() == 0) {
+         stop = true;
+         upds = refresh_set;
+         refresh_set = null;
+       }
     }
 
    if (stop) {
       bubble_area.checkAreaDimensions();
       move_timer.stop();
+    }
+   
+   if (upds != null && upds.size() > 0) {
+      for (BudaBubble xbb : upds) {
+         bubble_area.fixupBubble(xbb);
+       }
     }
 }
 
@@ -147,7 +166,7 @@ private static class Movement
    private double	total_distance;
    private double	move_count;
 
-   Movement(BudaBubble m,Point target,boolean changegroupcolor) {
+   Movement(BudaBubble m,Point target) {
       for_bubble = m;
       target_point = target;
       start_point = m.getLocation();

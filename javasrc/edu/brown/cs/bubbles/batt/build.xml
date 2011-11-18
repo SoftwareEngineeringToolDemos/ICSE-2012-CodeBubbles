@@ -89,8 +89,6 @@
 	 <manifest>
 	    <attribute name='Premain-Class' value='edu.brown.cs.bubbles.batt.BattAgent' />
 	    <attribute name='Agent-Class' value='edu.brown.cs.bubbles.batt.BattAgent' />
-	    <attribute name='Boot-Class-Path'
-		value='${BUBBLES}/lib/battagent.jar:${BUBBLES}/lib/bubblesasm.jar' />
 	    <attribute name='Can-RedefineClasses' value='true' />
 	    <attribute name='Can-RetransformClasses' value='false' />
 	    <attribute name='Can-Set-Native-Method-Prefix' value='false' />
@@ -99,6 +97,7 @@
 	 <fileset dir='${BUBBLES}/java' includes='**/batt/BattAgent*.class' />
 	 <fileset dir='${BUBBLES}/java' includes='**/batt/BattInstrument*.class' />
 	 <fileset dir='${BUBBLES}/java' includes='**/batt/BattConstants*.class' />
+	 <zipfileset src="${BUBBLES}/lib/bubblesasm.jar" excludes="META-INF/*" />
       </jar>
       <copy file='battagent.jar' tofile='${BUBBLES}/lib/battagent.jar' />
    </target>

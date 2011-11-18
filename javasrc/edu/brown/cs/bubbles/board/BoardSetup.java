@@ -113,6 +113,8 @@ private String		update_proxy;
 private RunMode 	run_mode;
 private String		mint_name;
 private MintControl	mint_control;
+private String		course_name;
+private File		library_dir;
 
 
 private static String	       prop_base;
@@ -167,7 +169,8 @@ private BoardSetup()
    force_metrics = false;
 
    install_path = system_properties.getProperty(BOARD_PROP_INSTALL_DIR);
-   auto_update = system_properties.getBoolean(BOARD_PROP_AUTO_UPDATE,true);
+   auto_update = (System.getProperty("edu.brown.cs.bubbles.NO_UPDATE") != null);
+   auto_update = system_properties.getBoolean(BOARD_PROP_AUTO_UPDATE,auto_update);
    install_jar = false;
    jar_directory = null;
    jar_file = null;
@@ -181,6 +184,8 @@ private BoardSetup()
    run_mode = RunMode.NORMAL;
    mint_name = null;
    mint_control = null;
+   course_name = null;
+   library_dir = null;
 
    eclipse_directory = system_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    default_workspace = system_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
@@ -201,6 +206,10 @@ private BoardSetup()
    java_args = null;
 
    has_changed = false;
+
+   course_name = null;
+   if (course_name == null) course_name = System.getProperty("edu.brown.cs.bubbles.COURSE");
+   if (course_name == null) course_name = System.getenv("BUBBLES_COURSE");
 
    setup_count = 0;
 }
@@ -235,6 +244,9 @@ private void scanArgs(String [] args)
 	 if (args[i].startsWith("-f")) {                                // -force
 	    force_setup = true;
 	    force_metrics = true;
+	  }
+	 else if (args[i].startsWith("-course") && i+1 < args.length) { // -course <name>
+	    course_name = args[++i];
 	  }
 	 else if (args[i].startsWith("-c")) {                           // -collect
 	    force_metrics = true;
@@ -355,6 +367,26 @@ public void setAllowDebug()
 public void setUseLila()
 {
    use_lila = true;
+}
+
+
+/**
+ *	Set course name
+ **/
+
+public void setCourseName(String nm)
+{
+   course_name = nm;
+}
+
+
+/**
+ *	Get course name if any is associated with the session, null otherwise.
+ **/
+
+public String getCourseName()
+{
+   return course_name;
 }
 
 
@@ -589,6 +621,43 @@ void setRunSize(long sz)
 
 public String getLibraryPath(String item)
 {
+   File f = getLibraryDirectory();
+   if (f == null) return null;
+
+   f = new File(f,item);
+   if (!f.exists()) return null;
+
+   return f.getPath();
+}
+
+
+public File getClassDirectory()
+{
+   if (course_name == null) return null;
+
+   File f = null;
+
+   if (install_jar && jar_directory != null) {
+      f = new File(jar_directory);
+    }
+   else if (install_path != null) {
+      f = new File(install_path);
+    }
+   else return null;
+
+   f = new File(f,course_name);
+
+   if (!f.exists()) return null;
+
+   return f;
+}
+
+
+
+private File getLibraryDirectory()
+{
+   if (library_dir != null) return library_dir;
+
    File f = null;
 
    if (install_jar && jar_directory != null) {
@@ -600,11 +669,20 @@ public String getLibraryPath(String item)
    else return null;
 
    f = new File(f,BOARD_INSTALL_LIBRARY);
-   f = new File(f,item);
-   if (!f.exists()) return null;
 
-   return f.getPath();
+   if (!f.exists()) f.mkdir();
+   if (!f.exists() || !f.isDirectory()) {
+      File f1 = new File(BOARD_PROP_BASE);
+      File f2 = new File(f1,BOARD_INSTALL_LIBRARY);
+      f2.mkdirs();
+      if (f2.exists() && f2.isDirectory()) f = f2;
+    }
+
+   library_dir = f;
+
+   return f;
 }
+
 
 
 
@@ -754,7 +832,14 @@ public boolean doSetup()
       return false;
     }
 
+  if (course_name != null) auto_update = false;
+
    boolean firsttime = checkDefaultInstallation();
+   if (firsttime && eclipse_directory == null) {
+      eclipse_directory = System.getProperty("edu.brown.cs.bubbles.eclipse");
+      if (eclipse_directory == null) eclipse_directory = System.getenv("BUBBLES_ECLIPSE");
+      if (!checkEclipse()) eclipse_directory = null;
+    }
 
    if (show_splash && splash_screen == null && !firsttime) {
       splash_screen = new BoardSplash();
@@ -783,7 +868,8 @@ public boolean doSetup()
    if (install_jar && !update_setup) {
       setSplashTask("Checking for newer version");
       if (update_proxy != null) BoardUpdate.setupProxy(update_proxy);
-      BoardUpdate.checkUpdate(jar_file,java_args);
+      if (auto_update) BoardUpdate.checkUpdate(jar_file,java_args);
+      else BoardUpdate.setVersion();
     }
    else if (install_jar || jar_directory != null) {
       BoardUpdate.setVersion();
@@ -1169,17 +1255,28 @@ private void checkJarResources()
    File ivv = new File(prop_base);
    if (!ivv.exists()) ivv.mkdir();
 
+   File cpt = null;
+   if (course_name != null) {
+      File c1 = new File(jar_directory);
+      cpt = new File(c1,course_name);
+      if (!cpt.exists() || !cpt.isDirectory()) cpt = null;
+    }
+
    for (String s : BOARD_RESOURCE_PROPS) {
       try {
 	 File f1 = new File(ivv,s);
-	 InputStream ins = BoardSetup.class.getClassLoader().getResourceAsStream(s);
-	 if (f1.exists()) {
-	    ensurePropsDefined(s,ins);
+
+	 InputStream ins = null;
+	 if (cpt != null) {
+	    File f2 = new File(cpt,s);
+	    try {
+	       if (f2.exists()) ins = new FileInputStream(f2);
+	     }
+	    catch (IOException e) { }
 	  }
-	 else {
-	    FileOutputStream ots = new FileOutputStream(f1);
-	    copyFile(ins,ots);
-	  }
+	 if (ins == null) ins = BoardSetup.class.getClassLoader().getResourceAsStream(s);
+
+	 checkJarResourceItem(s,f1,ins);
        }
       catch (IOException e) {
 	 BoardLog.logE("BOARD","Problem setting up jar resource " + s + ": " + e);
@@ -1190,12 +1287,25 @@ private void checkJarResources()
 }
 
 
+private void checkJarResourceItem(String s,File f1,InputStream ins) throws IOException
+{
+   if (f1.exists()) {
+      ensurePropsDefined(s,ins);
+    }
+   else {
+      FileOutputStream ots = new FileOutputStream(f1);
+      copyFile(ins,ots);
+    }
+}
+
+
 
 
 private void checkJarLibraries()
 {
-   File root = new File(jar_directory);
-   File libd = new File(root,BOARD_INSTALL_LIBRARY);
+   if (!auto_update) return;
+
+   File libd = getLibraryDirectory();
    if (!libd.exists()) libd.mkdir();
 
    for (String s : BOARD_LIBRARY_FILES) {
@@ -1477,7 +1587,7 @@ private void restartBubbles()
    setSplashTask("Restarting with new configuration");
 
    File dir1 = new File(jar_directory);
-   File dir = new File(dir1,BOARD_INSTALL_LIBRARY);
+   File dir = getLibraryDirectory();
 
    StringBuffer cp = new StringBuffer();
    cp.append(jar_file);
@@ -1526,6 +1636,11 @@ private void restartBubbles()
       args.add(idx++,BOARD_RESTART_CLASS);
       args.add(idx++,"-nosetup");
       if (force_metrics) args.add(idx++,"-collect");
+      if (course_name != null) {
+	 args.add(idx++,"-course");
+	 args.add(idx++,course_name);
+       }
+
       ProcessBuilder pb = new ProcessBuilder(args);
       pb.start();
     }
@@ -1588,7 +1703,6 @@ private boolean checkDefaultInstallation()
       eclipse_directory = f.getPath();
       firsttime = false;
     }
-
    has_changed = true;
 
    return firsttime;
@@ -1643,7 +1757,13 @@ private class SetupDialog implements ActionListener, CaretListener {
 	 pnl.addSeparator();
        }
 
-      pnl.addBoolean("Automatically Update Bubbles",auto_update,this);
+      if (getCourseName() == null) {
+	 pnl.addBoolean("Automatically Update Bubbles",auto_update,this);
+       }
+      else {
+	 auto_update = false;
+       }
+
       pnl.addBoolean("Run Eclipse in Foreground",run_foreground,this);
 
       pnl.addSeparator();

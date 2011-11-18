@@ -190,6 +190,8 @@ long saveAttachment(String anm,InputStream ins,int len)
 {
    long id = getNextId();
 
+   BoardLog.logD("BNOTE","Save attachment " + anm + " " + id + " " + len);
+
    if (id == 0 || len > MAX_ATTACHMENT_SIZE) return 0;
 
    try {
@@ -225,12 +227,15 @@ File getAttachment(String aid)
 {
    File outf = null;
 
+   BoardLog.logD("BNOTE","Finding attachment " + aid);
+
    long id = 0;
 
    try {
       id = Long.parseLong(aid);
     }
    catch (NumberFormatException e) {
+      BoardLog.logE("BNOTE","Bad attachment id " + aid);
       return null;
     }
 
@@ -239,7 +244,10 @@ File getAttachment(String aid)
       PreparedStatement s = note_conn.prepareStatement(q);
       s.setLong(1,id);
       ResultSet rs = s.executeQuery();
-      if (!rs.next()) return null;
+      if (!rs.next()) {
+	 BoardLog.logE("BNOTE","Attachment " + aid + " not found");
+	 return null;
+       }
       String snm = rs.getString(1);
       InputStream ins = null;
       if (!use_streams) {

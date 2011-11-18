@@ -328,9 +328,13 @@ String HELP_KEY_BUTTON = "Bubble.Help.Show Key Bindings";
  *	URL of the help video
  **/
 String HELP_VIDEO_URL = "http://www.cs.brown.edu/people/spr/codebubbles/demovideo.mov";
+String HELP_VIDEO_KEY = "Beam.help.video";
 String HELP_HOME_URL = "http://www.cs.brown.edu/people/spr/codebubbles/";
+String HELP_HOME_KEY = "Beam.help.home";
 String HELP_WIKI_URL = "http://conifer.cs.brown.edu:8000/bubbles/wiki/OverView";
-String HELP_TUTORIAL_URL = "http://wwwacs.brown.edu/people/spr/codebubbles/tutorial";
+String HELP_WIKI_KEY = "Beam.help.wiki";
+String HELP_TUTORIAL_URL = "http://www.cs.brown.edu/people/spr/codebubbles/tutorial";
+String HELP_TUTORIAL_KEY = "Beam.help.tutorial";
 
 
 

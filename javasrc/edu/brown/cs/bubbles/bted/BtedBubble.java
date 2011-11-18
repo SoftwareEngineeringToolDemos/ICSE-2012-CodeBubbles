@@ -31,6 +31,8 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaBubbleOutputer;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
+import edu.brown.cs.ivy.swing.*;
+
 import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -590,7 +592,7 @@ private class NextFindAction extends AbstractAction {
  * Subclasses JEditorPane to allow gradient painting.
  */
 
-private static class BtedEditorPane extends JEditorPane {
+private static class BtedEditorPane extends SwingEditorPane {
 
    private static final long serialVersionUID = 1;
 

@@ -306,11 +306,6 @@ enum BaleViewType {
 
 
 
-
-
-
-
-
 /********************************************************************************/
 /*										*/
 /* Types for Information bubbles						*/
@@ -1001,12 +996,12 @@ interface BaleAnnotation {
  *	annotation.  This returns null if there is no line highlighting (e.g. icon only).
  **/
    Color getLineColor();
-   
+
 /**
- *      Return the background annotation area color or null if none.
+ *	Return the background annotation area color or null if none.
  **/
    Color getBackgroundColor();
-      
+
 
 /**
  *	Check if adding this annotation should ensure that the given location is

@@ -353,6 +353,8 @@ private void expandForGroup(Rectangle r,BudaBubble grpb)
 @Override public void workingSetRemoved(BudaWorkingSet ws)	{ }
 
 @Override public void doneConfiguration()			{ }
+@Override public void copyFromTo(BudaBubble f,BudaBubble t)	{ }
+
 
 
 

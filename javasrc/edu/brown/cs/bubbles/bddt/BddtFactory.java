@@ -457,7 +457,6 @@ BudaBubble makePerformanceBubble(BudaBubble src,BddtLaunchControl ctrl)
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
    BudaBubble bb = null;
-   // bb = new BddtPerfView(ctrl);
    bb = new BddtPerfViewTable(ctrl);
 
    Rectangle r = src.getBounds();
@@ -465,7 +464,7 @@ BudaBubble makePerformanceBubble(BudaBubble src,BddtLaunchControl ctrl)
    int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + BDDT_STACK_HEIGHT + 20 + 20;
 
    BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_HISTORY)) {
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_PERFORMANCE)) {
       bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
     }
    else {
@@ -521,6 +520,33 @@ BudaBubble makeInteractionBubble(BudaBubble src,BddtLaunchControl ctrl)
 
    BudaConstraint bc;
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_INTERACTION)) {
+      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+    }
+   else {
+      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+    }
+
+   bba.add(bb,bc);
+
+   return bb;
+}
+
+
+
+BudaBubble makeSwingBubble(BudaBubble src,BddtLaunchControl ctrl)
+{
+   if (ctrl == null) return null;
+
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   BudaBubble bb = null;
+   bb = new BddtSwingPanel(ctrl);
+
+   Rectangle r = src.getBounds();
+   int x = r.x + r.width + 20;
+   int y = r.y;
+
+   BudaConstraint bc;
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_SWING)) {
       bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
     }
    else {

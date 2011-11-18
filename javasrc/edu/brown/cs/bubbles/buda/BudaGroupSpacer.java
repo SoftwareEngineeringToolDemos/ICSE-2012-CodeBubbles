@@ -107,7 +107,7 @@ void makeRoomFor(BudaBubbleGroup bg)
 	       destination.x += movement.getX();
 	       destination.y += movement.getY();
 
-	       bubble_area.moveBubble(bb, destination);
+	       bubble_area.moveBubble(bb, destination, false);
 	     }
 	  }
        }

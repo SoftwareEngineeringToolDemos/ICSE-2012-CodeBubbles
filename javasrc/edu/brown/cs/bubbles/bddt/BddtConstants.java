@@ -317,6 +317,8 @@ String BDDT_PROPERTY_FLOAT_LAUNCH_CONTROL = "LaunchControl.float";
 String BDDT_PROPERTY_FLOAT_CONSOLE = "Console.float";
 String BDDT_PROPERTY_FLOAT_THREADS = "Threads.float";
 String BDDT_PROPERTY_FLOAT_HISTORY = "History.float";
+String BDDT_PROPERTY_FLOAT_SWING = "Swing.float";
+String BDDT_PROPERTY_FLOAT_PERFORMANCE = "Performance.float";
 
 
 
@@ -466,7 +468,9 @@ enum BubbleType {
    BDDT,		// launch control, frames, etc
    THREADS,		// thread view
    CONSOLE,		// console
-   HISTORY,
+   HISTORY,		// debugging history
+   SWING,		// swing debugging
+   PERF,		// performance view
    EVAL,		// evaluation/interaction
    EXEC,		// bubble for current execution point
    FRAME,		// bubble for user selection up the call stack

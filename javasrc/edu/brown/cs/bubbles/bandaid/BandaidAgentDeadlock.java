@@ -60,7 +60,7 @@ private static int			check_every = 10;
 
 BandaidAgentDeadlock(BandaidController bc)
 {
-   super(bc,"Deadlock");
+   super(bc,"DEADLOCK");
 
    thread_locks = new HashMap<LockNode,ThreadInfo>();
    thread_blocks = new HashMap<ThreadInfo,LockNode>();

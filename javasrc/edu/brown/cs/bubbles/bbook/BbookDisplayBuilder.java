@@ -377,12 +377,29 @@ private void outputEntryData(BnoteEntry ent,GenContext ctx,StringBuffer buf)
 	 buf.append(fixTextBlock(nt));
 	 buf.append("</blockquote>");
 	 break;
+      case COPY :
+	 nm = ent.getProperty("NAME");
+	 String src = ent.getProperty("SOURCE");
+	 setState(ctx,ContextState.WORK,buf);
+	 buf.append("<li>");
+	 buf.append(ent.getType().toString());
+	 buf.append(" ");
+	 buf.append(" FROM ");
+	 buf.append(fixText(src));
+	 buf.append(" TO ");
+	 buf.append(fixText(nm));
+	 buf.append("</li>");
+	 break;
       case ATTACHMENT :
 	 String fnm = ent.getProperty("SOURCE");
 	 String aid = ent.getProperty("ATTACHID");
 	 MimetypesFileTypeMap  mtm = new MimetypesFileTypeMap();
+	 mtm.addMimeTypes("image/png png PNG");
 	 String mtname = mtm.getContentType(fnm);
-	 if (mtname == null) break;
+	 if (mtname == null) {
+	    BoardLog.logE("BBOOK","No mine type found for attachment " + fnm);
+	    break;
+	  }
 	 MimeType mt = null;
 	 try {
 	    mt = new MimeType(mtname);
@@ -435,6 +452,11 @@ private void outputEntryData(BnoteEntry ent,GenContext ctx,StringBuffer buf)
 	       buf.append("Play Video");
 	       buf.append("</A>");
 	     }
+	  }
+	 else {
+	    BoardLog.logE("BBOOK","Unknown attachment type: " + mt + " " +
+			     mt.getPrimaryType() + " " + mt.getBaseType() + " " +
+			     mt.getSubType() + " " + fnm);
 	  }
 	 break;
     }

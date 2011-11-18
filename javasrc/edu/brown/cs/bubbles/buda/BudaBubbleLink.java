@@ -30,8 +30,12 @@
 
 package edu.brown.cs.bubbles.buda;
 
+import edu.brown.cs.bubbles.board.BoardMetrics;
+
 import java.awt.*;
 import java.awt.geom.*;
+import java.awt.event.*;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -272,6 +276,80 @@ Point getTargetPoint(Point2D src)
 
    return to_port.getLinkPoint(to_bubble,src);
 }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Context menu processing 						*/
+/*										*/
+/********************************************************************************/
+
+void handlePopupMenu(MouseEvent e)
+{
+   JPopupMenu pm = new JPopupMenu();
+   pm.add(new RemoveAction());
+   JMenu m = new JMenu("Style ...");
+   m.add(new StyleAction("Solid",BudaLinkStyle.STYLE_SOLID));
+   m.add(new StyleAction("Dashed",BudaLinkStyle.STYLE_DASHED));
+   m.add(new StyleAction("Reference",BudaLinkStyle.STYLE_REFERENCE));
+   pm.add(m);
+   pm.add(new CollapseAction());
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
+   pm.show(bba,e.getX(),e.getY());
+}
+
+
+private class RemoveAction extends AbstractAction {
+
+   RemoveAction() {
+      super("Remove");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
+      BoardMetrics.noteCommand("BUDA","actionRemoveLink");
+      bba.removeLink(BudaBubbleLink.this);
+   }
+
+}	// end of inner class RemoveAction
+
+
+private class StyleAction extends AbstractAction {
+
+   BudaLinkStyle set_style;
+
+   StyleAction(String id,BudaLinkStyle sty) {
+      super(id);
+      set_style = sty;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      setStyle(set_style);
+      BoardMetrics.noteCommand("BUDA","actionStyleLink");
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
+      bba.repaint();
+    }
+
+}	// end of inner class StyleAction
+
+
+private class CollapseAction extends AbstractAction {
+
+   CollapseAction() {
+      super("Collapse");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BUDA","actionCollapseLink");
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
+      List<BudaBubbleLink> lnks = new ArrayList<BudaBubbleLink>();
+      lnks.add(BudaBubbleLink.this);
+      bba.collapseLinks(lnks);
+    }
+
+}	// end of inner class CollapseAction
 
 
 

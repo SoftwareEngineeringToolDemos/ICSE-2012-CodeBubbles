@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -124,6 +124,8 @@ BassName findBubbleName(File f,int eclipsepos)
    BassNameLocation best = null;
    int bestlen = 0;
 
+   waitForNames();
+
    synchronized (this) {
       for (BassName bn : all_names) {
 	 BassNameLocation bnl = (BassNameLocation) bn;
@@ -134,7 +136,7 @@ BassName findBubbleName(File f,int eclipsepos)
 	       if (best != null && epos - spos == bestlen) {
 		  if (best.getNameType() == BassNameType.HEADER && bnl.getNameType() == BassNameType.CLASS) ;
 		  else continue;
-	        }
+		}
 	       if (spos-16 <= eclipsepos && epos+16 > eclipsepos) {	// allow for indentations
 		  best = bnl;
 		  bestlen = epos - spos;
@@ -151,6 +153,22 @@ BassName findBubbleName(File f,int eclipsepos)
 
 
 
+File findActualFile(File f)
+{
+   waitForNames();
+
+   synchronized (this) {
+      for (BassName bn : all_names) {
+	 BassNameLocation bnl = (BassNameLocation) bn;
+	 if (bnl.getFile().equals(f)) return f;
+	 if (bnl.getFile().getName().equals(f.getName())) return bnl.getFile();
+       }
+    }
+
+   return null;
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -159,7 +177,7 @@ BassName findBubbleName(File f,int eclipsepos)
 /********************************************************************************/
 
 private void initialize()
-{								
+{							
    synchronized (this) {
       all_names.clear();
       is_ready = false;

@@ -42,7 +42,8 @@ import edu.brown.cs.ivy.xml.*;
 
 import javax.swing.*;
 import javax.swing.text.*;
-import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.event.*;
+import javax.swing.text.html.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -50,6 +51,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.net.*;
 
 
 class BeamNoteBubble extends BudaBubble implements BeamConstants,
@@ -458,6 +460,8 @@ private static class NoteArea extends JEditorPane implements BeamConstants
       putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES,Boolean.TRUE);
       setFont(beam_properties.getFont(NOTE_FONT_PROP,NOTE_FONT));
       addMouseListener(new BudaConstants.FocusOnEntry());
+      addMouseListener(new LinkListener());
+      addHyperlinkListener(new HyperListener());
 
       if (beam_properties.getColor(NOTE_TOP_COLOR).getRGB() == beam_properties.getColor(NOTE_BOTTOM_COLOR).getRGB()) {
 	 setBackground(beam_properties.getColor(NOTE_TOP_COLOR));
@@ -595,6 +599,51 @@ private class ComponentHandler extends ComponentAdapter {
 
 }	// end of inner class ComponentHandler
 
+
+
+/********************************************************************************/
+/*										*/
+/*	Link listener								*/
+/*										*/
+/********************************************************************************/
+
+private static class LinkListener extends HTMLEditorKit.LinkController {
+
+   private static final long serialVersionUID = 1;
+
+
+   @Override public void mouseClicked(MouseEvent e) {
+      JEditorPane editor = (JEditorPane) e.getSource();
+      if (!editor.isEditable()) return;
+      if (!SwingUtilities.isLeftMouseButton(e)) return;
+      int mods = e.getModifiersEx();
+      if ((mods & MouseEvent.ALT_DOWN_MASK) != 0) {
+	 Point pt = new Point(e.getX(),e.getY());
+	 int pos = editor.viewToModel(pt);
+	 if (pos >= 0) {
+	    activateLink(pos,editor);
+	  }
+       }
+    }
+
+}	// end of inner class LinkListener
+
+
+
+private static class HyperListener implements HyperlinkListener {
+
+   @Override public void hyperlinkUpdate(HyperlinkEvent e) {
+      if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+	 URL u = e.getURL();
+	 try {
+	    Desktop.getDesktop().browse(u.toURI());
+	  }
+	 catch (IOException ex) { }
+	 catch (URISyntaxException ex) { }
+       }
+    }
+
+}	// end of inner class HyperListener
 
 
 

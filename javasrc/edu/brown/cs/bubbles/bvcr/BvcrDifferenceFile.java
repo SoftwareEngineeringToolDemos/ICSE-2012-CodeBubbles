@@ -61,6 +61,21 @@ BvcrDifferenceFile(String ver)
 
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Access methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+List<BvcrFileChange> getChanges()
+{
+   return new ArrayList<BvcrFileChange>(change_set);
+}
+
+
+
+
+
 BvcrDifferenceFile(Element e)
 {
    this(IvyXml.getAttrString(e,"VERSION"));
@@ -114,7 +129,7 @@ void outputXml(IvyXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-private static class FileChange {
+private static class FileChange implements BvcrFileChange {
 
    private int source_line;
    private int target_line;
@@ -141,22 +156,27 @@ private static class FileChange {
       int dct = 0;
       for (Element ce : IvyXml.children(e,"DELETE")) ++dct;
       if (dct > 0) {
-	 delete_lines = new String[dct];
-	 int i = 0;
-	 for (Element ce : IvyXml.children(e,"DELETE")) {
-	    delete_lines[i++] = IvyXml.getText(ce);
-	  }
+         delete_lines = new String[dct];
+         int i = 0;
+         for (Element ce : IvyXml.children(e,"DELETE")) {
+            delete_lines[i++] = IvyXml.getText(ce);
+          }
        }
       int act = 0;
       for (Element ce : IvyXml.children(e,"INSERT")) ++act;
       if (act > 0) {
-	 add_lines = new String[act];
-	 int i = 0;
-	 for (Element ce : IvyXml.children(e,"INSERT")) {
-	    add_lines[i++] = IvyXml.getText(ce);
-	  }
+         add_lines = new String[act];
+         int i = 0;
+         for (Element ce : IvyXml.children(e,"INSERT")) {
+            add_lines[i++] = IvyXml.getText(ce);
+          }
        }
     }
+   
+   @Override public int getSourceLine()                 { return source_line; }
+   @Override public int getTargetLine()                 { return target_line; }
+   @Override public String [] getDeletedLines()         { return delete_lines; }
+   @Override public String [] getAddedLines()           { return add_lines; }
 
    void outputXml(IvyXmlWriter xw) {
       String typ = null;

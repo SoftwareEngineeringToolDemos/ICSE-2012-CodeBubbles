@@ -356,6 +356,12 @@ public BassName findBubbleName(File f,int eclipsepos)
 }
 
 
+public File findActualFile(File f)
+{
+   return bass_repository.findActualFile(f);
+}
+
+
 
 /********************************************************************************/
 /*										*/

@@ -251,7 +251,7 @@ private void addPopupItems(Point pt,List<MenuItem> itms,JComponent menu,String p
 @Override public void workingSetRemoved(BudaWorkingSet ws)	{ }
 
 @Override public void doneConfiguration()			{ }
-
+@Override public void copyFromTo(BudaBubble f,BudaBubble t)	{ }
 
 
 

@@ -336,10 +336,8 @@ private void updateSlider()
       if (val < int_slider.getMinimum() || val > int_slider.getMaximum()) {
 	 return;
        }
-      else {
-	 int_slider.setValue(val);
-	 int_slider.repaint();
-       }
+      int_slider.setValue(val);
+      int_slider.repaint();
     }
    if (double_slider != null) {
       double val;
@@ -353,10 +351,8 @@ private void updateSlider()
 	     || val > double_slider.getDoubleMaximum()) {
 	 return;
        }
-      else {
-	 double_slider.setDoubleValue(val);
-	 double_slider.repaint();
-       }
+      double_slider.setDoubleValue(val);
+      double_slider.repaint();
     }
 }
 

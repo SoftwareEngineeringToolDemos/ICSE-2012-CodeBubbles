@@ -137,7 +137,7 @@ void outputXml(BudaXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-void loadTask(BudaBubbleArea bba,int offset)
+BudaWorkingSetImpl loadTask(BudaBubbleArea bba,int offset)
 {
    BudaRoot root = BudaRoot.findBudaRoot(bba);
    Rectangle arearect = bba.getBounds();
@@ -163,7 +163,7 @@ void loadTask(BudaBubbleArea bba,int offset)
    int dx = r.x - x0;
 
    BudaWorkingSetImpl ws = bba.defineWorkingSet(task_name,r);
-   if (ws == null) return;
+   if (ws == null) return null;
 
    ws.setColor(c);
    if (ctime > 0) ws.setCreateTime(ctime);
@@ -209,6 +209,56 @@ void loadTask(BudaBubbleArea bba,int offset)
 	 root.addLink(blnk);
        }
     }
+   
+   return ws;
+}
+
+boolean updateTask(BudaWorkingSetImpl ws) 
+{
+   BudaBubbleArea bba = ws.getBubbleArea();
+   BudaRoot br = BudaRoot.findBudaRoot(bba);
+   Rectangle arearect = ws.getRegion();
+   boolean chng = false;
+   
+   Element te = getXml();
+   Element wse = IvyXml.getChild(te,"WORKINGSET");
+   Element rgn = IvyXml.getChild(wse,"REGION");
+   int w0 = (int) IvyXml.getAttrDouble(rgn,"WIDTH",0);
+   if (w0 != arearect.width) {
+      arearect.width = w0;
+      ws.setRegion(arearect);
+      chng = true;
+    }
+   if (ws.getLabel() == null || !ws.getLabel().equals(task_name)) {
+      if (task_name != null) {
+         ws.setLabel(task_name);
+         chng = true;
+       }
+    }
+   Map<String,BudaBubble> bubblemap = new HashMap<String,BudaBubble>();
+   Element bbls = IvyXml.getChild(te,"BUBBLES");
+   for (Element bbl : IvyXml.children(bbls,"BUBBLE")) {
+      // find bubble for bbl
+      // check its constraints
+      // if not found, create
+      // if constraints changed, update size/position
+    }
+   
+   Element grps = IvyXml.getChild(te,"GROUPS");
+   for (Element egrp : IvyXml.children(grps,"GROUP")) {
+      // find group for egrp
+      // check names and update accordingly
+      // possibly set colors
+    }
+   
+   Element lnks = IvyXml.getChild(te,"LINKS");
+   for (Element lnk : IvyXml.children(lnks,"LINK")) {
+      // find link if it exists
+      // update link properties if needed
+      // create link if necessary
+    }
+   
+   return chng;
 }
 
 

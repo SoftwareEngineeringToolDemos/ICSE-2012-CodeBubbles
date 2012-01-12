@@ -95,12 +95,7 @@ private void initialize(BaleDocumentIde base)
 {
    base.baleWriteLock();
    try {
-      try {
-	 setupSpacing();
-       }
-      catch (BadLocationException e) {
-	 BoardLog.logE("BALE","Problem setting up spacing for indent",e);
-       }
+      setupSpacing();
     }
    finally { base.baleWriteUnlock(); }
 
@@ -147,12 +142,7 @@ void reload()
    super.reload();			// check regions
 
    base_document.checkWriteLock();
-   try {
-      setupSpacing();
-    }
-   catch (BadLocationException e) {
-      BoardLog.logE("BALE","Problem setting up spacing for indent",e);
-    }
+   setupSpacing();
 }
 
 
@@ -268,7 +258,7 @@ private void fixupOffset(BaleRegion br,int off,boolean edit)
 /*										*/
 /********************************************************************************/
 
-private void setupSpacing() throws BadLocationException
+private void setupSpacing()
 {
    // get the tab_size from appropriate property
    BoardProperties bp = BoardProperties.getProperties("Bale");

@@ -204,18 +204,25 @@ public void newDebugger(BumpLaunchConfig blc)
 
 BumpLaunchConfig getCurrentLaunchConfig()
 {
+   if (current_configuration == null) return current_configuration;
+
    return current_configuration;
 }
 
 
 void setCurrentLaunchConfig(BumpLaunchConfig blc)
 {
+   BumpRunModel brm = BumpClient.getBump().getRunModel();
+
    if (blc == null) {
-      BumpRunModel brm = BumpClient.getBump().getRunModel();
       for (BumpLaunchConfig xlc : brm.getLaunchConfigurations()) {
 	 if (!xlc.isWorkingCopy()) blc = xlc;
 	 break;
        }
+    }
+   else {
+      BumpLaunchConfig xblc = brm.getLaunchConfiguration(blc.getId());
+      if (xblc != null) blc = xblc;
     }
 
    current_configuration = blc;

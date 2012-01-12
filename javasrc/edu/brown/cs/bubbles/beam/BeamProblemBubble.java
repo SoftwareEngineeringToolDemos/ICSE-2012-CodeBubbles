@@ -29,7 +29,7 @@ import edu.brown.cs.bubbles.bale.BaleConstants;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bass.BassName;
-import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
@@ -282,23 +282,60 @@ private String getToolTip(BumpProblem bp)
 /*										*/
 /********************************************************************************/
 
-private void showBubble(File f,int line)
-{
-   BaleFactory bf = BaleFactory.getFactory();
-   BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,f);
-   if (bfo == null) return;
-   int loff = bfo.findLineOffset(line);
-   int eoff = bfo.mapOffsetToEclipse(loff);
+//private void showBubble(File f,int line)
+//{
+//   BaleFactory bf = BaleFactory.getFactory();
+//   BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,f);
+//   if (bfo == null) return;
+//   int loff = bfo.findLineOffset(line);
+//   int eoff = bfo.mapOffsetToEclipse(loff);
+//
+//   BassFactory bsf = BassFactory.getFactory();
+//   BassName bn = bsf.findBubbleName(f,eoff);
+//   if (bn == null) return;
+//
+//   BudaBubble bb = bn.createBubble();
+//   if (bb == null) return;
+//   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+//   bba.addBubble(bb,this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+//}
 
-   BassFactory bsf = BassFactory.getFactory();
-   BassName bn = bsf.findBubbleName(f,eoff);
-   if (bn == null) return;
 
-   BudaBubble bb = bn.createBubble();
-   if (bb == null) return;
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-   bba.addBubble(bb,this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-}
+private class BubbleShower implements Runnable {
+
+   private File for_file;
+   private int	at_line;
+   private BassName bass_name;
+
+   BubbleShower(File f,int ln) {
+      for_file = f;
+      at_line = ln;
+      bass_name = null;
+    }
+
+   @Override public void run() {
+      if (bass_name == null) {
+	 BaleFactory bf = BaleFactory.getFactory();
+	 BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,for_file);
+	 if (bfo == null) return;
+	 int loff = bfo.findLineOffset(at_line);
+	 int eoff = bfo.mapOffsetToEclipse(loff);
+
+	 BassFactory bsf = BassFactory.getFactory();
+	 bass_name = bsf.findBubbleName(for_file,eoff);
+	 if (bass_name == null) return;
+
+	 SwingUtilities.invokeLater(this);
+       }
+      else {		// in Swing thread
+	 BudaBubble bb = bass_name.createBubble();
+	 if (bb == null) return;
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BeamProblemBubble.this);
+	 bba.addBubble(bb,BeamProblemBubble.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+       }
+    }
+
+}	// end of inner class BubbleShower
 
 
 
@@ -341,6 +378,7 @@ private class ProblemTable extends JTable implements MouseListener,
 
    @Override public TableCellRenderer getCellRenderer(int row,int col) {
       BumpProblem bp = getActualProblem(row);
+      if (bp == null) return notice_renderer[col];
       switch (bp.getErrorType()) {
 	 case WARNING :
 	    if (warning_renderer[col] == null) {
@@ -380,7 +418,8 @@ private class ProblemTable extends JTable implements MouseListener,
       if (bp == null) return;
       File f = bp.getFile();
       int ln = bp.getLine();
-      showBubble(f,ln);
+      BoardThreadPool.start(new BubbleShower(f,ln));
+      // showBubble(f,ln);
     }
 
    @Override public void mouseEntered(MouseEvent _e)			{ }
@@ -477,10 +516,16 @@ private BumpProblem getActualProblem(int idx)
    synchronized (active_problems) {
       if (problem_table != null) {
 	 RowSorter<?> rs = problem_table.getRowSorter();
-	 if (rs != null) idx = rs.convertRowIndexToModel(idx);
+	 try {
+	    if (rs != null) idx = rs.convertRowIndexToModel(idx);
+	  }
+	 catch (ArrayIndexOutOfBoundsException e) {
+	    return null;
+	  }
        }
 
-      return active_problems.get(idx);
+      if (idx >= active_problems.size()) return null;
+       return active_problems.get(idx);
     }
 }
 

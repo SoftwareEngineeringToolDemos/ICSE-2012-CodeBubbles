@@ -172,9 +172,9 @@ private class ClickHandler extends MouseAdapter {
 	 fct += "." + pn.getMethodName();
 	 int lno = pn.getLineNumber();
 	 String file = pn.getFileName();
-	
+
 	 BudaBubble bb = null;
-	
+
 	 BaleFactory bf = BaleFactory.getFactory();
 	 if (lno > 0 && file != null) {
 	    File f = new File(file);
@@ -192,7 +192,7 @@ private class ClickHandler extends MouseAdapter {
 	 if (bb == null) {
 	    bb = bf.createMethodBubble(launch_control.getProject(), fct);
 	  }
-	
+
 	 if (bb == null) return;
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(perf_table);
 	 bba.addBubble(bb,BddtPerfViewTable.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
@@ -217,6 +217,9 @@ private class PerfEventHandler implements BumpRunEventHandler {
    @Override public void handleProcessEvent(BumpRunEvent evt) {
       if (evt.getProcess() != launch_control.getProcess()) return;
       switch (evt.getEventType()) {
+	 case PROCESS_ADD :
+	    perf_model.clear();
+	    break;
 	 case PROCESS_PERFORMANCE :
 	    Element xml = (Element) evt.getEventData();
 	    base_samples = IvyXml.getAttrDouble(xml,"ACTIVE");
@@ -384,6 +387,15 @@ private class PerfModel extends AbstractTableModel {
       index_set = new HashMap<PerfNode,Integer>();
     }
 
+   void clear() {
+      lock();
+      int ln = node_set.size();
+      node_set = new ArrayList<PerfNode>();
+      index_set = new HashMap<PerfNode,Integer>();
+      unlock();
+      if (ln > 0) fireTableRowsDeleted(0,ln);
+    }
+
    void lock()					{ model_lock.lock(); }
    void unlock()				{ model_lock.unlock(); }
 
@@ -458,15 +470,33 @@ private class PerfModel extends AbstractTableModel {
 
 private PerfNode findNode(String nm)
 {
-   PerfNode pn = node_map.get(nm);
-   if (pn == null) {
-      pn = new PerfNode(nm);
-      node_map.put(nm,pn);
-      perf_model.addNode(pn);
+   synchronized (node_map) {
+      PerfNode pn = node_map.get(nm);
+      if (pn == null) {
+	 pn = new PerfNode(nm);
+	 node_map.put(nm,pn);
+	 SwingUtilities.invokeLater(new NodeAdder(pn));
+	 // perf_model.addNode(pn);
+       }
+      return pn;
     }
-   return pn;
 }
 
+
+
+private class NodeAdder implements Runnable {
+
+   private PerfNode perf_node;
+
+   NodeAdder(PerfNode pn) {
+      perf_node = pn;
+    }
+
+   @Override public void run() {
+      perf_model.addNode(perf_node);
+    }
+
+}	// end of inner class NodeAdder
 
 
 
@@ -499,7 +529,7 @@ private class PerfNode implements Comparable<PerfNode> {
        }
       if (data.length >= 4) file_name = data[3];
       else file_name = null;
-	
+
       base_count = 0;
       total_count = 0;
     }
@@ -515,7 +545,8 @@ private class PerfNode implements Comparable<PerfNode> {
       int tc = IvyXml.getAttrInt(xml,"TOTAL",0);
       base_count = bc;
       total_count = tc;
-      perf_model.handleChange(this);
+      SwingUtilities.invokeLater(new ChangeHandler(this));
+      // perf_model.handleChange(this);
     }
 
 
@@ -573,6 +604,23 @@ private class PerfNode implements Comparable<PerfNode> {
    }
 
 }	// end of inner class PerfNode
+
+
+
+private class ChangeHandler implements Runnable {
+
+   private PerfNode for_node;
+
+   ChangeHandler(PerfNode pn) {
+      for_node = pn;
+    }
+
+   @Override public void run() {
+      perf_model.handleChange(for_node);
+    }
+
+}	// en dof inner class ChangeHandler
+
 
 
 

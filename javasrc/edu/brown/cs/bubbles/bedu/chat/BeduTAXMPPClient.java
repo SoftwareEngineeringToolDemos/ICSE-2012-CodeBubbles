@@ -186,7 +186,7 @@ boolean isLoggedIn()
 }
 
 
-void disconnect() throws XMPPException
+void disconnect()
 {
    xmpp_conn.disconnect();
 }

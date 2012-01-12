@@ -104,7 +104,7 @@ protected void insertUpdate(AbstractDocument.DefaultDocumentEvent chng,Attribute
 /*										*/
 /********************************************************************************/
 
-@Override public Position createPosition(int offs) throws BadLocationException
+@Override public synchronized Position createPosition(int offs) throws BadLocationException
 {
    return savePosition(super.createPosition(offs));
 }

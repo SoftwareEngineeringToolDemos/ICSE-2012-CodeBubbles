@@ -206,8 +206,7 @@ StudentCourse(String a_course_name,String a_jid)
       return b;
    }
 
-   else return new BeduStudentTicketSubmitBubble(ta_chat_jid);
-
+   return new BeduStudentTicketSubmitBubble(ta_chat_jid);
 }
 
 
@@ -224,7 +223,7 @@ StudentCourse(String a_course_name,String a_jid)
       if (p != null) {
 	 if (p.getType() == Presence.Type.available) return BgtaManager
 		  .iconFor(new Presence(Presence.Type.available));
-	 else return BgtaManager.iconFor(new Presence(Presence.Type.unavailable));
+	 return BgtaManager.iconFor(new Presence(Presence.Type.unavailable));
       }
    }
    return BoardImage.getIcon("question");

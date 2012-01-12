@@ -297,15 +297,17 @@ private class NewTestArea {
    void addTestCase() {
       NewTestCase ntc = null;
       switch (test_mode) {
-	 case INPUT_OUTPUT :
-	    ntc = new CallTestCase(this);
-	    break;
-	 case CALL_SEQUENCE :
-	    ntc = null;
-	    break;
+         case INPUT_OUTPUT :
+            ntc = new CallTestCase(this);
+            break;
+         case CALL_SEQUENCE :
+            ntc = null;
+            break;
        }
-      test_cases.add(ntc);
-      ntc.setup();
+      if (ntc != null) {
+         test_cases.add(ntc);
+         ntc.setup();
+       }
     }
 
    boolean validate() {

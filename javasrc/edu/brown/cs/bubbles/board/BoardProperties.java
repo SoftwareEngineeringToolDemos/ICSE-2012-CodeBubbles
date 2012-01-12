@@ -309,7 +309,7 @@ public String getString(String prop)
    if (s != null) {
       return s;
     }
-   else return "";
+   return "";
 }
 
 
@@ -523,7 +523,7 @@ public String getStringOption(String prop)
    if (s != null) {
       return s;
     }
-   else return "";
+   return "";
 }
 
 

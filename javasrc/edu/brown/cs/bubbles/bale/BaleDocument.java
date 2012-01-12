@@ -569,7 +569,7 @@ BaleSimpleRegion getFragmentRegion(int docoffset,int len)
 
 
 BaleRegion createDocumentRegion(Position start,Position end,boolean incleol)
-		throws BadLocationException
+        throws BadLocationException
 {
    return new BaleRegion(savePosition(start),savePosition(end),incleol);
 }

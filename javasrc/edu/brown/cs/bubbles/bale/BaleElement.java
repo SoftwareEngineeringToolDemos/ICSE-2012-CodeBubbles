@@ -181,6 +181,7 @@ BaleElement.Leaf getNextCharacterElement()
       if (idx+1 < par.getElementCount()) break;
       chld = par;
     }
+   if (par == null) return null;
    chld = par.getBaleElement(idx+1);
    return chld.getFirstChild();
 }
@@ -199,6 +200,7 @@ BaleElement.Leaf getPreviousCharacterElement()
       if (idx > 0) break;
       chld = par;
     }
+   if (par == null) return null;
    chld = par.getBaleElement(idx-1);
    return chld.getLastChild();
 }

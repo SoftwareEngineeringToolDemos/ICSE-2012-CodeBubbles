@@ -237,7 +237,7 @@ void setBrotherPopup(JPopupMenu bro)
 private DefaultMutableTreeNode getTopNode(boolean bydate, BudaTask [] tasks)
 {
    if (bydate) return setupByDate(tasks);
-   else return setupAlphabetically(tasks);
+   return setupAlphabetically(tasks);
 }
 
 

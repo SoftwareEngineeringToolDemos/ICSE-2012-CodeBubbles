@@ -241,7 +241,7 @@ private class InfoListener extends MouseAdapter {
     }
 
    @Override public void mouseReleased(MouseEvent e) {
-      if (is_tracking) {
+      if (is_tracking && launch_control.getProcess() != null) {
 	 expecting_input = true;
 	 launch_control.getProcess().requestSwingData(e.getXOnScreen(),e.getYOnScreen());
        }

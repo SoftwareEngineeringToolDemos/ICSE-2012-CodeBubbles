@@ -161,7 +161,7 @@ static {
 private static int gcd(int x,int y)
 {
    if (y == 0) return x;
-   else return gcd(y,x % y);
+   return gcd(y,x % y);
 }
 
 
@@ -968,7 +968,7 @@ void moveViewport(int dx,int dy)
 public Rectangle getCurrentViewport()
 {
    if (cur_channels != null) return cur_channels.getViewport();
-   else return getViewport();
+   return getViewport();
 }
 
 
@@ -1851,21 +1851,15 @@ private static class TaskComparator implements Comparator<BudaTask> {
       String name1 = t1.getName();
       String name2 = t2.getName();
       if (Character.isLetter(name1.charAt(0))) {
-	 if (Character.isLetter(name2.charAt(0))) {
-	    return name1.compareTo(name2);
-	 }
-	 else {
-	    return -1;
-	 }
-      }
-      else {
-	 if (Character.isLetter(name2.charAt(0))) {
-	    return 1;
-	 }
-	 else {
-	    return name1.compareTo(name2);
-	 }
-      }
+         if (Character.isLetter(name2.charAt(0))) {
+            return name1.compareTo(name2);
+         }
+         return -1;
+       }
+      if (Character.isLetter(name2.charAt(0))) {
+         return 1;
+       }
+      return name1.compareTo(name2);
       //return t1.getName().compareTo(t2.getName());
     }
 

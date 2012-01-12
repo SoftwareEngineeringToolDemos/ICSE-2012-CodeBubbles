@@ -868,7 +868,7 @@ BudaRegion correlate(int x,int y)
       if (y1 < BUBBLE_BORDER_DELTA) {
 	 if (x0 < BUBBLE_BORDER_DELTA) return BudaRegion.BORDER_SW;
 	 if (x1 < BUBBLE_BORDER_DELTA) return BudaRegion.BORDER_SE;
-	 else return BudaRegion.BORDER_S;
+	 return BudaRegion.BORDER_S;
        }
       if (x0 < BUBBLE_BORDER_DELTA) return BudaRegion.BORDER_W;
       if (x1 < BUBBLE_BORDER_DELTA) return BudaRegion.BORDER_E;
@@ -1336,9 +1336,7 @@ public String getHashId()
    if (s1 == null && f2 == null && s3 == null) {
       Component c = getContentPane();
       if (c != null) return c.getClass().getName();
-      else {
-	 return "BX" + Integer.toString(System.identityHashCode(this));
-       }
+      return "BX" + Integer.toString(System.identityHashCode(this));
     }
 
    byte [] drslt;

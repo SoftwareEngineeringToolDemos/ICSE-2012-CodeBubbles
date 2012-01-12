@@ -92,7 +92,7 @@ BudaWorkingSetImpl(BudaBubbleArea bba,String lbl,Rectangle rgn,int y)
 /*										*/
 /********************************************************************************/
 
-String getLabel()			{ return set_label; }
+@Override public String getLabel()			{ return set_label; }
 
 void setLabel(String s)
 {
@@ -130,7 +130,7 @@ Color getBottomColor()			{ return bottom_color; }
 Color getBorderColor()
 {
    if (being_changed) return Color.BLACK;
-   else return border_color;
+   return border_color;
 }
 
 
@@ -274,7 +274,7 @@ void sendPDF(String to)
 
 
 
-private void createTask(BudaXmlWriter xw)
+void createTask(BudaXmlWriter xw)
 {
    xw.begin("TASK");
    xw.field("TIME",System.currentTimeMillis());

@@ -236,6 +236,13 @@ void terminateAll()
 
 
 
+@Override public BumpLaunchConfig getLaunchConfiguration(String id)
+{
+   return known_configs.get(id);
+}
+
+
+
 @Override public BumpLaunchConfig createLaunchConfiguration(String name,BumpLaunchConfigType typ)
 {
    Element e = bump_client.getNewRunConfiguration(name,null,typ);
@@ -517,6 +524,7 @@ synchronized void handleRunEvent(Element xml,long when)
    RunEventType type = IvyXml.getAttrEnum(xml,"TYPE",RunEventType.NONE);
 
    switch (type) {
+      default :
       case NONE :
 	 return;
       case PROCESS :
@@ -1444,7 +1452,7 @@ private class ThreadData implements BumpThread {
       String cmd = "HISTORY DUMP " + getName();
       MintControl mc = BoardSetup.getSetup().getMintControl();
       if (for_process.getName() == null) return;
-   
+
       mc.send("<BANDAID CMD='" + cmd + "' ID='" + for_process.getName() + "' />");
     }
 
@@ -1921,16 +1929,16 @@ private class BandaidSwingHandler implements MintHandler {
       ProcessData pd = named_processes.get(pid);
       if (pd == null) return;
       BoardLog.logD("BUMP","Swing return: " + msg.getText());
-   
+
       Element xml = args.getXmlArgument(1);
       SwingEvent se = new SwingEvent(pd,xml);
       for (BumpRunEventHandler reh : event_handlers) {
-         try {
-            reh.handleProcessEvent(se);
-          }
-         catch (Throwable t) {
-            BoardLog.logE("BUMP","Problem handling swing event",t);
-          }
+	 try {
+	    reh.handleProcessEvent(se);
+	  }
+	 catch (Throwable t) {
+	    BoardLog.logE("BUMP","Problem handling swing event",t);
+	  }
        }
     }
 

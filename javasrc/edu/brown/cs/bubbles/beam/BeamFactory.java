@@ -136,9 +136,6 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
-   // BeamBugReport bbr = new BeamBugReport(br);
-   // bbr.addPanel();
-
    BeamTracBugReport btr = new BeamTracBugReport(br);
    btr.addPanel();
 

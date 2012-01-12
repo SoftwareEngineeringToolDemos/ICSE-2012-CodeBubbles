@@ -27,7 +27,6 @@ package edu.brown.cs.bubbles.board;
 import javax.swing.text.*;
 
 import java.awt.Color;
-import java.io.IOException;
 import java.util.*;
 
 
@@ -278,7 +277,7 @@ private Object convertType(Object typ,String v)
  *	NOTE: NOT YET IMPLEMENTED
  **/
 
-public void save() throws IOException
+public void save() 
 {
    //TODO: implement save
 }

@@ -133,6 +133,10 @@ private void setupPanel()
        }
       if (pnms.size() > 1 || lp == null) {
 	 project_name = pnl.addChoice("Project",pnms,lp,this);
+	 String xp = (String) project_name.getSelectedItem();
+	 if (xp != null && (lp == null || !xp.equals(lp))) {
+	    launch_config = launch_config.setProject(xp);
+	  }
        }
     }
 

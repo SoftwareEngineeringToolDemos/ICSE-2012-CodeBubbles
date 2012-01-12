@@ -2166,7 +2166,7 @@ private static class GotoSearchAction extends TextAction {
 
       BudaRoot br = BudaRoot.findBudaRoot(target);
       Rectangle r = BudaRoot.findBudaLocation(target);
-      Rectangle r2 = br.getViewport();
+      Rectangle r2 = br.getCurrentViewport();
       int searchsize = 200;
       Point pt = new Point(r.x+r.width+BUBBLE_CREATION_SPACE,r.y);
       if (pt.x + searchsize > r2.x + r2.width) pt.x = r.x - BUBBLE_CREATION_SPACE - searchsize;
@@ -2280,7 +2280,7 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
       baseloc = bl;
     }
 
-   if (bst == null) return false;
+   if (bst == null || baseloc == null) return false;
 
    if (locs.size() == 2) {
       BumpLocation fnd = null;

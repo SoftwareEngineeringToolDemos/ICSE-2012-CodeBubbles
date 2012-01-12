@@ -271,6 +271,7 @@ private List<BubbleProxy> generateBubbleMoves(Configuration cur,BubbleProxy bubb
       dir.setLocation(Math.abs(dir.x) > Math.abs(mv.getX()) ? dir.x : mv.getX(),
 			 Math.abs(dir.y) > Math.abs(mv.getY()) ? dir.y : mv.getY());
     }
+   if (rct == null) return movements;
 
    Point tl = bubble.getPlacement().getLocation();
    Dimension sz = bubble.getPlacement().getSize();

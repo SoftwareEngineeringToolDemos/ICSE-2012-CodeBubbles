@@ -63,6 +63,17 @@ enum BoardHighlightStyle {
 
 
 
+/**
+ *	Define the current language
+ **/
+
+enum BoardLanguage {
+   JAVA,
+   PYTHON
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Directories								*/
@@ -74,6 +85,7 @@ enum BoardHighlightStyle {
  **/
 
 String BOARD_PROP_BASE = System.getProperty("user.home") + File.separator + ".bubbles";
+String BOARD_PYTHON_PROP_BASE = System.getProperty("user.home") + File.separator + ".pybles";
 
 
 
@@ -386,7 +398,7 @@ String [] BOARD_LIBRARY_FILES = new String [] {
    "bubblesasm.jar",
    "ColorPicker.jar",
    "wikitextcore.jar", "wikitexttrac.jar",
-   "derby.jar", "mysql.jar", "postgresql.jar"
+   "derby.jar", "derbyclient.jar", "derbynet.jar", "mysql.jar", "postgresql.jar"
 };
 
 

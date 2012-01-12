@@ -145,42 +145,42 @@ private class Correlator {
       Window best = null;
       Point bestpt = null;
       for (Window w : wins) {
-         Point pt = new Point(x,y);
-         SwingUtilities.convertPointFromScreen(pt,w);
-         if (pt.x < 0 || pt.x >= w.getWidth()) continue;
-         if (pt.y < 0 || pt.y >= w.getHeight()) continue;
-         best = w;
-         bestpt = pt;
+	 Point pt = new Point(x,y);
+	 SwingUtilities.convertPointFromScreen(pt,w);
+	 if (pt.x < 0 || pt.x >= w.getWidth()) continue;
+	 if (pt.y < 0 || pt.y >= w.getHeight()) continue;
+	 best = w;
+	 bestpt = pt;
        }
-      if (best == null) return false;
+      if (best == null || bestpt == null) return false;
       Component c = SwingUtilities.getDeepestComponentAt(best,bestpt.x,bestpt.y);
       if (c == null) return false;
-   
+
       xw.begin("SWINGDATA");
-   
+
       outputComponentData(xw,c);
-   
+
       Rectangle where = new Rectangle(bestpt.x,bestpt.y,1,1);
-   
+
       BandaidGraphics bg = new BandaidGraphics(where,best);
       try {
-         best.paint(bg);
-         String s = bg.getResult();
-         xw.write(s);
+	 best.paint(bg);
+	 String s = bg.getResult();
+	 xw.write(s);
        }
       catch (Throwable t) {
-         System.err.println("BANDAID: Problem computing drawing information: " + t);
-         t.printStackTrace();
+	 System.err.println("BANDAID: Problem computing drawing information: " + t);
+	 t.printStackTrace();
        }
-   
+
       xw.end();
-   
+
       return true;
     }
 
    private void outputComponentData(BandaidXmlWriter xw,Component c) {
       if (c == null) return;
-   
+
       xw.begin("COMPONENT");
       xw.field("X",c.getX());
       xw.field("Y",c.getY());
@@ -189,23 +189,23 @@ private class Correlator {
       xw.field("CLASS",c.getClass().getName());
       if (c.getName() != null) xw.field("NAME",c.getName());
       if (c.getParent() != null) {
-         outputComponentData(xw,c.getParent());
+	 outputComponentData(xw,c.getParent());
        }
-   
+
       StackTraceElement [] elts = create_map.get(c);
       if (elts != null) {
-         xw.begin("CREATE");
-         for (int i = 1; i < elts.length; ++i) {
-            xw.begin("FRAME");
-            xw.field("CLASS",elts[i].getClassName());
-            xw.field("METHOD",elts[i].getMethodName());
-            xw.field("FILE",elts[i].getFileName());
-            xw.field("LINE",elts[i].getLineNumber());
-            xw.end();
-          }
-         xw.end();
+	 xw.begin("CREATE");
+	 for (int i = 2; i < elts.length; ++i) {
+	    xw.begin("FRAME");
+	    xw.field("CLASS",elts[i].getClassName());
+	    xw.field("METHOD",elts[i].getMethodName());
+	    xw.field("FILE",elts[i].getFileName());
+	    xw.field("LINE",elts[i].getLineNumber());
+	    xw.end();
+	  }
+	 xw.end();
        }
-   
+
       xw.end();
     }
 
@@ -305,7 +305,7 @@ private class ComponentPatcher extends MethodAdapter {
 }	// end of inner class ComponentPatcher
 
 
-	
+
 
 /********************************************************************************/
 /*										*/
@@ -326,7 +326,7 @@ private static class Tracer extends TraceMethodVisitor {
       List<?> tx = getText();
       System.err.println("TRACE METHOD " + method_name);
       for (Object o : tx) {
-         System.err.print(o.toString());
+	 System.err.print(o.toString());
        }
     }
 

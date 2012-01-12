@@ -100,6 +100,7 @@ BedrockProgressMonitor(BedrockPlugin bp,String nm)
    subtask_name = null;
    total_work = total;
    work_done = 0;
+   if (task_name == null) return;
 
    IvyXmlWriter xw = for_plugin.beginMessage("PROGRESS");
    xw.field("KIND","BEGIN");

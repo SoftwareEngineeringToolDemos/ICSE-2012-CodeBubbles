@@ -999,7 +999,7 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
 
    int addct = 0;
 
-   if (cls != null) {
+   if (cls != null && ijp != null) {
       try {
 	 IType typ = ijp.findType(cls);
 	 fortype = typ;
@@ -1011,7 +1011,7 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
        }
     }
 
-   if (pkg != null) {
+   if (pkg != null && ijp != null) {
       String ppth = "/" + pkg.replace(".","/");
       try {
 	 for (IPackageFragmentRoot ipr : ijp.getPackageFragmentRoots()) {
@@ -1028,7 +1028,7 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
 	 BedrockPlugin.logE("Problem getting package fragments for " + ppth + ": " + e);
        }
     }
-   else if (havejp) {
+   else if (havejp && ijp != null) {
       if (all) {
 	 rgn.add(ijp);
 	 ++addct;
@@ -1060,7 +1060,7 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
        }
     }
 
-   if (addct > 0) {
+   if (addct > 0 && ijp != null) {
       try {
 	 BedrockPlugin.logD("FIND TYPE HIERARCHY FOR " + fortype + " " + addct + " " + rgn);
 
@@ -1098,7 +1098,7 @@ IJavaProject getJavaProject(String p) throws BedrockException
 
 
 
-static IJavaElement [] getAllProjects() throws BedrockException
+static IJavaElement [] getAllProjects() 
 {
    IWorkspace ws = ResourcesPlugin.getWorkspace();
    IWorkspaceRoot wr = ws.getRoot();

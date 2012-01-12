@@ -889,6 +889,8 @@ void findByKey(String proj,String bid,String key,String file,IvyXmlWriter xw)
 		throws BedrockException
 {
    FileData fd = findFile(proj,file,bid,null);
+   if (fd == null) return;
+
    ICompilationUnit icu = fd.getEditableUnit(bid);
 
    IJavaElement elt1 = null;
@@ -1184,8 +1186,12 @@ private class EditTask implements Runnable {
     }
 
    public void run() {
-      performEdit();
-      doneEdit();
+      try {
+	 performEdit();
+       }
+      finally {
+	 doneEdit();
+       }
     }
 
    private void performEdit() {
@@ -1339,9 +1345,8 @@ private class FileData implements IBufferChangedListener {
       if (bid == null) {
 	 return default_buffer.getContents();
        }
-      else {
-	 return getBuffer(bid).getBuffer().getContents();
-       }
+
+      return getBuffer(bid).getBuffer().getContents();
     }
 
    void noteEdit(String bid,int soff,int len,int rlen) {
@@ -1406,12 +1411,12 @@ private class FileData implements IBufferChangedListener {
 	 IBuffer bdb = bd.getBuffer();
 	 if (bdb == null || bdb == buf) continue;
 	 IvyXmlWriter xw = our_plugin.beginMessage("EDIT",ent.getKey());
-	 BedrockPlugin.logD("START EDIT " + len + " " + off + " " + txt.length() + " " + (ctr++));
+	 BedrockPlugin.logD("START EDIT " + len + " " + off + " " + (ctr++));
 	 xw.field("FILE",file_name);
 	 xw.field("LENGTH",len);
 	 xw.field("OFFSET",off);
 	 int xlen = len;
-	 if (len == buf.getLength() && off == 0) {
+	 if (len == buf.getLength() && off == 0 && txt != null) {
 	    xw.field("COMPLETE",true);
 	    byte [] data = txt.getBytes();
 	    xw.bytesElement("CONTENTS",data);

@@ -98,7 +98,7 @@ public static void setup()
        }
     }
    catch (XMPPException e) {
-      BoardLog.logE("BGTA","Couldn't load account for " + username + " on " + server.server() + ":" + e.getMessage());
+      BoardLog.logE("BGTA","Couldn't load account for " + username + ":" + e.getMessage());
     }
    buddy_list = new BgtaRepository(chat_managers);
    rec_dif_back = login_properties.getBoolean(BGTA_ALT_COLOR_UPON_RECEIVE);
@@ -270,7 +270,7 @@ private static BudaBubble createMetadataChatBubble(String friendname,String url)
    BgtaBubble bb = man.getExistingBubble(friendname);
    if (bb == null) {
       bb = new BgtaBubble(friendname,man);
-      Rectangle vp = my_buda_root.getViewport();
+      Rectangle vp = my_buda_root.getCurrentViewport();
       my_buda_root.add(bb,new BudaConstraint(vp.x,vp.y));
     }
    bb.sendMessage(url);
@@ -293,7 +293,7 @@ public static BgtaBubble createReceivedChatBubble(String username,BgtaManager ma
 		if (rec_dif_back) {
 			bb.setAltColorIsOn(true);
 		}
-		Rectangle vp = my_buda_root.getViewport();
+		Rectangle vp = my_buda_root.getCurrentViewport();
 		my_buda_root.add(bb,new BudaConstraint(vp.x,vp.y));
 	}
 	return bb;

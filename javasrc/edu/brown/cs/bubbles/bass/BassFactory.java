@@ -152,7 +152,7 @@ public static void initialize(BudaRoot br)
       BudaBubbleArea bba = br.getCurrentBubbleArea();
       BassBubble peb = getFactory().createPackageExplorer(bba);
       package_explorers.put(bba,peb);
-      Rectangle r = br.getViewport();
+      Rectangle r = br.getCurrentViewport();
       Dimension d = peb.getPreferredSize();
       d.height = r.height;
       peb.setSize(d);
@@ -385,7 +385,7 @@ private static class PackageExplorerButton implements BudaConstants.ButtonListen
       package_explorers.put(bba,peb);
 
       BudaRoot br = BudaRoot.findBudaRoot(bba);
-      Rectangle r = br.getViewport();
+      Rectangle r = br.getCurrentViewport();
       Dimension d = peb.getPreferredSize();
       d.height = r.height;
       peb.setSize(d);

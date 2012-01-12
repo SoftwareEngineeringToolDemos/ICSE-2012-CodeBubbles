@@ -359,36 +359,36 @@ private static class HistoryGraph {
       GraphObject lastobj = null;
       BddtHistoryItem lastitem = null;
       for (BddtHistoryItem hi : itms) {
-	 GraphObject go = getObject(hi);
-	 if (since == 0 || hi.getTime() > since) {
-	    last_time = Math.max(last_time,hi.getTime());
-	    if (start_time == 0) start_time = last_time;
-	    else start_time = Math.min(start_time,hi.getTime());
-
-	    if (go == null) continue;
-	    if (lastobj == null) {		   // first time
-	       go.startBlock(hi);
-	     }
-	    else if (lastobj == go) {		   // step inside the same object
-	       go.extendBlock(hi);
-	     }
-	    else if (hi.isInside(lastitem)) {	   // step/call into a new object
-	       go.startBlock(hi);
-	       lastobj.addLink(go,LinkType.ENTER,hi);
-	     }
-	    else if (lastitem.isInside(hi)) {	   // return to prior object
-	       go.extendBlock(hi);
-	       // end prior block??
-	       lastobj.addLink(go,LinkType.RETURN,hi);
-	     }
-	    else {
-	       lastobj.finish(hi);
-	       go.startBlock(hi);
-	       lastobj.addLink(go,LinkType.NEXT,hi);
-	     }
-	  }
-	 lastobj = go;
-	 lastitem = hi;
+         GraphObject go = getObject(hi);
+         if (since == 0 || hi.getTime() > since) {
+            last_time = Math.max(last_time,hi.getTime());
+            if (start_time == 0) start_time = last_time;
+            else start_time = Math.min(start_time,hi.getTime());
+   
+            if (go == null) continue;
+            if (lastobj == null) {		   // first time
+               go.startBlock(hi);
+             }
+            else if (lastobj == go) {		   // step inside the same object
+               go.extendBlock(hi);
+             }
+            else if (lastitem != null && hi.isInside(lastitem)) {	   // step/call into a new object
+               go.startBlock(hi);
+               lastobj.addLink(go,LinkType.ENTER,hi);
+             }
+            else if (lastitem != null && lastitem.isInside(hi)) {	   // return to prior object
+               go.extendBlock(hi);
+               // end prior block??
+               lastobj.addLink(go,LinkType.RETURN,hi);
+             }
+            else {
+               lastobj.finish(hi);
+               go.startBlock(hi);
+               lastobj.addLink(go,LinkType.NEXT,hi);
+             }
+          }
+         lastobj = go;
+         lastitem = hi;
        }
     }
 

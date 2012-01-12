@@ -225,64 +225,68 @@ private class TaskSelector extends TaskDialog implements ActionListener {
       BnoteTask task = null;
       BudaBubbleArea bba = null;
       if (cmd.equals("Project")) {
-	 JComboBox cbx = (JComboBox) evt.getSource();
-	 String p = (String) cbx.getSelectedItem();
-	 if (p != null && !p.equals(current_project)) setupTasks();
+         JComboBox cbx = (JComboBox) evt.getSource();
+         String p = (String) cbx.getSelectedItem();
+         if (p != null && !p.equals(current_project)) {
+            current_project = p;
+            setupTasks();
+          }
        }
       else if (cmd.equals("Task")) { }
       else if (cmd.equals("Cancel")) {
-	 result_status = -1;
-	 closeDialog(evt);
+         result_status = -1;
+         closeDialog(evt);
        }
       else if (cmd.equals("Done") || cmd.equals("New Task")) {
-	 loc = BudaRoot.findBudaLocation(this);
-	 bba = BudaRoot.findBudaBubbleArea(this);
-	 closeDialog(evt);
-	 if (task_box != null && current_project != null) {
-	    Object tobj = task_box.getSelectedItem();
-	    if (tobj == null) return;
-	    if (tobj instanceof BnoteTask) task = (BnoteTask) tobj;
-	    if (tobj.equals("< New Task >") || cmd.equals("New Task")) {
-	       result_status = 1;
-	     }
-	    else result_status = 3;
-	  }
+         loc = BudaRoot.findBudaLocation(this);
+         bba = BudaRoot.findBudaBubbleArea(this);
+         closeDialog(evt);
+         if (task_box != null && current_project != null) {
+            Object tobj = task_box.getSelectedItem();
+            if (tobj == null) return;
+            if (tobj instanceof BnoteTask) task = (BnoteTask) tobj;
+            if (tobj.equals("< New Task >") || cmd.equals("New Task")) {
+               result_status = 1;
+             }
+            else result_status = 3;
+          }
        }
       else if (cmd.equals("Add Note")) {
-	 loc = BudaRoot.findBudaLocation(this);
-	 bba = BudaRoot.findBudaBubbleArea(this);
-	 closeDialog(evt);
-	 result_status = 2;
-	 if (task_box != null) {
-	    Object tobj = task_box.getSelectedItem();
-	    if (tobj == null) return;
-	    if (tobj instanceof BnoteTask) task = (BnoteTask) tobj;
-	    if (current_project != null) {
-	       if (tobj.equals("< New Task >")) result_status = 1;
-	     }
-	 }
+         loc = BudaRoot.findBudaLocation(this);
+         bba = BudaRoot.findBudaBubbleArea(this);
+         closeDialog(evt);
+         result_status = 2;
+         if (task_box != null) {
+            Object tobj = task_box.getSelectedItem();
+            if (tobj == null) return;
+            if (tobj instanceof BnoteTask) task = (BnoteTask) tobj;
+            if (current_project != null) {
+               if (tobj.equals("< New Task >")) result_status = 1;
+             }
+         }
        }
-
+   
       switch (result_status) {
-	 case 0 :			// edits only
-	    updateButtons();
-	    break;
-	 case 1 :			// new task
-	    createTaskCreator(bba,null,loc.getLocation(),current_project);
-	    break;
-	 case 2 :			// add note
-	    if (task != null && loc != null) {
-	       BbookFactory.getFactory().handleSetTask(task,bba,loc);
-	     }
-	    if (task != null && current_project != null && loc != null) {
-	       createTaskNoter(bba,null,loc.getLocation(),current_project,task);
-	     }
-	    break;
-	 case 3 :			// set task
-	    if (task != null && loc != null) {
-	       BbookFactory.getFactory().handleSetTask(task,bba,loc);
-	     }
-	    break;
+         case 0 :			// edits only
+            updateButtons();
+            break;
+         case 1 :			// new task
+            if (loc != null) 
+               createTaskCreator(bba,null,loc.getLocation(),current_project);
+            break;
+         case 2 :			// add note
+            if (task != null && loc != null) {
+               BbookFactory.getFactory().handleSetTask(task,bba,loc);
+             }
+            if (task != null && current_project != null && loc != null) {
+               createTaskNoter(bba,null,loc.getLocation(),current_project,task);
+             }
+            break;
+         case 3 :			// set task
+            if (task != null && loc != null) {
+               BbookFactory.getFactory().handleSetTask(task,bba,loc);
+             }
+            break;
        }
     }
 
@@ -383,6 +387,13 @@ private class TaskCreator extends TaskDialog implements ActionListener {
             if (task != null) BbookFactory.getFactory().handleSetTask(task,bba,loc);
           }
        }
+      else if (cmd.equals("Project")) {
+	 JComboBox cbx = (JComboBox) evt.getSource();
+	 current_project = (String) cbx.getSelectedItem();
+      }
+      else {
+	 BoardLog.logE("BBOOK","Unexpected action " + cmd);
+      }
    
       if (result_status == 0) updateButtons();
     }

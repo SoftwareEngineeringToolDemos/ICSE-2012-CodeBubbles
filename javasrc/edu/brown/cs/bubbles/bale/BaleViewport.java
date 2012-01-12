@@ -100,7 +100,7 @@ BaleViewport(JEditorPane editor,JPanel annot)
    JScrollBar sb = getVerticalScrollBar();
    sb.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 }
-	
+
 
 
 /********************************************************************************/
@@ -238,6 +238,18 @@ private void handleScroll(int nline,boolean lr)
 /*	Event handling methods and classes					*/
 /*										*/
 /********************************************************************************/
+
+@Override public void validate()
+{
+   BaleDocument bd = (BaleDocument) editor_pane.getDocument();
+   bd.baleReadLock();
+   try {
+      super.validate();
+    }
+   finally { bd.baleReadUnlock(); }
+}
+
+
 
 @Override public void caretUpdate(CaretEvent evt)
 {

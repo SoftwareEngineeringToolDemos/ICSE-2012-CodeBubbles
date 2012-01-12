@@ -490,6 +490,8 @@ enum BumpThreadState {
 	 case BLOCKED :
 	 case DEADLOCKED :
 	    return true;
+	 default :
+	    break;
        }
       return false;
     }
@@ -505,6 +507,8 @@ enum BumpThreadState {
 	 case STOPPED_TIMED :
 	 case EXCEPTION :
 	    return true;
+	 default :
+	    break;
        }
       return false;
     }
@@ -530,6 +534,7 @@ enum BumpThreadState {
 interface BumpRunModel {
 
    Iterable<BumpLaunchConfig> getLaunchConfigurations();
+   BumpLaunchConfig getLaunchConfiguration(String id);
    BumpLaunchConfig createLaunchConfiguration(String name,BumpLaunchConfigType typ);
    Iterable<BumpProcess> getProcesses();
    void addRunEventHandler(BumpRunEventHandler reh);

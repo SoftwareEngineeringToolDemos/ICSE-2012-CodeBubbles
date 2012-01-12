@@ -115,6 +115,7 @@ private String		mint_name;
 private MintControl	mint_control;
 private String		course_name;
 private File		library_dir;
+private BoardLanguage	board_language;
 
 
 private static String	       prop_base;
@@ -186,6 +187,7 @@ private BoardSetup()
    mint_control = null;
    course_name = null;
    library_dir = null;
+   board_language = BoardLanguage.JAVA;
 
    eclipse_directory = system_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    default_workspace = system_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
@@ -271,6 +273,12 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-nosp")) {                        // -nosplash
 	    show_splash = false;
+	  }
+	 else if (args[i].startsWith("-java")) {                        // -java
+	    setLanguage(BoardLanguage.JAVA);
+	  }
+	 else if (args[i].startsWith("-py")) {                          // -python
+	    setLanguage(BoardLanguage.PYTHON);
 	  }
 	 else if (args[i].startsWith("-p") && i+1 < args.length) {      // -prop <propdir>
 	    BoardProperties.setPropertyDirectory(args[++i]);
@@ -631,6 +639,10 @@ public String getLibraryPath(String item)
 }
 
 
+/**
+ *	Return the directory for the current course
+ **/
+
 public File getClassDirectory()
 {
    if (course_name == null) return null;
@@ -683,6 +695,38 @@ private File getLibraryDirectory()
    return f;
 }
 
+
+
+/**
+ *	Set the langauge being worked on
+ **/
+
+public void setLanguage(BoardLanguage bl)
+{
+   board_language = bl;
+
+   String pb = System.getProperty("edu.brown.cs.bubbles.BASE");
+   if (pb == null) {
+      switch (bl) {
+	 case PYTHON :
+	    BoardProperties.setPropertyDirectory(BOARD_PYTHON_PROP_BASE);
+	    break;
+	 case JAVA :
+	    BoardProperties.setPropertyDirectory(BOARD_PROP_BASE);
+	    break;
+       }
+    }
+}
+
+
+/**
+ *	Return the current language.
+ **/
+
+public BoardLanguage getLanguage()
+{
+   return board_language;
+}
 
 
 

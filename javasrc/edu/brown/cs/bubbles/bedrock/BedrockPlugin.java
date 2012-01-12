@@ -81,6 +81,7 @@ private BedrockCall bedrock_call;
 private BedrockProblem bedrock_problem;
 private BedrockEclipseMonitor bedrock_monitor;
 private boolean shutdown_mint;
+private boolean doing_exit;
 private int	num_clients;
 
 private static PrintStream log_file = null;
@@ -104,6 +105,7 @@ public BedrockPlugin()
    monitor_on = false;
    shutdown_mint = false;
    num_clients = 0;
+   doing_exit = false;
 
    String hm = System.getProperty("user.home");
    File f1 = new File(hm);
@@ -341,7 +343,7 @@ private void saveEclipse()
 private void sendMessage(String msg)
 {
    synchronized (send_sema) {
-      if (mint_control != null)
+      if (mint_control != null && !doing_exit)
 	 mint_control.send(msg);
     }
 }
@@ -352,7 +354,7 @@ private String sendMessageWait(String msg,long delay)
    MintDefaultReply rply = new MintDefaultReply();
 
    synchronized (send_sema) {
-      if (mint_control != null) {
+      if (mint_control != null && !doing_exit) {
 	 mint_control.send(msg,rply,MINT_MSG_FIRST_NON_NULL);
        }
       else return null;
@@ -765,6 +767,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if (cmd.equals("EXIT")) {
       if (--num_clients <= 0) {
+	 doing_exit = true;
 	 saveEclipse();
 	 BedrockApplication.stopApplication();
 	 if (bedrock_monitor != null) {
@@ -916,7 +919,6 @@ private class CommandHandler implements MintHandler {
 
       try {
 	 rslt = handleCommand(cmd,proj,xml);
-
        }
       catch (BedrockException e) {
 	 String xmsg = "BEDROCK: error in command " + cmd + ": " + e;
@@ -944,7 +946,7 @@ private class CommandHandler implements MintHandler {
       if (shutdown_mint) mint_control.shutDown();
     }
 
-}	// end of subclass QueryHandler
+}	// end of subclass CommandHandler
 
 
 

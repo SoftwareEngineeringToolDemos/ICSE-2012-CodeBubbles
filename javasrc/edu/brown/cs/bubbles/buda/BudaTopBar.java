@@ -258,19 +258,6 @@ private void addButton(JComponent menu,String id,String tt)
 	  }
        }
     }
-   /******************
-   else if (cmd.equals("Load Task")) {
-      buda_root.setChannelSet(null);
-      Collection<BudaTask> bt = buda_root.getAllTasks();
-
-      if (bt.size() > 0) {
-	  BudaTask [] tsks = new BudaTask[bt.size()];
-	  bt.toArray(tsks);
-	  BudaTaskShelf task_shelf = new BudaTaskShelf(this, tsks, popup_point);
-	  //task_shelf.show(this,(int)popup_point.getX(),0);
-       }
-    }
-    *********************/
    else if (cmd.equals("Clear Bubbles in View")) {
       buda_root.setChannelSet(null);
       Rectangle r = buda_root.getViewport();
@@ -284,12 +271,6 @@ private void addButton(JComponent menu,String id,String tt)
       cur_workingset.removeBubbles();
     }
    else if (cmd.equals("Remove Working Set")) {
-      /**********
-      if (cur_workingset.getLabel() != null) {
-	 BudaTask bt = cur_workingset.createTask();
-	 if (bt != null) buda_root.addTask(bt);
-       }
-      **********/
       buda_root.removeWorkingSet(cur_workingset);
       remove(chevron_buttons.get(cur_workingset));
       chevron_buttons.remove(cur_workingset);

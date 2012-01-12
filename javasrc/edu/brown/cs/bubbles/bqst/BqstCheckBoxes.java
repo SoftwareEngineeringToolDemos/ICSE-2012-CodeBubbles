@@ -131,7 +131,7 @@ void setup()
       answer += q_field .getText();
 
    if (q_required && answer.equals("")) return null;
-   else return answer;
+   return answer;
 }
 
 

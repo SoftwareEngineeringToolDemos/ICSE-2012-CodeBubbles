@@ -140,6 +140,7 @@
 "Text Editor","menu S","Save File"
 "General","F2","Programmer's Log"
 "Bubble Stack","F4","Show All"
+"Bubble Stack","F3","Show Selected"
 "Note Bubbles","menu I","Make selection italic"
 "Note Bubbles","menu U","Underling selection"
 "Note Bubbles","ctrl 1","Font size 10"

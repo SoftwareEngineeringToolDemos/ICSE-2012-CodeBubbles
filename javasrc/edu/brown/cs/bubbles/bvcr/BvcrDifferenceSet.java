@@ -84,7 +84,7 @@ BvcrDifferenceSet(BvcrMain bm,BvcrProject proj)
 void handleFileChanged(File f)
 {
    if (files_todo == null) return;	// will do everything
-   else files_todo.add(f);
+   files_todo.add(f);
 }
 
 
@@ -98,10 +98,9 @@ boolean computationNeeded()
 List<File> getFilesToCompute()
 {
    if (files_todo == null) return null; 	// indicate all
-   else {
-      ArrayList<File> rslt = new ArrayList<File>(files_todo);
-      return rslt;
-    }
+ 
+   ArrayList<File> rslt = new ArrayList<File>(files_todo);
+   return rslt;
 }
 
 

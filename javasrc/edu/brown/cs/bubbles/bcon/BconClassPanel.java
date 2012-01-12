@@ -1029,6 +1029,8 @@ private class ListMover extends TransferHandler {
 	 catch (IOException e) { }
 	 catch (UnsupportedFlavorException e) { }
        }
+      BudaRoot br = BudaRoot.findBudaRoot(class_panel);
+      if (br != null) br.handleSaveAllRequest();
       setupElements();
     }
 

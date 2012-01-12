@@ -92,7 +92,7 @@ void setup()
 @Override String getAnswer()
 {
    if (q_required && shorttext_field.getText().equals("")) return null;
-   else return shorttext_field.getText();
+   return shorttext_field.getText();
 }
 
 

@@ -89,9 +89,15 @@ BaleViewText(BaleElement e)
 {
    BaleDocument bd = (BaleDocument) getDocument();
 
-   if (p1 < p0) return saved_segment;
+   if (p1 < p0) {
+      if (saved_segment == null) saved_segment = new Segment();
+      saved_start = -1;
+      saved_end = -1;
+      saved_counter = 0;
+      return saved_segment;
+    }
 
-   if (p0 != saved_start || p1 != saved_end || bd.getEditCounter() != saved_counter) {
+   if (p0 != saved_start || p1 != saved_end || bd.getEditCounter() != saved_counter || saved_segment == null) {
       Segment s = new Segment();
       try {
 	 bd.getText(p0,p1-p0,s);

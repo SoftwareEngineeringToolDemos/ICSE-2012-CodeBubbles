@@ -148,7 +148,7 @@ void setup()
     }
 
    if (q_required && answer.equals("")) return null;
-   else return answer;
+   return answer;
 }
 
 

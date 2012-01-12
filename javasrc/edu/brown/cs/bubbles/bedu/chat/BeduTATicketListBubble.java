@@ -35,8 +35,6 @@ import javax.swing.JTable;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
-import org.jivesoftware.smack.XMPPException;
-
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.buda.BudaRoot;
@@ -58,13 +56,7 @@ BeduTATicketListBubble(BeduTATicketList list,BeduTAXMPPClient a_ta_client)
 @Override public void setVisible(boolean vis)
 {
    if (vis == false) {
-      try {
-	 ta_client.disconnect();
-      }
-      catch (XMPPException e) {
-	 // TODO Auto-generated catch block
-	 e.printStackTrace();
-      }
+      ta_client.disconnect();
    }
 }
 

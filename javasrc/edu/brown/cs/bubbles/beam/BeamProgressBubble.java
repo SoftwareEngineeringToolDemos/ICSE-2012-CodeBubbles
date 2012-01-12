@@ -64,7 +64,7 @@ private Color		done_color;
 private Color		todo_color;
 
 private static final int MAX_RANGE = 512;
-
+private static final long DONE_ID = Long.MAX_VALUE;
 
 
 /********************************************************************************/
@@ -107,7 +107,7 @@ private synchronized void startProgress(String id,String task,long sid)
 
    ProgressDisplay pd = new ProgressDisplay(id,task,sid);
    Dimension d = pd.getPreferredSize();
-   Rectangle r = buda_root.getViewport();
+   Rectangle r = buda_root.getCurrentViewport();
    BudaConstraint bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,
 	 r.x,r.y + r.height - d.height*ct);
    bba.add(pd,bc,0);
@@ -147,13 +147,13 @@ private synchronized void startProgress(String id,String task,long sid)
       if (pd == null) startProgress(id,tnm,sid);
       else pd.set(tnm,work,sid);
     }
-   else if (kind.equals("WORKED") || kind.equals("SUBTASK") ||
-	 kind.equals("ENDSUBTASK")) {
+   else if (kind.equals("WORKED") || kind.equals("SUBTASK") || kind.equals("ENDSUBTASK")) {
       ProgressDisplay pd = all_displays.get(id);
       if (pd != null) pd.set(tnm,work,sid);
     }
    else if (kind.equals("DONE")) {
       ProgressDisplay pd = all_displays.remove(id);
+      last_id.put(id,DONE_ID);
       if (pd != null) {
 	 pd.setVisible(false);
 	 Remover rm = new Remover(pd);

@@ -163,7 +163,7 @@ private class Reloader implements BaleReloadData {
 
 
 
-@Override public Position createPosition(int offs) throws BadLocationException
+@Override public synchronized Position createPosition(int offs) throws BadLocationException
 {
    if (is_orphan) return new OrphanPosition(offs);
 

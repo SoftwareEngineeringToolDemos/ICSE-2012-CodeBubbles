@@ -354,7 +354,7 @@ private boolean reset(Stack<BassTreeBase> pars,BassTreeBase node,BassNamePattern
       else cur.add(chld);
     }
 
-   if (rct > 0) {
+   if (rct > 0 && removed != null) {
       if (path == null) {
 	 path = new BassTreeBase[pars.size() + 1];
 	 path = pars.toArray(path);
@@ -405,7 +405,7 @@ private boolean reset(Stack<BassTreeBase> pars,BassTreeBase node,BassNamePattern
    else if (nitms.length == ln) active_nodes.setChildren(node,null);
    else active_nodes.setChildren(node,nitms);
 
-   if (upd) {
+   if (upd && nitms != null) {
       synchronized (listener_set) {
 	 for (TreeModelListener tml : listener_set) {
 	    if (revt != null) tml.treeNodesRemoved(revt);

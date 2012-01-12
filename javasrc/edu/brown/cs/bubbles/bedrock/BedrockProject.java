@@ -206,7 +206,7 @@ void listProjects(IvyXmlWriter xw)
 	 xw.textElement("DESCRIPTION",projs[i].getDescription().getComment());
        }
       catch (CoreException e) { }
-      xw.textElement("PATH",projs[i].getFullPath().toOSString());
+      xw.textElement("BASE",projs[i].getFullPath().toOSString());
       try {
 	 IProject[] rp = projs[i].getReferencedProjects();
 	 for (int j = 0; j < rp.length; ++j) {
@@ -1012,7 +1012,7 @@ private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolea
     }
    catch (Exception e) { }
 
-   if (opt) {
+   if (opt && jp != null) {
       Map<?,?> opts = jp.getOptions(false);
       for (Map.Entry<?,?> ent : opts.entrySet()) {
 	 xw.begin("OPTION");
@@ -1252,7 +1252,7 @@ private void outputType(IType typ,IJavaProject jp,IvyXmlWriter xw) throws JavaMo
 
 
 
-private File findBinaryFor(IJavaProject jp,IType typ) throws JavaModelException
+private File findBinaryFor(IJavaProject jp,IType typ)
 {
    IPath op = jp.readOutputLocation();
    // op might not be correct if there is an output directory associated with

@@ -89,7 +89,13 @@ private JPanel			launch_panel;
 BddtLaunchControl(BumpLaunchConfig blc)
 {
    bump_client = BumpClient.getBump();
+   BumpRunModel brm = bump_client.getRunModel();
    launch_config = blc;
+   if (blc != null) {
+      blc = brm.getLaunchConfiguration(blc.getId());
+      if (blc != null) launch_config = blc;
+    }
+
    cur_process = null;
    launch_state = LaunchState.READY;
    exec_annots = new ConcurrentHashMap<BumpThread,ExecutionAnnot>();
@@ -180,7 +186,7 @@ private void setupPanel()
    if (bp.getBoolean("Bddt.bubbons.History",true)) bblbar.add(new HistoryAction());
    if (bp.getBoolean("Bddt.buttons.Performance",true)) bblbar.add(new PerformanceAction());
    if (bp.getBoolean("Bddt.buttons.Swing",false)) bblbar.add(new SwingAction());
-   
+
    bblbar.add(new EvalBubbleAction());
    bblbar.add(new InteractionBubbleAction());
    bblbar.add(new NewChannelAction());
@@ -715,10 +721,10 @@ private class SwingAction extends AbstractAction {
       BoardMetrics.noteCommand("BDDT","CreateSwingBubble");
       BddtFactory.getFactory().makeSwingBubble(BddtLaunchControl.this,BddtLaunchControl.this);
     }
-   
+
 }	// end of inner class SwingAction
 
-   
+
 
 private class NewChannelAction extends AbstractAction {
 
@@ -802,6 +808,7 @@ private class RunEventHandler implements BumpRunEventHandler {
 	       last_stopped = null;
 	       BddtFactory.getFactory().getConsoleControl().clearConsole(cur_process);
 	       BddtFactory.getFactory().getHistoryControl().clearHistory(cur_process);
+
 	     }
 	    break;
 	 case PROCESS_REMOVE :
@@ -948,7 +955,7 @@ void setActiveFrame(BumpStackFrame frm)
 	 frame_annot = null;
        }
       active_frame = frm;
-      if (frm.getLevel() != 0) {
+      if (frm.getLevel() != 0 && frm.getFile() != null) {
 	 frame_annot = new FrameAnnot(frm);
 	 BaleFactory.getFactory().addAnnotation(frame_annot);
        }
@@ -1036,11 +1043,12 @@ private class FrameAnnot implements BaleAnnotation {
       for_frame = frm;
       for_file = frm.getFile();
       for_document = BaleFactory.getFactory().getFileOverview(null,for_file);
+      execute_pos = null;
+      if (for_document == null) return;
       int off = for_document.findLineOffset(frm.getLineNumber());
       BoardProperties bp = BoardProperties.getProperties("Bddt");
       annot_color = bp.getColor(BDDT_FRAME_ANNOT_COLOR,new Color(0x4000ff00,true));
 
-      execute_pos = null;
       try {
 	 execute_pos = for_document.createPosition(off);
        }

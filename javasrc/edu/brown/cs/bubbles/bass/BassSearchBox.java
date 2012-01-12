@@ -490,7 +490,7 @@ void addAndLocateBubble(BudaBubble bb, int ypos)
    if (is_static && bb != null) {
       Dimension bsz = bb.getSize();
       int potx = loc.x - bsz.width - BUBBLE_CREATION_SPACE;
-      if (potx < root.getViewport().x)
+      if (potx < root.getCurrentViewport().x)
 	 loc.x = loc.x + BudaRoot.findBudaBubble(this).getWidth() + BUBBLE_CREATION_SPACE;
       else loc.x = potx;
       loc.y = ypos;
@@ -532,7 +532,7 @@ private BudaBubble createPreviewBubble(BassName bn, int xpos, int ypos)
    int y0 = loc.y + ypos + 45;
 
    Dimension bsz = previewbubble.getSize();
-   Rectangle r = root.getViewport();
+   Rectangle r = root.getCurrentViewport();
 
    if (x0 + bsz.width > r.x + r.width) x0 = r.x + r.width - bsz.width;
    if (x0 < r.x) x0 = r.x;
@@ -1039,7 +1039,7 @@ private class Hoverer extends BudaHover {
 	    int x0 = loc.x + xpos + 50;
 	    int y0 = loc.y + ypos + 45;
 	    Dimension bsz = tt.getPreferredSize();
-	    Rectangle r = root.getViewport();
+	    Rectangle r = root.getCurrentViewport();
 	    if (x0 + bsz.width > r.x + r.width) x0 = r.x + r.width - bsz.width;
 	    if (x0 < r.x) x0 = r.x;
 	    if (y0 + bsz.height > r.y + r.height) y0 = y0 - bsz.height - active_options.getRowBounds(0).height;

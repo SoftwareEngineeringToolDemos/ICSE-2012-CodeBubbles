@@ -219,7 +219,7 @@ private void resetTasks()
       for (BnoteTask t : tasks) task_selector.addItem(t);
     }
    if (current_task == null) task_selector.setSelectedIndex(0);
-   else {
+   else if (tasks != null) {
       int idx = tasks.indexOf(current_task);
       if (idx >= 0) task_selector.setSelectedIndex(idx+1);
       else {
@@ -279,7 +279,7 @@ private void resetUsers()
       for (String u : usrs) user_selector.addItem(u);
     }
 
-   if (current_user == null) user_selector.setSelectedIndex(0);
+   if (current_user == null || usrs == null) user_selector.setSelectedIndex(0);
    else {
       int idx = usrs.indexOf(current_user);
       if (idx >= 0) user_selector.setSelectedIndex(idx+1);

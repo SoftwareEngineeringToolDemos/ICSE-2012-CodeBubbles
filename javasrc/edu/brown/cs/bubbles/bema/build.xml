@@ -26,7 +26,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
-	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
@@ -44,7 +44,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
-	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
@@ -192,7 +192,7 @@
 	 <arg value="-m" />
 	 <arg value="BUBBLES_DEBUG_spr" />
 	 <arg value='-w' />
-	 <arg value='/home/spr/Eclipse/fait' />
+	 <arg value='/home/spr/Eclipse/workspace2' />
       </java>
    </target>
 
@@ -205,7 +205,7 @@
 	 <arg value="-m" />
 	 <arg value="BUBBLES_DEBUG_spr" />
 	 <arg value='-w' />
-	 <arg value='/home/spr/Eclipse/bubblesx' />
+	 <arg value='/home/spr/Eclipse/workspace2' />
       </java>
    </target>
 
@@ -238,7 +238,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
 	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
 	 <fileset dir='${BUBBLES}/lib/' includes='keybindings.csv' />
-	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
@@ -280,7 +280,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
 	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
 	 <fileset dir='${BUBBLES}/lib/' includes='keybindings.csv' />
-	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
@@ -325,7 +325,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
 	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
 	 <fileset dir='${BUBBLES}/lib/' includes='keybindings.csv' />
-	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
@@ -367,7 +367,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='copyright.txt' />
 	 <fileset dir='${BUBBLES}/lib/' includes='bbookbkg.gif' />
 	 <fileset dir='${BUBBLES}/lib/' includes='keybindings.csv' />
-	 <fileset dir='${BUBBLES}/lib/' includes='derby.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />

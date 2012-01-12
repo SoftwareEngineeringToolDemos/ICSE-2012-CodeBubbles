@@ -27,7 +27,6 @@ package edu.brown.cs.bubbles.bump;
 
 import edu.brown.cs.bubbles.board.*;
 
-import edu.brown.cs.ivy.exec.IvyExec;
 import edu.brown.cs.ivy.exec.IvyExecQuery;
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.mint.*;
@@ -54,7 +53,7 @@ import java.net.InetAddress;
  *
  **/
 
-public class BumpClient implements BumpConstants, BoardConstants, MintConstants {
+abstract public class BumpClient implements BumpConstants, BoardConstants, MintConstants {
 
 
 
@@ -64,8 +63,8 @@ public class BumpClient implements BumpConstants, BoardConstants, MintConstants 
 /*										*/
 /********************************************************************************/
 
-private MintControl	mint_control;
-private String		mint_name;
+protected MintControl	mint_control;
+protected String	mint_name;
 private String		source_id;
 private BumpProblemSet	problem_set;
 private BumpBreakSet	break_set;
@@ -79,12 +78,11 @@ private Map<BumpChangeHandler,Boolean> change_handlers;
 private SwingEventListenerList<BumpOpenEditorBubbleHandler> open_editor_bubble_handlers;
 private SwingEventListenerList<BumpProgressHandler> progress_handlers;
 
-private boolean 	eclipse_active;
-private boolean 	eclipse_starting;
+private boolean 	ide_active;
 private boolean 	doing_exit;
 private boolean 	same_host;
 
-private static BoardProperties board_properties = null;
+protected static BoardProperties board_properties = null;
 private static BumpClient default_client = null;
 
 private static final int MAX_DELAY = 30000;
@@ -107,8 +105,14 @@ private static final int BUILD_DELAY = 300000;
 public synchronized static BumpClient getBump()
 {
    if (default_client == null) {
+      BoardLanguage bl = BoardSetup.getSetup().getLanguage();
+      // choose client based on language
+      switch (bl) {
+	 case JAVA :
+	    default_client = new BumpClientJava();
+	    break;
+       }
       loadProperties();
-      default_client = new BumpClient();
     }
 
    return default_client;
@@ -123,15 +127,14 @@ public synchronized static BumpClient getBump()
 /*										*/
 /********************************************************************************/
 
-private BumpClient()
+protected BumpClient()
 {
    problem_set = new BumpProblemSet();
    break_set = new BumpBreakSet(this);
    run_manager = new BumpRunManager();
-   eclipse_active = false;
-   eclipse_starting = false;
    doing_exit = false;
    same_host = true;
+   ide_active = false;
 
    mint_control = BoardSetup.getSetup().getMintControl();
    mint_name = BoardSetup.getSetup().getMintName();
@@ -148,8 +151,6 @@ private BumpClient()
    collect_id = (int)(Math.random() * 10000);
 
    source_id = "BUBBLES_" + IvyExecQuery.getHostName() + "_" + IvyExecQuery.getProcessId();
-
-   mint_control.register("<BEDROCK SOURCE='ECLIPSE' TYPE='_VAR_0' />",new EclipseHandler());
 
    switch (BoardSetup.getSetup().getRunMode()) {
       case SERVER :
@@ -182,7 +183,7 @@ public void useWebMint(String key,String url)
 
 /********************************************************************************/
 /*										*/
-/*	Eclipse interaction methods						*/
+/*	Abstract backend interaction methods					*/
 /*										*/
 /********************************************************************************/
 
@@ -190,7 +191,7 @@ public void useWebMint(String key,String url)
  *	Return the name of the back end.
  **/
 
-public String getName() 			{ return "Eclipse"; }
+public abstract String getName();
 
 
 
@@ -202,16 +203,16 @@ public String getName() 			{ return "Eclipse"; }
 
 public void startIDE()
 {
-   synchronized (this) {
-      if (eclipse_starting) return;
-      eclipse_starting = true;
+   localStartIDE();
+
+   try {
+      Runtime.getRuntime().addShutdownHook(new CloseIDE());
+    }
+   catch (IllegalStateException e) {
+      return;
     }
 
-   ensureRunning();
-
    sendMessage("ENTER");
-
-   Runtime.getRuntime().addShutdownHook(new CloseBedrock());
 
    sendMessage("LOGLEVEL",null,"LEVEL='" + BoardLog.getLogLevel().toString() +"'",null);
 
@@ -243,93 +244,12 @@ public void startIDE()
    run_manager.setup();
 
    synchronized (this) {
-      eclipse_active = true;
+      ide_active = true;
       notifyAll();
     }
 }
 
-
-private void ensureRunning()
-{
-   if (tryPing()) return;
-   if (BoardSetup.getSetup().getRunMode() == BoardConstants.RunMode.CLIENT) {
-      BoardLog.logE("BUMP","Client mode with no eclipse found");
-      JOptionPane.showMessageDialog(null,
-				       "Server must be running and accessible before client can be run",
-				       "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
-      System.exit(1);
-    }
-
-   String eclipsedir = board_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
-   String ws = board_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
-
-   File ef = new File(eclipsedir);
-   File ef1 = null;
-   for (String s : BOARD_ECLIPSE_START) {
-      ef1 = new File(ef,s);
-      if (ef1.exists() && ef1.canExecute()) break;
-    }
-   if (!ef1.exists() || !ef1.canExecute()) ef1 = new File(ef,"eclipse");
-   String efp = ef1.getPath();
-   if (efp.endsWith(".app") || efp.endsWith(".exe")) efp = efp.substring(0,efp.length()-4);
-
-   String cmd = "'" + efp + "'";
-   if (!board_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,false)) {
-      cmd += " -application edu.brown.cs.bubbles.bedrock.application -nosplash";
-    }
-   else {
-      cmd += " -nosplash";
-    }
-   if (ws != null) cmd += " -data '" + ws + "'";
-
-   String eopt = board_properties.getProperty(BOARD_PROP_ECLIPSE_OPTIONS);
-   if (eopt != null) cmd += " " + eopt;
-   if (board_properties.getBoolean(BOARD_PROP_ECLIPSE_CLEAN)) {
-      if (!cmd.contains("-clean")) cmd += " -clean";
-      board_properties.remove(BOARD_PROP_ECLIPSE_CLEAN);
-      try {
-	 board_properties.save();
-       }
-      catch (IOException e) { }
-    }
-
-   cmd += " -vmargs '-Dedu.brown.cs.bubbles.MINT=" + mint_name + "'";
-   eopt = board_properties.getProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS);
-   if (eopt != null) cmd += " " + eopt;
-
-   try {
-      IvyExec ex = new IvyExec(cmd);
-      boolean eok = false;
-      for (int i = 0; i < 200; ++i) {
-	 synchronized (this) {
-	    try {
-	       wait(1000);
-	     }
-	    catch (InterruptedException e) { }
-	  }
-	 if (tryPing()) {
-	    BoardLog.logI("BUMP","Eclipse started successfully");
-	    eok = true;
-	    break;
-	  }
-	 if (!ex.isRunning()) {
-	    BoardLog.logE("BUMP","Problem starting eclipse");
-	    JOptionPane.showMessageDialog(null,
-					     "Eclipse could not be started. Check the eclipse log",
-					     "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
-	    System.exit(1);
-	  }
-       }
-      if (!eok) {
-	 BoardLog.logE("BUMP","Eclipse doesn't seem to start");
-	 System.exit(1);
-       }
-    }
-   catch (IOException e) {
-      BoardLog.logE("BUMP","Problem running eclipse: " + e);
-      System.exit(1);
-    }
-}
+abstract void localStartIDE();
 
 
 
@@ -343,12 +263,13 @@ public void stopIDE()
    run_manager.terminateAll();
 
    synchronized (this) {
-      eclipse_active = false;
+      ide_active = false;
       doing_exit = true;
     }
 
    sendMessage("EXIT");
 }
+
 
 
 
@@ -359,13 +280,13 @@ public void stopIDE()
 public void waitForIDE()
 {
    synchronized (this) {
-      if (eclipse_active) return;
+      if (ide_active) return;
     }
 
    startIDE();
 
    synchronized (this) {
-      while (!eclipse_active) {
+      while (!ide_active) {
 	 try {
 	    wait();
 	  }
@@ -373,6 +294,7 @@ public void waitForIDE()
        }
     }
 }
+
 
 
 
@@ -835,69 +757,8 @@ public void importProject(String name)
 
 public List<BumpLocation> findMethod(String proj,String name,boolean system)
 {
-   boolean cnstr = false;
-   name = name.replace('$','.');
-
-   String nm0 = name;
-   int idx2 = name.indexOf("(");
-   String args = "";
-   if (idx2 >= 0) {
-      nm0 = name.substring(0,idx2);
-      args = name.substring(idx2);
-      if (args.contains("<")) {
-	 StringBuffer buf = new StringBuffer();
-	 int lvl = 0;
-	 for (int i = 0; i < args.length(); ++i) {
-	    char c = args.charAt(i);
-	    if (c == '<') ++lvl;
-	    else if (c == '>') --lvl;
-	    else if (lvl == 0) buf.append(c);
-	  }
-	 args = buf.toString();
-	 name = nm0 + args;
-       }
-    }
-
-   int idx0 = nm0.lastIndexOf(".");
-   if (idx0 >= 0) {
-      String mthd = nm0.substring(idx0+1);
-      int idx1 = nm0.lastIndexOf(".",idx0-1);
-      String clsn = nm0.substring(idx1+1,idx0);
-      if (mthd.equals(clsn) || mthd.equals("<init>")) {
-	 cnstr = true;
-	 nm0 = nm0.substring(0,idx0);
-	 if (idx2 > 0) nm0 += args;
-	 name = nm0;
-       }
-    }
-
-   if (name == null) {
-      BoardLog.logI("BUMP","Empty name provided to java search");
-      return null;
-    }
-
-   List<BumpLocation> locs = findMethods(proj,name,false,true,cnstr,system);
-
-   if (locs == null || locs.isEmpty()) {
-      int x1 = name.indexOf('(');
-      if (cnstr && x1 >= 0) {				// check for nested constructor with extra argument
-	 String mthd = name.substring(0,x1);
-	 int x2 = mthd.lastIndexOf('.');
-	 if (x2 >= 0) {
-	    String pfx = name.substring(0,x2);
-	    if (args.startsWith("(" + pfx + ",") || args.startsWith("(" + pfx + ")")) {
-	       int ln = pfx.length();
-	       args = "(" + args.substring(ln+2);
-	       name = mthd + args;
-	       locs = findMethods(proj,name,false,true,cnstr,system);
-	    }
-	 }
-      }
-   }
-
-   return locs;
+   return findMethods(proj,name,false,true,false,system);
 }
-
 
 
 
@@ -909,7 +770,7 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
 public List<BumpLocation> findMethods(String proj,String pat,boolean refs,boolean defs,
 					 boolean cnstr,boolean system)
 {
-   pat = pat.replace('$','.');
+   pat = localFixupName(pat);
 
    if (pat == null) {
       BoardLog.logI("BUMP","Empty name provided to java search");
@@ -930,6 +791,9 @@ public List<BumpLocation> findMethods(String proj,String pat,boolean refs,boolea
 
    return getSearchResults(proj,xml,false);
 }
+
+
+protected String localFixupName(String nm)		{ return nm; }
 
 
 
@@ -958,7 +822,7 @@ public List<BumpLocation> findFields(String proj,String pat,boolean refs,boolean
 
    if (pat == null) return null;
 
-   pat = pat.replace('$','.');
+   pat = localFixupName(pat);
 
    StringWriter sw = new StringWriter();
    sw.write("PATTERN='");
@@ -984,7 +848,7 @@ public List<BumpLocation> findClassHeader(String proj,String clsn)
 {
    waitForIDE();
 
-   clsn = clsn.replace('$','.');
+   clsn = localFixupName(clsn);
    clsn = IvyXml.xmlSanitize(clsn);
 
    String flds = "CLASS='" + clsn + "' PREFIX='T'";
@@ -1003,7 +867,7 @@ public List<BumpLocation> findCompilationUnit(String proj,String clsn)
 {
    waitForIDE();
 
-   clsn = clsn.replace('$','.');
+   clsn = localFixupName(clsn);
    clsn = IvyXml.xmlSanitize(clsn);
 
    String flds = "CLASS='" + clsn + "' COMPUNIT='T'";
@@ -1023,7 +887,7 @@ public List<BumpLocation> findClassInitializers(String proj,String clsn)
 {
    waitForIDE();
 
-   clsn = clsn.replace('$','.');
+   clsn = localFixupName(clsn);
    clsn = IvyXml.xmlSanitize(clsn);
 
    String flds = "CLASS='" + clsn + "' STATICS='T'";
@@ -1042,7 +906,7 @@ public List<BumpLocation> findClassHeader(String proj,String clsn,boolean pkg,bo
 {
    waitForIDE();
 
-   clsn = clsn.replace('$','.');
+   clsn = localFixupName(clsn);
    clsn = IvyXml.xmlSanitize(clsn);
 
    String flds = "CLASS='" + clsn + "'";
@@ -1068,7 +932,7 @@ public List<BumpLocation> findClassDefinition(String proj,String clsn)
 {
    waitForIDE();
 
-   clsn = clsn.replace('$','.');
+   clsn = localFixupName(clsn);
 
    StringWriter sw = new StringWriter();
    sw.write("PATTERN='");
@@ -1201,7 +1065,7 @@ public List<BumpLocation> findAllDeclarations(String proj,String clsn)
 {
    waitForIDE();
 
-   clsn = clsn.replace('$','.');
+   clsn = localFixupName(clsn);
    clsn = IvyXml.xmlSanitize(clsn);
 
    String flds = "CLASS='" + clsn + "' ALL='T'";
@@ -1491,6 +1355,8 @@ public Collection<BumpLocation> findAllNames(String proj)
 
 public Collection<BumpLocation> findAllNames(String proj,List<String> files,boolean bkg)
 {
+   if (doing_exit) return null;
+
    waitForIDE();
 
    String nid = null;
@@ -1515,7 +1381,7 @@ public Collection<BumpLocation> findAllNames(String proj,List<String> files,bool
    Element xml = getXmlReply("GETALLNAMES",proj,q,fls,0);
    if (!IvyXml.isElement(xml,"RESULT")) return null;
 
-   if (nid == null) {
+   if (nid == null || nc == null) {
       Collection<BumpLocation> rslt = new ArrayList<BumpLocation>();
       for (Element fe : IvyXml.children(xml,"FILE")) {
 	 String path = IvyXml.getTextElement(fe,"PATH");
@@ -1735,7 +1601,7 @@ public List<BumpLocation> getCallPath(String proj,String from,String to)
 	    rslt = c;
 	    break;
 	  }
-	 else workqueue.add(c);
+	 workqueue.add(c);
        }
     }
    if (rslt == null) return null;
@@ -2459,7 +2325,7 @@ private boolean isIdeOnSameHost()
 /*										*/
 /********************************************************************************/
 
-private boolean tryPing()
+protected boolean tryPing()
 {
    String r = getStringReply("PING",null,null,null,5000);
 
@@ -2471,24 +2337,24 @@ private boolean tryPing()
 
 /********************************************************************************/
 /*										*/
-/*	Send message to eclipse 						*/
+/*	Send message to IDE							*/
 /*										*/
 /********************************************************************************/
 
-private void sendMessage(String cmd)
+protected void sendMessage(String cmd)
 {
    sendMessage(cmd,null,null,null,null,MINT_MSG_NO_REPLY);
 }
 
 
-private void sendMessage(String cmd,String proj,String flds,String cnts)
+protected void sendMessage(String cmd,String proj,String flds,String cnts)
 {
    sendMessage(cmd,proj,flds,cnts,null,MINT_MSG_NO_REPLY);
 }
 
 
 
-private String getStringReply(String cmd,String proj,String flds,String cnts,long delay)
+protected String getStringReply(String cmd,String proj,String flds,String cnts,long delay)
 {
    MintDefaultReply mdr = new ReplyHandler();
 
@@ -2501,7 +2367,7 @@ private String getStringReply(String cmd,String proj,String flds,String cnts,lon
 
 
 
-private Element getXmlReply(String cmd,String proj,String flds,String cnts,long delay)
+protected Element getXmlReply(String cmd,String proj,String flds,String cnts,long delay)
 {
    MintDefaultReply mdr = new ReplyHandler();
    sendMessage(cmd,proj,flds,cnts,mdr,MINT_MSG_FIRST_NON_NULL);
@@ -2515,7 +2381,7 @@ private Element getXmlReply(String cmd,String proj,String flds,String cnts,long 
 
 
 
-private boolean getStatusReply(String cmd,String proj,String flds,String cnts,long delay)
+protected boolean getStatusReply(String cmd,String proj,String flds,String cnts,long delay)
 {
    Element e = getXmlReply(cmd,proj,flds,cnts,delay);
    if (e == null) return false;
@@ -2534,7 +2400,7 @@ private boolean getStatusReply(String cmd,String proj,String flds,String cnts,lo
 
 
 
-private void sendMessage(String cmd,String proj,String flds,String cnts,MintReply rply,int flags)
+protected void sendMessage(String cmd,String proj,String flds,String cnts,MintReply rply,int flags)
 {
    String xml = "<BUBBLES DO='" + cmd + "'";
    xml += " BID='" + source_id + "'";
@@ -2560,7 +2426,7 @@ private void sendMessage(String cmd,String proj,String flds,String cnts,MintRepl
 
 private static class ReplyHandler extends MintDefaultReply {
 
-   @Override public void handleReply(MintMessage msg,MintMessage rply) {
+   @Override public synchronized void handleReply(MintMessage msg,MintMessage rply) {
       super.handleReply(msg,rply);
 
       if (rply != null) {
@@ -2783,11 +2649,11 @@ private void buildAllProjects(boolean clean,boolean full,boolean refresh)
 
 /********************************************************************************/
 /*										*/
-/*	Eclipse message handling						*/
+/*	IDE message handling							*/
 /*										*/
 /********************************************************************************/
 
-private class EclipseHandler implements MintHandler {
+protected class IDEHandler implements MintHandler {
 
    @Override public void receive(MintMessage msg,MintArguments args) {
       String cmd = args.getArgument(0);
@@ -2925,7 +2791,7 @@ private class EclipseHandler implements MintHandler {
        }
     }
 
-}	// end of inner class EclipseHandler
+}	// end of inner class IDEHandler
 
 
 
@@ -2935,7 +2801,7 @@ private class EclipseHandler implements MintHandler {
 /*										*/
 /********************************************************************************/
 
-private static class NameCollector {
+protected static class NameCollector {
 
    private Collection<BumpLocation> result_names;
    private boolean is_done;
@@ -2997,13 +2863,13 @@ private static class NameCollector {
 /*										*/
 /********************************************************************************/
 
-private class CloseBedrock extends Thread {
+private class CloseIDE extends Thread {
 
    @Override public void run() {
       stopIDE();
     }
 
-}	// end of inner class CloseBedrock
+}	// end of inner class CloseIDE
 
 
 
@@ -3013,3 +2879,4 @@ private class CloseBedrock extends Thread {
 
 
 /* end of BumpClient.java */
+

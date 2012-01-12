@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                         							*/
-/*    		BassImportProjectAction.java     	            				*/
-/*                            							*/
-/* 	Action for importing an external project 	      			*/
-/* 				               					*/
+/*										*/
+/*		BassImportProjectAction.java							*/
+/*										*/
+/*	Action for importing an external project				*/
+/*										*/
 /********************************************************************************/
-/* 	Copyright 2011 Brown University -- Andrew Kovacs         		*/
+/*	Copyright 2011 Brown University -- Andrew Kovacs			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bass;
@@ -65,7 +65,7 @@ BassImportProjectAction() {
 
 @Override public void actionPerformed(ActionEvent e) {
    JFileChooser chooser = new JFileChooser();
-  
+
    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
    chooser.setDialogTitle("Choose a project directory to import");
    the_source = (Component)e.getSource();
@@ -83,24 +83,24 @@ BassImportProjectAction() {
 	 copyR(f, proj_dir);
       }catch(Throwable t)
       {
-  
+
 	BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_source);
 	BudaErrorBubble bub = new BudaErrorBubble("Error importing project: " + t.getMessage());
-	
+
 	bba.addBubble(bub, the_source, null, BudaRoot.PLACEMENT_LEFT);
 	return;
       }
       BumpClient bc = BumpClient.getBump();
-      
+
       bc.importProject(f.getName());
-      
-      //import working sets 
+
+      //import working sets
       File wsdir = new File(proj_dir, "workingsets");
-      if(wsdir.list().length > 0)
-      {
+      String [] wlist = wsdir.list();
+      if (wlist != null && wlist.length > 0) {
 	 BudaRoot.findBudaBubbleArea(the_source).addBubble(new WorkingSetConfirmDialog(), the_source, null, BudaRoot.PLACEMENT_LEFT);
       }
-   } 
+   }
  }
 
 private class WorkingSetConfirmDialog extends BudaBubble implements ActionListener
@@ -111,25 +111,25 @@ private class WorkingSetConfirmDialog extends BudaBubble implements ActionListen
     {
        setContentPane(new ConfirmContentPane());
     }
-   
+
    private class ConfirmContentPane extends JPanel
    {
       private static final long serialVersionUID = 1L;
 
       private ConfirmContentPane()
-   	{
-           add(new JLabel("Load and display working sets from project?"));
-           JButton okB = new JButton("Yes");
-           okB.setActionCommand("Yes");
-           okB.addActionListener(WorkingSetConfirmDialog.this);
-           
-           JButton noB = new JButton("No");
-           noB.setActionCommand("No");
-           noB.addActionListener(WorkingSetConfirmDialog.this);
-           
-           add(okB);
-           add(noB);
-   	}
+	{
+	   add(new JLabel("Load and display working sets from project?"));
+	   JButton okB = new JButton("Yes");
+	   okB.setActionCommand("Yes");
+	   okB.addActionListener(WorkingSetConfirmDialog.this);
+
+	   JButton noB = new JButton("No");
+	   noB.setActionCommand("No");
+	   noB.addActionListener(WorkingSetConfirmDialog.this);
+
+	   add(okB);
+	   add(noB);
+	}
    }
 
    @Override public void actionPerformed(ActionEvent e)
@@ -138,7 +138,7 @@ private class WorkingSetConfirmDialog extends BudaBubble implements ActionListen
       {
 	 loadWorkingSets();
       }
-      this.setVisible(false);      
+      this.setVisible(false);
    }
 }
 private void loadWorkingSets()
@@ -151,7 +151,7 @@ private void loadWorkingSets()
     {
        Element xml = IvyXml.loadXmlFromFile(wsf);
        fixFilePaths(xml, proj_dir.getName());
-      
+
        BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_source);
        bba.addWorkingSet(xml);
     }
@@ -159,7 +159,7 @@ private void loadWorkingSets()
 }
 
 /**
- * Copies the given file or directory recursively including its contents 
+ * Copies the given file or directory recursively including its contents
  * @param src
  * @param dest
  * @throws IOException
@@ -179,16 +179,16 @@ private void copyR(File src, File dest) throws IOException
    {
       InputStream in = new FileInputStream(src);
       OutputStream out = new FileOutputStream(dest);
-      
+
       byte[] buf = new byte[1024];
       int len;
       while((len = in.read(buf)) > 0)
 	 out.write(buf, 0, len);
-      
+
       in.close();
       out.close();
    }
-   
+
 }
 
 private void fixFilePaths(Element xml, String proj)
@@ -197,9 +197,9 @@ private void fixFilePaths(Element xml, String proj)
    if(attr != null && attr.contains(proj))
    {
       xml.setAttribute("FILE",
-	       BoardSetup.getSetup().getDefaultWorkspace() + File.separator + attr.substring(attr.indexOf(proj)));    
+	       BoardSetup.getSetup().getDefaultWorkspace() + File.separator + attr.substring(attr.indexOf(proj)));
    }
-   
+
    NodeList nl = xml.getChildNodes();
    for(int i = 0; i < nl.getLength(); i++)
    {

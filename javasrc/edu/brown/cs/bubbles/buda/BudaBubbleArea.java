@@ -303,7 +303,8 @@ void removeCurrentBubble(MouseEvent e)
       super.addImpl(c,cnst,idx);
       return;
     }
-
+   if (bb == null) return;
+   
    if (cnst != null && !(cnst instanceof BudaConstraint)) {
       throw new IllegalArgumentException("BudaConstraint expected");
     }
@@ -388,8 +389,7 @@ void removeCurrentBubble(MouseEvent e)
       if (!added) super.addImpl(bb,null,idx);
     }
    catch (IllegalArgumentException e) {
-      BoardLog.logE("BUDA","Problem with window creation " + idx + " " + loc + " " + bb.isFixed() + " " +
-		       bc.getPositionType(),e);
+      BoardLog.logE("BUDA","Problem with window creation " + idx + " " + loc + " " + bb.isFixed(),e);
     }
 
    BoardMetrics.noteCommand("BUDA","addBubble_" + bb.getClass().getName() + "_" + bb.getHashId());

@@ -450,13 +450,13 @@ private class RunEventHandler implements BumpRunEventHandler {
 @Override public String getColumnName(int col)
 {
    if (col == 0) return "Name";
-   else return "Value";
+   return "Value";
 }
 
 @Override public Class<?> getColumnClass(int col)
 {
    if (col == 0) return SwingTreeTable.TreeTableModel.class;
-   else return Object.class;
+   return Object.class;
 }
 
 
@@ -627,46 +627,46 @@ private static class ValueSorter implements Comparator<AbstractNode> {
 
    @Override public int compare(AbstractNode n1,AbstractNode n2) {
       if (n1.getType() != n2.getType()) {
-	 return n1.getType().ordinal() - n2.getType().ordinal();
+         return n1.getType().ordinal() - n2.getType().ordinal();
        }
       switch (n1.getType()) {
-	 default :
-	 case THREAD :
-	 case STACK :
-	    int v = n1.getName().compareTo(n2.getName());
-	    if (v != 0) return v;
-	    return n1.hashCode() - n2.hashCode();
-	 case FRAME :
-	    return n1.getFrame().getLevel() - n2.getFrame().getLevel();
-	 case VALUE :
-	    // locals first
-	    if (n1.getRunValue().isLocal() != n2.getRunValue().isLocal()) {
-	       if (n1.getRunValue().isLocal()) return -1;
-	       else return 1;
-	     }
-	    String nm1 = n1.getName();
-	    String nm2 = n2.getName();
-	    int idx1 = nm1.lastIndexOf('?');
-	    int idx2 = nm2.lastIndexOf('?');
-	    if (idx1 >= 0 && idx1 == idx2 && nm2.startsWith(nm1.substring(0,idx1)) &&
-		   nm1.length() > idx1+1 && nm2.length() > idx2+1 &&
-		   nm1.charAt(idx1+1) == '[' && nm2.charAt(idx2+1) == '[') {
-	       int idx3 = nm1.indexOf("]");
-	       int idx4 = nm2.indexOf("]");
-	       try {
-		  int v1 = Integer.parseInt(nm1.substring(idx1+2,idx3));
-		  int v2 = Integer.parseInt(nm2.substring(idx2+2,idx4));
-		  if (v1 < v2) return -1;
-		  if (v1 > v2) return 1;
-		}
-	       catch (NumberFormatException e) { }
-	     }
-
-	    // check if inherited and put last if so
-	    // put static after class variables
-	    v = nm1.compareTo(nm2);
-	    if (v != 0) return v;
-	    return n1.hashCode() - n2.hashCode();
+         default :
+         case THREAD :
+         case STACK :
+            int v = n1.getName().compareTo(n2.getName());
+            if (v != 0) return v;
+            return n1.hashCode() - n2.hashCode();
+         case FRAME :
+            return n1.getFrame().getLevel() - n2.getFrame().getLevel();
+         case VALUE :
+            // locals first
+            if (n1.getRunValue().isLocal() != n2.getRunValue().isLocal()) {
+               if (n1.getRunValue().isLocal()) return -1;
+               return 1;
+             }
+            String nm1 = n1.getName();
+            String nm2 = n2.getName();
+            int idx1 = nm1.lastIndexOf('?');
+            int idx2 = nm2.lastIndexOf('?');
+            if (idx1 >= 0 && idx1 == idx2 && nm2.startsWith(nm1.substring(0,idx1)) &&
+        	   nm1.length() > idx1+1 && nm2.length() > idx2+1 &&
+        	   nm1.charAt(idx1+1) == '[' && nm2.charAt(idx2+1) == '[') {
+               int idx3 = nm1.indexOf("]");
+               int idx4 = nm2.indexOf("]");
+               try {
+        	  int v1 = Integer.parseInt(nm1.substring(idx1+2,idx3));
+        	  int v2 = Integer.parseInt(nm2.substring(idx2+2,idx4));
+        	  if (v1 < v2) return -1;
+        	  if (v1 > v2) return 1;
+        	}
+               catch (NumberFormatException e) { }
+             }
+   
+            // check if inherited and put last if so
+            // put static after class variables
+            v = nm1.compareTo(nm2);
+            if (v != 0) return v;
+            return n1.hashCode() - n2.hashCode();
        }
     }
 

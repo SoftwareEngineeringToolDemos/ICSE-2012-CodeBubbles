@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -265,23 +265,28 @@ private class ConsoleDocument extends DefaultStyledDocument {
       writeLock();
       try {
 	 while (line_count+lns >= BDDT_CONSOLE_MAX_LINES) {
-	    int idx = -1;
+	    int lidx = -1;
 	    try {
 	       Segment s = new Segment();
 	       int ln = max_length+2;
 	       int dln = getLength();
 	       if (ln > dln) ln = dln;
 	       getText(0,ln,s);
-	       for (int i = 0; i < s.length(); ++i) {
+
+	       int delct = 0;
+	       int idx = -1;
+	       for (int i = lidx+1; i < s.length(); ++i) {
 		  if (s.charAt(i) == '\n') {
 		     idx = i;
-		     break;
+		     ++delct;
+		     if (line_count + lns - delct < BDDT_CONSOLE_MAX_LINES) break;
 		   }
 		}
 	       if (idx >= 0) {
 		  remove(0,idx+1);
-		  --line_count;
+		  line_count -= delct;
 		}
+	       else break;
 	     }
 	    catch (BadLocationException e) {
 	       BoardLog.logE("BDDT","Problem remove line from console",e);

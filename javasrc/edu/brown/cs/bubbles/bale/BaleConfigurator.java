@@ -67,7 +67,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
       int idx = name.lastIndexOf(".");
       if (name.length() == 0) name = null;
       String head = name;
-      if (idx > 0) head = name.substring(0,idx);
+      if (name != null && idx > 0) head = name.substring(0,idx);
       switch (ftyp) {
 	 case NONE :
 	    break;

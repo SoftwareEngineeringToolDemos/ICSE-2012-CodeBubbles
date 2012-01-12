@@ -80,8 +80,8 @@ static BgtaManager getManager(String username,String password,ChatServer server,
 {
    if (server.equals(ChatServer.AIM))
        return new BgtaAimManager(username,password,server);
-   else
-       return new BgtaManager(username,password,server,repo);
+   
+   return new BgtaManager(username,password,server,repo);
 }
 
 
@@ -407,8 +407,8 @@ public static Presence getPresence(String conname)
 {
    if (stat_con != null)
       return stat_con.getRoster().getPresence(conname);
-   else
-      return null;
+     
+   return null;
 }
 
 /**

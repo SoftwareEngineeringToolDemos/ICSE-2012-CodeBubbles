@@ -350,12 +350,12 @@ private static class HistoryItem implements BddtHistoryItem {
       int delta = for_stack.getNumFrames() - prior.getStack().getNumFrames();
       if (delta <= 0) return false;
       for (int i = 0; i < prior.getStack().getNumFrames(); ++i) {
-	 BumpStackFrame pfi = prior.getStack().getFrame(i);
-	 BumpStackFrame fi = for_stack.getFrame(i-delta);
-	 if (fi == null) return false;
-	 if (!fi.getFrameClass().equals(pfi.getFrameClass()) ||
-		!fi.getMethod().equals(pfi.getMethod()))
-	    return false;
+         BumpStackFrame pfi = prior.getStack().getFrame(i);
+         BumpStackFrame fi = for_stack.getFrame(i-delta);
+         if (fi == null) return false;
+         if (!fi.getFrameClass().equals(pfi.getFrameClass()) ||
+        	!fi.getMethod().equals(pfi.getMethod()))
+            return false;
        }
       return true;
     }

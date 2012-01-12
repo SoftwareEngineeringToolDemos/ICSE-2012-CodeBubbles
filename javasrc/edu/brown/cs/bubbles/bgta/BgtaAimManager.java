@@ -295,15 +295,14 @@ class BgtaAIMRoster implements BgtaRoster {
    @Override public Presence getPresence(String username) {
       BuddyInfo buddyInfo = the_connection.getBuddyInfoManager().getBuddyInfo(aim_buddies.get(username).getScreenname());
       if (buddyInfo.isOnline()) {
-	 Presence pr = new Presence(Presence.Type.available);
-	 pr.setMode(Presence.Mode.chat);
-	 if (buddyInfo.isAway())
-	    pr.setMode(Presence.Mode.away);
-	 return pr;
+         Presence pr = new Presence(Presence.Type.available);
+         pr.setMode(Presence.Mode.chat);
+         if (buddyInfo.isAway())
+            pr.setMode(Presence.Mode.away);
+         return pr;
        }
-      else {
-	 return new Presence(Presence.Type.unavailable);
-       }
+      
+      return new Presence(Presence.Type.unavailable);
     }
 
 }  // end of inner class BgtaAIMRoster

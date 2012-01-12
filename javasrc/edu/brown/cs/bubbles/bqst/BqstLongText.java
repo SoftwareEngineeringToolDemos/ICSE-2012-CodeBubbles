@@ -93,7 +93,7 @@ void setup()
 @Override String getAnswer()
 {
    if (q_required && longtext_area.getText().equals("")) return null;
-   else return longtext_area.getText();
+   return longtext_area.getText();
 }
 
 

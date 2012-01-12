@@ -259,7 +259,7 @@ File getAttachment(String aid)
 	    use_streams = true;
 	  }
        }
-      if (use_streams) ins = rs.getBinaryStream(2);
+      if (use_streams || ins == null) ins = rs.getBinaryStream(2);
       int idx = snm.lastIndexOf(".");
       String kind = "";
       if (idx > 0) kind = snm.substring(idx);

@@ -298,53 +298,53 @@ private class LoginListener implements ActionListener {
    @Override public void actionPerformed(ActionEvent e) {
       BowiFactory.startTask(BowiTaskType.LOGIN_TO_CHAT);
       if (user_field.getText().equals("") || pass_field.getPassword().length == 0) {
-     BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
-     return;
+         BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
+         return;
        }
       BgtaManager newman = null;
       try {
-     boolean putin = true;
-     String username = user_field.getText();
-     String password = new String(pass_field.getPassword());
-     if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
-	username += selected_server.ending();
-     for (BgtaManager man : all_managers) {
-	if (man.propertiesMatch(username,selected_server.server())
-		  && man.getPassword().equals(password)) {
-	   newman = man;
-	  putin = false;
-	 }
-      }
-     if (putin) {
-	newman = BgtaManager.getManager(username,password,selected_server,my_repository);
-	all_managers.add(newman);
-      }
-     else if (newman.isLoggedIn()) {
-	error_label.setText("Already logged in.");
-	error_label.setVisible(true);
-	BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
-	return;
-      }
-     newman.login();
-     manager_list.add(newman);
-     my_repository.addNewRep(new BgtaBuddyRepository(newman));
-     if (rem_user) {
-	BgtaFactory.addManagerProperties(username, password, selected_server);
-	newman.setBeingSaved(true);
-     }
-     else if (newman.isBeingSaved()) {
-	newman.setBeingSaved(false);
-	BgtaFactory.clearManagerProperties();
-	for (BgtaManager man : all_managers) {
-	    if (man.isBeingSaved())
-	       BgtaFactory.addManagerProperties(man.getUsername(),man.getPassword(),man.getServer());
-	 }
-      }
-     removeBubble();
+         boolean putin = true;
+         String username = user_field.getText();
+         String password = new String(pass_field.getPassword());
+         if (selected_server.hasEnding() && !username.contains(selected_server.ending()))
+            username += selected_server.ending();
+         for (BgtaManager man : all_managers) {
+            if (man.propertiesMatch(username,selected_server.server())
+        	  && man.getPassword().equals(password)) {
+               newman = man;
+               putin = false;
+             }
+          }
+         if (putin || newman == null) {
+            newman = BgtaManager.getManager(username,password,selected_server,my_repository);
+            all_managers.add(newman);
+          }
+         else if (newman.isLoggedIn()) {
+            error_label.setText("Already logged in.");
+            error_label.setVisible(true);
+            BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
+            return;
+          }
+         newman.login();
+         manager_list.add(newman);
+         my_repository.addNewRep(new BgtaBuddyRepository(newman));
+         if (rem_user) {
+            BgtaFactory.addManagerProperties(username, password, selected_server);
+            newman.setBeingSaved(true);
+          }
+         else if (newman.isBeingSaved()) {
+            newman.setBeingSaved(false);
+            BgtaFactory.clearManagerProperties();
+            for (BgtaManager man : all_managers) {
+               if (man.isBeingSaved())
+                  BgtaFactory.addManagerProperties(man.getUsername(),man.getPassword(),man.getServer());
+             }
+          }
+         removeBubble();
        }
       catch (XMPPException xmppe) {
-	 error_label.setText("Login failed. Please try again.");
-	 error_label.setVisible(true);
+         error_label.setText("Login failed. Please try again.");
+         error_label.setVisible(true);
        }
       BowiFactory.stopTask(BowiTaskType.LOGIN_TO_CHAT);
     }

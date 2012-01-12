@@ -165,7 +165,6 @@ void xmlText(String t)
 	 break;
       case OPEN :
 	 print(">");
-	 println();
 	 break;
       case CLOSED :
 	 break;

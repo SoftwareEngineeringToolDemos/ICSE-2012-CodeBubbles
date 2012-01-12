@@ -267,6 +267,8 @@ public BumpSymbolType getSourceType()		{ return source_type; }
 public String getParameters()
 {
    switch (symbol_type) {
+      default :
+         break;
       case CONSTRUCTOR :
       case FUNCTION :
 	 String knm = symbol_key;

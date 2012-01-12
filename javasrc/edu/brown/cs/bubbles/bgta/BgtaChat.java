@@ -252,19 +252,17 @@ void messageReceived(Object msg)
 {
    String message = null;
    if (is_xmpp) {
-      if (msg == last_message)
-	 return;
+      if (msg == last_message) return;
       message = ((Message) msg).getBody();
       last_message = (Message) msg;
     }
    else {
-       if (msg == last_minfo)
-	  return;
+       if (msg == last_minfo) return;
        message = ((MessageInfo) msg).getMessage().getMessageBody().replaceAll("<.*?>","");
        last_minfo = (MessageInfo) msg;
     }
-   if (message == null || message.equals(""))
-      return;
+   if (message == null || message.equals("")) return;
+
    BgtaManager man = null;
    if (man == null) {
        for (Iterator<BgtaManager> iter = BgtaFactory.getManagers(); iter.hasNext(); ) {
@@ -277,7 +275,7 @@ void messageReceived(Object msg)
        BgtaFactory.createReceivedChatBubble(user_name,man);
        is_open = true;
     }
-   if (message.startsWith(BoardUpload.getUploadUrl() + "WorkingSets/") && message.endsWith(".xml")) {
+   if (man != null && message.startsWith(BoardUpload.getUploadUrl() + "WorkingSets/") && message.endsWith(".xml")) {
        logMessage("Working set received.","Bubbles");
        Collection<BgtaBubble> bubbles = man.getExistingBubbles(user_name);
        if (bubbles != null) {
@@ -379,10 +377,9 @@ protected void setChat(Object chat)
 
 protected Chat getChat() throws OperationNotSupportedException
 {
-   if(is_xmpp)
-      return the_chat;
-   else
-      throw new OperationNotSupportedException("Not an XMPP BgtaChat");
+   if (is_xmpp) return the_chat;
+
+   throw new OperationNotSupportedException("Not an XMPP BgtaChat");
 }
 
 /**

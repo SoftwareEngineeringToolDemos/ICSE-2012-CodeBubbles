@@ -527,17 +527,16 @@ private static class OptionFont extends BoppOptionBase implements ActionListener
 
    private Font getFontValue() {
       if (font_prop != null) {
-	 return getProperties().getFont(font_prop);
+         return getProperties().getFont(font_prop);
        }
-      else {
-	 String fam = "Serif";
-	 if (family_prop != null) fam = getProperties().getProperty(family_prop,fam);
-	 int sz = 12;
-	 if (size_prop != null) sz = getProperties().getInt(size_prop,sz);
-	 int sty = Font.PLAIN;
-	 if (style_prop != null) sty = getProperties().getInt(style_prop,sty);
-	 return BoardFont.getFont(fam,sty,sz);
-       }
+      
+      String fam = "Serif";
+      if (family_prop != null) fam = getProperties().getProperty(family_prop,fam);
+      int sz = 12;
+      if (size_prop != null) sz = getProperties().getInt(size_prop,sz);
+      int sty = Font.PLAIN;
+      if (style_prop != null) sty = getProperties().getInt(style_prop,sty);
+      return BoardFont.getFont(fam,sty,sz);
     }
 
    private Color getColorValue() {

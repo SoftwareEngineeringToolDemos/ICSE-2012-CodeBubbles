@@ -135,7 +135,7 @@ private void setStyleForComponent(JTextComponent c)
 }
 
 
-@Override protected void damage(Rectangle r)
+@Override protected synchronized void damage(Rectangle r)
 {
    if (caret_style == BaleCaretStyle.BLOCK_CARET) damageBlock(r);
    else super.damage(r);

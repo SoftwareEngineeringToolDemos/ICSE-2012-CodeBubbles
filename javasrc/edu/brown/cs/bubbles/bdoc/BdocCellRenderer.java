@@ -170,18 +170,17 @@ void setTreeWidth(int w)			{ tree_width = w; }
        }
       return treeComponent(t,val,sel,exp,leaf,row,focus);
     }
-   else {
-      if (val instanceof SubItem) {
-	 SubItem si = (SubItem) val;
-	 if (si.getDescription() != null && si.getDescription().length() > 0) {
-	    name_component.setText(si.getName());
-	    desc_component.setText(si.getDescription());
-	    return item_component;
-	  }
+   
+   if (val instanceof SubItem) {
+      SubItem si = (SubItem) val;
+      if (si.getDescription() != null && si.getDescription().length() > 0) {
+         name_component.setText(si.getName());
+         desc_component.setText(si.getDescription());
+         return item_component;
        }
-
-      return simpleComponent(t,val,sel,exp,leaf,row,focus);
     }
+   
+   return simpleComponent(t,val,sel,exp,leaf,row,focus);
 }
 
 

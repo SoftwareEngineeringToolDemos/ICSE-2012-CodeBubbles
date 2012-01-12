@@ -294,34 +294,76 @@ private void initialize(Graphics g)
 
 @Override public boolean drawImage(Image img,int x,int y,int w,int h,Color bg,ImageObserver o)
 {
-   return false;
+   fillRect(x,y,w,h);
+
+   return true;
 }
 
 
 @Override public boolean drawImage(Image img,int dx1,int dy1,int dx2,int dy2,
 				      int sx1,int sy1,int xs2,int sy2,Color bg,ImageObserver o)
 {
-   return false;
+   fillRect(Math.min(dx1,dx2),Math.min(dy1,dy2),Math.abs(dx2-dx1),Math.abs(dy2-dy1));
+
+   return true;
 }
 
 
 @Override public void drawImage(BufferedImage img,BufferedImageOp op,int x, int y)
-{ }
+{
+   fillRect(x,y,img.getWidth(),img.getHeight());
+}
 
 
 @Override public boolean drawImage(Image img,AffineTransform xf,ImageObserver o)
 {
-   return false;
+   Point2D p1 = new Point2D.Double(0,0);
+   Point2D p2 = new Point2D.Double(img.getWidth(o),img.getHeight(o));
+   p1 = xf.transform(p1,p1);
+   p2 = xf.transform(p2,p2);
+
+   int x0 = (int) Math.min(p1.getX(),p2.getX());
+   int y0 = (int) Math.min(p1.getY(),p2.getY());
+   int w0 = (int) Math.abs(p2.getX() - p1.getX());
+   int h0 = (int) Math.abs(p2.getY() - p1.getY());
+
+   fillRect(x0,y0,w0,h0);
+
+   return true;
 }
 
 
-@Override public void drawRenderableImage(RenderableImage img,AffineTransform t)
-{ }
+@Override public void drawRenderableImage(RenderableImage img,AffineTransform xf)
+{
+   Point2D p1 = new Point2D.Double(0,0);
+   Point2D p2 = new Point2D.Double(img.getWidth(),img.getHeight());
+   p1 = xf.transform(p1,p1);
+   p2 = xf.transform(p2,p2);
+
+   int x0 = (int) Math.min(p1.getX(),p2.getX());
+   int y0 = (int) Math.min(p1.getY(),p2.getY());
+   int w0 = (int) Math.abs(p2.getX() - p1.getX());
+   int h0 = (int) Math.abs(p2.getY() - p1.getY());
+
+   fillRect(x0,y0,w0,h0);
+}
 
 
-@Override public void drawRenderedImage(RenderedImage img,AffineTransform t)
-{ }
 
+@Override public void drawRenderedImage(RenderedImage img,AffineTransform xf)
+{
+   Point2D p1 = new Point2D.Double(0,0);
+   Point2D p2 = new Point2D.Double(img.getWidth(),img.getHeight());
+   p1 = xf.transform(p1,p1);
+   p2 = xf.transform(p2,p2);
+
+   int x0 = (int) Math.min(p1.getX(),p2.getX());
+   int y0 = (int) Math.min(p1.getY(),p2.getY());
+   int w0 = (int) Math.abs(p2.getX() - p1.getX());
+   int h0 = (int) Math.abs(p2.getY() - p1.getY());
+
+   fillRect(x0,y0,w0,h0);
+}
 
 
 /********************************************************************************/

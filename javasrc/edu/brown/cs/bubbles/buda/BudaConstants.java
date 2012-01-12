@@ -1197,7 +1197,29 @@ interface BudaWorkingSet {
  **/
    public BudaBubbleArea getBubbleArea();
 
+/**
+ *	Return the current label (name) for the working set
+ **/
+   public String getLabel();
+
 }	// end of interface BudaWorkingSet
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Interface for sharing							*/
+/*										*/
+/********************************************************************************/
+
+interface BudaShare {
+
+   String getId();
+   String getUser();
+   String getName();
+   String getHost();
+
+}	// end of interface BudaShare
 
 
 

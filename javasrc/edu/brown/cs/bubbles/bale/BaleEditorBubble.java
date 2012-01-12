@@ -130,6 +130,7 @@ BaleEditorBubble(BaleFragmentEditor bfe)
       d.width -= BALE_ANNOT_WIDTH;
 
       bfe.setInitialSize(d);
+      // TODO: This call synch(getTreeLock()) which can block
       Dimension d1 = bfe.getPreferredSize();
       d1.height += 6;	// leave space for insets?
       if (d1.height > d.height) d1.height = d.height;
@@ -144,7 +145,7 @@ BaleEditorBubble(BaleFragmentEditor bfe)
       if (d.height > maxbht) {
 	 d.height = maxbht;
 	 setSize(d);
-       }
+      }
 
       setInteriorColor(Color.WHITE);
 
@@ -422,7 +423,7 @@ private void createPreview(BudaBubble bb, int xpos, int ypos)
    int y0 = ypos + 25;
 
    Dimension bsz = bb.getSize();
-   Rectangle r = root.getViewport();
+   Rectangle r = root.getCurrentViewport();
 
    if (x0 + bsz.width > r.x + r.width) x0 = r.x + r.width - bsz.width;
    if (y0 + bsz.height > r.y + r.height) y0 = r.y + r.height - bsz.height;

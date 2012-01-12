@@ -34,6 +34,7 @@ package edu.brown.cs.bubbles.bale;
 import edu.brown.cs.bubbles.board.BoardImage;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.buda.BudaConstants;
+import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bueno.BuenoConstants;
 import edu.brown.cs.bubbles.bump.BumpClient;
 
@@ -289,6 +290,9 @@ private void rename()
    int soff = for_document.mapOffsetToEclipse(for_id.getStartOffset());
    int eoff = for_document.mapOffsetToEclipse(for_id.getEndOffset());
 
+   BudaRoot br = BudaRoot.findBudaRoot(for_editor);
+   br.handleSaveAllRequest();
+
    BumpClient bc = BumpClient.getBump();
    Element edits = bc.rename(for_document.getProjectName(),for_document.getFile(),soff,eoff,ntext);
 
@@ -298,6 +302,8 @@ private void rename()
 
    BaleApplyEdits bae = new BaleApplyEdits();
    bae.applyEdits(edits);
+
+   br.handleSaveAllRequest();
 }
 
 

@@ -2,7 +2,7 @@
 /*										*/
 /*		BddtStackView.java						*/
 /*										*/
-/*	Bubbles Environment dyanmic debugger tool stack/frame/value bubble	*/
+/*	Bubbles Environment dynamic debugger tool stack/frame/value bubble	*/
 /*										*/
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
@@ -313,7 +313,7 @@ boolean isStackValid()				{ return is_valid; }
 private class ClickHandler extends MouseAdapter {
 
    @Override public void mouseClicked(MouseEvent e) {
-      if (e.getClickCount() == 2) {
+      if (e.getClickCount() == 2 || e.getClickCount() == 3) {
 	 Point pt = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),value_component);
 	 pt = new Point(pt.x,pt.y-5);
 	 int row = value_component.rowAtPoint(pt);
@@ -321,8 +321,18 @@ private class ClickHandler extends MouseAdapter {
 	 ValueTreeNode tn = null;
 	 if (v0 instanceof ValueTreeNode) tn = (ValueTreeNode) v0;
 	 if (tn != null) {
-	    ExtractAction ea = new ExtractAction(tn);
-	    ea.actionPerformed(null);
+	    AbstractAction aa = null;
+	    boolean isfrm = tn.getFrame() != null && tn.getValue() == null;
+	    if (isfrm && e.getClickCount() == 2) {
+	       aa = new SourceAction(tn);
+	     }
+	    else if (isfrm && e.getClickCount() == 3) {
+	       aa = new ExtractAction(tn);
+	     }
+	    else if (!isfrm && e.getClickCount() == 2) {
+	       aa = new ExtractAction(tn);
+	     }
+	    if (aa != null) aa.actionPerformed(null);
 	  }
        }
     }

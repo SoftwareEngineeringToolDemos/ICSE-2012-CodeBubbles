@@ -914,17 +914,11 @@ private static void outputJavaElementImpl(IJavaElement elt,Set<String> files,boo
 	 catch (JavaModelException e) {
 	    return ;
 	  }
-	 try {
-	    outputNameDetails(pfr,xw);
-	  }
-	 catch (JavaModelException e) { }
+         outputNameDetails(pfr,xw);
 	 break;
       case IJavaElement.JAVA_PROJECT :
 	 IJavaProject ijp = (IJavaProject) elt;
-	 try {
-	    outputNameDetails(ijp,xw);
-	  }
-	 catch (JavaModelException e) { }
+         outputNameDetails(ijp,xw);
 	 break;
       case IJavaElement.JAVA_MODEL :
       case IJavaElement.IMPORT_CONTAINER :
@@ -961,22 +955,13 @@ private static void outputJavaElementImpl(IJavaElement elt,Set<String> files,boo
 	 catch (JavaModelException e) { }
 	 break;
       case IJavaElement.INITIALIZER :
-	 try {
-	    outputNameDetails((IInitializer) elt,xw);
-	  }
-	 catch (JavaModelException e) { }
+         outputNameDetails((IInitializer) elt,xw);
 	 break;
       case IJavaElement.PACKAGE_DECLARATION :
-	 try {
-	    outputNameDetails((IPackageDeclaration) elt,xw);
-	  }
-	 catch (JavaModelException e) { }
+         outputNameDetails((IPackageDeclaration) elt,xw);
 	 break;
       case IJavaElement.LOCAL_VARIABLE :
-	 try {
-	    outputNameDetails((ILocalVariable) elt,xw);
-	  }
-	 catch (JavaModelException e) { }
+         outputNameDetails((ILocalVariable) elt,xw);
 	 break;
     }
 
@@ -1039,14 +1024,14 @@ private static void outputNameDetails(IMethod mthd,IvyXmlWriter xw) throws JavaM
 
 
 
-private static void outputNameDetails(IInitializer init,IvyXmlWriter xw) throws JavaModelException
+private static void outputNameDetails(IInitializer init,IvyXmlWriter xw) 
 {
    outputSymbol(init,"StaticInitializer","<clinit>",null,xw);
 }
 
 
 
-private static void outputNameDetails(IPackageDeclaration pkg,IvyXmlWriter xw) throws JavaModelException
+private static void outputNameDetails(IPackageDeclaration pkg,IvyXmlWriter xw) 
 {
    outputSymbol(pkg,"PackageDecl",pkg.getElementName(),null,xw);
 }
@@ -1064,20 +1049,20 @@ private static void outputNameDetails(IPackageFragment pkg,IvyXmlWriter xw) thro
 
 
 
-private static void outputNameDetails(IPackageFragmentRoot pkg,IvyXmlWriter xw) throws JavaModelException
+private static void outputNameDetails(IPackageFragmentRoot pkg,IvyXmlWriter xw) 
 {
 }
 
 
 
-private static void outputNameDetails(ILocalVariable lcl,IvyXmlWriter xw) throws JavaModelException
+private static void outputNameDetails(ILocalVariable lcl,IvyXmlWriter xw)
 {
    outputSymbol(lcl,"Local",lcl.getElementName(),null,xw);
 }
 
 
 
-private static void outputNameDetails(IJavaProject ijp,IvyXmlWriter xw) throws JavaModelException
+private static void outputNameDetails(IJavaProject ijp,IvyXmlWriter xw) 
 {
    outputSymbol(ijp,"Project",ijp.getElementName(),null,xw);
 }

@@ -153,8 +153,7 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
    else delta = BUBBLE_CREATION_SPACE;
 
    if ((place & PLACEMENT_LOGICAL) != 0) {
-      BudaRoot br = BudaRoot.findBudaRoot(bubble_area);
-      Rectangle r2 = br.getViewport();
+      Rectangle r2 = bubble_area.getViewport();
       if (r.x - delta - bbl.getWidth() < r2.x) {
 	 if (r.x + r.width + delta + bbl.getWidth() < r2.x + r2.width) {
 	    place &= ~PLACEMENT_LEFT;

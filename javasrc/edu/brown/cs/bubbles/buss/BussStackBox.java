@@ -100,6 +100,7 @@ BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussBubble)
    addTreeSelectionListener(new Selector());
 
    registerKeyAction(new ShowAllAction(),"SHOW_ALL",KeyStroke.getKeyStroke(KeyEvent.VK_F4,0));
+   registerKeyAction(new ShowSelectedAction(),"SHOW_SELECTED",KeyStroke.getKeyStroke(KeyEvent.VK_F3,0));
 
    BasicTreeUI tui = (BasicTreeUI) getUI();
    tui.setCollapsedIcon(null);
@@ -301,6 +302,22 @@ private void createAllBubbles()
 
 
 
+private void createSelectedBubble()
+{
+   TreePath tp = getSelectionPath();
+   TreeNode tn = (TreeNode) tp.getLastPathComponent();
+
+   Rectangle loc = BudaRoot.findBudaLocation(this);
+   BudaRoot broot = BudaRoot.findBudaRoot(this);
+
+   BudaBubble bbl = BudaRoot.findBudaBubble(this);
+   bbl.setVisible(false);
+
+   createAllBubbles(tn,broot,loc);
+}
+
+
+
 
 private void createAllBubbles(TreeNode tn,BudaRoot br,Rectangle loc)
 {
@@ -334,6 +351,7 @@ private void createEntryBubble(BussEntry be,BudaRoot root,Rectangle loc)
 
    if (root != null && loc != null) {
       bb.setVisible(true);
+      bb.setFixed(false);
       root.add(bb,new BudaConstraint(loc.x,loc.y));
       Dimension d = bb.getPreferredSize();
       loc.y += d.height + 25;
@@ -351,6 +369,20 @@ private class ShowAllAction extends AbstractAction implements ActionListener {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BUSS","ShowAll");
       createAllBubbles();
+    }
+
+}	// end of inner class EscapeHandler
+
+
+
+
+private class ShowSelectedAction extends AbstractAction implements ActionListener {
+
+   private static final long serialVersionUID = 1;
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BUSS","ShowSelected");
+      createSelectedBubble();
     }
 
 }	// end of inner class EscapeHandler

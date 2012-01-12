@@ -109,7 +109,7 @@ void createExecBubble(BumpThread bt)
       if (bddt_properties.getBoolean("Bddt.show.values")) {
 	 BddtStackView sv = new BddtStackView(launch_control,bt);
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
-	 if (bba == null) return;
+	 if (bba == null || stk == null) return;
 	 BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
 	 bubble_map.put(sv,nbd);
 	 bba.addBubble(sv,bb,null,PLACEMENT_BELOW|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
@@ -197,7 +197,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	 BudaBubble abb = bd.getAssocBubble();
 	 if (abb != null) {
 	    Rectangle rx = BudaRoot.findBudaLocation(abb);
-	    ypos = Math.max(ypos,rx.y + rx.height + 40);
+	    if (rx != null) ypos = Math.max(ypos,rx.y + rx.height + 40);
 	  }
        }
       else {
@@ -663,6 +663,7 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
 	    case EVAL :
 	       continue;
 	  }
+	 if (bd.getBubble().isFixed()) continue;
 	 if (best == null) {
 	    tmost = btim;
 	    best = bd;

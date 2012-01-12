@@ -276,14 +276,14 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
       Object [] sels = path_display.getSelectedValues();
       boolean edok = false;
       for (Object sel : sels) {
-	 PathEntry pe = (PathEntry) sel;
-	 if (pe.getPathType() == PathType.LIBRARY) {
-	    if (edok) {
-	       edok = false;
-	       break;
-	     }
-	    else edok = true;
-	  }
+         PathEntry pe = (PathEntry) sel;
+         if (pe.getPathType() == PathType.LIBRARY) {
+            if (edok) {
+               edok = false;
+               break;
+             }
+            edok = true;
+          }
        }
       edit_button.setEnabled(edok);
       delete_button.setEnabled(sels.length >= 1);

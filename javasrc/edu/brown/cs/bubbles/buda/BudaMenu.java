@@ -596,6 +596,13 @@ private class MenuConfigurator implements BubbleConfigurator {
 
       return bb;
     }
+   
+   @Override public boolean matchBubble(BudaBubble bb,Element xml) {
+      Element cnt = IvyXml.getChild(xml,"CONTENT");
+      String typ = IvyXml.getAttrString(cnt,"TYPE");
+      if (typ.equals("MENU") && bb.getContentPane() instanceof MenuPanel) return true;
+      return false;
+    }
 
    @Override public void outputXml(BudaXmlWriter xw,boolean history)	{ }
    @Override public void loadXml(BudaBubbleArea bba,Element root)	{ }

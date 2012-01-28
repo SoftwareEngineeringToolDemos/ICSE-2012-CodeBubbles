@@ -125,6 +125,7 @@ void getRunConfigurations(IvyXmlWriter xw) throws BedrockException
       throw new BedrockException("Problem getting configurations",e);
     }
    catch (Throwable t) {
+      throw new BedrockException("Unknown problem getting config",t);
       // eclispe sometimes fails for no reason here
     }
 }
@@ -1048,7 +1049,7 @@ public void launchConfigurationAdded(ILaunchConfiguration cfg)
    xw.begin("LAUNCH");
    xw.field("REASON","ADD");
    BedrockUtil.outputLaunch(cfg,xw);
-   xw.end();
+   xw.end("LAUNCH");
 
    our_plugin.finishMessage(xw);
 }
@@ -1062,7 +1063,7 @@ public void launchConfigurationChanged(ILaunchConfiguration cfg)
    xw.begin("LAUNCH");
    xw.field("REASON","CHANGE");
    BedrockUtil.outputLaunch(cfg,xw);
-   xw.end();
+   xw.end("LAUNCH");
 
    our_plugin.finishMessage(xw);
 }
@@ -1076,7 +1077,7 @@ public void launchConfigurationRemoved(ILaunchConfiguration cfg)
    xw.begin("LAUNCH");
    xw.field("REASON","REMOVE");
    BedrockUtil.outputLaunch(cfg,xw);
-   xw.end();
+   xw.end("LAUNCH");
 
    our_plugin.finishMessage(xw);
 }

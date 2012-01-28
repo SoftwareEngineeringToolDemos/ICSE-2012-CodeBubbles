@@ -49,6 +49,8 @@ class BdocBubble extends BudaBubble implements BdocConstants
 /*										*/
 /********************************************************************************/
 
+private BdocReference for_ref;
+
 private static final long serialVersionUID = 1;
 
 
@@ -62,6 +64,7 @@ private static final long serialVersionUID = 1;
 
 BdocBubble(BdocReference br) throws BdocException
 {
+   for_ref = br;
    BdocPanel pnl = new BdocPanel(br);
    JComponent cmp = pnl.getPanel();
    cmp.setBorder(new EmptyBorder(0,0,0,0));
@@ -77,6 +80,13 @@ BdocBubble(BdocReference br) throws BdocException
 }
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Access methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+BdocReference getReference()            { return for_ref; }
 
 }	// end of class BdocBubble
 

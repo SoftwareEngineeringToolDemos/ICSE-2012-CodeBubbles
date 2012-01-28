@@ -80,6 +80,32 @@ class BeamConfigurator implements BeamConstants, BudaConstants.BubbleConfigurato
    return bb;
 }
 
+@Override public boolean matchBubble(BudaBubble bb,Element xml)
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   if (typ.equals("NOTE") && bb instanceof BeamNoteBubble) {
+      BeamNoteBubble nb = (BeamNoteBubble) bb;
+      String name = IvyXml.getAttrString(cnt,"NAME");
+      String bname = nb.getNoteFile().getName();
+      if (name.equals(bname)) return true;
+    }
+   else if (typ.equals("FLAG") && bb instanceof BeamFlagBubble) {
+      BeamFlagBubble fb = (BeamFlagBubble) bb;
+      String path = IvyXml.getTextElement(cnt,"IMGPATH");
+      String bpath = fb.getImagePath();
+      if (path.equals(bpath)) return true;
+    }
+   else if (typ.equals("PROBLEMS") && bb instanceof BeamProblemBubble) {
+      String typs = IvyXml.getAttrString(cnt,"ERRORTYPES");
+      boolean tasks = IvyXml.getAttrBool(cnt,"FORTASKS");
+      BeamProblemBubble pb = (BeamProblemBubble) bb;
+      if (pb.matchTypes(typs,tasks)) return true;
+    }
+      
+   return false;
+}
+
 
 
 

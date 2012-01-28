@@ -1725,7 +1725,7 @@ boolean isMoving(BudaBubble bb)
 /*										*/
 /********************************************************************************/
 
-private void fixupGroups(BudaBubble bb)
+void fixupGroups(BudaBubble bb)
 {
    if (bb == null || bb.isFixed() || bb.isFloating()) return;
 

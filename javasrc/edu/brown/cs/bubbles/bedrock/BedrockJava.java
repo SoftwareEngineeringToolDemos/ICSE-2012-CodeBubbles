@@ -286,7 +286,12 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 	    if (tnm != null) {
 	       //TODO: this needs to be done better
 	       IJavaElement elt = ijp.findElement(tnm,null);
-	       BedrockPlugin.logD("LOOKUP TYPE " + tnm + " " + elt);
+	       if (elt == null && tnm.startsWith("Q") && tnm.endsWith(";")) {
+		  int ln = tnm.length();
+		  String xnm = tnm.substring(1,ln-1);
+		  elt = ijp.findElement(xnm,null);
+		}
+	       BedrockPlugin.logD("LOOKUP TYPE " + tnm + " " + elt + " " + typ);
 	       if (elt != null) {
 		  nelt.add(elt);
 		  typ = null;
@@ -1098,7 +1103,7 @@ IJavaProject getJavaProject(String p) throws BedrockException
 
 
 
-static IJavaElement [] getAllProjects() 
+static IJavaElement [] getAllProjects()
 {
    IWorkspace ws = ResourcesPlugin.getWorkspace();
    IWorkspaceRoot wr = ws.getRoot();

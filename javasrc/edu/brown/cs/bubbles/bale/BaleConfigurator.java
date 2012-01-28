@@ -96,7 +96,26 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 }
 
 
-
+@Override public boolean matchBubble(BudaBubble bb,Element xml)
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   
+   if (typ.equals("FRAGMENT") && bb instanceof BaleEditorBubble) {
+      BaleEditorBubble eb = (BaleEditorBubble) bb;
+      String proj = IvyXml.getAttrString(cnt,"PROJECT");
+      String file = IvyXml.getAttrString(cnt,"FILE");
+      String name = IvyXml.getAttrString(cnt,"NAME");
+      BaleDocument bd = (BaleDocument) eb.getContentDocument();
+      if (bd.getFile().getPath().equals(file) &&
+            bd.getProjectName().equals(proj) &&
+            name.equals(bd.getFragmentName())) 
+         return true;
+    }
+   
+   return false;
+}
+      
 /********************************************************************************/
 /*										*/
 /*	Port creation methods							*/

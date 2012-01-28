@@ -152,9 +152,13 @@ void startBvcrServer()
 
    synchronized (this) {
       if (server_running) return;
+      
+      long mxmem = Runtime.getRuntime().maxMemory();
+      mxmem = Math.min(512*1024*1024L,mxmem);
 
       List<String> args = new ArrayList<String>();
       args.add("java");
+      args.add("-Xmx" + Long.toString(mxmem));
       args.add("-cp");
       args.add(System.getProperty("java.class.path"));
       args.add("edu.brown.cs.bubbles.bvcr.BvcrMain");

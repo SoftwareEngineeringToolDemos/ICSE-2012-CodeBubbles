@@ -45,6 +45,7 @@ import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 
 
 class BddtBreakpointBubble extends BudaBubble implements BddtConstants, BudaConstants,
@@ -484,7 +485,9 @@ private class BreakpointTableModel extends AbstractTableModel {
     }
 
    @Override public Object getValueAt(int row,int col) {
-      BumpBreakpoint bp = bump_client.getAllBreakpoints().get(row);
+      List<BumpBreakpoint> bpl = bump_client.getAllBreakpoints();
+      if (bpl == null || row < 0 || row >= bpl.size()) return null;
+      BumpBreakpoint bp = bpl.get(row);
       switch (col) {
 	 case 0:
 	    return bp.getLineNumber();

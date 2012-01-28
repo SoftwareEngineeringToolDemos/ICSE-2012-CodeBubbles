@@ -254,6 +254,11 @@ private static class TaskConfig implements BubbleConfigurator {
    @Override public BudaBubble createBubble(BudaBubbleArea bba,Element xml) {
       return null;
     }
+   
+   @Override public boolean matchBubble(BudaBubble bb,Element xml) {
+      if (bb instanceof BbookDisplayBubble) return true;
+      return false;
+    }
 
    @Override public void outputXml(BudaXmlWriter xw,boolean history) {
       if (history) return;

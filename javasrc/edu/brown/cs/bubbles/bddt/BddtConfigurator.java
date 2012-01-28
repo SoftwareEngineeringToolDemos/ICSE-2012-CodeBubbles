@@ -66,6 +66,19 @@ class BddtConfigurator implements BddtConstants, BudaConstants.BubbleConfigurato
 }
 
 
+@Override public boolean matchBubble(BudaBubble bb,Element xml)
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   if (typ == null) return false;
+   else if (typ.equals("CONFIGS")) ;
+   else if (typ.equals("BReAKPOINTBUBBLE")) {
+      if (bb instanceof BddtBreakpointBubble) return true;
+    }
+   return false;
+}
+   
+
 
 
 /********************************************************************************/

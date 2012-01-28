@@ -85,6 +85,20 @@ class BassConfigurator implements BassConstants, BudaConstants.BubbleConfigurato
 
 
 
+@Override public boolean matchBubble(BudaBubble bb,Element xml) 
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   
+   if (typ == null) ;
+   else if (typ.equals("SEARCH") && bb instanceof BassBubble) return true;
+   else if (typ.equals("TEXTSEARCH") && bb instanceof BassTextBubble) return true;
+   
+   return false;
+}
+      
+
+
 /********************************************************************************/
 /*										*/
 /*	I/O methods								*/

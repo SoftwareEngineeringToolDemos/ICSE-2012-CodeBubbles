@@ -914,11 +914,11 @@ private static void outputJavaElementImpl(IJavaElement elt,Set<String> files,boo
 	 catch (JavaModelException e) {
 	    return ;
 	  }
-         outputNameDetails(pfr,xw);
+	 outputNameDetails(pfr,xw);
 	 break;
       case IJavaElement.JAVA_PROJECT :
 	 IJavaProject ijp = (IJavaProject) elt;
-         outputNameDetails(ijp,xw);
+	 outputNameDetails(ijp,xw);
 	 break;
       case IJavaElement.JAVA_MODEL :
       case IJavaElement.IMPORT_CONTAINER :
@@ -955,13 +955,13 @@ private static void outputJavaElementImpl(IJavaElement elt,Set<String> files,boo
 	 catch (JavaModelException e) { }
 	 break;
       case IJavaElement.INITIALIZER :
-         outputNameDetails((IInitializer) elt,xw);
+	 outputNameDetails((IInitializer) elt,xw);
 	 break;
       case IJavaElement.PACKAGE_DECLARATION :
-         outputNameDetails((IPackageDeclaration) elt,xw);
+	 outputNameDetails((IPackageDeclaration) elt,xw);
 	 break;
       case IJavaElement.LOCAL_VARIABLE :
-         outputNameDetails((ILocalVariable) elt,xw);
+	 outputNameDetails((ILocalVariable) elt,xw);
 	 break;
     }
 
@@ -1024,14 +1024,14 @@ private static void outputNameDetails(IMethod mthd,IvyXmlWriter xw) throws JavaM
 
 
 
-private static void outputNameDetails(IInitializer init,IvyXmlWriter xw) 
+private static void outputNameDetails(IInitializer init,IvyXmlWriter xw)
 {
    outputSymbol(init,"StaticInitializer","<clinit>",null,xw);
 }
 
 
 
-private static void outputNameDetails(IPackageDeclaration pkg,IvyXmlWriter xw) 
+private static void outputNameDetails(IPackageDeclaration pkg,IvyXmlWriter xw)
 {
    outputSymbol(pkg,"PackageDecl",pkg.getElementName(),null,xw);
 }
@@ -1049,7 +1049,7 @@ private static void outputNameDetails(IPackageFragment pkg,IvyXmlWriter xw) thro
 
 
 
-private static void outputNameDetails(IPackageFragmentRoot pkg,IvyXmlWriter xw) 
+private static void outputNameDetails(IPackageFragmentRoot pkg,IvyXmlWriter xw)
 {
 }
 
@@ -1062,7 +1062,7 @@ private static void outputNameDetails(ILocalVariable lcl,IvyXmlWriter xw)
 
 
 
-private static void outputNameDetails(IJavaProject ijp,IvyXmlWriter xw) 
+private static void outputNameDetails(IJavaProject ijp,IvyXmlWriter xw)
 {
    outputSymbol(ijp,"Project",ijp.getElementName(),null,xw);
 }
@@ -1731,17 +1731,20 @@ static void outputChange(Change chng,IvyXmlWriter xw)
       xw.field("TYPE","UNDO");
     }
 
-   for (Object o : chng.getAffectedObjects()) {
-      if (o instanceof IResource) {
-	 IResource ir = (IResource) o;
-	 BedrockUtil.outputResource(ir,xw);
-       }
-      else if (o instanceof ICompilationUnit) {
-	 IResource ir = ((ICompilationUnit) o).getResource();
-	 BedrockUtil.outputResource(ir,xw);
-       }
-      else {
-	 BedrockPlugin.logD("UNKNOWN CHANGE " + chng.getName() + " OBJECT " + o.getClass() + " " + o);
+   Object [] aff = chng.getAffectedObjects();
+   if (aff != null) {
+      for (Object o : aff) {
+	 if (o instanceof IResource) {
+	    IResource ir = (IResource) o;
+	    BedrockUtil.outputResource(ir,xw);
+	  }
+	 else if (o instanceof ICompilationUnit) {
+	    IResource ir = ((ICompilationUnit) o).getResource();
+	    BedrockUtil.outputResource(ir,xw);
+	  }
+	 else {
+	    BedrockPlugin.logD("UNKNOWN CHANGE " + chng.getName() + " OBJECT " + o.getClass() + " " + o);
+	  }
        }
     }
 

@@ -252,11 +252,11 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu shift F3",goto_definition_action),
       new KeyItem("shift F3",goto_doc_action),
       new KeyItem("F4",goto_reference_action),
+      new KeyItem("menu F4",goto_search_action),
+      new KeyItem("shift F4",goto_search_action),
       new KeyItem("menu shift C",goto_type_action),
       new KeyItem("menu shift G",goto_reference_action),
-      new KeyItem("shift F4",goto_search_action),
       new KeyItem("menu shift T",class_search_action),
-      new KeyItem("menu F4",goto_search_action),
       new KeyItem("alt X",bud_action),
       new KeyItem("alt C",fragment_action),
 

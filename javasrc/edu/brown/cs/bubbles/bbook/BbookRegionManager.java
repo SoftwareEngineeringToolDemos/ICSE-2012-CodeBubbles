@@ -364,7 +364,7 @@ private void handleBubbleCopy(BudaBubble f,BudaBubble t)
    if (tr == null) return;
 
    BnoteTask task = tr.getTask();
-   if (task != null) {
+   if (task != null && f != null) {
       String b1 = t.getContentProject();
       String b2 = t.getContentName();
       File f3 = t.getContentFile();

@@ -84,6 +84,9 @@ BconBubble(BconPanel pnl)
    for_panel.handlePopupMenu(e);
 }
 
+
+BconPanel getPanel()                    { return for_panel; }
+
 }	// end of class BconBubble
 
 

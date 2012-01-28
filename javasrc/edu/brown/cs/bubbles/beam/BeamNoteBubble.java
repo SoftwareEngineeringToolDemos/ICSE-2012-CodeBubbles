@@ -391,8 +391,9 @@ private synchronized void deleteNote()
 }
 
 
-private File getNoteFile()
+File getNoteFile()
 {
+   if (note_name == null) createFileName();
    File dir = BoardSetup.getBubblesWorkingDirectory();
    return new File(dir,note_name);
 }

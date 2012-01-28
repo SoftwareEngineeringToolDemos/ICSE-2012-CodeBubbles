@@ -225,6 +225,26 @@ BeamProblemBubble(String typs,boolean task)
 /*										*/
 /********************************************************************************/
 
+boolean matchTypes(String typs,boolean task)
+{
+   if (task != for_tasks) return false;
+   
+   EnumSet<BumpErrorType> es = EnumSet.noneOf(BumpErrorType.class);
+   StringTokenizer tok = new StringTokenizer(typs);
+   while (tok.hasMoreTokens()) {
+      String s = tok.nextToken();
+      try {
+         BumpErrorType bet = BumpErrorType.valueOf(s);
+         es.add(bet);
+       }
+      catch (IllegalArgumentException e) { }
+    }
+   
+   return es.equals(allow_types); 
+}
+
+
+   
 private String getErrorType(BumpProblem bp)
 {
    switch (bp.getErrorType()) {

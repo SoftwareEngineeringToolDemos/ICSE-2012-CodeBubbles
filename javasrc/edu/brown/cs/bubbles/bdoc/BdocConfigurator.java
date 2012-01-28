@@ -67,6 +67,21 @@ class BdocConfigurator implements BdocConstants, BudaConstants.BubbleConfigurato
 
 
 
+@Override public boolean matchBubble(BudaBubble bb,Element xml)
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   if (typ.equals("JAVADOC") && bb instanceof BdocBubble) {
+      BdocBubble db = (BdocBubble) bb;
+      String name = IvyXml.getAttrString(cnt,"NAME");
+      String bname = db.getReference().getKey();
+      if (name.equals(bname)) return true;
+    }
+   return false;
+}
+
+
+
 
 /********************************************************************************/
 /*										*/

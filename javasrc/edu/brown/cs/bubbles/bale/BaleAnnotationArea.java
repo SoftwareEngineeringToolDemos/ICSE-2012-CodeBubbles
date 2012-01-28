@@ -182,8 +182,8 @@ void removeAll(BalePosition start,BalePosition end)
       p = BALE_PROPERTIES.getColor(BALE_EDITOR_TOP_COLOR);
     }
    else {
-      p = new GradientPaint(0f,0f, BALE_PROPERTIES.getColor(BALE_EDITOR_TOP_COLOR), 0f, 
-            bnd.height, BALE_PROPERTIES.getColor(BALE_EDITOR_BOTTOM_COLOR));
+      p = new GradientPaint(0f,0f, BALE_PROPERTIES.getColor(BALE_EDITOR_TOP_COLOR), 0f,
+	    bnd.height, BALE_PROPERTIES.getColor(BALE_EDITOR_BOTTOM_COLOR));
     }
 
    g2.setPaint(p);
@@ -203,7 +203,7 @@ void removeAll(BalePosition start,BalePosition end)
 	 int lno = ent.getKey();
 	 if (lno - start_line < 0 || lno - start_line >= line_data.length) {
 	    BoardLog.logE("BALE",
-                  "Annotation beyond bounds " + lno + " " + start_line + " " + line_data.length);
+		  "Annotation beyond bounds " + lno + " " + start_line + " " + line_data.length);
 	    continue;
 	  }
 	 LineData ld = line_data[lno-start_line];
@@ -211,14 +211,14 @@ void removeAll(BalePosition start,BalePosition end)
 	 int y0 = ld.getTop();
 	 int y1 = ld.getBottom();
 	 Collection<BaleAnnotation> lan = ent.getValue();
-         for (BaleAnnotation an : lan) {
-            Color c = an.getBackgroundColor();
-            if (c != null) {
-               g2.setColor(c);
-               g2.fillRect(bnd.x,y0,bnd.width,y1-y1);
-               break;                   // only allow one color for now
-             }
-          }
+	 for (BaleAnnotation an : lan) {
+	    Color c = an.getBackgroundColor();
+	    if (c != null) {
+	       g2.setColor(c);
+	       g2.fillRect(bnd.x,y0,bnd.width,y1-y1);
+	       break;			// only allow one color for now
+	     }
+	  }
 	 for (BaleAnnotation an : lan) {
 	    Icon ic = an.getIcon();
 	    if (ic == null) continue;
@@ -639,6 +639,7 @@ private class Mouser extends MouseAdapter {
       int lno = findLine(evt);
       if (lno < 0) return;
       break_model.toggleBreakpoint(for_document.getProjectName(),for_document.getFile(),lno,BumpBreakMode.DEFAULT);
+      BoardMetrics.noteCommand("BALE","ANNOT_TOGGLEBREAK");
     }
 
 }	// end of interface Mouser

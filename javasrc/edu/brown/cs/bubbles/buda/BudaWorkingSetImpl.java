@@ -60,6 +60,7 @@ private Color	bottom_color;
 private Color	text_color;
 private boolean being_changed;
 private long	create_time;
+private boolean is_shared;
 //private File	my_pdf;
 
 
@@ -79,6 +80,7 @@ BudaWorkingSetImpl(BudaBubbleArea bba,String lbl,Rectangle rgn,int y)
    preferred_y = y;
    being_changed = false;
    create_time = System.currentTimeMillis();
+   is_shared = false;
    //my_pdf = null;
 
    setColor(BudaRoot.getRandomColor(1.0));
@@ -156,6 +158,9 @@ void setBeingChanged(boolean fg)	{ being_changed = fg; }
 boolean isBeingChanged()		{ return being_changed; }
 
 void setCreateTime(long when)		{ create_time = when; }
+
+boolean isShared()                      { return is_shared; }
+void setShared(boolean fg)              { is_shared = fg; }
 
 
 

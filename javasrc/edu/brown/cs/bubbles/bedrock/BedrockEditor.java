@@ -1196,46 +1196,46 @@ private class EditTask implements Runnable {
 
    private void performEdit() {
       if (file_data.getCurrentId(bedrock_id) != null &&
-	     !file_data.getCurrentId(bedrock_id).equals(for_id))
-	 return;
-
+             !file_data.getCurrentId(bedrock_id).equals(for_id))
+         return;
+   
       long delay = getElideDelay(bedrock_id);
-
+   
       if (delay > 0) {
-	 synchronized (this) {
-	    try { wait(delay); }
-	    catch (InterruptedException e) { }
-	  }
+         synchronized (this) {
+            try { wait(delay); }
+            catch (InterruptedException e) { }
+          }
        }
-
+   
       file_data.getEditableUnit(bedrock_id);
       if (file_data.getCurrentId(bedrock_id) != null &&
-	     !file_data.getCurrentId(bedrock_id).equals(for_id))
-	 return;
-
+             !file_data.getCurrentId(bedrock_id).equals(for_id))
+         return;
+   
       // System.err.println("BEDROCK: BUILD AST " + for_id);
       CompilationUnit cu = file_data.getAstRoot(bedrock_id,for_id);
-
+   
       if (file_data.getCurrentId(bedrock_id) != null &&
-	     !file_data.getCurrentId(bedrock_id).equals(for_id))
-	 return;
-
+             !file_data.getCurrentId(bedrock_id).equals(for_id))
+         return;
+   
       if (getAutoElide(bedrock_id) && cu != null) {
-	 // System.err.println("BEDROCK: ELIDE " + for_id);
-	 BedrockElider be = file_data.checkElider(bedrock_id);
-	 if (be != null) {
-	    IvyXmlWriter xw = our_plugin.beginMessage("ELISION",bedrock_id);
-	    xw.field("FILE",file_data.getFileName());
-	    xw.field("ID",for_id);
-	    xw.begin("ELISION");
-	    if (be.computeElision(cu,xw)) {
-	       if (file_data.getCurrentId(bedrock_id) == null ||
-		      file_data.getCurrentId(bedrock_id).equals(for_id)) {
-		  xw.end("ELISION");
-		  our_plugin.finishMessage(xw);
-		}
-	     }
-	  }
+         // System.err.println("BEDROCK: ELIDE " + for_id);
+         BedrockElider be = file_data.checkElider(bedrock_id);
+         if (be != null) {
+            IvyXmlWriter xw = our_plugin.beginMessage("ELISION",bedrock_id);
+            xw.field("FILE",file_data.getFileName());
+            xw.field("ID",for_id);
+            xw.begin("ELISION");
+            if (be.computeElision(cu,xw)) {
+               if (file_data.getCurrentId(bedrock_id) == null ||
+        	      file_data.getCurrentId(bedrock_id).equals(for_id)) {
+        	  xw.end("ELISION");
+        	  our_plugin.finishMessage(xw);
+        	}
+             }
+          }
        }
     }
 
@@ -1314,15 +1314,15 @@ private class FileData implements IBufferChangedListener {
 
    void applyEdit(String sid,TextEdit xe) throws BedrockException {
       if (sid == null) {
-	 try {
-	    comp_unit.applyTextEdit(xe,null);
-	  }
-	 catch (JavaModelException e) {
-	    throw new BedrockException("Problem applying text edit",e);
-	  }
+         try {
+            comp_unit.applyTextEdit(xe,null);
+          }
+         catch (JavaModelException e) {
+            throw new BedrockException("Problem applying text edit",e);
+          }
        }
       else {
-	 getBuffer(sid).applyEdit(xe);
+         getBuffer(sid).applyEdit(xe);
        }
     }
 
@@ -1363,12 +1363,12 @@ private class FileData implements IBufferChangedListener {
 
    private BufferData getBuffer(String sid) {
       synchronized (buffer_map) {
-	 BufferData bd = buffer_map.get(sid);
-	 if (bd == null) {
-	    bd = new BufferData(this,sid,comp_unit);
-	    buffer_map.put(sid,bd);
-	  }
-	 return bd;
+         BufferData bd = buffer_map.get(sid);
+         if (bd == null) {
+            bd = new BufferData(this,sid,comp_unit);
+            buffer_map.put(sid,bd);
+          }
+         return bd;
        }
     }
 
@@ -1381,57 +1381,57 @@ private class FileData implements IBufferChangedListener {
       int off = evt.getOffset();
       String txt = evt.getText();
       BedrockPlugin.logD("Buffer change " + len + " " + off + " " + (txt == null) + " " +
-			    (buf == default_buffer));
+        		    (buf == default_buffer));
       if (len == 0 && off == 0 && txt == null && buf == default_buffer) {
-	 BedrockPlugin.logD("Buffer switch occurred for " + file_name);
-	 try {
-	    default_buffer = comp_unit.getBuffer();
-	    buf0 = default_buffer;
-	    len = default_buffer.getLength();
-	    txt = default_buffer.getContents();
-	    buf0.removeBufferChangedListener(this);
-	    default_buffer.addBufferChangedListener(this);
-	    buf = default_buffer;
-	    last_ast = null;
-	    if (buf.getContents().equals(txt)) {
-	       BedrockPlugin.logD("Buffer contents not changed");
-	       return;
-	     }
-	    // BedrockPlugin.logD("New buffer contents:\n" + buf.getContents());
-	    // BedrockPlugin.logD("End of contents");
-	  }
-	 catch (JavaModelException e) {
-	    BedrockPlugin.logD("BUFFER MODEL EXCEPTION " + e);
-	  }
+         BedrockPlugin.logD("Buffer switch occurred for " + file_name);
+         try {
+            default_buffer = comp_unit.getBuffer();
+            buf0 = default_buffer;
+            len = default_buffer.getLength();
+            txt = default_buffer.getContents();
+            buf0.removeBufferChangedListener(this);
+            default_buffer.addBufferChangedListener(this);
+            buf = default_buffer;
+            last_ast = null;
+            if (buf.getContents().equals(txt)) {
+               BedrockPlugin.logD("Buffer contents not changed");
+               return;
+             }
+            // BedrockPlugin.logD("New buffer contents:\n" + buf.getContents());
+            // BedrockPlugin.logD("End of contents");
+          }
+         catch (JavaModelException e) {
+            BedrockPlugin.logD("BUFFER MODEL EXCEPTION " + e);
+          }
        }
-
+   
       int ctr = 0;
       for (Map.Entry<String,BufferData> ent : buffer_map.entrySet()) {
-	 BufferData bd = ent.getValue();
-	 IBuffer bdb = bd.getBuffer();
-	 if (bdb == null || bdb == buf) continue;
-	 IvyXmlWriter xw = our_plugin.beginMessage("EDIT",ent.getKey());
-	 BedrockPlugin.logD("START EDIT " + len + " " + off + " " + (ctr++));
-	 xw.field("FILE",file_name);
-	 xw.field("LENGTH",len);
-	 xw.field("OFFSET",off);
-	 int xlen = len;
-	 if (len == buf.getLength() && off == 0 && txt != null) {
-	    xw.field("COMPLETE",true);
-	    byte [] data = txt.getBytes();
-	    xw.bytesElement("CONTENTS",data);
-	    xlen = bdb.getLength();
-	    // BedrockPlugin.logD("TEXT = " + txt);
-	  }
-	 else {
-	    xw.cdata(txt);
-	  }
-	 our_plugin.finishMessage(xw);
-	 BedrockPlugin.logD("SENDING EDIT " + xw.toString());
-	 bdb.replace(off,xlen,txt);
+         BufferData bd = ent.getValue();
+         IBuffer bdb = bd.getBuffer();
+         if (bdb == null || bdb == buf) continue;
+         IvyXmlWriter xw = our_plugin.beginMessage("EDIT",ent.getKey());
+         BedrockPlugin.logD("START EDIT " + len + " " + off + " " + (ctr++));
+         xw.field("FILE",file_name);
+         xw.field("LENGTH",len);
+         xw.field("OFFSET",off);
+         int xlen = len;
+         if (len == buf.getLength() && off == 0 && txt != null) {
+            xw.field("COMPLETE",true);
+            byte [] data = txt.getBytes();
+            xw.bytesElement("CONTENTS",data);
+            xlen = bdb.getLength();
+            // BedrockPlugin.logD("TEXT = " + txt);
+          }
+         else {
+            xw.cdata(txt);
+          }
+         our_plugin.finishMessage(xw);
+         BedrockPlugin.logD("SENDING EDIT " + xw.toString());
+         bdb.replace(off,xlen,txt);
        }
       if (buf != default_buffer && default_buffer != null) default_buffer.replace(off,len,txt);
-
+   
       doing_change = false;
     }
 

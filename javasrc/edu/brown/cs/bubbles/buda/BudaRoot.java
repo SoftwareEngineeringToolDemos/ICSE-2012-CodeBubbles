@@ -78,6 +78,7 @@ private BudaRelations		relation_data;
 private BudaChannelSet		cur_channels;
 private JPanel			channel_area;
 private BoardProperties 	buda_properties;
+private BudaShareManager        share_manager;
 
 private static MouseEvent	last_mouse;
 
@@ -282,6 +283,7 @@ private void initialize(Element e)
    new CheckpointTimer();		// start checkpointing
 
    BoardMetrics.setRootWindow(this);
+   share_manager = new BudaShareManager();
 }
 
 
@@ -339,6 +341,8 @@ public BudaBubbleArea getCurrentBubbleArea()
 
 
 BudaBubbleArea getBubbleArea()			{ return bubble_area; }
+
+BudaShareManager getShareManager()              { return share_manager; }
 
 
 
@@ -1000,11 +1004,11 @@ void setScaleFactor(double sf)
 void setScaleFactor(double sf,int cx,int cy)
 {
    scale_factor = sf;
-   // change viewport to accommodate scale
    bubble_area.setScaleFactor(sf);
 
    Rectangle vr = bubble_view.getViewRect();
    int x = (int) (cx*scale_factor - vr.width/2.0);
+   x = (int)(cx - vr.width/2.0/scale_factor);
    int y = (int) (cy*scale_factor - vr.height/2.0);
    setViewport(x,y);
 }
@@ -1076,7 +1080,7 @@ private void setupGlobalActions()
    registerKeyAction(new SearchKeyHandler(false,true,false),"Search for Documentation",
 			KeyStroke.getKeyStroke(KeyEvent.VK_F12,0));
    registerKeyAction(new ZoomHandler(1),"Zoom in",
-			KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS,menudown|InputEvent.SHIFT_DOWN_MASK));
+			KeyStroke.getKeyStroke(KeyEvent.VK_PLUS,menudown|InputEvent.SHIFT_DOWN_MASK));
    registerKeyAction(new ZoomHandler(-1),"Zoom out",
 			KeyStroke.getKeyStroke(KeyEvent.VK_MINUS,menudown));
    registerKeyAction(new ZoomHandler(0),"Reset zoom",
@@ -1508,6 +1512,22 @@ BudaBubble createBubble(BudaBubbleArea bba,Element e,Rectangle delta,int dx)
    add(bb,cnst);
 
    return bb;
+}
+
+
+int matchConfiguration(String key,Element e,BudaBubble bb)
+{
+   if (key == null) return 0;
+   
+   BudaBubbleOutputer bbo = bb.getBubbleOutputer();
+   if (bbo == null) return 0;
+   if (!bbo.getConfigurator().equals(key)) return 0;
+   // could ask bbo to output xml to a BudaXmlWriter and then compare
+   
+   BubbleConfigurator bc = bubble_config.get(key);
+   if (bc != null && bc.matchBubble(bb,e)) return 2;
+   
+   return 1;
 }
 
 

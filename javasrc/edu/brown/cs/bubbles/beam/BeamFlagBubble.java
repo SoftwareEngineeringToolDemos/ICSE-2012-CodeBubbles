@@ -146,6 +146,8 @@ BeamFlagBubble(String imagePath)
 }
 
 
+String getImagePath()                   { return _ImagePath; }
+
 
 /********************************************************************************/
 /*										*/

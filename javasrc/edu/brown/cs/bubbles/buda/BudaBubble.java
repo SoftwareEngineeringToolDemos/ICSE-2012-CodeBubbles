@@ -1096,7 +1096,7 @@ final void outputBubbleXml(BudaXmlWriter xw)
 
 
 
-private BudaBubbleOutputer getBubbleOutputer()
+BudaBubbleOutputer getBubbleOutputer()
 {
    if (this instanceof BudaBubbleOutputer) return (BudaBubbleOutputer) this;
 

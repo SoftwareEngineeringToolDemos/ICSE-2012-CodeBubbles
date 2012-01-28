@@ -69,6 +69,9 @@ private Map<BudaWorkingSetImpl, ChevronButton> chevron_buttons;
 private JButton fake_chevron_button;
 private BudaTaskShelf task_shelf;
 private JMenu task_dummy_menu;
+private JMenuItem share_button;
+private JMenuItem loadshare_button;
+private Collection<BudaShare> open_shares;
 
 private static final long serialVersionUID = 1L;
 
@@ -93,6 +96,9 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    chevron_buttons = new HashMap<BudaWorkingSetImpl, ChevronButton>();
    fake_chevron_button = null;
    task_shelf = null;
+   share_button = null;
+   loadshare_button = null;
+   open_shares = null;
 
    Dimension d = new Dimension(0,BUBBLE_TOP_BAR_HEIGHT);
    setMinimumSize(d);
@@ -107,6 +113,8 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    bubble_menu.add(task_dummy_menu);
    addButton(bubble_menu,"Define Working Set","Mark the current display as a working set");
    addButton(bubble_menu,"Load Working Set","Load a saved working set");
+   loadshare_button = addButton(bubble_menu,"Load Shared Working Set","Load a shared working set");
+   loadshare_button.setEnabled(false);
    //addButton(bubble_menu,"Load Task","Load a saved task");
    addButton(bubble_menu,"Save Configuration","Save the current configuration");
    addButton(bubble_menu,"Clear Bubbles in View","Remove all bubbles in the current view");
@@ -121,8 +129,9 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    workingset_menu = new JPopupMenu("WorkingSet");
    addButton(workingset_menu, "Close and Save to Task Shelf", "Close the working set and save it to the task shelf");
    addButton(workingset_menu,"Export as PDF","Save the working set as a PDF file");
-   addButton(workingset_menu,"EMail Working Set","EMail the working set");
+   addButton(workingset_menu,"EMail Working Set","EMail the Working Set");
    addButton(workingset_menu,"EMail as PDF","EMail a PDF image of the working set");
+   share_button = addButton(workingset_menu,"Share Working Set","Share this working set dynamically");
    workingset_menu.add(new JSeparator());
    addButton(workingset_menu,"Remove Working Set","Remove the working set, but don't close any bubbles");
    addButton(workingset_menu,"Clear and Remove Working Set","Remove the working set and close its bubbles");
@@ -197,7 +206,7 @@ void addMenuItem(Component c,boolean ws)
 /*										*/
 /********************************************************************************/
 
-private void addButton(JComponent menu,String id,String tt)
+private JMenuItem addButton(JComponent menu,String id,String tt)
 {
    JMenuItem itm = new JMenuItem(id);
    itm.addActionListener(this);
@@ -206,6 +215,8 @@ private void addButton(JComponent menu,String id,String tt)
       ToolTipManager.sharedInstance().registerComponent(itm);
     }
    menu.add(itm);
+
+   return itm;
 }
 
 
@@ -375,6 +386,23 @@ private void addButton(JComponent menu,String id,String tt)
 	  }
        }
     }
+   else if (cmd.equals("Share Working Set")) {
+      buda_root.getShareManager().createShare(cur_workingset);
+    }
+   else if (cmd.equals("Stop Sharing Working Set")) {
+      buda_root.getShareManager().removeShare(cur_workingset);
+    }
+   else if (cmd.equals("Load Shared Working Set")) {
+      BudaShare [] shrs = createShareArray();
+      int sts = JOptionPane.showOptionDialog(this,"Select share to load",
+						"Select share to load",
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null,shrs,null);
+      if (sts == JOptionPane.CLOSED_OPTION) return;
+      int x0 = getAreaOffset(popup_point.getX());
+      buda_root.getShareManager().useShare(shrs[sts],bubble_area,x0);
+    }
    else {
       BoardLog.logE("BUDA","Unknown top bar command " + cmd);
     }
@@ -392,6 +420,13 @@ private int getAreaOffset(double x)
 }
 
 
+
+private BudaShare [] createShareArray()
+{
+   BudaShare [] shrs = open_shares.toArray(new BudaShare[open_shares.size()]);
+   Arrays.sort(shrs);
+   return shrs;
+}
 
 
 /********************************************************************************/
@@ -720,6 +755,9 @@ private void handlePopup(MouseEvent e)
     }
 
    if (cur_workingset == null) {
+      open_shares = buda_root.getShareManager().getAllShares();
+      loadshare_button.setEnabled(open_shares != null && open_shares.size() > 0);
+
       bubble_menu.validate();
       buda_root.setChannelSet(null);
       Collection<BudaTask> bt = buda_root.getAllTasks();
@@ -738,6 +776,10 @@ private void handlePopup(MouseEvent e)
       else bubble_menu.show(e.getComponent(),e.getX(),e.getY());
     }
    else {
+      if (cur_workingset.isShared())
+	 share_button.setText("Stop Sharing Working Set");
+      else
+	 share_button.setText("Share Working Set");
       workingset_menu.show(e.getComponent(),e.getX(),e.getY());
     }
 }

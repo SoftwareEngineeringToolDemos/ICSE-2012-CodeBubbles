@@ -767,15 +767,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if (cmd.equals("EXIT")) {
       if (--num_clients <= 0) {
-	 doing_exit = true;
-	 saveEclipse();
-	 BedrockApplication.stopApplication();
-	 if (bedrock_monitor != null) {
-	    bedrock_monitor.stopMonitoring();
-	    bedrock_monitor.deleteLogFile();
-	  }
-	 BedrockPlugin.logD("Stopping application");
-	 shutdown_mint = true;
+	 forceExit();
        }
     }
    else {
@@ -787,6 +779,23 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    BedrockPlugin.logD("Result = " + xw.toString());
    return xw.toString();
 }
+
+
+
+void forceExit()
+{
+   logD("FORCE EXIT");
+   doing_exit = true;
+   saveEclipse();
+   BedrockApplication.stopApplication();
+   if (bedrock_monitor != null) {
+      bedrock_monitor.stopMonitoring();
+      bedrock_monitor.deleteLogFile();
+    }
+   BedrockPlugin.logD("Stopping application");
+   shutdown_mint = true;
+}
+
 
 
 

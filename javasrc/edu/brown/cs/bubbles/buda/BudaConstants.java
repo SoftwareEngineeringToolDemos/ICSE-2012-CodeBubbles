@@ -1006,6 +1006,7 @@ interface DocBoxCreator {
 interface BubbleConfigurator {
 
    BudaBubble createBubble(BudaBubbleArea bba,Element xml);
+   boolean matchBubble(BudaBubble bb,Element xml);
    void outputXml(BudaXmlWriter xw,boolean history);
    void loadXml(BudaBubbleArea bba,Element root);
 
@@ -1212,7 +1213,7 @@ interface BudaWorkingSet {
 /*										*/
 /********************************************************************************/
 
-interface BudaShare {
+interface BudaShare extends Comparable<BudaShare> {
 
    String getId();
    String getUser();

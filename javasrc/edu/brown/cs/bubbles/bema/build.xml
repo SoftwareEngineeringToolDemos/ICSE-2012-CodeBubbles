@@ -159,8 +159,8 @@
 	 <classpath refid='test.classpath' />
 	 <arg value='-w' />
 	 <arg value='/home/spr/Eclipse/fait' />
-	 <jvmarg value="-Xmx8092m" />
-	 <jvmarg value="-d64" />
+	 <arg value='-m' />
+	 <arg value='BUBBLES_DEBUG_spr' />
       </java>
    </target>
 

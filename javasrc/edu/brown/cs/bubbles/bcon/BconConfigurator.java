@@ -74,6 +74,31 @@ class BconConfigurator implements BconConstants, BudaConstants.BubbleConfigurato
 }
 
 
+@Override public boolean matchBubble(BudaBubble bb,Element xml)
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   
+   if (typ.equals("OVERVIEW") && (bb.getContentPane() instanceof BconBubble)) {
+      BconBubble cb = (BconBubble) bb;
+      if (cb.getPanel() instanceof BconOverviewPanel)
+         return true;
+    }
+   else if (typ.equals("CLASS")) {
+      BconBubble cb = (BconBubble) bb;
+      if (cb.getPanel() instanceof BconClassPanel)
+         return true;
+    }
+   else if (typ.equals("PACKAGE")) {
+      BconBubble cb = (BconBubble) bb;
+      if (cb.getPanel() instanceof BconPackagePanel)
+         return true;
+    }
+   
+   return false;
+}
+      
+
 
 
 /********************************************************************************/

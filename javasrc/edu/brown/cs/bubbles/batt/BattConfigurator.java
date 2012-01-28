@@ -58,6 +58,17 @@ class BattConfigurator implements BattConstants, BudaConstants.BubbleConfigurato
 
 
 
+@Override public boolean matchBubble(BudaBubble bb,Element xml)
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   
+   if (typ.equals("TESTSTATUS") && bb instanceof BattStatusBubble) return true;
+   
+   return false;
+}
+
+
 
 /********************************************************************************/
 /*										*/

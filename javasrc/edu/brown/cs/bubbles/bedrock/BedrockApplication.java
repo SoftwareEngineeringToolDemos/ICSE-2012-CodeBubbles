@@ -200,6 +200,8 @@ private static class Shutdown implements Runnable {
       try {
 	 if (base_display == null) base_display = PlatformUI.createDisplay();
 	 System.err.println("BEDROCK: DISPLAY = " + base_display);
+	 EndChecker ec = new EndChecker();
+	 ec.start();
 	 sts = PlatformUI.createAndRunWorkbench(base_display,new WbAdvisor());
        }
       catch (Throwable t) { }
@@ -239,9 +241,15 @@ private static class Shutdown implements Runnable {
       synchronized (this) {		   // wait until exit request
 	 while (!exit_ok) {
 	    try {
-	       wait();
+	       wait(60000);
 	     }
 	    catch (InterruptedException e) { }
+	    if (!exit_ok) {
+	       BedrockPlugin bp = BedrockPlugin.getPlugin();
+	       IvyXmlWriter xw = bp.beginMessage("PING");
+	       String resp = bp.finishMessageWait(xw);
+	       if (resp == null) exit_ok = true;
+	     }
 	    BedrockPlugin.logD("BEDROCK: PRECHECK " + exit_ok + " " + exit_ctr + " " + ctr);
 	  }
        }
@@ -366,6 +374,43 @@ private class WbWindowAdvisor extends WorkbenchWindowAdvisor {
 
 }	// end of inner class WbWindowAdvisor
 
+
+
+/********************************************************************************/
+/*										*/
+/*	Thread to check for termination 					*/
+/*										*/
+/********************************************************************************/
+
+private class EndChecker extends Thread {
+
+   EndChecker() {
+      super("Bedrock_Exit_Checker");
+      setDaemon(true);
+    }
+
+   @Override public void run() {
+      int ctr = 0;
+      for ( ; ; ) {
+	 try {
+	    sleep(60000);
+	  }
+	 catch (InterruptedException e) { }
+	 if (PlatformUI.isWorkbenchRunning()) {
+	    BedrockPlugin bp = BedrockPlugin.getPlugin();
+	    IvyXmlWriter xw = bp.beginMessage("PING");
+	    String resp = bp.finishMessageWait(xw);
+	    if (resp != null) ctr = 0;
+	    else if (++ctr >= 2) {
+	       xw = bp.beginMessage("STOP");
+	       bp.finishMessage(xw);
+	       bp.forceExit();
+	     }
+	  }
+       }
+    }
+
+}	// end of inner class EndChecker
 
 
 

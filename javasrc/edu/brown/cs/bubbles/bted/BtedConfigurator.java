@@ -43,18 +43,31 @@ class BtedConfigurator implements BudaConstants.BubbleConfigurator {
 
 @Override public BudaBubble createBubble(BudaBubbleArea bba,Element xml)
 {
-   Element cnt = IvyXml.getChild(xml, "CONTENT");
-   String typ = IvyXml.getAttrString(cnt, "TYPE");
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
 
    BudaBubble bb = null;
 
    if (typ.equals("EDITORBUBBLE")) {
-      String path = IvyXml.getAttrString(cnt, "PATH");
+      String path = IvyXml.getAttrString(cnt,"PATH");
       bb = new BtedBubble(path,false);
    }
 
    return bb;
 }
+
+@Override public boolean matchBubble(BudaBubble bb,Element xml) 
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   if (typ.equals("EDITORBUBBLE") && bb instanceof BtedBubble) {
+      String path = IvyXml.getAttrString(cnt,"PATH");
+      String bpath = ((BtedBubble) bb).getFile().getPath();
+      if (path.equals(bpath)) return true;
+    }
+   return false;
+}
+
 
 
 

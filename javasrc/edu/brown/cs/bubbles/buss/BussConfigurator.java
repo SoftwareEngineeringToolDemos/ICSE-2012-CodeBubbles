@@ -64,6 +64,8 @@ class BussConfigurator implements BussConstants, BudaConstants.BubbleConfigurato
 }
 
 
+@Override public boolean matchBubble(BudaBubble bb,Element xml)         { return false; }
+
 
 /********************************************************************************/
 /*										*/

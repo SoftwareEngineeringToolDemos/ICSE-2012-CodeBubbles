@@ -44,23 +44,36 @@ class BgtaConfigurator implements BubbleConfigurator {
 
 @Override public BudaBubble createBubble(BudaBubbleArea bba,Element xml)
 {
-   Element cnt = IvyXml.getChild(xml, "CONTENT");
-   String typ = IvyXml.getAttrString(cnt, "TYPE");
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
 
    BudaBubble bb = null;
    if (typ == null) return bb;
 
    if (typ.equals("CHAT")) {
-      String friend = IvyXml.getAttrString(cnt, "NAME");
-      String username = IvyXml.getAttrString(cnt, "USERNAME");
-      String password = IvyXml.getAttrString(cnt, "PASSWORD");
-      String server = IvyXml.getAttrString(cnt, "SERVER");
+      String friend = IvyXml.getAttrString(cnt,"NAME");
+      String username = IvyXml.getAttrString(cnt,"USERNAME");
+      String password = IvyXml.getAttrString(cnt,"PASSWORD");
+      String server = IvyXml.getAttrString(cnt,"SERVER");
       BgtaFactory bf = BgtaFactory.getFactory();
       bb = bf.createChatBubble(friend, username, password, server);
     }
    return bb;
 }
 
+
+@Override public boolean matchBubble(BudaBubble bb,Element xml)
+{
+   Element cnt = IvyXml.getChild(xml,"CONTENT");
+   String typ = IvyXml.getAttrString(cnt,"TYPE");
+   if (typ.equals("CHAT") && bb instanceof BgtaBubble) {
+      String frnd = IvyXml.getAttrString(cnt,"NAME");
+      BgtaBubble gb = (BgtaBubble) bb;
+      if (gb.getUsername().equals(frnd)) return true;
+    }
+   return false;
+}
+   
 
 
 @Override public void loadXml(BudaBubbleArea bba,Element root)		{ }

@@ -243,8 +243,10 @@ private static class TransferBubble implements Transferable, BudaConstants.BudaD
       int i = 0;
       for (BussEntry ent : tree_entries) {
 	 BudaBubble bb = ent.getBubble();
-	 bb.setFixed(false);
-	 rslt[i++] = bb;
+	 if (bb != null) {
+	    bb.setFixed(false);
+	    rslt[i++] = bb;
+	 }
        }
       return rslt;
     }

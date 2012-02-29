@@ -1,6 +1,6 @@
 /********************************************************************************/
 /*										*/
-/*		BvcrMonitor .java						*/
+/*		BvcrMonitor.java						*/
 /*										*/
 /*	description of class							*/
 /*										*/
@@ -46,7 +46,7 @@ class BvcrMonitor implements BvcrConstants, MintConstants
 private BvcrMain	bvcr_control;
 private MintControl mint_control;
 private boolean is_done;
-
+private int	delay_count;
 
 
 /********************************************************************************/
@@ -60,6 +60,7 @@ BvcrMonitor(BvcrMain bm,String mint)
    bvcr_control = bm;
    mint_control = MintControl.create(mint,MintSyncMode.ONLY_REPLIES);
    is_done = false;
+   delay_count = 0;
 }
 
 
@@ -77,7 +78,7 @@ void server()
    mint_control.register("<BVCR DO='_VAR_0' />",new CommandHandler());
 
    synchronized (this) {
-      while (!is_done) {
+      while (!is_done || delay_count > 0) {
 	 checkEclipse();
 	 try {
 	    wait(300000l);
@@ -106,6 +107,24 @@ private void checkEclipse()
    if (r == null) is_done = true;
 }
 
+
+
+synchronized boolean startDelay()
+{
+   if (is_done) return false;
+
+   delay_count += 1;
+
+   return true;
+}
+
+
+synchronized void endDelay()
+{
+   if (delay_count <= 0) return;
+   delay_count -= 1;
+   if (delay_count == 0) notifyAll();
+}
 
 
 

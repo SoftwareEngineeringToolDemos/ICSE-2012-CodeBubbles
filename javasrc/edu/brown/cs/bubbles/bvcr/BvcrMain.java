@@ -175,7 +175,7 @@ private void process()
    the_monitor.loadProjects();
 
    for (BvcrProject bp : project_map.values()) {
-      BvcrVersionManager bvm = BvcrVersionManager.createVersionManager(bp);
+      BvcrVersionManager bvm = BvcrVersionManager.createVersionManager(bp,the_monitor);
       if (bvm != null) {
 	 manager_map.put(bp.getName(),bvm);
        }
@@ -404,6 +404,7 @@ void findHistory(String proj,File file,IvyXmlWriter xw)
    BvcrVersionManager bvm = manager_map.get(proj);
    bvm.findHistory(file,xw);
 }
+
 
 
 

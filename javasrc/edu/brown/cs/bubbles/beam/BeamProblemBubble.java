@@ -302,25 +302,6 @@ private String getToolTip(BumpProblem bp)
 /*										*/
 /********************************************************************************/
 
-//private void showBubble(File f,int line)
-//{
-//   BaleFactory bf = BaleFactory.getFactory();
-//   BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,f);
-//   if (bfo == null) return;
-//   int loff = bfo.findLineOffset(line);
-//   int eoff = bfo.mapOffsetToEclipse(loff);
-//
-//   BassFactory bsf = BassFactory.getFactory();
-//   BassName bn = bsf.findBubbleName(f,eoff);
-//   if (bn == null) return;
-//
-//   BudaBubble bb = bn.createBubble();
-//   if (bb == null) return;
-//   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-//   bba.addBubble(bb,this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-//}
-
-
 private class BubbleShower implements Runnable {
 
    private File for_file;

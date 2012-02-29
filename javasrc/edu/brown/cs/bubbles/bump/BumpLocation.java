@@ -87,6 +87,7 @@ static {
    symbol_map.put("Package",BumpSymbolType.PACKAGE);
    symbol_map.put("Project",BumpSymbolType.PROJECT);
    symbol_map.put("Local",BumpSymbolType.LOCAL);
+   symbol_map.put("Variable",BumpSymbolType.FIELD);
 }
 
 
@@ -268,11 +269,12 @@ public String getParameters()
 {
    switch (symbol_type) {
       default :
-         break;
+	 break;
       case CONSTRUCTOR :
       case FUNCTION :
 	 String knm = symbol_key;
 	 int idx = knm.indexOf("(");
+	 if (idx < 0) return null;	
 	 int idx1 = knm.lastIndexOf(")");
 	 String args = knm.substring(idx,idx1+1);
 	 return IvyFormat.formatTypeName(args);

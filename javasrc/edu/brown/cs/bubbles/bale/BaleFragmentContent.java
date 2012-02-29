@@ -208,6 +208,7 @@ int getDocumentOffset(int off,boolean edit)
 
    for (BaleRegion br : fragment_regions) {
       int blen = getRegionLength(br);
+      if (blen < 0) blen = 0;
       if (loff < blen) {
 	 int doff = mapViewOffsetToRegion(br,loff,edit) + br.getStart();
 	 return doff;
@@ -308,10 +309,19 @@ BaleSimpleRegion getFragmentRegion(int doff,int len)
 private Position createBasePosition(int foff) throws BadLocationException
 {
    int doff = getDocumentOffset(foff);
-   if (doff < 0) {
+   if (doff < 0 && foff > 0) {
       getDocumentOffset(foff);
       BoardLog.logX("BALE","Position outside fragment: " + foff + " " + length());
       throw new BadLocationException("Position outside fragment",foff);
+    }
+   else if (doff < 0 && foff == 0) {
+      StringBuffer buf = new StringBuffer();
+      for (BaleRegion br : fragment_regions) {
+	 buf.append(br.getStartPosition() + " " + br.getEndPosition() + " " + br.includesEol() + " " +
+		       getRegionLength(br) + " ");
+       }
+      BoardLog.logX("BALE","Bad document contents: " + foff + " " + length() + " " +
+		       fragment_regions.size() + " " + buf.toString());
     }
 
    return base_document.createPosition(doff);

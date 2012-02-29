@@ -45,7 +45,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
-import java.net.URI;
 
 
 /**
@@ -64,7 +63,7 @@ public class BeamFactory implements BeamConstants, BudaConstants.ButtonListener
 /********************************************************************************/
 
 private static BeamFactory	the_factory = null;
-
+private static BeamHelpPanel	help_panel = null;
 
 
 /********************************************************************************/
@@ -142,6 +141,9 @@ public static void initialize(BudaRoot br)
    BeamFeedbackReport bfr = new BeamFeedbackReport(br);
    bfr.addPanel();
 
+   help_panel = new BeamHelpPanel(br);
+   help_panel.addPanel();
+
    BaleFactory.getFactory().addContextListener(new NoteHandler());
 
    switch (BoardSetup.getSetup().getRunMode()) {
@@ -184,7 +186,6 @@ private static Icon imageToFlagIcon(String path)
 {
    BudaRoot br = BudaRoot.findBudaRoot(bba);
    BudaBubble bb = null;
-   BoardProperties bp = BoardProperties.getProperties("Beam");
 
    if (id.equals(NOTE_BUTTON)) {
       bb = new BeamNoteBubble();
@@ -238,44 +239,16 @@ private static Icon imageToFlagIcon(String path)
       bb = new BeamProblemBubble(null,true);
     }
    else if (id.equals(HELP_VIDEO_BUTTON)) {
-      try {
-	 String unm = bp.getProperty(HELP_VIDEO_KEY,HELP_VIDEO_URL);
-	 URI u = new URI(unm);
-	 Desktop.getDesktop().browse(u);
-       }
-      catch (Throwable t) {
-	 BoardLog.logE("BEAM","Problem showing help video",t);
-       }
+      help_panel.showHelpVideo();
     }
    else if (id.equals(HELP_HOME_BUTTON)) {
-      try {
-	 String unm = bp.getProperty(HELP_HOME_KEY,HELP_HOME_URL);
-	 URI u = new URI(unm);
-	 Desktop.getDesktop().browse(u);
-       }
-      catch (Throwable t) {
-	 BoardLog.logE("BEAM","Problem showing home page",t);
-       }
+      help_panel.showHelpHome();
     }
    else if (id.equals(HELP_WIKI_BUTTON)) {
-      try {
-	 String unm = bp.getProperty(HELP_WIKI_KEY,HELP_WIKI_URL);
-	 URI u = new URI(unm);
-	 Desktop.getDesktop().browse(u);
-       }
-      catch (Throwable t) {
-	 BoardLog.logE("BEAM","Problem showing wiki page",t);
-       }
+      help_panel.showHelpWiki();
     }
    else if (id.equals(HELP_TUTORIAL_BUTTON)) {
-      try {
-	 String unm = bp.getProperty(HELP_TUTORIAL_KEY,HELP_TUTORIAL_URL);
-	 URI u = new URI(unm);
-	 Desktop.getDesktop().browse(u);
-       }
-      catch (Throwable t) {
-	 BoardLog.logE("BEAM","Problem showing wiki page",t);
-       }
+      help_panel.showHelpTutorial();
     }
    else if (id.equals(HELP_KEY_BUTTON)) {
       bb = new BeamKeyBubble();

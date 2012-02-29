@@ -249,6 +249,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu SPACE",autocomplete_action),
 
       new KeyItem("F3",goto_implementation_action),
+      new KeyItem("menu F3",goto_type_action),
       new KeyItem("menu shift F3",goto_definition_action),
       new KeyItem("shift F3",goto_doc_action),
       new KeyItem("F4",goto_reference_action),
@@ -2133,45 +2134,8 @@ private static class GotoSearchAction extends TextAction {
 							   bd.mapOffsetToEclipse(eoff));
       if (locs == null || locs.size() == 0) return;
 
-      BumpLocation bloc = null;
-      for (BumpLocation bl : locs) {
-	 bloc = bl;
-	 break;
-       }
+      handleSearchAction(e,locs);
 
-      if (bloc == null) return;
-
-      String nm = bloc.getSymbolName();
-      int idx = nm.lastIndexOf(".");
-
-      switch (bloc.getSymbolType()) {
-	 case ENUM_CONSTANT :
-	 case FIELD :
-	 case FUNCTION :
-	 case CONSTRUCTOR :
-	    nm = nm.substring(0,idx);
-	    break;
-	 default :
-	    return;
-	 case CLASS :
-	 case INTERFACE :
-	 case ENUM :
-	 case THROWABLE :
-	    int idx2 = nm.indexOf("<");
-	    if (idx2 >= 0) nm = nm.substring(0,idx2);
-	    break;
-	 case PACKAGE :
-	    break;
-       }
-
-      BudaRoot br = BudaRoot.findBudaRoot(target);
-      Rectangle r = BudaRoot.findBudaLocation(target);
-      Rectangle r2 = br.getCurrentViewport();
-      int searchsize = 200;
-      Point pt = new Point(r.x+r.width+BUBBLE_CREATION_SPACE,r.y);
-      if (pt.x + searchsize > r2.x + r2.width) pt.x = r.x - BUBBLE_CREATION_SPACE - searchsize;
-
-      br.createMergedSearchBubble(pt,bd.getProjectName(),nm);
       BoardMetrics.noteCommand("BALE","GoToSearch");
     }
 
@@ -2213,7 +2177,7 @@ private static class GotoTypeAction extends TextAction {
 	  }
 
 	 if (doClassSearchAction(locs)) {
-	    goto_search_action.actionPerformed(e);
+	    handleSearchAction(e,locs);
 	    return;
 	  }
 
@@ -2298,6 +2262,9 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
    if (locs.size() > 1) return true;
 
    int len = baseloc.getDefinitionEndOffset() - baseloc.getDefinitionOffset();
+   if (baseloc.getDefinitionOffset() < 0) return true;
+   File f = baseloc.getFile();
+   if (!f.exists()) return true;
 
    switch (bst) {
       case CLASS :
@@ -2317,6 +2284,56 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
    return true;
 }
 
+
+
+private static void handleSearchAction(ActionEvent e,Collection<BumpLocation> locs)
+{
+   BaleEditorPane target = getBaleEditor(e);
+   if (!checkReadEditor(target)) return;
+   BaleDocument bd = target.getBaleDocument();
+
+   if (locs == null || locs.size() == 0) return;
+
+   BumpLocation bloc = null;
+   for (BumpLocation bl : locs) {
+      bloc = bl;
+      break;
+    }
+
+   if (bloc == null) return;
+
+   String nm = bloc.getSymbolName();
+   int idx = nm.lastIndexOf(".");
+
+   switch (bloc.getSymbolType()) {
+      case ENUM_CONSTANT :
+      case FIELD :
+      case FUNCTION :
+      case CONSTRUCTOR :
+	 nm = nm.substring(0,idx);
+	 break;
+      default :
+	 return;
+      case CLASS :
+      case INTERFACE :
+      case ENUM :
+      case THROWABLE :
+	 int idx2 = nm.indexOf("<");
+	 if (idx2 >= 0) nm = nm.substring(0,idx2);
+	 break;
+      case PACKAGE :
+	 break;
+    }
+
+   BudaRoot br = BudaRoot.findBudaRoot(target);
+   Rectangle r = BudaRoot.findBudaLocation(target);
+   Rectangle r2 = br.getCurrentViewport();
+   int searchsize = 200;
+   Point pt = new Point(r.x+r.width+BUBBLE_CREATION_SPACE,r.y);
+   if (pt.x + searchsize > r2.x + r2.width) pt.x = r.x - BUBBLE_CREATION_SPACE - searchsize;
+
+   br.createMergedSearchBubble(pt,bd.getProjectName(),nm);
+}
 
 
 

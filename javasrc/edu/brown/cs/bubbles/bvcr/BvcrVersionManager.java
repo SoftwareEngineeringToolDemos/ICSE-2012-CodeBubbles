@@ -48,6 +48,7 @@ abstract class BvcrVersionManager implements BvcrConstants
 /********************************************************************************/
 
 protected BvcrProject	for_project;
+private BvcrMonitor for_monitor;
 protected String	repository_id;
 
 
@@ -58,7 +59,7 @@ protected String	repository_id;
 /*										*/
 /********************************************************************************/
 
-static BvcrVersionManager createVersionManager(BvcrProject bp)
+static BvcrVersionManager createVersionManager(BvcrProject bp,BvcrMonitor mon)
 {
    File f = new File(bp.getSourceDirectory());
    if (f == null || !f.exists() || !f.isDirectory()) return null;
@@ -71,6 +72,8 @@ static BvcrVersionManager createVersionManager(BvcrProject bp)
    if (bvm == null) bvm = BvcrVersionSVN.getRepository(bp,f);
    if (bvm == null) bvm = BvcrVersionCVS.getRepository(bp,f);
    // handle HG
+
+   if (bvm != null) bvm.for_monitor = mon;
 
    return bvm;
 }
@@ -147,6 +150,10 @@ protected interface CommandCallback {
 
 protected String runCommand(String cmd,CommandCallback cb)
 {
+   if (for_monitor != null) {
+      if (!for_monitor.startDelay()) return null;
+    }
+
    try {
       IvyExec ex = new IvyExec(cmd,getRootDirectory(),IvyExec.READ_OUTPUT);
       System.err.println("BVCR: Run " + ex.getCommand());
@@ -162,6 +169,9 @@ protected String runCommand(String cmd,CommandCallback cb)
     }
    catch (IOException e) {
       System.err.println("BVCR: Problem running command: " + cmd + ": " + e);
+    }
+   finally {
+      if (for_monitor != null) for_monitor.endDelay();
     }
 
    return null;

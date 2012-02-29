@@ -30,7 +30,7 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.ivy.exec.IvyExec;
 
 import javax.swing.JOptionPane;
-
+import java.util.*;
 import java.io.*;
 
 
@@ -70,7 +70,7 @@ BumpClientPython()
 {
    python_starting = false;
 
-   mint_control.register("<BEDROCK SOURCE='ECLIPSE' TYPE='_VAR_0' />",new IDEHandler());
+   mint_control.register("<PYBASE SOURCE='PYBASE' TYPE='_VAR_0' />",new IDEHandler());
 }
 
 
@@ -86,6 +86,7 @@ BumpClientPython()
  **/
 
 @Override public String getName()		{ return "Python"; }
+
 
 
 
@@ -123,12 +124,20 @@ private void ensureRunning()
 
    String cls = "edu.brown.cs.bubbles.pybase.PybaseMain";
 
-   String jargs = "'-Dedu.brown.cs.bubbles.MINT=" + mint_name + "'";
-   String args = "";
-   if (ws != null) args += " -ws '" + ws + "'";
+   List<String> argl = new ArrayList<String>();
+   argl.add("java");
+   argl.add("-Xmx1024m");
+   argl.add("-Dedu.brown.cs.bubbles.MINT=" + mint_name);
+   argl.add("-cp");
+   argl.add(System.getProperty("java.class.path"));
+   argl.add(cls);
+   if (ws != null) {
+      argl.add("-ws");
+      argl.add(ws);
+    }
 
    try {
-      IvyExec ex = IvyExec.ivyJava(cls,jargs,args);
+      IvyExec ex = new IvyExec(argl,null,IvyExec.ERROR_OUTPUT);
       boolean eok = false;
       for (int i = 0; i < 200; ++i) {
 	 synchronized (this) {

@@ -36,6 +36,7 @@ import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bdoc.BdocFactory;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.board.BoardConstants.RunMode;
+import edu.brown.cs.bubbles.board.BoardConstants.BoardLanguage;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bump.BumpClient;
 
@@ -109,6 +110,7 @@ private Element 	load_config;
 private String []	java_args;
 private RunMode 	run_mode;
 private String		course_name;
+private BoardLanguage   for_language;
 
 
 
@@ -134,6 +136,7 @@ private BemaMain(String [] args)
    use_lila = false;
    run_mode = RunMode.NORMAL;
    course_name = null;
+   for_language = null;
 
    scanArgs(args);
 }
@@ -170,6 +173,9 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-f")) {                   // -force
 	    force_setup = true;
 	  }
+         else if (args[i].startsWith("-py")) {                  // -python
+            for_language = BoardLanguage.PYTHON;
+          }
 	 else if (args[i].startsWith("-course") && i+1 < ln) {  // -course <course>
 	    course_name = args[++i];
 	  }
@@ -236,6 +242,8 @@ private void start()
    // first setup the environment
    BoardSetup bs = BoardSetup.getSetup();
 
+   if (for_language != null) bs.setLanguage(for_language);
+   
    if (skip_setup) bs.setSkipSetup();
    if (force_setup) bs.setForceSetup(true);
    if (force_metrics) bs.setForceMetrics(true);
@@ -246,6 +254,7 @@ private void start()
    if (run_mode != null) bs.setRunMode(run_mode);
    if (course_name != null) bs.setCourseName(course_name);
    bs.setJavaArgs(java_args);
+   
    bs.doSetup();
 
    bs.setSplashTask("Setting up Metrics and Logging");

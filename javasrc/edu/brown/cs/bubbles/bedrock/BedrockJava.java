@@ -259,8 +259,18 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
    FindFilter filter = null;
 
    IJavaElement cls = null;
+   char [] packagename = null;
+   char [] typename = null;
 
    try {
+      IJavaElement [] pelt;
+      if (ijp != null) pelt = new IJavaElement[] { ijp };
+      else pelt = getAllProjects();
+      working = getWorkingElements(pelt);
+      int fg = IJavaSearchScope.SOURCES | IJavaSearchScope.REFERENCED_PROJECTS;
+      if (system) fg |= IJavaSearchScope.SYSTEM_LIBRARIES | IJavaSearchScope.APPLICATION_LIBRARIES;
+      scp = SearchEngine.createJavaSearchScope(pelt,fg);
+
       IJavaElement [] elts = icu.codeSelect(start,end-start);
 
       if (typeof) {
@@ -271,7 +281,6 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 	    switch (elts[i].getElementType()) {
 	       case IJavaElement.FIELD :
 		  tnm = ((IField) elts[i]).getTypeSignature();
-		  typ = ((IField) elts[i]).getDeclaringType();
 		  break;
 	       case IJavaElement.LOCAL_VARIABLE :
 		  tnm = ((ILocalVariable) elts[i]).getTypeSignature();
@@ -283,27 +292,57 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 		  nelt.add(elts[i]);
 		  break;
 	      }
-	    if (tnm != null) {
-	       //TODO: this needs to be done better
+	    if (typ != null) nelt.add(typ);
+	    else if (tnm != null && ijp != null) {
 	       IJavaElement elt = ijp.findElement(tnm,null);
-	       if (elt == null && tnm.startsWith("Q") && tnm.endsWith(";")) {
-		  int ln = tnm.length();
-		  String xnm = tnm.substring(1,ln-1);
-		  elt = ijp.findElement(xnm,null);
-		}
-	       BedrockPlugin.logD("LOOKUP TYPE " + tnm + " " + elt + " " + typ);
 	       if (elt != null) {
 		  nelt.add(elt);
 		  typ = null;
 		}
+	       else {
+		  while (tnm.startsWith("[")) {
+                     String xtnm = tnm.substring(1);
+                     if (xtnm == null) break;
+                     tnm = xtnm;
+                   }
+		  int ln = tnm.length();
+                  String xtnm = tnm;
+		  if (tnm.startsWith("L") && tnm.endsWith(";")) {
+		     xtnm = tnm.substring(1,ln-1);
+		   }
+		  else if (tnm.startsWith("Q") && tnm.endsWith(";")) {
+                     xtnm = tnm.substring(1,ln-1);
+		   }
+                  if (xtnm != null) tnm = xtnm;
+		  int idx1 = tnm.lastIndexOf(".");
+		  if (idx1 > 0) {
+		     String pkgnm = tnm.substring(0,idx1);
+		     xtnm = tnm.substring(idx1+1);
+                     if (xtnm != null) tnm = xtnm;
+		     pkgnm = pkgnm.replace('$','.');
+		     packagename = pkgnm.toCharArray();
+		   }
+		  tnm = tnm.replace('$','.');
+		  typename = tnm.toCharArray();
+		}
+
+	       if (typename != null) {
+		  FindTypeHandler fth = new FindTypeHandler(ijp);
+		  SearchEngine se = new SearchEngine(working);
+		  se.searchAllTypeNames(packagename,SearchPattern.R_EXACT_MATCH,
+					   typename,SearchPattern.R_EXACT_MATCH,
+					   IJavaSearchConstants.TYPE,
+					   scp,fth,
+					   IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,null);
+		  nelt.addAll(fth.getFoundItems());
+		}
 	     }
-	    if (typ != null) nelt.add(typ);
 	  }
 	 IJavaElement [] nelts = new IJavaElement[nelt.size()];
 	 elts = nelt.toArray(nelts);
        }
 
-      if (elts.length == 1) {
+      if (elts.length == 1 && !typeof) {
 	 xw.begin("SEARCHFOR");
 	 switch (elts[0].getElementType()) {
 	    case IJavaElement.FIELD :
@@ -354,15 +393,6 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 	 else if (defs && !refs) filter = new ClassFilter(elts);
        }
 
-      IJavaElement [] pelt;
-      if (ijp != null) pelt = new IJavaElement[] { ijp };
-      else pelt = getAllProjects();
-      // pelt = getSearchElements(pelt);	-- not needed since source scope set via flags
-      working = getWorkingElements(pelt);
-
-      int fg = IJavaSearchScope.SOURCES | IJavaSearchScope.REFERENCED_PROJECTS;
-      if (system) fg |= IJavaSearchScope.SYSTEM_LIBRARIES | IJavaSearchScope.APPLICATION_LIBRARIES;
-      scp = SearchEngine.createJavaSearchScope(pelt,fg);
     }
    catch (JavaModelException e) {
       BedrockPlugin.logE("SEARCH PROBLEM: " + e);
@@ -478,6 +508,40 @@ private static class ClassFilter implements FindFilter {
 }
 
 
+
+private static class FindTypeHandler extends TypeNameRequestor {
+
+   private IJavaProject java_project;
+   private List<IJavaElement> found_items;
+
+   FindTypeHandler(IJavaProject ijp) {
+      java_project = ijp;
+      found_items = new ArrayList<IJavaElement>();
+    }
+
+   @Override public void acceptType(int mods,char [] pkg,char [] typ,char [][] encs,String path) {
+      String snm = "";
+      if (pkg != null) snm = new String(pkg) + ".";
+      for (int i = 0; i < encs.length; ++i) {
+	 String enm = new String(encs[i]);
+	 snm += enm + ".";
+       }
+      snm += new String(typ);
+      IJavaElement elt = null;
+      try {
+	 elt = java_project.findType(snm);
+       }
+      catch (JavaModelException ex) {
+	 BedrockPlugin.logE("Problem looking up type " + snm,ex);
+       }
+      BedrockPlugin.logD("ACCEPT TYPE " + snm + " " + elt + " " + path);
+      if (elt != null) found_items.add(elt);
+    }
+
+   List<IJavaElement> getFoundItems()		{ return found_items; }
+
+
+}	// end of inner class FindTypeHandler
 
 
 /********************************************************************************/
@@ -695,6 +759,7 @@ private static class FindHandler extends SearchRequestor {
     }
 
 }	// end of subclass FindHandler
+
 
 
 

@@ -311,6 +311,7 @@ static {
    context_names.put("Go to Documentation","GotoDocAction");
    context_names.put("Go to Implementation","GotoImplementationAction");
    context_names.put("Go to Search","GotoSearchAction");
+   context_names.put("Go to Type","GotoTypeAction");
    context_names.put("Remove Elision","RemoveElisionAction");
    context_names.put("Remove All Elisions", "RemoveElisionAction");
    context_names.put("Open Eclipse Editor","OpenEclipseEditorAction");
@@ -345,6 +346,7 @@ void handleContextMenu(MouseEvent evt)
    addButton(menu,"Find All References",idok,hdlr);
    addButton(menu,"Go to Documentation",idok,hdlr);
    addButton(menu,"Go to Search",idok,hdlr);
+   addButton(menu,"Go to Type",idok,hdlr);
    addButton(menu,"Remove Elision",elok,hdlr);
    addButton(menu,"Remove All Elisions",true,hdlr);
    // TODO: only allow rename of user identifiers

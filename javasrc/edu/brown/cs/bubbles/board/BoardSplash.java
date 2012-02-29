@@ -99,6 +99,8 @@ void start()
 
 void setCurrentTask(String id)
 {
+   if (current_task == null) return;
+   
    current_task.setText(id);
 }
 

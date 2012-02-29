@@ -40,11 +40,11 @@ package edu.brown.cs.bubbles.bnote;
 import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.file.*;
+import edu.brown.cs.ivy.exec.*;
 
 import java.sql.*;
 import java.util.*;
-import java.io.File;
-
+import java.io.*;
 
 
 class BnoteConnect implements BnoteConstants
@@ -146,6 +146,10 @@ private boolean setupAccess()
    catch (Throwable t) {
       BoardLog.logD("BNOTE","Can't load " + database_type + " database driver",t);
       return false;
+    }
+
+   if (database_type.equals("derby")) {
+      setupDerbyServer();
     }
 
    return true;
@@ -277,6 +281,103 @@ private void setupDatabase() throws SQLException
    s.close();
 }
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle derby server setup						*/
+/*										*/
+/********************************************************************************/
+
+private void setupDerbyServer()
+{
+   BoardSetup bs = BoardSetup.getSetup();
+   String dlib1 = bs.getLibraryPath("derby.jar");
+   String dlib2 = bs.getLibraryPath("derbynet.jar");
+   String dlib3 = bs.getLibraryPath("derbyclient.jar");
+   String cp = dlib1 + File.pathSeparator + dlib2 + File.pathSeparator + dlib3;
+
+   File pbase = BoardSetup.getPropertyBase();
+
+   File flock = new File(pbase,"derby.lock");
+   try {
+      for (int i = 0; i < 100; ++i) {
+	 try {
+	    if (flock.createNewFile()) {
+	       break;
+	     }
+	  }
+	 catch (IOException e) { }
+	 try {
+	    Thread.sleep(100);
+	  }
+	 catch (InterruptedException e) { }
+       }
+      flock.deleteOnExit();	// if it was already there, take it over
+
+      String host = database_host;
+      if (host == null) {
+	 File f2 = new File(pbase,".derby");
+	 if (f2.exists()) {
+	    try {
+	       BufferedReader br = new BufferedReader(new FileReader(f2));
+	       host = br.readLine();
+	       br.close();
+	     }
+	    catch (IOException e) {
+	       host = null;
+	     }
+	  }
+       }
+      if (host != null) {
+	 try {
+	    String cmd = "java -cp " + cp + " org.apache.derby.drda.NetworkServerControl ping -h " + host;
+	    IvyExec exec = new IvyExec(cmd);
+	    int sts = exec.waitFor();
+	    if (sts == 0) {
+	       database_host = host;
+	       return;			// things are working
+	     }
+	  }
+	 catch (IOException e) {
+	    host = null;
+	  }
+       }
+
+      host = IvyExecQuery.getHostName();
+      try {
+	 String cmd = "sh -c 'java -cp " + cp + " org.apache.derby.drda.NetworkServerControl start -h " +
+	    host + " -noSecurityManager &'";
+	 new IvyExec(cmd,IvyExec.IGNORE_OUTPUT);
+	 String cmdp = "java -cp " + cp + " org.apache.derby.drda.NetworkServerControl ping -h " + host;
+	 int sts = 1;
+	 for (int i = 0; i < 100; ++i) {
+	    IvyExec execp = new IvyExec(cmdp);
+	    sts = execp.waitFor();
+	    if (sts == 0) break;
+	    try {
+	       Thread.sleep(100);
+	    }
+	    catch (InterruptedException e) { }
+	 }
+     
+	 if (sts == 0) {
+	    File f2 = new File(pbase,".derby");
+	    FileWriter fw = new FileWriter(f2);
+	    PrintWriter pw = new PrintWriter(fw);
+	    pw.println(host);
+	    fw.close();
+	    database_host = host;
+	  }
+       }
+      catch (IOException e) {
+       }
+    }
+   finally {
+      flock.delete();
+    }
+}
 
 
 

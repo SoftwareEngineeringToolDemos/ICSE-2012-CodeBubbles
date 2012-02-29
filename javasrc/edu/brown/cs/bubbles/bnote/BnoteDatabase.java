@@ -171,7 +171,13 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
        }
     }
    catch (SQLException e) {
-      BoardLog.logE("BNOTE","Problem saving notebook entry",e);
+      note_conn = null;
+      BnoteConnect bcn = new BnoteConnect();
+      note_conn = bcn.getLogDatabase();
+      if (note_conn == null) {
+	 BoardLog.logE("BNOTE","Problem saving notebook entry " + eid + " " + proj + " " + type + " " + unm + " " + values.size(),e);
+      }
+      else addEntry(proj,task,type,values);
     }
 
    return task;
@@ -594,6 +600,7 @@ private long getNextId()
 	    use_begin = true;
 	  }
 	 catch (SQLException e) {
+	    BoardLog.logD("BNOTE","Attempt to do BEGIN/COMMIT failed: " + e);
 	    use_begin = false;
 	  }
        }

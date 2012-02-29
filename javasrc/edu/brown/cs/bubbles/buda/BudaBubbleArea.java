@@ -304,7 +304,7 @@ void removeCurrentBubble(MouseEvent e)
       return;
     }
    if (bb == null) return;
-   
+
    if (cnst != null && !(cnst instanceof BudaConstraint)) {
       throw new IllegalArgumentException("BudaConstraint expected");
     }
@@ -392,7 +392,7 @@ void removeCurrentBubble(MouseEvent e)
       BoardLog.logE("BUDA","Problem with window creation " + idx + " " + loc + " " + bb.isFixed(),e);
     }
 
-   BoardMetrics.noteCommand("BUDA","addBubble_" + bb.getClass().getName() + "_" + bb.getHashId());
+   BoardMetrics.noteCommand("BUDA","addBubble_" + bb.getClass().getName() + "_" + bb.getHashId() + "_" + bb.getId());
 
    bb.addComponentListener(bubble_manager);
 }
@@ -815,9 +815,9 @@ void checkAreaDimensions()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle collapsing links                                                 */
-/*                                                                              */
+/*										*/
+/*	Handle collapsing links 						*/
+/*										*/
 /********************************************************************************/
 
 void collapseLinks(Collection<BudaBubbleLink> lnks0)
@@ -825,7 +825,7 @@ void collapseLinks(Collection<BudaBubbleLink> lnks0)
    List<BudaBubbleLink> lnks = new ArrayList<BudaBubbleLink>(lnks0);
    Collections.sort(lnks,new LinkComparator());
    Map<BudaBubble,Rectangle> done = new HashMap<BudaBubble,Rectangle>();
-   
+
    for (BudaBubbleLink lnk : lnks) {
       BudaBubble sb = lnk.getSource();
       BudaBubble tb = lnk.getTarget();
@@ -845,7 +845,7 @@ void collapseLinks(Collection<BudaBubbleLink> lnks0)
 
 
 private static class LinkComparator implements Comparator<BudaBubbleLink> {
-   
+
    @Override public int compare(BudaBubbleLink l1,BudaBubbleLink l2) {
       BudaBubble b1 = l1.getSource();
       BudaBubble b2 = l2.getSource();
@@ -865,8 +865,8 @@ private static class LinkComparator implements Comparator<BudaBubbleLink> {
       if (r1.y > r2.y) return 1;
       return 0;
     }
-   
-}       // end of inner class LinkComparator
+
+}	// end of inner class LinkComparator
 
 
 

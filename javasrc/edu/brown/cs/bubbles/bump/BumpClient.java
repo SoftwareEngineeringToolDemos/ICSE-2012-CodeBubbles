@@ -111,6 +111,9 @@ public synchronized static BumpClient getBump()
 	 case JAVA :
 	    default_client = new BumpClientJava();
 	    break;
+         case PYTHON :
+            default_client = new BumpClientPython();
+            break;
        }
       loadProperties();
     }
@@ -2406,6 +2409,7 @@ protected void sendMessage(String cmd,String proj,String flds,String cnts,MintRe
    xml += " BID='" + source_id + "'";
    if (proj != null && proj.length() > 0) xml += " PROJECT='" + proj + "'";
    if (flds != null) xml += " " + flds;
+   xml += " LANG='" + getName() + "'";
    xml += ">";
    if (cnts != null) xml += cnts;
    xml += "</BUBBLES>";
@@ -2843,12 +2847,12 @@ protected static class NameCollector {
 
    synchronized Collection<BumpLocation> getNames() {
       while (!is_done) {
-	 try {
-	    wait();
-	  }
-	 catch (InterruptedException e) { }
+         try {
+            wait();
+          }
+         catch (InterruptedException e) { }
        }
-
+   
       return result_names;
     }
 

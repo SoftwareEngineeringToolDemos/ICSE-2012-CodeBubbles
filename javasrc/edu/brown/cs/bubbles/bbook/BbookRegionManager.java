@@ -171,6 +171,7 @@ private class FileHandler implements BumpChangeHandler {
 
    @Override public void handleFileAdded(String proj,String file)	{ }
    @Override public void handleFileRemoved(String proj,String file)	{ }
+   @Override public void handleFileStarted(String proj,String file)     { }
 
    @Override public void handleFileChanged(String proj,String file) {
       noteFileChanged(new File(file));

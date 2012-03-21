@@ -129,7 +129,7 @@ private class FeedbackReportListener implements ActionListener {
 
 private BqstPanel makeReportFeedbackForm()
 {
-   BqstPanel form = BqstFactory.createBqstPanel(for_root,  "Code Bubbles User Feedback");
+   BqstPanel form = BqstFactory.createBqstPanel(for_root,"Code Bubbles User Feedback");
    Icon[] icons = new Icon[]{BoardImage.getIcon("face_smile.png"),BoardImage.getIcon("face_sad.png")};
    Icon[] selectedicons = new Icon[]{BoardImage.getIcon("face_smile_pressed.png"),BoardImage.getIcon("face_sad_pressed.png")};
    form.addMultiChoices("How do you feel about Code Bubble?", null, new String[]{"Good", "Bad"}, icons, selectedicons, false, true);

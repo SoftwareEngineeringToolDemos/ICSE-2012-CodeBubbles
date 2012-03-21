@@ -97,7 +97,7 @@ interface BassTreeNode {
 
    BassName getBassName();
    String getLocalName();
-
+  
 }	// end of inner interface BassTreeNode
 
 
@@ -111,6 +111,7 @@ interface BassTreeBase extends BassTreeNode {
    int getLeafCount();
    Icon getExpandIcon();
    Icon getCollapseIcon();
+   String getFullName();
 
 }	// end of inner interface BassTreeBse
 

@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 
 
 
@@ -301,25 +302,25 @@ private class PlayAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent evt) {
       switch (launch_state) {
-	 case READY :
-	 case TERMINATED :
-	    BoardMetrics.noteCommand("BDDT","StartDebug");
-	    cur_process = null;
-	    setLaunchState(LaunchState.STARTING);
-	    bubble_manager.restart();
-	    BoardThreadPool.start(new StartDebug());
-	    break;
-	 case STARTING :
-	 case RUNNING :
-	    break;
-	 case PAUSED :
-	 case PARTIAL_PAUSE :
-	    if (cur_process != null) {
-	       BoardMetrics.noteCommand("BDDT","ResumeDebug");
-	       waitForFreeze();
-	       bump_client.resume(cur_process);
-	     }
-	    break;
+         case READY :
+         case TERMINATED :
+            BoardMetrics.noteCommand("BDDT","StartDebug");
+            cur_process = null;
+            setLaunchState(LaunchState.STARTING);
+            bubble_manager.restart();
+            BoardThreadPool.start(new StartDebug());
+            break;
+         case STARTING :
+         case RUNNING :
+            break;
+         case PAUSED :
+         case PARTIAL_PAUSE :
+            if (cur_process != null) {
+               BoardMetrics.noteCommand("BDDT","ResumeDebug");
+               waitForFreeze();
+               bump_client.resume(cur_process);
+             }
+            break;
        }
     }
 
@@ -579,6 +580,30 @@ private class StartDebug implements Runnable {
       BudaRoot br = BudaRoot.findBudaRoot(BddtLaunchControl.this);
       if (br == null) return;
       br.handleSaveAllRequest();
+      
+      List<BumpProblem> bps = bump_client.getAllProblems();
+      int ct = 0;
+      if (bps != null) {
+         for (BumpProblem bp : bps) {
+            switch (bp.getErrorType()) {
+               case FATAL :
+                  ct = -1;
+                  break;
+               case ERROR :
+                  ct = 1;
+                  break;
+             }
+          }
+       }
+      if (ct > 0) {
+         int sts = JOptionPane.showConfirmDialog(BddtLaunchControl.this,
+               "Start debugging with compiler errors?",
+               "Error Check for Run",JOptionPane.YES_NO_OPTION,
+               JOptionPane.QUESTION_MESSAGE);
+         if (sts == JOptionPane.YES_OPTION) ct = 0;
+       }
+      if (ct != 0) return;
+      
       String id = "B_" + Integer.toString(((int)(Math.random() * 100000)));
       BumpProcess bp = bump_client.startDebug(launch_config,id);
       cur_process = bp;
@@ -1023,7 +1048,7 @@ private class ExecutionAnnot implements BaleAnnotation {
 
    @Override public int getPriority()				{ return 20; }
 
-   @Override public void addPopupButtons(JPopupMenu m)		{ }
+   @Override public void addPopupButtons(Component c,JPopupMenu m) { }
 
 }	// end of inner class ExecutionAnnot
 
@@ -1081,7 +1106,7 @@ private class FrameAnnot implements BaleAnnotation {
 
    @Override public int getPriority()				{ return 20; }
 
-   @Override public void addPopupButtons(JPopupMenu m)		{ }
+   @Override public void addPopupButtons(Component c,JPopupMenu m) { }
 
 }	// end of inner class FrameAnnot
 

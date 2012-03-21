@@ -265,7 +265,7 @@ int addedWidthIfGrown()
 /*										*/
 /********************************************************************************/
 
-private void handleRequest(){
+void handleRequest(){
    BudaRoot root = BudaRoot.findBudaRoot(_parent);
    Rectangle loc = BudaRoot.findBudaLocation(_parent);
    if (!my_search_up) {

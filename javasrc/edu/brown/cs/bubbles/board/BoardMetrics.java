@@ -480,7 +480,7 @@ private class MetricsDialog extends JDialog implements ActionListener, CaretList
       comment += "the system and might be used for research purposes.\n";
       comment += "<p>All information collected is anonymous and can not be used to identify ";
       comment += "you or your project.  It also does not contain any information about the ";
-      comment += "code you are working on.";
+      comment += "code you are working on or even the file names.";
       comment += "<p>To reset these options, you can either remove the file ";
       comment += "<i>~/.bubbles/Metrics.props</i> ";
       comment += "or start bubbles with the <i>-collect</i> option";
@@ -499,8 +499,9 @@ private class MetricsDialog extends JDialog implements ActionListener, CaretList
       optns_checkbox = pnl.addBoolean("Collect Options file updates",collect_options,null);
       wrkst_checkbox = pnl.addBoolean("Collect Working Sets",collect_workingset,null);
       eclps_checkbox = pnl.addBoolean("Collect Eclipse usage data",collect_eclipse,null);
-      dumps_checkbox = pnl.addBoolean("Send Automatic bug reports",collect_dumps,null);
       mnlog_checkbox = pnl.addBoolean("Collect Eclipse interactions log",collect_monitorlog,null);
+      pnl.addSeparator();
+      dumps_checkbox = pnl.addBoolean("Send Automatic bug reports",collect_dumps,null);
 
       pnl.addSeparator();
       // pnl.addSectionLabel("<html>Name is required if you are participating in the user study<br></font></html>");

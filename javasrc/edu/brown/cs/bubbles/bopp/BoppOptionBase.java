@@ -108,6 +108,7 @@ protected String	package_name;
 protected List<String>	option_tabs;
 private String		option_keywords;
 private BoppOptionSet	option_set;
+private boolean		doing_add;
 
 
 
@@ -122,6 +123,7 @@ BoppOptionBase(String pkgname,Element ox)
 {
    package_name = pkgname;
    option_set = null;
+   doing_add = false;
 
    option_name = IvyXml.getAttrString(ox,"NAME");
    option_description = IvyXml.getAttrString(ox,"DESCRIPTION");
@@ -159,6 +161,9 @@ protected BoardProperties getProperties()
    return BoardProperties.getProperties(package_name);
 }
 
+void doingAdd(boolean fg)			{ doing_add = fg; }
+
+
 
 
 /********************************************************************************/
@@ -169,10 +174,15 @@ protected BoardProperties getProperties()
 
 void noteChange()
 {
+   if (doing_add) return;
+   
+   option_set.noteChange(package_name,option_name);
 }
 
 void noteChange(String ... props)
 {
+   if (doing_add) return;
+   
    for (String prop : props) {
       if (prop == null) continue;
       option_set.noteChange(package_name,prop);
@@ -187,7 +197,7 @@ void finishChanges()
 }
 
 
-
+void reset()						{ }
 
 
 /********************************************************************************/
@@ -222,14 +232,17 @@ void finishChanges()
 
 private static class OptionBoolean extends BoppOptionBase implements ActionListener {
 
+   private JCheckBox check_box;
+
    OptionBoolean(String pkgname,Element ox) {
       super(pkgname,ox);
+      check_box = null;
     }
 
    @Override public OptionType getOptionType()		{ return OptionType.BOOLEAN; }
 
    @Override public void addButton(SwingGridPanel pnl) {
-      pnl.addBoolean(option_description,getValue(),this);
+      check_box = pnl.addBoolean(option_description,getValue(),this);
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -249,6 +262,10 @@ private static class OptionBoolean extends BoppOptionBase implements ActionListe
       bp.setProperty(option_name,v);
     }
 
+   void reset() {
+      if (check_box != null) check_box.setSelected(getValue());
+    }
+      
 }	// end of inner class OptionBoolean
 
 
@@ -264,6 +281,8 @@ private static class OptionColor extends BoppOptionBase implements ActionListene
 
    private String from_name;
    private String to_name;
+   SwingColorButton color_button;
+   SwingColorRangeChooser range_button;
 
    OptionColor(String pkgname,Element ox) {
       super(pkgname,ox);
@@ -276,29 +295,31 @@ private static class OptionColor extends BoppOptionBase implements ActionListene
 	 from_name = IvyXml.getAttrString(px,"FROM");
 	 to_name = IvyXml.getAttrString(px,"TO");
        }
+      color_button = null;
+      range_button = null;
     }
 
    @Override public OptionType getOptionType()		{ return OptionType.COLOR; }
 
    @Override public void addButton(SwingGridPanel pnl) {
       if (to_name == null) {
-	 pnl.addColorField(option_description,getFromValue(),true,this);
+	 color_button = pnl.addColorField(option_description,getFromValue(),true,this);
        }
       else {
-	 pnl.addColorRangeField(option_description,getFromValue(),getToValue(),this);
+	 range_button = pnl.addColorRangeField(option_description,getFromValue(),getToValue(),this);
        }
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
       noteChange(from_name,to_name);
       if (to_name == null) {
-	 SwingColorButton scb = (SwingColorButton) evt.getSource();
-	 setFromValue(scb.getColor());
+	 color_button = (SwingColorButton) evt.getSource();
+	 setFromValue(color_button.getColor());
        }
       else {
-	 SwingColorRangeChooser scr = (SwingColorRangeChooser) evt.getSource();
-	 setFromValue(scr.getFirstColor());
-	 setToValue(scr.getSecondColor());
+	 range_button = (SwingColorRangeChooser) evt.getSource();
+	 setFromValue(range_button.getFirstColor());
+	 setToValue(range_button.getSecondColor());
        }
       finishChanges();
     }
@@ -319,6 +340,14 @@ private static class OptionColor extends BoppOptionBase implements ActionListene
       getProperties().setProperty(to_name,c);
     }
 
+   void reset() {
+      if (color_button != null) {
+	 color_button.setColor(getFromValue());
+      }
+      else if (range_button != null) {
+	 range_button.setColors(getFromValue(),getToValue());
+      }
+   }
 }	// end of inner class OptionColor
 
 
@@ -333,11 +362,13 @@ private static class OptionChoice extends BoppOptionBase implements ActionListen
 
    private Map<String,String> choice_map;
    private Map<String,String> lookup_map;
+   private JComboBox combo_box;
 
    OptionChoice(String pkgname,Element ox) {
       super(pkgname,ox);
       choice_map = new LinkedHashMap<String,String>();
       lookup_map = new HashMap<String,String>();
+      combo_box = null;
       for (Element ce : IvyXml.children(ox,"COMBO")) {
 	 String k = IvyXml.getAttrString(ce,"TEXT");
 	 String v = IvyXml.getAttrString(ce,"VALUE");
@@ -351,7 +382,7 @@ private static class OptionChoice extends BoppOptionBase implements ActionListen
    @Override public OptionType getOptionType()		{ return OptionType.COMBO; }
 
    @Override public void addButton(SwingGridPanel pnl) {
-      pnl.addChoice(option_description,choice_map.keySet(),getValue(),this);
+      combo_box = pnl.addChoice(option_description,choice_map.keySet(),getValue(),this);
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -371,6 +402,12 @@ private static class OptionChoice extends BoppOptionBase implements ActionListen
       v = choice_map.get(v);
       getProperties().setProperty(option_name,v);
     }
+   
+   void reset() {
+      if (combo_box != null) {
+	 combo_box.setSelectedItem(getValue());
+      }
+   }
 
 }	// end of inner class OptionChoice
 
@@ -387,9 +424,13 @@ private static class OptionDimension extends BoppOptionBase implements ActionLis
 
    private String width_prop;
    private String height_prop;
-
+   private SwingNumericField num_field;
+   private SwingDimensionChooser dim_field;
+   
    OptionDimension(String pkgname,Element ox) {
       super(pkgname,ox);
+      num_field = null;
+      dim_field = null;
       Element px = IvyXml.getChild(ox,"PROPERTIES");
       if (px == null) {
 	 width_prop = option_name;
@@ -405,10 +446,10 @@ private static class OptionDimension extends BoppOptionBase implements ActionLis
 
    @Override public void addButton(SwingGridPanel pnl) {
       if (height_prop == null) {
-	 pnl.addNumericField(option_description,10,1024,getWidthValue(),this);
+	 num_field = pnl.addNumericField(option_description,10,1024,getWidthValue(),this);
        }
       else {
-	 pnl.addDimensionField(option_description,getWidthValue(),getHeightValue(),this);
+	 dim_field = pnl.addDimensionField(option_description,getWidthValue(),getHeightValue(),this);
        }
     }
 
@@ -446,6 +487,17 @@ private static class OptionDimension extends BoppOptionBase implements ActionLis
       if (v == 0) getProperties().remove(height_prop);
       else getProperties().setProperty(height_prop,v);
     }
+   
+   @Override void reset() {
+      if (num_field != null) {
+         if (height_prop != null) num_field.setValue(getHeightValue());
+         else if (width_prop != null) num_field.setValue(getWidthValue());
+       }
+      else if (dim_field != null) {
+         dim_field.setValue(getWidthValue(),getHeightValue());
+       }
+    }
+         
 }	// end of inner class OptionDimension
 
 
@@ -487,9 +539,11 @@ private static class OptionFont extends BoppOptionBase implements ActionListener
    private String size_prop;
    private String style_prop;
    private String color_prop;
+   private SwingFontChooser font_chooser;
 
    OptionFont(String pkgname,Element ox) {
       super(pkgname,ox);
+      font_chooser = null;
       Element fx = IvyXml.getChild(ox,"PROPERTIES");
       if (fx == null) {
 	 font_prop = option_name;
@@ -514,7 +568,7 @@ private static class OptionFont extends BoppOptionBase implements ActionListener
 	 if (style_prop == null) sts |= SwingFontChooser.FONT_FIXED_STYLE;
 	 if (color_prop == null) sts |= SwingFontChooser.FONT_FIXED_COLOR;
        }
-      pnl.addFontField(option_description,getFontValue(),getColorValue(),sts,this);
+      font_chooser = pnl.addFontField(option_description,getFontValue(),getColorValue(),sts,this);
     }
 
    @Override public void actionPerformed(ActionEvent e) {
@@ -560,6 +614,9 @@ private static class OptionFont extends BoppOptionBase implements ActionListener
 	 getProperties().setProperty(color_prop,c);
     }
 
+   public void reset() {
+      if (font_chooser != null) font_chooser.setFont(getFontValue(),getColorValue());
+    }
 }	// end of inner class OptionFont
 
 
@@ -576,9 +633,13 @@ private static class OptionInteger extends BoppOptionBase implements ChangeListe
    private int min_value;
    private int max_value;
    private boolean range_ok;
+   private SwingRangeSlider range_btn;
+   private SwingNumericField number_btn;
 
    OptionInteger(String pkgname,Element ox) {
       super(pkgname,ox);
+      range_btn = null;
+      number_btn = null;
       min_value = IvyXml.getAttrInt(ox,"MIN",0);
       max_value = IvyXml.getAttrInt(ox,"MAX",0);
       if (min_value >= max_value) range_ok = false;
@@ -593,10 +654,10 @@ private static class OptionInteger extends BoppOptionBase implements ChangeListe
       if (range_ok) {
 	 int dec = (max_value - min_value)/100;
 	 if (dec < 0) dec = 1;
-	 pnl.addRange(option_description,min_value,max_value,dec,getValue(),this);
+	 range_btn = pnl.addRange(option_description,min_value,max_value,dec,getValue(),this);
        }
       else {
-	 pnl.addNumericField(option_description,min_value,max_value,getValue(),this);
+	 number_btn = pnl.addNumericField(option_description,min_value,max_value,getValue(),this);
        }
     }
 
@@ -620,6 +681,12 @@ private static class OptionInteger extends BoppOptionBase implements ChangeListe
    private void setValue(int v) {
       getProperties().setProperty(option_name,v);
     }
+
+   public void reset() {
+      if (range_btn != null) range_btn.setValue(getValue());
+      else if (number_btn != null) number_btn.setValue(getValue());
+    }
+   
 }	// end of inner class OptionInteger
 
 
@@ -632,14 +699,17 @@ private static class OptionInteger extends BoppOptionBase implements ChangeListe
 
 private static class OptionString extends BoppOptionBase implements ActionListener {
 
+   private JTextField text_field;
+   
    OptionString(String pkgname,Element ox) {
       super(pkgname,ox);
+      text_field = null;
     }
 
    @Override public OptionType getOptionType()		{ return OptionType.STRING; }
 
    @Override public void addButton(SwingGridPanel pnl) {
-      pnl.addTextField(option_description,getValue(),12,this,null);
+      text_field = pnl.addTextField(option_description,getValue(),12,this,null);
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -657,6 +727,10 @@ private static class OptionString extends BoppOptionBase implements ActionListen
       getProperties().setProperty(option_name,v);
     }
 
+   @Override public void reset() {
+      text_field.setText(getValue());
+    }
+      
 }	// end of inner class OptionString
 
 

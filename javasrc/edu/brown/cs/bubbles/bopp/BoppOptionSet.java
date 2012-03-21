@@ -58,6 +58,7 @@ private Map<String,List<BoppOptionNew>> tab_map;
 private List<BoppOptionBase> all_options;
 private Map<String,String> changed_options;
 private BudaRoot  buda_root;
+private boolean doing_add;
 
 
 
@@ -73,6 +74,7 @@ BoppOptionSet(BudaRoot br)
    all_options = new ArrayList<BoppOptionBase>();
    changed_options = new LinkedHashMap<String,String>();
    buda_root = br;
+   doing_add = true;
 
    Element xml = IvyXml.loadXmlFromStream(BoardProperties.getLibraryFile(PREFERENCES_XML_FILENAME_NEW));
    for (Element op : IvyXml.children(xml,"PACKAGE")) {
@@ -102,6 +104,10 @@ List<BoppOptionNew> getOptionsForTab(String tab)
 }
 
 
+void doingAdd(boolean fg) 
+{
+   doing_add = fg;
+}
 
 
 /********************************************************************************/
@@ -176,12 +182,18 @@ void revertOptions()
       else bp.setProperty(prop,val);
     }
    changed_options.clear();
+   
+   for (BoppOptionBase opt : all_options) {
+      opt.reset();
+    }
 }
 
 
 
 void noteChange(String pkg,String prop)
 {
+   if (doing_add) return;
+   
    String key = pkg + "@" + prop;
 
    if (changed_options.containsKey(key)) return;
@@ -196,7 +208,7 @@ void noteChange(String pkg,String prop)
 
 void finishChanges()
 {
-   if (buda_root != null) {
+   if (buda_root != null && !doing_add) {
       buda_root.handlePropertyChange();
       buda_root.repaint();
     }

@@ -129,13 +129,6 @@ private void addFixes(int id,String [] args,IvyXmlWriter xw)
 	 // TODO: determine return type
 	 xw.end("FIX");
 	 break;
-      case IProblem.UndefinedName :
-      case IProblem.UndefinedType :
-	 xw.begin("FIX");
-	 xw.field("TYPE","TRY_IMPORT");
-	 xw.field("CLASS",args[0]);
-	 xw.end("FIX");
-	 break;
       default :
 	 break;
     }
@@ -168,7 +161,9 @@ private String [] getArguments(IMarkerDelta imd)
    int narg = 0;
    try { narg = Integer.parseInt(v.substring(0,idx)); }
    catch (NumberFormatException e) { return null; }
-   String [] rslt = v.substring(idx+1).split("#");
+   String [] rslt;
+   if (narg == 0) rslt = new String [0];
+   else rslt = v.substring(idx+1).split("#");
    if (rslt.length != narg) {
       BedrockPlugin.logE("Problem parsing arguments " + narg + " " + rslt.length + " " + v);
    }
@@ -184,7 +179,9 @@ private String [] getArguments(IMarker im)
    int narg = 0;
    try { narg = Integer.parseInt(v.substring(0,idx)); }
    catch (NumberFormatException e) { return null; }
-   String [] rslt = v.substring(idx+1).split("#");
+   String [] rslt;
+   if (narg == 0) rslt = new String [0];
+   else rslt = v.substring(idx+1).split("#");
    if (rslt.length != narg) {
       BedrockPlugin.logE("Problem parsing arguments " + narg + " " + rslt.length + " " + v);
    }

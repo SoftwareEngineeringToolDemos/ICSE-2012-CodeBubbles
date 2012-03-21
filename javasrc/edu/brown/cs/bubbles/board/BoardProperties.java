@@ -446,7 +446,12 @@ public Font getFont(String prop,Font dflt)
    String s = getProperty(prop);
    if (s == null) return dflt;
    String[] split = s.split("/");
-   return BoardFont.getFont(split[0],Integer.parseInt(split[1]),Integer.parseInt(split[2]));
+   String fam = split[0];
+   int md = dflt.getStyle();
+   if (split.length >= 2) md = Integer.parseInt(split[1]);
+   int sz = dflt.getSize();
+   if (split.length >= 3) sz = Integer.parseInt(split[2]);
+   return BoardFont.getFont(fam,md,sz);
 }
 
 

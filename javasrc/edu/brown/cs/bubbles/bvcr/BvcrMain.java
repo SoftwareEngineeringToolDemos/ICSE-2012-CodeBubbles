@@ -373,8 +373,12 @@ private void processUpdates()
 	 s = s.substring(idx+1);
        }
       File f = new File(s);
+      xw.begin("FILE");
+      xw.field("NAME",s);
+      if (proj != null) xw.field("PROJECT",proj);
       findChanges(proj,f,xw);
       findHistory(proj,f,xw);
+      xw.end("FILE");
     }
 
 

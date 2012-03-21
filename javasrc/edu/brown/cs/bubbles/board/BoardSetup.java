@@ -703,8 +703,8 @@ private File getLibraryDirectory()
 
 public void setLanguage(BoardLanguage bl)
 {
-   if (bl == null) return; 
-  
+   if (bl == null) return;
+
    board_language = bl;
 
    String pb = System.getProperty("edu.brown.cs.bubbles.BASE");
@@ -718,7 +718,7 @@ public void setLanguage(BoardLanguage bl)
 	    break;
        }
     }
-   
+
    system_properties = BoardProperties.getProperties("System");
    auto_update = system_properties.getBoolean(BOARD_PROP_AUTO_UPDATE,auto_update);
    eclipse_directory = system_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
@@ -923,12 +923,12 @@ public boolean doSetup()
    boolean needsetup = force_setup;
    switch (board_language) {
       case JAVA :
-         needsetup |= !checkEclipse();
-         needsetup |= !checkPlugin();
-         needsetup |= !checkInstall() && !install_jar;
-         break;
+	 needsetup |= !checkEclipse();
+	 needsetup |= !checkPlugin();
+	 needsetup |= !checkInstall() && !install_jar;
+	 break;
       case PYTHON :
-         break;
+	 break;
     }
    needsetup |= !checkWorkspace();
 
@@ -964,15 +964,15 @@ public boolean doSetup()
 
    switch (board_language) {
       case JAVA :
-         boolean needupdate = force_setup | update_setup;
-         needupdate |= !checkDates();
-         if (needupdate) {
-            setSplashTask("Updating Eclipse plugin");
-            updatePlugin();
-          }
-         break;
+	 boolean needupdate = force_setup | update_setup;
+	 needupdate |= !checkDates();
+	 if (needupdate) {
+	    setSplashTask("Updating Eclipse plugin");
+	    updatePlugin();
+	  }
+	 break;
       case PYTHON :
-         break;
+	 break;
     }
 
    setSplashTask("Checking messaging configuration");
@@ -1387,7 +1387,7 @@ private void checkJarLibraries()
     }
 
    for (String s : BOARD_LIBRARY_EXTRAS) {
-      extractLibraryResource(s,libd,true);
+      extractLibraryResource(s,libd,auto_update);
     }
 }
 
@@ -1405,10 +1405,11 @@ private boolean extractLibraryResource(String s,File libd,boolean force)
       if (!fd.exists()) fd.mkdirs();
     }
 
+   File f1 = new File(libd,xs);
+   if (!force && f1.exists()) return false;
+   upd = true;
+
    try {
-      File f1 = new File(libd,xs);
-      if (!force && f1.exists()) return false;
-      upd = true;
       InputStream ins = BoardSetup.class.getClassLoader().getResourceAsStream(s);
       if (ins != null) {
 	 FileOutputStream ots = new FileOutputStream(f1);
@@ -1416,9 +1417,12 @@ private boolean extractLibraryResource(String s,File libd,boolean force)
        }
     }
    catch (IOException e) {
-      BoardLog.logE("BOARD","Problem setting up jar lib resource " + s + ": " + e,e);
-      reportError("Problem setting up jar lib resource " + s + ": " + e);
-      System.exit(1);
+      if (f1.exists()) upd = false;			// use old version if necessary
+      else {
+	 BoardLog.logE("BOARD","Problem setting up jar lib resource " + s + ": " + e,e);
+	 reportError("Problem setting up jar lib resource " + s + ": " + e);
+	 System.exit(1);
+       }
     }
 
    return upd;
@@ -1715,11 +1719,11 @@ private void restartBubbles()
 	 args.add(idx++,course_name);
        }
       switch (board_language) {
-         case PYTHON :
-            args.add(idx++,"-python");
-            break;
-         case JAVA :
-            break;
+	 case PYTHON :
+	    args.add(idx++,"-python");
+	    break;
+	 case JAVA :
+	    break;
        }
 
       ProcessBuilder pb = new ProcessBuilder(args);
@@ -1814,20 +1818,20 @@ private class SetupDialog implements ActionListener, CaretListener {
       pnl.addBannerLabel("Bubbles Environment Setup");
 
       pnl.addSeparator();
-      
+
       switch (board_language) {
-         case JAVA :
-            pnl.addFileField("Eclipse Installation Directory",eclipse_directory,
-                  JFileChooser.DIRECTORIES_ONLY,
-                  new EclipseDirectoryFilter(),this,this,null);
-            
-            eclipse_warning = new JLabel("Warning!");  //edited by amc6
-            eclipse_warning.setToolTipText("Not a valid Eclipse installation directory");
-            eclipse_warning.setForeground(WARNING_COLOR);
-            pnl.add(eclipse_warning);
-            break;
-         case PYTHON :
-            break;
+	 case JAVA :
+	    pnl.addFileField("Eclipse Installation Directory",eclipse_directory,
+		  JFileChooser.DIRECTORIES_ONLY,
+		  new EclipseDirectoryFilter(),this,this,null);
+	
+	    eclipse_warning = new JLabel("Warning!");  //edited by amc6
+	    eclipse_warning.setToolTipText("Not a valid Eclipse installation directory");
+	    eclipse_warning.setForeground(WARNING_COLOR);
+	    pnl.add(eclipse_warning);
+	    break;
+	 case PYTHON :
+	    break;
        }
 
       bubbles_warning = new JLabel("Warning!");
@@ -1850,25 +1854,25 @@ private class SetupDialog implements ActionListener, CaretListener {
       else {
 	 auto_update = false;
        }
-      
+
       switch (board_language) {
-         case JAVA :
-            pnl.addBoolean("Run Eclipse in Foreground",run_foreground,this);
-            break;
-         case PYTHON :
-            break;
+	 case JAVA :
+	    pnl.addBoolean("Run Eclipse in Foreground",run_foreground,this);
+	    break;
+	 case PYTHON :
+	    break;
        }
 
       pnl.addSeparator();
-      
+
       switch (board_language) {
-         case JAVA :
-            install_button = pnl.addBottomButton("INSTALL BUBBLES","INSTALL",this);
-            break;
-         case PYTHON :
-            break;
+	 case JAVA :
+	    install_button = pnl.addBottomButton("INSTALL BUBBLES","INSTALL",this);
+	    break;
+	 case PYTHON :
+	    break;
        }
-      
+
       accept_button = pnl.addBottomButton("OK","OK",this);
       pnl.addBottomButton("CANCEL","CANCEL",this);
       pnl.addBottomButtons();
@@ -1885,30 +1889,30 @@ private class SetupDialog implements ActionListener, CaretListener {
       return result_status;
     }
 
-   private void checkStatus() {                                 //edited by amc6
+   private void checkStatus() { 				//edited by amc6
       switch (board_language) {
-         case JAVA :
-            if (checkEclipse() && checkPlugin() && (install_jar || checkInstall())) {
-               accept_button.setEnabled(true);
-             }
-            else {
-               accept_button.setEnabled(false);
-             }
-            if (checkEclipse() && !checkPlugin() && (install_jar || checkInstall())) {
-               install_button.setEnabled(true);
-             }
-            else {
-               install_button.setEnabled(false);
-             }
-            if (checkEclipse()) {
-               eclipse_warning.setVisible(false);
-             }
-            else {
-               eclipse_warning.setVisible(true);
-             }
-            break;
-         case PYTHON :
-            break;
+	 case JAVA :
+	    if (checkEclipse() && checkPlugin() && (install_jar || checkInstall())) {
+	       accept_button.setEnabled(true);
+	     }
+	    else {
+	       accept_button.setEnabled(false);
+	     }
+	    if (checkEclipse() && !checkPlugin() && (install_jar || checkInstall())) {
+	       install_button.setEnabled(true);
+	     }
+	    else {
+	       install_button.setEnabled(false);
+	     }
+	    if (checkEclipse()) {
+	       eclipse_warning.setVisible(false);
+	     }
+	    else {
+	       eclipse_warning.setVisible(true);
+	     }
+	    break;
+	 case PYTHON :
+	    break;
        }
 
       if (checkInstall()) {
@@ -2020,24 +2024,24 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
       pnl.addBannerLabel("Bubbles Workspace Setup");
 
       pnl.addSeparator();
-      
+
       JTextField textfield;
       workspace_warning = new JLabel("Warning");//added by amc6
-      
+
       switch (board_language) {
-         default:
-         case JAVA :
-            textfield = pnl.addFileField("Eclipse Workspace",default_workspace,
-                  JFileChooser.DIRECTORIES_ONLY,
-                  new WorkspaceDirectoryFilter(),this,null);
-            workspace_warning.setToolTipText("Not a vaid Eclipse Workspace");
-            break;
-         case PYTHON :
-            textfield = pnl.addFileField("Python Workspace",default_workspace,
-                  JFileChooser.DIRECTORIES_ONLY,
-                  new WorkspaceDirectoryFilter(),this,null);
-            workspace_warning.setToolTipText("Not a vaid PYthon Workspace");
-            break; 
+	 default:
+	 case JAVA :
+	    textfield = pnl.addFileField("Eclipse Workspace",default_workspace,
+		  JFileChooser.DIRECTORIES_ONLY,
+		  new WorkspaceDirectoryFilter(),this,null);
+	    workspace_warning.setToolTipText("Not a vaid Eclipse Workspace");
+	    break;
+	 case PYTHON :
+	    textfield = pnl.addFileField("Python Workspace",default_workspace,
+		  JFileChooser.DIRECTORIES_ONLY,
+		  new WorkspaceDirectoryFilter(),this,null);
+	    workspace_warning.setToolTipText("Not a vaid PYthon Workspace");
+	    break;
        }
       textfield.addKeyListener(this);
 
@@ -2071,43 +2075,43 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 
    private void checkStatus() {
       if (checkWorkspace()) {
-         accept_button.setEnabled(true);
-         workspace_warning.setVisible(false);
+	 accept_button.setEnabled(true);
+	 workspace_warning.setVisible(false);
        }
       else {
-         accept_button.setEnabled(false);
-         workspace_warning.setVisible(true);
+	 accept_button.setEnabled(false);
+	 workspace_warning.setVisible(true);
        }
     }
 
    public void actionPerformed(ActionEvent e) {
       String cmd = e.getActionCommand();
       if (cmd.equals("Eclipse Workspace") || cmd.equals("Python Workspace")) {
-         JTextField tf = (JTextField) e.getSource();
-         File ef = new File(tf.getText());
-         String np = ef.getPath();
-         if (!np.equals(default_workspace)) ws_changed = true;
-         default_workspace = np;
+	 JTextField tf = (JTextField) e.getSource();
+	 File ef = new File(tf.getText());
+	 String np = ef.getPath();
+	 if (!np.equals(default_workspace)) ws_changed = true;
+	 default_workspace = np;
        }
       else if (cmd.equals("Always Ask for Workspace")) {
-         JCheckBox cbx = (JCheckBox) e.getSource();
-         if (ask_workspace != cbx.isSelected()) ws_changed = true;
-         ask_workspace = cbx.isSelected();
+	 JCheckBox cbx = (JCheckBox) e.getSource();
+	 if (ask_workspace != cbx.isSelected()) ws_changed = true;
+	 ask_workspace = cbx.isSelected();
        }
       else if (cmd.equals("Create New Workspace")) {
-         JCheckBox cbx = (JCheckBox) e.getSource();
-         create_workspace = cbx.isSelected();
+	 JCheckBox cbx = (JCheckBox) e.getSource();
+	 create_workspace = cbx.isSelected();
        }
       else if (cmd.equals("OK")) {
-         result_status = true;
-         working_dialog.setVisible(false);
+	 result_status = true;
+	 working_dialog.setVisible(false);
        }
       else if (cmd.equals("CANCEL")) {
-         result_status = false;
-         working_dialog.setVisible(false);
+	 result_status = false;
+	 working_dialog.setVisible(false);
        }
       else {
-         BoardLog.logE("BOARD","Unknown WORKSPACE DIALOG command: " + cmd);
+	 BoardLog.logE("BOARD","Unknown WORKSPACE DIALOG command: " + cmd);
        }
       checkStatus();
     }
@@ -2115,8 +2119,8 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
    public void keyPressed(KeyEvent e) {
       BoardLog.logD("BOARD", "KeyEvent handled: " + KeyEvent.getKeyText(e.getKeyCode()));
       if (accept_button.isEnabled() && e.getKeyCode() == KeyEvent.VK_ENTER) {
-         result_status = true;
-         working_dialog.setVisible(false);
+	 result_status = true;
+	 working_dialog.setVisible(false);
        }
    }
 

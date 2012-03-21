@@ -215,7 +215,7 @@ void removeAll(BalePosition start,BalePosition end)
 	    Color c = an.getBackgroundColor();
 	    if (c != null) {
 	       g2.setColor(c);
-	       g2.fillRect(bnd.x,y0,bnd.width,y1-y1);
+	       g2.fillRect(bnd.x,y0,bnd.width,y1-y0);
 	       break;			// only allow one color for now
 	     }
 	  }
@@ -330,7 +330,7 @@ void handleContextMenu(MouseEvent evt)
 
    if (lan != null) {
       for (BaleAnnotation ba : lan) {
-	 ba.addPopupButtons(menu);
+	 ba.addPopupButtons(((Component) for_editor),menu);
        }
    }
 

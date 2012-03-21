@@ -237,7 +237,7 @@ private class PortAnnotation implements BaleAnnotation {
 
    @Override public int getPriority()				{ return 1; }
    
-   @Override public void addPopupButtons(JPopupMenu m)		{ }
+   @Override public void addPopupButtons(Component c,JPopupMenu m) { }
 
 }	// end of inner class PortAnnotation
 

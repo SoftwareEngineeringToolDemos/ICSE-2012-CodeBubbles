@@ -193,28 +193,34 @@ private class NameThread extends Thread {
 
       IvyXmlWriter xw = null;
 
-      for (Map.Entry<IJavaElement,Boolean> ent : separate_elements.entrySet()) {
-	 if (xw == null) {
-	    xw = our_plugin.beginMessage("NAMES",bump_id);
-	    xw.field("NID",name_id);
+      try {
+	 for (Map.Entry<IJavaElement,Boolean> ent : separate_elements.entrySet()) {
+	    if (xw == null) {
+	       xw = our_plugin.beginMessage("NAMES",bump_id);
+	       xw.field("NID",name_id);
+	     }
+	    boolean cfg = ent.getValue();
+	    BedrockUtil.outputJavaElement(ent.getKey(),file_set,cfg,xw);
+	    if (xw.getLength() <= 0 || xw.getLength() > 1000000) {
+	       our_plugin.finishMessageWait(xw,15000);
+	       // BedrockPlugin.logD("OUTPUT NAMES: " + xw.toString());
+	       xw = null;
+	     }
 	  }
-	 boolean cfg = ent.getValue();
-	 BedrockUtil.outputJavaElement(ent.getKey(),file_set,cfg,xw);
-	 if (xw.getLength() <= 0 || xw.getLength() > 1000000) {
-	    our_plugin.finishMessageWait(xw,15000);
-	    // BedrockPlugin.logD("OUTPUT NAMES: " + xw.toString());
-	    xw = null;
+
+	 if (xw != null) {
+	    our_plugin.finishMessageWait(xw);
 	  }
        }
-
-      if (xw != null) {
-	 our_plugin.finishMessageWait(xw);
+      catch (Throwable t) {
+	 BedrockPlugin.logE("Problem getting names",t);
        }
-
-      BedrockPlugin.logD("FINISH NAMES FOR " + name_id);
-      xw = our_plugin.beginMessage("ENDNAMES",bump_id);
-      xw.field("NID",name_id);
-      our_plugin.finishMessage(xw);
+      finally {
+	 BedrockPlugin.logD("FINISH NAMES FOR " + name_id);
+	 xw = our_plugin.beginMessage("ENDNAMES",bump_id);
+	 xw.field("NID",name_id);
+	 our_plugin.finishMessage(xw);
+       }
     }
 
 }	// end of inner class NameThread
@@ -301,24 +307,24 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 		}
 	       else {
 		  while (tnm.startsWith("[")) {
-                     String xtnm = tnm.substring(1);
-                     if (xtnm == null) break;
-                     tnm = xtnm;
-                   }
+		     String xtnm = tnm.substring(1);
+		     if (xtnm == null) break;
+		     tnm = xtnm;
+		   }
 		  int ln = tnm.length();
-                  String xtnm = tnm;
+		  String xtnm = tnm;
 		  if (tnm.startsWith("L") && tnm.endsWith(";")) {
 		     xtnm = tnm.substring(1,ln-1);
 		   }
 		  else if (tnm.startsWith("Q") && tnm.endsWith(";")) {
-                     xtnm = tnm.substring(1,ln-1);
+		     xtnm = tnm.substring(1,ln-1);
 		   }
-                  if (xtnm != null) tnm = xtnm;
+		  if (xtnm != null) tnm = xtnm;
 		  int idx1 = tnm.lastIndexOf(".");
 		  if (idx1 > 0) {
 		     String pkgnm = tnm.substring(0,idx1);
 		     xtnm = tnm.substring(idx1+1);
-                     if (xtnm != null) tnm = xtnm;
+		     if (xtnm != null) tnm = xtnm;
 		     pkgnm = pkgnm.replace('$','.');
 		     packagename = pkgnm.toCharArray();
 		   }

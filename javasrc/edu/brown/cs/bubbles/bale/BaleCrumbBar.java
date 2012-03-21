@@ -403,7 +403,13 @@ private class ResizeListener extends ComponentAdapter {
 
 void handleContextMenu(MouseEvent evt)
 {
-   //TODO: handle popup request
+   for (BaleCrumbBarComponent bcc : component_list) {
+      Rectangle r = bcc.getBounds();
+      int x = evt.getX();
+      if (x >= r.x && x < r.x + r.width) {
+	 bcc.handleRequest();
+      }
+   }
 }
 
 

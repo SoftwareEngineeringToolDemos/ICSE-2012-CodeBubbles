@@ -247,6 +247,8 @@ private static class PackageAction extends AbstractAction
    checkNames();
 }
 
+@Override public void handleFileStarted(String proj,String file)                { }
+
 
 
 private void checkNames()

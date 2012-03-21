@@ -22,26 +22,18 @@ if (($ext == "txt")||($ext=="png")||($ext=="xml")||($ext=="csv") || ($ext == "bu
   {
 if ($workingset=="0")
 {
-  if ($_FILES["file"]["error"] > 0)
-    {
-    }
-  else
-    {
+  if ($_FILES["file"]["error"] > 0) { }
+  else {
 		$user = $_POST["user"];
 
-
-		if (file_exists($uploadpath.$user))
-		{
-		}
+		if (file_exists($uploadpath.$user)) { }
 		else {
 			mkdir($uploadpath.$user);
 			chmod($uploadpath.$user,0744);
 		}
 		$runid = $_POST["runid"];
 
-
-		if (!file_exists($uploadpath.$user. "/" . $runid))
-		{
+		if (!file_exists($uploadpath.$user. "/" . $runid)) {
 			mkdir($uploadpath.$user. "/" . $runid);
 			chmod($uploadpath.$user. "/" . $runid,0744);
 		}
@@ -51,46 +43,35 @@ if ($workingset=="0")
 
 		$filename = $dirpath . "/" . $user . "_" . $filesindir . "_" . $_FILES["file"]["name"];
 
-		if (file_exists($filename))
-	{
-	}
-	else
-	{
-		move_uploaded_file($_FILES["file"]["tmp_name"],
-		$filename);
-			echo $filename;
-	}
-	}
+		if (file_exists($filename)) { }
+		else {
+		   move_uploaded_file($_FILES["file"]["tmp_name"], $filename);
+		   echo $filename;
+		 }
+   }
 
 }
-
-else
-{
+else {
 	$temppath = $uploadpath . "WorkingSets/";
-	if (!file_exists($temppath))
-	{
+	if (!file_exists($temppath)) {
 			mkdir($temppath);
 			chmod($temppath,0755);
 	}
 	$temppath = $temppath . mt_rand() . mt_rand();
-	if (!file_exists($temppath))
-	{
+	if (!file_exists($temppath)) {
 			mkdir($temppath);
 			chmod($temppath,0755);
 	}
 
 	$filename = $temppath . "/" . $_FILES["file"]["name"];
-		if (file_exists($filename))
-	{
-	}
-	else
-	{
-		move_uploaded_file($_FILES["file"]["tmp_name"],
-		$filename);
-			echo $filename;
+	if (file_exists($filename)) { }
+	else {
+		move_uploaded_file($_FILES["file"]["tmp_name"], $filename);
+		echo $filename;
 	}
   }
 
 }
+
 else echo "Extension not permitted";
 ?>

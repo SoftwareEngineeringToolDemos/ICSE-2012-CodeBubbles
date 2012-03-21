@@ -111,9 +111,9 @@ public synchronized static BumpClient getBump()
 	 case JAVA :
 	    default_client = new BumpClientJava();
 	    break;
-         case PYTHON :
-            default_client = new BumpClientPython();
-            break;
+	 case PYTHON :
+	    default_client = new BumpClientPython();
+	    break;
        }
       loadProperties();
     }
@@ -338,6 +338,10 @@ public Element startFile(String pname,File file,boolean getcnts,int id) throws B
     }
    if (!IvyXml.isElement(x,"RESULT")) {
       throw new BumpException("Unexpected return on start file: " + IvyXml.convertXmlToString(x));
+    }
+
+   for (BumpChangeHandler bch : change_handlers.keySet()) {
+      bch.handleFileStarted(pname,file.getPath());
     }
 
    return x;
@@ -621,6 +625,49 @@ private static class FileGetClientHandler implements MintHandler {
     }
 
 }	// end of inner class FileGetClientHandler
+
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Local file editing methods                                              */
+/*                                                                              */
+/********************************************************************************/
+
+public Element getElisionForFile(File f)
+{
+   IvyXmlWriter fxw = new IvyXmlWriter();
+   
+   if (!f.exists() || !f.canRead()) return null;
+   long ln0 = f.length();
+   if (ln0 >= Integer.MAX_VALUE) return null;
+   int ln = (int) ln0;
+   if (ln < 0 || ln > 256*1024) return null;
+   byte [] b = new byte[ln];
+   int ct = 0;
+   try {
+      FileInputStream ins = new FileInputStream(f);
+      while (ct < ln) {
+         int rln = ins.read(b,ct,ln-ct);
+         if (rln <= 0) {
+            ins.close();
+            return null;
+          }
+         ct += rln;
+       }
+      ins.close();
+    }
+   catch (IOException e) {
+      BoardLog.logE("BUMP","Problem reading local file " + f,e);
+    }
+   
+   fxw.bytesElement("FILE",b);
+   
+   waitForIDE();
+   
+   return getXmlReply("FILEELIDE",null,null,fxw.toString(),0);
+}
 
 
 
@@ -1725,6 +1772,27 @@ public boolean editBreakpoint(String id,String prop,String ... args)
     }
 
    return getStatusReply("EDITBREAKPOINT",null,q,null,0);
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Quick fix testing							*/
+/*										*/
+/********************************************************************************/
+
+public Element computeQuickFix(BumpProblem bp,int off,int len)
+{
+   String q = "FILE='" + bp.getFile().getPath() + "' OFFSET='" + off + "' LENGTH='" + len + "'";
+   BumpProblemImpl bpi = (BumpProblemImpl) bp;
+   int id = bpi.getMessageId();
+   int boff = bp.getStart();
+   String p = "<PROBLEM MSGID='" + id + "' START='" + boff + "' />";
+   Element r = getXmlReply("QUICKFIX",bp.getProject(),q,p,0);
+   if (r == null || !IvyXml.isElement(r,"RESULT")) return null;
+   
+   return r;
 }
 
 
@@ -2847,12 +2915,12 @@ protected static class NameCollector {
 
    synchronized Collection<BumpLocation> getNames() {
       while (!is_done) {
-         try {
-            wait();
-          }
-         catch (InterruptedException e) { }
+	 try {
+	    wait();
+	  }
+	 catch (InterruptedException e) { }
        }
-   
+
       return result_names;
     }
 

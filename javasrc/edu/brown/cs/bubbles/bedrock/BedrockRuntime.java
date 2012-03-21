@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.*;
 import org.eclipse.jdt.debug.eval.*;
 
+
 import java.io.IOException;
 import java.util.*;
 
@@ -95,7 +96,6 @@ void start()
    ILaunchManager lm = debug_plugin.getLaunchManager();
    lm.addLaunchConfigurationListener(this);
 }
-
 
 
 

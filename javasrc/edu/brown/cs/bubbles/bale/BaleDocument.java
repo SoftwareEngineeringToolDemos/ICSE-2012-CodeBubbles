@@ -175,7 +175,7 @@ public BaleElement getCharacterElement(int pos)
 
 BaleElement getActualCharacterElement(int pos)
 {
-   readLock();
+   // readLock();
    try {
       Element e = null;
       for (e = getDefaultRootElement(); e != null && !e.isLeaf(); ) {
@@ -184,7 +184,9 @@ BaleElement getActualCharacterElement(int pos)
        }
       return (BaleElement) e;
     }
-   finally { readUnlock(); }
+   finally { 
+      // readUnlock(); 
+      }
 }
 
 

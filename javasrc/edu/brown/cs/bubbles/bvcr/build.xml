@@ -62,7 +62,9 @@
       <java classname='edu.brown.cs.bubbles.bvcr.BvcrMain' fork='true'>
 	 <classpath refid='test.classpath' />
 	 <arg value="-U" />
-	 <arg value="bubbles@/pro/bubbles/javasrc/edu/brown/cs/bubbles/bedrock/BedrockEditor.java" />
+	 <arg value="bubbles@/pro/bubbles/javasrc/edu/brown/cs/bubbles/bass/BassConstants.java" />
+	 <arg value="-U" />
+	 <arg value="bubbles@/pro/bubbles/javasrc/edu/brown/cs/bubbles/bale/BaleAstNode.java" />
 	 <arg value="-m" />
 	 <arg value="BUBBLES_DEBUG_spr" />
       </java>

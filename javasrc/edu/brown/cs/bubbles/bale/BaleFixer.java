@@ -93,9 +93,9 @@ BaleFixer(BumpProblem bp,BumpFix bf)
       case NEW_METHOD :
 	 using_code = new NewMethodFixup(this,bf);
 	 break;
-      case TRY_IMPORT :
-	 using_code = new TryImportFixup(this,bf);
-	 break;
+      case EDIT_FIX :
+         using_code = new EditBasedFixup(this,bf);
+         break;
     }
 
    if (using_code != null) {
@@ -148,6 +148,11 @@ String getProject()			{ return for_problem.getProject(); }
 int getStartPosition()			{ return for_problem.getStart(); }
 int getEndPosition()			{ return for_problem.getEnd(); }
 File getFile()				{ return for_problem.getFile(); }
+
+@Override public String toString() 
+{
+   return using_code.getLabel();
+}
 
 
 
@@ -250,49 +255,33 @@ private static class NewMethodFixup implements Fixup {
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Fixups to add imports							*/
-/*										*/
-/********************************************************************************/
 
-private static class TryImportFixup implements Fixup {
 
+
+private static class EditBasedFixup implements Fixup {
+   
    private BaleFixer for_fix;
-   private String import_name;
-
-   TryImportFixup(BaleFixer fix,BumpFix bf) {
-      for_fix = fix;
-      import_name = null;
-      findImportName();
+   private BumpFix edit_fix;
+   
+   EditBasedFixup(BaleFixer fix,BumpFix bf) {
+      for_fix = fix; 
+      edit_fix = bf;
     }
-
+   
    @Override public String getLabel() {
-      if (import_name == null) return null;
-
-      return "Add import " + import_name;
+      return edit_fix.getParameter("DISPLAY");
     }
-
+   
    @Override public void perform(ActionEvent evt) {
-      File f = for_fix.getFile();
-      BaleDocumentIde doc = BaleFactory.getFactory().getDocument(for_fix.getProject(),f);
-      if (doc == null) return;
-      // TODO: add import
+      String proj = for_fix.getProject();
+      File file = for_fix.getFile();
+      BaleFileOverview bfo = BaleFactory.getFactory().getFileOverview(proj,file);
+      BaleDocumentIde bd = (BaleDocumentIde) bfo;
+      BaleApplyEdits app = new BaleApplyEdits(bd);
+      app.applyEdits(edit_fix.getEdits());
     }
-
-   private void findImportName() {
-      BumpClient bc = BumpClient.getBump();
-      int pos = (for_fix.getStartPosition() + for_fix.getEndPosition())/2;
-      List<BumpLocation> locs = bc.findDefinition(for_fix.getProject(),for_fix.getFile(),pos,pos);
-      if (locs.size() != 1) return;
-      BumpLocation loc = locs.get(0);
-      String nm = loc.getSymbolName();
-      import_name = nm;
-    }
-
+   
 }	// end of inner class TryImportFixup
-
-
 
 }	// end of class BaleFixer
 

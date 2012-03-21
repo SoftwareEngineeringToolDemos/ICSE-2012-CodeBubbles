@@ -574,7 +574,7 @@ private static class ErrorRenderer implements TableCellRenderer {
     }
 
    @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
-							       boolean foc,int r,int c) {
+        						       boolean foc,int r,int c) {
       JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
       cmp.setForeground(PROBLEM_ERROR_COLOR);
       cmp.setOpaque(false);

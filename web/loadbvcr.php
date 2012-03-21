@@ -31,6 +31,7 @@ if (!file_exists($uploadpath.$tdir.$repo)) {
 
 $dirpath = $uploadpath.$tdir.$repo;
 
+$files = array();
 $dh = opendir($dirpath);
 while (($filename = readdir($dh)) !== false) {
    $f = $dirpath . "/" . $filename;

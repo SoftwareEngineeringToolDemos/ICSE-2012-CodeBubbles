@@ -156,6 +156,14 @@ private static class Shutdown implements Runnable {
 
 
 
+static Display getDisplay()
+{
+   if (the_app == null) return null;
+
+   return the_app.base_display;
+}
+
+
 
 /********************************************************************************/
 /*										*/

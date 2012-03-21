@@ -388,6 +388,8 @@ Color BALE_FIND_HIGHLIGHT_COLOR = new Color(0,100,150,50);
  **/
 Color BALE_PORT_ANNOT_COLOR = new Color(0x20ff00ff,true);
 
+			
+
 
 /********************************************************************************/
 /*										*/
@@ -577,6 +579,8 @@ int BALE_THICK_CARET_WIDTH = 3; 		// width of thick text editing caret
  */
 String BALE_DOES_DOCUMENT_MOVEMENT = "Bale.caret.movement";
 
+
+				
 
 /********************************************************************************/
 /*										*/
@@ -1018,7 +1022,7 @@ interface BaleAnnotation {
 /**
  *	Add buttons to the context menu for this annotation
  **/
-   void addPopupButtons(JPopupMenu menu);
+   void addPopupButtons(Component base,JPopupMenu menu);
 
 }	// end of interface BaleAnnotation
 
@@ -1161,9 +1165,9 @@ String VISUALIZATION_GRADIENT_DIRECTION = "visualization.gradient.direction";
  * Colors of gradient background
 **/
 Color[] GRADIENT_BACKGROUND_COLOR = {
-   new Color(0xadabfc), new Color(0x8ed6d5), new Color(0xeba1ee),
+   new Color(0xadabfc), new Color(0x8ed6d5), /* new Color(0xeba1ee), */
    new Color(0x52f597), new Color(0xcdeea6), new Color(0xf1fa8d), new Color(0xfada8d),
-   new Color(0xb1b1b2), new Color(0xe392fd), new Color(0xaffe53), new Color(0xcdb0dd),
+   new Color(0xb1b1b2), /* new Color(0xe392fd), */ new Color(0xaffe53), new Color(0xcdb0dd),
    new Color(0x9bfeff), new Color(0xf8eabd)
 };
 

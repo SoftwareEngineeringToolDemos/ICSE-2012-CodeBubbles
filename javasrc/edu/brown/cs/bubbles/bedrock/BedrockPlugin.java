@@ -80,6 +80,7 @@ private BedrockEditor bedrock_editor;
 private BedrockCall bedrock_call;
 private BedrockProblem bedrock_problem;
 private BedrockEclipseMonitor bedrock_monitor;
+private BedrockQuickFix quick_fixer;
 private boolean shutdown_mint;
 private boolean doing_exit;
 private int	num_clients;
@@ -111,7 +112,13 @@ public BedrockPlugin()
    File f1 = new File(hm);
    File f2 = new File(f1,".bubbles");
    File f3 = new File(f2,".ivy");
-   if (!f3.exists() || !IvySetup.setup(f3)) IvySetup.setup();
+   File f4 = new File(f1,".ivy");
+
+   if (!f2.exists()) return;
+   if (!f3.exists() || !IvySetup.setup(f3)) {
+      if (!f4.exists()) return;
+      IvySetup.setup();
+    }
 
    IWorkspace ws = ResourcesPlugin.getWorkspace();
 
@@ -141,6 +148,7 @@ public BedrockPlugin()
       bedrock_editor = new BedrockEditor(this);
       bedrock_call = new BedrockCall(this);
       bedrock_problem = new BedrockProblem(this);
+      quick_fixer = new BedrockQuickFix(this);
       try {
 	 bedrock_monitor = new BedrockEclipseMonitor();
        }
@@ -670,6 +678,9 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				     IvyXml.getAttrBool(xml,"COMPUTE",true),
 				     getElements(xml,"REGION"),xw);
     }
+   else if (cmd.equals("FILEELIDE")) { 
+      bedrock_editor.fileElide(IvyXml.getBytesElement(xml,"FILE"),xw);
+    }
    else if (cmd.equals("RENAME")) {
       bedrock_editor.rename(proj,IvyXml.getAttrString(xml,"BID","*"),
 			       IvyXml.getAttrString(xml,"FILE"),
@@ -760,6 +771,15 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       String h1 = IvyXml.getAttrString(xml,"HOST");
       getProxyForHost(h1,xw);
     }
+   else if (cmd.equals("QUICKFIX")) {
+      quick_fixer.handleQuickFix(proj,IvyXml.getAttrString(xml,"BID","*"),
+				    IvyXml.getAttrString(xml,"FILE"),
+				    IvyXml.getAttrInt(xml,"OFFSET"),
+				    IvyXml.getAttrInt(xml,"LENGTH"),
+				    getElements(xml,"PROBLEM"),xw);
+    }
+
+
    else if (cmd.equals("ENTER")) {
       BedrockApplication.enterApplication();
       ++num_clients;

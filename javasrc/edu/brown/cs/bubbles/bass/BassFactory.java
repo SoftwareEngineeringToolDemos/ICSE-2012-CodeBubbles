@@ -67,6 +67,7 @@ public class BassFactory implements BudaRoot.SearchBoxCreator, BassConstants, Bu
 /********************************************************************************/
 
 private SwingEventListenerList<BassPopupHandler> popup_handlers;
+private SwingEventListenerList<BassFlagger> flag_checkers; 
 
 
 private static BassRepositoryLocation	bass_repository;
@@ -97,6 +98,7 @@ public static BassFactory getFactory()
 private BassFactory()
 {
    popup_handlers = new SwingEventListenerList<BassPopupHandler>(BassPopupHandler.class);
+   flag_checkers = new SwingEventListenerList<BassFlagger>(BassFlagger.class);
 }
 
 
@@ -362,6 +364,42 @@ public File findActualFile(File f)
 }
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Flag management routines                                                */
+/*                                                                              */
+/********************************************************************************/
+
+public void addFlagChecker(BassFlagger bf)
+{
+   flag_checkers.add(bf);
+}
+
+
+public void removeFlagChecker(BassFlagger bf)
+{
+   flag_checkers.remove(bf);
+}
+
+
+BassFlag getFlagForName(String name)
+{
+   BassFlag best = null;
+   
+   for (BassFlagger bf : flag_checkers) {
+      BassFlag xf = bf.getFlagForName(name);
+      if (xf != null) {
+         if (best == null || best.getPriority() < xf.getPriority()) {
+            best = xf;
+          }
+       }
+    }
+   
+   return best;
+}
+
+      
 
 /********************************************************************************/
 /*										*/

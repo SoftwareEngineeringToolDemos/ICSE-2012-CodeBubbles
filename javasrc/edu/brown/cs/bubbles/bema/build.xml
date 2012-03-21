@@ -166,6 +166,16 @@
       </java>
    </target>
 
+   <target name='testdecaf' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/decaf' />
+	 <arg value='-m' />
+	 <arg value='BUBBLES_DEBUG_spr1' />
+      </java>
+   </target>
+
    <target name='testjoin' depends='compile'>
       <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
 	 <classpath refid='test.classpath' />

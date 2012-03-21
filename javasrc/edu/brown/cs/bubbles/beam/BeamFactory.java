@@ -38,6 +38,12 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaPortPosition;
 import edu.brown.cs.bubbles.buda.BudaConstants.LinkPort;
+import edu.brown.cs.bubbles.bass.BassConstants.BassFlagger;
+import edu.brown.cs.bubbles.bass.BassConstants.BassFlag;
+import edu.brown.cs.bubbles.bass.*;
+import edu.brown.cs.bubbles.bump.BumpConstants.BumpProblemHandler;
+import edu.brown.cs.bubbles.bump.BumpConstants.BumpProblem;
+import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.ivy.mint.*;
 
 import javax.swing.*;
@@ -45,6 +51,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
+import java.util.*;
 
 
 /**
@@ -86,7 +93,10 @@ public static synchronized BeamFactory getFactory()
 
 
 
-private BeamFactory()				{ }
+private BeamFactory()
+{
+   new SearchProblemFlags();
+}
 
 
 
@@ -365,6 +375,109 @@ private static class NoteClient implements MintHandler {
     }
 
 }	// end of inner class NoteClient
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Error annotations in search box 					*/
+/*										*/
+/********************************************************************************/
+
+private static ProblemFlag error_flag = new ProblemFlag("error_overlay",20);
+private static ProblemFlag error1_flag = new ProblemFlag("error_overlay1",20);
+private static ProblemFlag warning_flag = new ProblemFlag("warning_overlay",10);
+private static ProblemFlag warning1_flag = new ProblemFlag("warning_overlay1",10);
+
+private static class SearchProblemFlags implements BassFlagger, BumpProblemHandler {
+
+   private Map<String,ProblemFlag> flag_map;
+
+   SearchProblemFlags() {
+      flag_map = null;
+      BumpClient.getBump().addProblemHandler(null,this);
+      BassFactory.getFactory().addFlagChecker(this);
+    }
+
+   @Override synchronized  public BassFlag getFlagForName(String nm) {
+      if (flag_map == null) computeFlagMap();
+      ProblemFlag pf = flag_map.get(nm);
+
+      return pf;
+    }
+
+   @Override public synchronized void handleProblemAdded(BumpProblem bp)     { flag_map = null; }
+   @Override public synchronized void handleProblemRemoved(BumpProblem bp)   { flag_map = null; }
+   @Override public synchronized void handleProblemsDone()		     { }
+
+   private void computeFlagMap() {
+      Map<String,ProblemFlag> mpf = new HashMap<String,ProblemFlag>();
+      flag_map = mpf;
+      for (BumpProblem bp : BumpClient.getBump().getAllProblems()) {
+	 addFlags(bp,mpf);
+       }
+    }
+
+   private void addFlags(BumpProblem bp,Map<String,ProblemFlag> mpf) {
+      ProblemFlag pf = null;
+      ProblemFlag pf1 = null;
+      switch (bp.getErrorType()) {
+	 case ERROR :
+	 case FATAL :
+	    pf = error_flag;
+	    pf1 = error1_flag;
+	    break;
+	 case WARNING :
+	    pf = warning_flag;
+	    pf1 = warning1_flag;
+	    break;
+	 default :
+	    return;
+       }
+      BassName bn = BassFactory.getFactory().findBubbleName(bp.getFile(),bp.getStart());
+      if (bn == null) return;
+      String nm = bn.getFullName();
+      addFlag(mpf,nm,pf1);
+      String pr = bn.getProject();
+      String pnm = bn.getNameHead();
+      if (pr == null || pnm == null) return;
+      pnm = pr + ":." + pnm;
+      while (pnm != null) {
+	addFlag(mpf,pnm,pf); 
+	int idx1 = pnm.lastIndexOf(".");
+	if (idx1 < 0) break;
+	pnm = pnm.substring(0,idx1);
+      }
+   }
+   
+   private void addFlag(Map<String,ProblemFlag> mpf,String s,ProblemFlag pf) {
+      if (s == null || pf == null) return;
+      ProblemFlag opf = mpf.get(s);
+      if (opf != null && opf.getPriority() >= pf.getPriority()) return;
+      mpf.put(s,pf);
+   }
+
+}	// end of inner class SearchProblemFlags
+
+
+
+private static class ProblemFlag implements BassFlag {
+
+   private Icon overlay_icon;
+   private int flag_priority;
+
+   ProblemFlag(String icn,int pri) {
+      overlay_icon = BoardImage.getIcon(icn);
+      flag_priority = pri;
+    }
+
+   @Override public Icon getOverlayIcon()		{ return overlay_icon; }
+   @Override public int getPriority()			{ return flag_priority; }
+
+}	// end of inner class ProblemFlag
+
+
+
 }	// end of class BeamFactory
 
 

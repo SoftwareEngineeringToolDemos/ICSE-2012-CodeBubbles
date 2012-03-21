@@ -359,21 +359,6 @@ void handleContextMenu(MouseEvent evt)
 
    addButton(menu,"Open Eclipse Editor",true,hdlr);
 
-   /***********************
-   // This should be handled by the ProblemHover class
-   List<BumpProblem> probs = bd.getProblemsAtLocation(loc);
-   if (probs != null) {
-      for (BumpProblem bp : probs) {
-	 if (bp.getFixes() != null) {
-	    for (BumpFix bf : bp.getFixes()) {
-	       BaleFixer fixer = new BaleFixer(bp,bf);
-	       if (fixer.isValid()) menu.add(fixer);
-	     }
-	  }
-       }
-    }
-   ************************/
-
    int ct = menu.getComponentCount();
    if (ct == 0) return;
 

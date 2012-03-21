@@ -190,7 +190,7 @@
 	 <KEYWORD TEXT="icon"/>
 	 <KEYWORD TEXT="enable"/>
       </OPT>
-      <OPT NAME="visualization.icon.indication" DESCRIPTION="You want icons indicate" TYPE="COMBO">
+      <OPT NAME="visualization.icon.indication" DESCRIPTION="Icons should indicate" TYPE="COMBO">
 	 <TAB NAME="Visualization Options"/>
 	 <COMBO TEXT="Class" VALUE="class"/>
 	 <COMBO TEXT="Package" VALUE="package"/>
@@ -238,7 +238,7 @@
 	 <KEYWORD TEXT="background"/>
 	 <KEYWORD TEXT="enable"/>
       </OPT>
-      <OPT NAME="visualization.gradient.indication" DESCRIPTION="You want different gradient backgrounds indicate" TYPE="COMBO">
+      <OPT NAME="visualization.gradient.indication" DESCRIPTION="Gradient backgrounds indicate" TYPE="COMBO">
 	 <TAB NAME="Visualization Options"/>
 	 <COMBO TEXT="Class" VALUE="class"/>
 	 <COMBO TEXT="Package" VALUE="package"/>
@@ -247,7 +247,7 @@
 	 <KEYWORD TEXT="gradient"/>
 	 <KEYWORD TEXT="indicate"/>
       </OPT>
-      <OPT NAME="visualization.gradient.direction" DESCRIPTION="The direction of gradient " TYPE="COMBO">
+      <OPT NAME="visualization.gradient.direction" DESCRIPTION="Gradient direction" TYPE="COMBO">
 	 <TAB NAME="Visualization Options"/>
 	 <COMBO TEXT="Horizontal" VALUE="horizontal"/>
 	 <COMBO TEXT="Vertical" VALUE="vertical"/>
@@ -284,12 +284,11 @@
 	 <KEYWORD TEXT="preview"/>
 	 <KEYWORD TEXT="hover"/>
       </OPT>
-      <OPT NAME="Bale.size" DESCRIPTION="Size of code font" TYPE="INTEGER" MIN="8" MAX="20" SLIDER="TRUE" NEGATIVEALLOWED="FALSE">
+      <OPT NAME="Bale.family" DESCRIPTION="Default font family for code" TYPE="FONT">
+	 <PROPERTIES FAMILY='Bale.family' SIZE='Bale.size' />
 	 <TAB NAME="Font Options"/>
-	 <KEYWORD TEXT="point"/>
-	 <KEYWORD TEXT="style"/>
-	 <EXAMPLE TEXT="Minimum size 8, maximum 20"/>
-	 <WARNING TEXT="Requires restart"/>
+	 <TAB NAME='Code Editor Options'/>
+	 <KEYWORD TEXT="Font" />
       </OPT>
    </PACKAGE>
 

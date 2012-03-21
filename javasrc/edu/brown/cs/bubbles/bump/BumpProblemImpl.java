@@ -61,6 +61,8 @@ private int	end_position;
 private BumpErrorType error_type;
 private int	edit_id;
 private List<BumpFix> problem_fixes;
+private boolean computed_fixes;
+
 
 
 
@@ -109,7 +111,19 @@ BumpProblemImpl(Element d,String id,int eid,String proj)
 @Override public int getEditId()				{ return edit_id; }
 @Override public String getProject()				{ return for_project; }
 
-@Override public List<BumpFix> getFixes()			{ return problem_fixes; }
+@Override synchronized public List<BumpFix> getFixes()			
+{
+   if (!computed_fixes) {
+      Element r = BumpClient.getBump().computeQuickFix(this,-1,0);
+      for (Element f : IvyXml.children(r,"FIX")) {
+         EditFix ef = new EditFix(f);
+         if (problem_fixes == null) problem_fixes = new ArrayList<BumpFix>();
+         problem_fixes.add(ef);
+       }
+      computed_fixes = true;
+    }
+   return problem_fixes;
+}
 
 int getMessageId()						{ return problem_msgid; }
 
@@ -137,6 +151,7 @@ void update(Element e)
 private void setupFixes(Element d)
 {
    problem_fixes = null;
+   computed_fixes = false;
 
    for (Element e : IvyXml.children(d,"FIX")) {
       FixImpl fi = new FixImpl(e);
@@ -186,8 +201,30 @@ private class FixImpl implements BumpConstants.BumpFix {
 
    @Override public BumpFixType getType()		{ return fix_type; }
    @Override public String getParameter(String id)	{ return fix_attrs.get(id); }
+   @Override public Element getEdits()                  { return null; }
 
 }	// end of inner class FixImpl
+
+
+private class EditFix implements BumpConstants.BumpFix {
+   
+   private Map<String,String> fix_attrs;
+   private Element fix_edits;
+    
+   EditFix(Element e) {
+      fix_attrs = new HashMap<String,String>();
+      if (for_project != null) fix_attrs.put("PROJECT",for_project);
+      fix_attrs.put("DISPLAY",IvyXml.getAttrString(e,"DISPLAY"));
+      fix_attrs.put("INFO",IvyXml.getAttrString(e,"INFO"));
+      fix_edits = IvyXml.getChild(e,"EDIT");
+    }
+   
+   @Override public BumpFixType getType()               { return BumpFixType.EDIT_FIX; }
+   @Override public String getParameter(String id)      { return fix_attrs.get(id); }
+   @Override public Element getEdits()                  { return fix_edits; } 
+   
+   
+}       // edn of inner class EditFix
 
 
 

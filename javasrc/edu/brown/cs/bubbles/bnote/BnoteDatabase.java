@@ -122,9 +122,11 @@ BnoteDatabase()
 /*										*/
 /********************************************************************************/
 
-BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Object> values)
+synchronized BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Object> values)
 {
    if (note_conn == null) return null;
+
+   BoardLog.logD("BNOTE","ADD ENTRY WITH " + values.size() + " VALUES");
 
    long eid = getNextId();
    if (eid == 0) return null;
@@ -171,6 +173,7 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
        }
     }
    catch (SQLException e) {
+      BoardLog.logD("BNOTE","OPERATION FAILED: + e");
       note_conn = null;
       BnoteConnect bcn = new BnoteConnect();
       note_conn = bcn.getLogDatabase();
@@ -179,6 +182,8 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
       }
       else addEntry(proj,task,type,values);
     }
+
+   BoardLog.logD("BNOTE","OPERATION SUCCEEDED");
 
    return task;
 }
@@ -192,7 +197,7 @@ BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,Map<String,Obj
 /*										*/
 /********************************************************************************/
 
-long saveAttachment(String anm,InputStream ins,int len)
+synchronized long saveAttachment(String anm,InputStream ins,int len)
 {
    long id = getNextId();
 
@@ -229,7 +234,7 @@ long saveAttachment(String anm,InputStream ins,int len)
 
 
 
-File getAttachment(String aid)
+synchronized File getAttachment(String aid)
 {
    File outf = null;
 
@@ -296,7 +301,7 @@ File getAttachment(String aid)
 
 
 
-String getAttachmentAsString(String aid)
+synchronized String getAttachmentAsString(String aid)
 {
    long id = 0;
 
@@ -333,9 +338,11 @@ String getAttachmentAsString(String aid)
 /*										*/
 /********************************************************************************/
 
-TaskImpl defineTask(String name,String proj,String desc)
+synchronized TaskImpl defineTask(String name,String proj,String desc)
 {
    if (note_conn == null) return null;
+
+   BoardLog.logD("BNOTE","DEFINE TASK");
 
    TaskImpl ti = null;
 
@@ -407,9 +414,11 @@ List<BnoteTask> getTasksForProject(String proj)
 
 
 
-List<String> getUsersForTask(String proj,BnoteTask task)
+synchronized List<String> getUsersForTask(String proj,BnoteTask task)
 {
    List<String> rslt = new ArrayList<String>();
+
+   BoardLog.logD("BNOTE","GET USERS FOR TASK");
 
    String q = "SELECT DISTINCT E.username FROM Entry E";
    if (proj != null || task != null) {
@@ -447,9 +456,11 @@ List<String> getUsersForTask(String proj,BnoteTask task)
 
 
 
-List<Date> getDatesForTask(String proj,BnoteTask task)
+synchronized List<Date> getDatesForTask(String proj,BnoteTask task)
 {
    List<Date> rslt = new ArrayList<Date>();
+
+   BoardLog.logD("BNOTE","GET DATES FOR TASK");
 
    String q = "SELECT DISTINCT E.time FROM Entry E";
    if (proj != null || task != null) {
@@ -487,9 +498,11 @@ List<Date> getDatesForTask(String proj,BnoteTask task)
 
 
 
-List<String> getNamesForTask(String proj,BnoteTask task)
+synchronized List<String> getNamesForTask(String proj,BnoteTask task)
 {
    Set<String> rslt = new TreeSet<String>();
+
+   BoardLog.logD("BNOTE","GET NAMES FOR TASK");
 
    String q = "SELECT P.value FROM Prop P";
    if (proj != null || task != null) q += ", Entry E";
@@ -527,9 +540,11 @@ List<String> getNamesForTask(String proj,BnoteTask task)
 
 
 
-List<BnoteEntry> getEntriesForTask(String proj,BnoteTask task)
+synchronized List<BnoteEntry> getEntriesForTask(String proj,BnoteTask task)
 {
    List<BnoteEntry> rslt = new ArrayList<BnoteEntry>();
+
+   BoardLog.logD("BNOTE","GET ENTRIES FOR TASK");
 
    String q = "SELECT * FROM Entry E";
    if (proj != null || task != null) {
@@ -586,11 +601,12 @@ BnoteTask findTaskById(int id)
 /*										*/
 /********************************************************************************/
 
-private long getNextId()
+private synchronized long getNextId()
 {
    if (note_conn == null) return 0;
 
    if (id_count <= 0) {
+      BoardLog.logD("BNOTE","GET NEXT ID");
       if (use_begin == null) {
 	 try {
 	    Statement st = note_conn.createStatement();
@@ -743,24 +759,26 @@ private class EntryImpl implements BnoteEntry {
       return prop_set.keySet();
     }
 
-   private synchronized void loadProperties() {
-      if (prop_set != null) return;
-      prop_set = new HashMap<String,String>();
-      try {
-	 String q = "SELECT P.id, P.value FROM Prop P WHERE P.entry = ?";
-	 PreparedStatement s = note_conn.prepareStatement(q);
-	 s.setInt(1,entry_id);
-	 ResultSet rs = s.executeQuery();
-	 while (rs.next()) {
-	    String k = rs.getString(1);
-	    String v = rs.getString(2);
-	    prop_set.put(k,v);
-	  }
-	 s.close();
-       }
-      catch (SQLException e) {
-	 BoardLog.logE("BNOTE","Problem getting properties",e);
-       }
+   private void loadProperties() {
+      synchronized (BnoteDatabase.this) {
+	 if (prop_set != null) return;
+	 prop_set = new HashMap<String,String>();
+	 try {
+	    String q = "SELECT P.id, P.value FROM Prop P WHERE P.entry = ?";
+	    PreparedStatement s = note_conn.prepareStatement(q);
+	    s.setInt(1,entry_id);
+	    ResultSet rs = s.executeQuery();
+	    while (rs.next()) {
+	       String k = rs.getString(1);
+	       String v = rs.getString(2);
+	       prop_set.put(k,v);
+	    }
+	    s.close();
+	 }
+	 catch (SQLException e) {
+	    BoardLog.logE("BNOTE","Problem getting properties",e);
+	 }
+      }
     }
 
 }	// end of inner class EntryImpl

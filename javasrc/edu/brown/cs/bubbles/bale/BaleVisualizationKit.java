@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 
-class BaleVisualizationKit implements BaleConstants{
+class BaleVisualizationKit implements BaleConstants {
 
 
 

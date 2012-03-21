@@ -54,6 +54,7 @@ private BaleDocument for_document;
 private BaleElement.Branch parent_element;
 private AttributeSet default_attrs;
 private MutableAttributeSet element_attrs;
+private Map<Object,Object> attr_cache;
 private int num_overlap;
 private BaleAstNode	ast_node;
 private boolean 	is_elided;
@@ -79,6 +80,7 @@ BaleElement(BaleDocument d,BaleElement.Branch parent,AttributeSet a)
    num_overlap = 0;
    ast_node = null;
    is_elided = false;
+   attr_cache = null;
 
    if (a == null && getName() != null) {
       default_attrs = BaleFactory.getFactory().getAttributes(getName());
@@ -259,21 +261,21 @@ public String getMethodName()
    BaleElement be = this;
    // first find containing parent method block
    for ( ; be != null; be = be.getBaleParent()) {
-      if (be.getName().equals("Method") || be.getName().equals("DeclSet")) 
-         break;
+      if (be.getName().equals("Method") || be.getName().equals("DeclSet"))
+	 break;
       if (be.getBubbleType() != BaleFragmentType.NONE) return null;
     }
    BaleElement ce = be;
    while (ce != null && !ce.isLeaf()) ce = ce.getBaleElement(0);
    while (ce != null) {
       if (ce.getName().equals("MethodDeclId")) {
-         return ce.getFullName();
+	 return ce.getFullName();
        }
       if (ce.getName().equals("Block")) break;
       if (ce.getTokenType() == BaleTokenType.LPAREN) break;
       ce = ce.getNextCharacterElement();
     }
-   
+
    return null;
 }
 
@@ -374,8 +376,10 @@ public String getMethodName()
    if (v == null && default_attrs != null) v = default_attrs.getAttribute(attr);
 
    if (v == null && parent_element != null) {
+      if (inCache(attr)) return getFromCache(attr);
       AttributeSet a = parent_element.getAttributes();
       v = a.getAttribute(attr);
+      addToCache(attr,v);
     }
 
    return v;
@@ -398,6 +402,7 @@ public String getMethodName()
 {
    setupElementAttributes();
    element_attrs.addAttribute(name,value);
+   if (getAllowsChildren()) clearCache();
 }
 
 
@@ -405,6 +410,7 @@ public String getMethodName()
 {
    setupElementAttributes();
    element_attrs.addAttributes(a);
+   if (getAllowsChildren()) clearCache();
 }
 
 
@@ -440,6 +446,54 @@ private synchronized void setupElementAttributes()
       element_attrs = new SimpleAttributeSet();
     }
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Attribute caching methods						*/
+/*										*/
+/********************************************************************************/
+
+void addToCache(Object k,Object v)
+{
+   if (attr_cache == null) {
+      attr_cache = new HashMap<Object,Object>();
+    }
+   attr_cache.put(k,v);
+}
+
+
+boolean inCache(Object k)
+{
+   if (attr_cache == null) return false;
+
+   return attr_cache.containsKey(k);
+}
+
+
+Object getFromCache(Object k)
+{
+   return attr_cache.get(k);
+}
+
+
+void clearCache()
+{
+   attr_cache = null;
+   int nch = getChildCount();
+   for (int i = 0; i < nch; ++i) {
+      getBaleElement(i).clearCache();
+    }
+}
+
+
+
+void clearLocalCache()
+{
+   attr_cache = null;
+}
+
 
 
 
@@ -586,6 +640,8 @@ static class Branch extends BaleElement {
    private int last_index;
    private BaleTokenState start_state;
    private BaleTokenState end_state;
+   private Position end_pos;
+   private Position start_pos;
 
    Branch(BaleDocument d,BaleElement.Branch par,AttributeSet a) {
       super(d,par,a);
@@ -594,6 +650,8 @@ static class Branch extends BaleElement {
       last_index = -1;
       start_state = BaleTokenState.NORMAL;
       end_state = BaleTokenState.NORMAL;
+      start_pos = null;
+      end_pos = null;
     }
 
    @Override BaleTokenState getStartTokenState()	{ return start_state; }
@@ -616,6 +674,9 @@ static class Branch extends BaleElement {
 	    return;
 	  }
        }
+      if (old != null) old.clearCache();
+      if (rep != null) rep.clearCache();
+      clearChildPositions();
     }
 
    void replace(BaleElement old,List<BaleElement> rep) {
@@ -638,15 +699,18 @@ static class Branch extends BaleElement {
 	 checkCycle(be);
 	 children_elts[idx++] = be;
 	 be.parent_element = this;
+	 be.clearCache();
        }
       old.parent_element = null;
       num_children += sz-1;
+      old.clearCache();
+      clearChildPositions();
     }
 
    void remove(int frm,int to) {
       int nsz = to - frm + 1;
       for (int i = frm; i < num_children - nsz; ++i) {
-         children_elts[i] = children_elts[i+nsz];
+	 children_elts[i] = children_elts[i+nsz];
        }
       for (int i = num_children-nsz; i < num_children; ++i) children_elts[i] = null;
       num_children -= nsz;
@@ -664,20 +728,47 @@ static class Branch extends BaleElement {
        }
       children_elts[num_children++] = e;
       e.parent_element = this;
+      e.clearCache();
+      clearChildPositions();
     }
 
    protected Position getStartPosition() {
       if (num_children == 0) return null;
-      BaleElement c = children_elts[0];
-      return c.getStartPosition();
+      if (start_pos == null) {
+	 BaleElement c = children_elts[0];
+	 start_pos = c.getStartPosition();
+       }
+      return start_pos;
     }
 
    protected Position getEndPosition() {
-      BaleElement c;
-      if (num_children > 0) c = children_elts[num_children-1];
-      else c = children_elts[0];
-      if (c == null) return null;
-      return c.getEndPosition();
+      if (end_pos == null) {
+	 BaleElement c;
+	 if (num_children > 0) c = children_elts[num_children-1];
+	 else c = children_elts[0];
+	 if (c == null) return null;
+	 end_pos = c.getEndPosition();
+       }
+      return end_pos;
+    }
+
+   void setChildPosition(Position spos,Position epos,BaleElement c) {
+      boolean rpt = false;
+      if (num_children > 0 && c == children_elts[num_children-1]) {
+	 end_pos = epos;
+	 rpt = true;
+       }
+      if (num_children > 0 && c == children_elts[0]) {
+	 start_pos = spos;
+	 rpt = true;
+       }
+      if (rpt && getBaleParent() != null) getBaleParent().setChildPosition(start_pos,end_pos,this);
+    }
+
+   private void clearChildPositions() {
+      start_pos = null;
+      end_pos = null;
+      if (getBaleParent() != null) getBaleParent().clearChildPositions();
     }
 
    @Override public Element getElement(int idx)  { return (idx < num_children ? children_elts[idx] : null); }
@@ -784,6 +875,8 @@ static class Branch extends BaleElement {
 	ce.parent_element = this;
 	ce.fixParents();
       }
+     clearLocalCache();
+     clearChildPositions();
    }
 
 }	// end of inner class Branch
@@ -845,6 +938,7 @@ static class Leaf extends BaleElement {
 
 	    end_pos = start_pos;
 	  }
+	 if (getBaleParent() != null) getBaleParent().setChildPosition(start_pos,end_pos,this);
        }
       catch (BadLocationException e) {
 	 start_pos = end_pos = null;

@@ -39,6 +39,7 @@ import edu.brown.cs.bubbles.bump.BumpConstants;
 import javax.swing.JPopupMenu;
 
 import java.awt.*;
+import javax.swing.Icon;
 import java.util.EventListener;
 import java.util.Stack;
 
@@ -326,6 +327,27 @@ interface BassPopupHandler extends EventListener {
 }	// end of inner interface BassPopupHandler
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      BassFlagger -- callback to get flag information for a name              */
+/*                                                                              */
+/********************************************************************************/
+
+interface BassFlagger extends EventListener {
+   
+   public BassFlag getFlagForName(String fullname);
+   
+}       // end of interface BassFlagger
+
+
+interface BassFlag {
+   Icon getOverlayIcon();
+   int getPriority();
+}       // end of interface BassFlag
+
+
+   
 
 
 }	// end of interface BassConstants

@@ -1361,7 +1361,8 @@ private class ThreadData implements BumpThread {
       setThreadState(ts,BumpThreadStateDetail.NONE);
     }
 
-   void setThreadState(BumpThreadState ts,BumpThreadStateDetail dtl) {
+   synchronized void setThreadState(BumpThreadState ts,BumpThreadStateDetail dtl) {
+      System.err.println("SET STATE OF " + thread_name + " TO " + ts);
       thread_state = ts;
       stack_data = null;
       thread_detail = dtl;
@@ -1412,7 +1413,7 @@ private class ThreadData implements BumpThread {
       return thread_name.equals(BandaidConstants.BANDAID_THREAD);
     }
 
-   boolean handleBandaidData(Element xml) {
+   synchronized boolean handleBandaidData(Element xml) {
       boolean chng = false;
       BumpThreadState state = IvyXml.getAttrEnum(xml,"STATE",thread_state);
       if (state == BumpThreadState.BLOCKED &&
@@ -1426,7 +1427,8 @@ private class ThreadData implements BumpThread {
 	 if (state.isRunning() == thread_state.isRunning() && !thread_state.isException()) {
 	    chng = true;
 	    thread_state = state;
-	  }
+	    System.err.println("SET BANDAID STATE OF " + thread_name + " TO " + state);
+	 }
        }
       cpu_time = IvyXml.getAttrLong(xml,"CPUTM");
       user_time = IvyXml.getAttrLong(xml,"USERTM");

@@ -474,6 +474,9 @@ private static class TreeLeaf extends BassTreeImpl {
 
    @Override public BassName getBassName()		{ return for_name; }
    @Override public String getLocalName()		{ return for_name.getDisplayName(); }
+   @Override public String getFullName() {
+      return for_name.getFullName();
+    }
 
    @Override int getSortPriority()			{ return for_name.getSortPriority(); }
 
@@ -492,6 +495,7 @@ private static class Branch extends BassTreeImpl {
 
    private String local_name;
    private String display_name;
+   private String full_name;
    private Vector<BassTreeImpl> child_nodes;
    private int leaf_count;
    private BranchNodeType branch_type = BranchNodeType.PACKAGE;
@@ -503,9 +507,14 @@ private static class Branch extends BassTreeImpl {
       child_nodes = new Vector<BassTreeImpl>();
       int idx = name.indexOf("#");
       if (idx > 0) {
-	 display_name = name.substring(idx+1);
+         display_name = name.substring(idx+1);
        }
       leaf_count = -1;
+      if (par != null) {
+	 if (par.getBassParent() == null) full_name = local_name;
+	 else full_name = par.getFullName() + "." + local_name;
+       }
+      else full_name = local_name;
     }
 
    @Override public BassTreeImpl getChildAt(int idx) {
@@ -581,6 +590,7 @@ private static class Branch extends BassTreeImpl {
 
    @Override public String getLocalName()		{ return local_name; }
    @Override public String toString()			{ return display_name; }
+   @Override public String getFullName()                { return full_name; } 
    Branch getBassParent()				{ return parent_node; }
 
    void collapseSingletons() {

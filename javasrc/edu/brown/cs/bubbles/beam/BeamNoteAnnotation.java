@@ -151,7 +151,7 @@ BeamNoteAnnotation(Element xml)
 
 @Override public int getPriority()			{ return 2; }
 
-@Override public void addPopupButtons(JPopupMenu m)
+@Override public void addPopupButtons(Component c,JPopupMenu m)
 {
    m.add(new NoteAction());
 }

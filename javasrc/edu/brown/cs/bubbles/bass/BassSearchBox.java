@@ -1097,34 +1097,41 @@ private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer imple
 							      int row,
 							      boolean hasfocus) {
       JLabel label = this;
+      BassTreeBase btb = (BassTreeBase) value;
 
       label.setText(value.toString());
       label.setFont(tree.getFont());
       label.setOpaque(false);
+      String vnm = value.toString();
+      Icon icn = null;
 
-      if (value.toString().equals(BASS_BUDDY_LIST_NAME)) {
-	 if (expanded) label.setIcon(people_collapse_image);
-	 else label.setIcon(people_expand_image);
+      if (vnm.equals(BASS_BUDDY_LIST_NAME)) {
+	 if (expanded) icn = people_collapse_image;
+	 else icn = people_expand_image;
        }
-      else if (value.toString().equals(BASS_DOC_LIST_NAME)){
-	 if (expanded) label.setIcon(docs_collapse_image);
-	 else label.setIcon(docs_expand_image);
+      else if (vnm.equals(BASS_DOC_LIST_NAME)){
+	 if (expanded) icn = docs_collapse_image;
+	 else icn = docs_expand_image;
        }
-      else if (value.toString().equals(BASS_CONFIG_LIST_NAME)){
-	 if (expanded) label.setIcon(config_collapse_image);
-	 else label.setIcon(config_expand_image);
+      else if (vnm.equals(BASS_CONFIG_LIST_NAME)){
+	 if (expanded) icn = config_collapse_image;
+	 else icn = config_expand_image;
        }
-      else if (value.toString().equals(BASS_PROCESS_LIST_NAME)){
-	 if (expanded) label.setIcon(process_collapse_image);
-	 else label.setIcon(process_expand_image);
+      else if (vnm.equals(BASS_PROCESS_LIST_NAME)){
+	 if (expanded) icn = process_collapse_image;
+	 else icn = process_expand_image;
        }
-      else if (value.toString().equals(BASS_COURSE_LIST_NAME)){
-	 if(expanded) label.setIcon(courses_collapse_image);
-	 else label.setIcon(courses_expand_image);
-      }
+      else if (vnm.equals(BASS_COURSE_LIST_NAME)){
+	 if(expanded) icn = courses_collapse_image;
+	 else icn = courses_expand_image;
+       }
+      else if (leaf) {
+	 BassName bn = ((BassTreeNode)value).getBassName();
+         icn = bn.getDisplayIcon();
+       }     
       else {
-	 if (expanded) label.setIcon(((BassTreeBase)value).getCollapseIcon());
-	 else label.setIcon(((BassTreeBase)value).getExpandIcon());
+	 if (expanded) icn = btb.getCollapseIcon();
+	 else icn = btb.getExpandIcon();
        }
 
       if (sel) {
@@ -1134,16 +1141,61 @@ private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer imple
       else {
 	 label.setBackground(TRANSPARENT);
        }
-
-      if (leaf) {
-	 BassName bassName = ((BassTreeNode)value).getBassName();
-	 label.setIcon(bassName.getDisplayIcon());
+      
+      BassFlag f = BassFactory.getFactory().getFlagForName(btb.getFullName());
+      if (f != null) {
+         Icon i1 = f.getOverlayIcon();
+         if (i1 != null) {
+            if (icn == null) icn = i1;
+            else icn = new OverlayIcon(icn,i1);
+          }
        }
+
+      label.setIcon(icn);
 
       return label;
     }
 
 }	// end of inner class SearchBoxCellRenderer
+
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Class for composting icons                                              */
+/*                                                                              */
+/********************************************************************************/
+
+private static class OverlayIcon implements Icon {
+   
+   private List<Icon> icon_set; 
+   
+   OverlayIcon(Icon ... base) {
+      icon_set = new ArrayList<Icon>();
+      for (Icon ic : base) {
+         icon_set.add(ic);
+       }
+    } 
+   
+   @Override public int getIconHeight() {
+      if (icon_set.isEmpty()) return 0;
+      return icon_set.get(0).getIconHeight();
+    }
+   
+   @Override public int getIconWidth() {
+      if (icon_set.isEmpty()) return 0;
+      return icon_set.get(0).getIconWidth();
+    }
+   
+   @Override public void paintIcon(Component c,Graphics g,int x,int y) {
+      for (Icon ic : icon_set) {
+         ic.paintIcon(c,g,x,y);
+       }
+    }
+   
+}       // end of inner class OverlayIcon
+
 
 
 

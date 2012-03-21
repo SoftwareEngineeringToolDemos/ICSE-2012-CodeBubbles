@@ -39,6 +39,11 @@ import org.eclipse.jdt.ui.text.java.*;
 import org.eclipse.jdt.core.*;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.compiler.*;
+import org.eclipse.ui.progress.*;
+import org.eclipse.jface.text.contentassist.*;
+import org.eclipse.jdt.internal.ui.text.correction.proposals.ChangeCorrectionProposal;
+import org.eclipse.ltk.core.refactoring.*;
+import org.eclipse.text.edits.TextEdit;
 
 import org.w3c.dom.*;
 
@@ -95,6 +100,11 @@ void handleQuickFix(String bid,String proj,String file,int off,int len,List<Elem
 
    List<CategorizedProblem> probs = getProblems(cu,problems);
    if (probs == null || probs.size() == 0) return;
+   if (off < 0) {
+      CategorizedProblem p = probs.get(0);
+      off = p.getSourceStart();
+      len = 0;
+    }
 
    FixContext fc = new FixContext(cu,icu,off,len);
 
@@ -103,21 +113,61 @@ void handleQuickFix(String bid,String proj,String file,int off,int len,List<Elem
       pcs[i] = new ProblemContext(probs.get(i));
     }
 
-   for (IQuickFixProcessor qp : quick_fixes) {
-      try {
-	 IJavaCompletionProposal [] props = qp.getCorrections(fc,pcs);
-	 outputProposals(props,xw);
+   WJob wj = new WJob(fc,pcs,xw);
+   wj.schedule();
+   try {
+      wj.join();
+      IStatus rslt = wj.getResult();
+      Throwable t = rslt.getException();
+      if (t != null) {
+	 throw new BedrockException("Problem with quick fix",t);
        }
-      catch (CoreException e) { }
     }
-   for (IQuickAssistProcessor qp : quick_assists) {
-      try {
-	 IJavaCompletionProposal [] props = qp.getAssists(fc,pcs);
-	 outputProposals(props,xw);
-       }
-      catch (CoreException e) { }
-    }
+   catch (InterruptedException e) { }
 }
+
+
+private class WJob extends WorkbenchJob {
+
+   FixContext fix_context;
+   ProblemContext [] problem_contexts;
+   IvyXmlWriter xml_writer;
+
+   WJob(FixContext fc,ProblemContext [] pcs,IvyXmlWriter xw) {
+      super(BedrockApplication.getDisplay(),"quickfixer");
+      fix_context = fc;
+      problem_contexts = pcs;
+      xml_writer = xw;
+    }
+
+   @Override public IStatus runInUIThread(IProgressMonitor m) {
+      try {
+	 for (IQuickFixProcessor qp : quick_fixes) {
+	    try {
+	       IJavaCompletionProposal [] props = qp.getCorrections(fix_context,problem_contexts);
+	       outputProposals(props,xml_writer);
+	     }
+	    catch (CoreException e) { }
+	  }
+	 for (IQuickAssistProcessor qp : quick_assists) {
+	    try {
+	       IJavaCompletionProposal [] props = qp.getAssists(fix_context,problem_contexts);
+	       outputProposals(props,xml_writer);
+	     }
+	    catch (CoreException e) { }
+	  }
+       }
+      catch (Throwable t) {
+	 BedrockPlugin.logE("Problem with quick fix: " + t,t);
+	 return new Status(IStatus.ERROR,"BEDROCK","Problem with quick fix",t);
+       }
+
+      return Status.OK_STATUS;
+    }
+
+}	// end of inner class WJob
+
+
 
 
 
@@ -158,22 +208,75 @@ private List<CategorizedProblem> getProblems(CompilationUnit cu,List<Element> xm
 
 private void outputProposals(IJavaCompletionProposal [] props,IvyXmlWriter xw)
 {
-   for (IJavaCompletionProposal p : props)
-      outputProposal(p,xw);
+   if (props == null) return;
+
+   for (IJavaCompletionProposal p : props) {
+      BedrockPlugin.logD("COMPLETION: " + p.getRelevance() + " " + p.getDisplayString() + " " +
+			    p.getAdditionalProposalInfo() + " " +
+			    (p instanceof ChangeCorrectionProposal) + " " + p);
+      if (isUsable(p)) {
+	 outputProposal(p,xw);
+       }
+    }
+}
+
+
+private boolean isUsable(IJavaCompletionProposal p)
+{
+   if (p == null) return false;
+
+   if (p.getClass().getName().equals("org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal"))
+      return false;
+
+   if (p instanceof ChangeCorrectionProposal) return true;
+
+   BedrockPlugin.logD("UNKNOWN COMPLETION TYPE " + p.getClass() + " " + p.getClass().getSuperclass());
+
+   return false;
 }
 
 
 
 private void outputProposal(IJavaCompletionProposal p,IvyXmlWriter xw)
 {
+   TextEdit textedit = null;
+
+   if (p instanceof ChangeCorrectionProposal) {
+      ChangeCorrectionProposal xp = (ChangeCorrectionProposal) p;
+      try {
+	 Change c = xp.getChange();
+	 if (c == null) return;
+	 if (c instanceof TextChange) {
+	    TextChange tc = (TextChange) c;
+	    textedit = tc.getEdit();
+	  }
+       }
+      catch (CoreException e) {
+	 BedrockPlugin.logE("Problem getting completion",e);
+	 return;
+       }
+    }
+
+   if (textedit == null) {
+      BedrockPlugin.logD("COMPLETION w/o EDIT " + p.getClass() + " " + p.getClass().getSuperclass());
+      return;
+    }
+
    xw.begin("FIX");
-   xw.field("TYPE",p.getClass().getName());
+
    xw.field("RELEVANCE",p.getRelevance());
    xw.field("DISPLAY",p.getDisplayString());
    xw.field("INFO",p.getAdditionalProposalInfo());
    xw.field("ID",System.identityHashCode(p));
+   IContextInformation ci = p.getContextInformation();
+   if (ci != null) {
+      xw.field("CONTEXT",ci.getContextDisplayString());
+      xw.field("CINFO",ci.getInformationDisplayString());
+    }
+   BedrockUtil.outputTextEdit(textedit,xw);
+
    xw.end("FIX");
-}			
+}
 
 
 
@@ -278,6 +381,7 @@ private static class ProblemContext implements IProblemLocation {
     }
 
 }	// end of inner class ProblemContext
+
 
 
 

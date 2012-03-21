@@ -70,7 +70,6 @@ private SubPanel	recent_options;
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Constructors								*/
@@ -80,7 +79,8 @@ private SubPanel	recent_options;
 BoppOptionPanel(BoppOptionSet opts)
 {
    option_set = opts;
-
+   opts.doingAdd(true);
+   
    sub_panels = new ArrayList<SubPanel>();
    Set<String> oset = new TreeSet<String>(opts.getTabNames());
    for (String s : oset) {
@@ -94,6 +94,8 @@ BoppOptionPanel(BoppOptionSet opts)
    sub_panels.add(search_panel);
 
    setupDisplay();
+   
+   opts.doingAdd(false);
 }
 
 
@@ -132,7 +134,7 @@ private class OptionBubble extends BudaBubble {
 private void setupDisplay()
 {
    display_panel = new SwingGridPanel();
-
+   
    search_field = new JTextField();
    search_field.addKeyListener(new SearchKeyListener());
    SwingGridPanel sbox = new SwingGridPanel();
@@ -234,7 +236,7 @@ private void search()
 	 br.handlePropertyChange();
 	 br.repaint();
        }
-      // TODO: need to refresh the current display
+      // need to reset panel here
     }
    else if (cmd.equalsIgnoreCase("SAVE")) {
       option_set.saveOptions();

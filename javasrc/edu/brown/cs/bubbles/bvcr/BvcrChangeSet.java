@@ -93,7 +93,7 @@ void findChanges(File f,IvyXmlWriter xw)
 
    FileChanges fc = change_map.get(f);
 
-   if (fc != null) fc.outputXml(xw);
+   if (fc != null && xw != null) fc.outputXml(xw);
 }
 
 
@@ -209,7 +209,7 @@ private static class SubInputStream extends FilterInputStream {
       return sub_length - sub_ptr;
     }
 
-   @Override public void close() {	
+   @Override public void close() {
       sub_length = sub_ptr = 0;
     }
 
@@ -271,10 +271,10 @@ private static class FileChanges {
    void outputXml(IvyXmlWriter xw) {
       xw.begin("CHANGESET");
       for (Map.Entry<String,BvcrDifferenceFile> ent : change_items.entrySet()) {
-	 xw.begin("USERCHANGE");
-	 xw.field("USER",ent.getKey());
-	 ent.getValue().outputXml(xw);
-	 xw.end("USERCHANGE");
+         xw.begin("USERCHANGE");
+         xw.field("USER",ent.getKey());
+         ent.getValue().outputXml(xw);
+         xw.end("USERCHANGE");
        }
       xw.end("CHANGESET");
     }

@@ -66,6 +66,7 @@ public synchronized static BvcrFactory getFactory()
 private BvcrFactory()
 {
    server_running = false;
+   new BvcrFileManager();
 }
 
 

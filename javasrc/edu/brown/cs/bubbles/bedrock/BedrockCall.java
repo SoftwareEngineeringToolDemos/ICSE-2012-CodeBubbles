@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -93,7 +93,7 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
    SearchPattern p1 = SearchPattern.createPattern(src,IJavaSearchConstants.METHOD,
 						     IJavaSearchConstants.DECLARATIONS,
 						     SearchPattern.R_PATTERN_MATCH);
-   SearchPattern p1a = SearchPattern.createPattern(src,IJavaSearchConstants.CONSTRUCTOR,
+   SearchPattern p1a = SearchPattern.createPattern(fixConstructor(src),IJavaSearchConstants.CONSTRUCTOR,
 						      IJavaSearchConstants.DECLARATIONS,
 						      SearchPattern.R_PATTERN_MATCH);
    if (p1 == null || p1a == null) throw new BedrockException("Illegal source pattern " + src);
@@ -101,7 +101,7 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
    SearchPattern p2 = SearchPattern.createPattern(tgt,IJavaSearchConstants.METHOD,
 						     IJavaSearchConstants.DECLARATIONS,
 						     SearchPattern.R_PATTERN_MATCH);
-   SearchPattern p2a = SearchPattern.createPattern(tgt,IJavaSearchConstants.CONSTRUCTOR,
+   SearchPattern p2a = SearchPattern.createPattern(fixConstructor(tgt),IJavaSearchConstants.CONSTRUCTOR,
 						     IJavaSearchConstants.DECLARATIONS,
 						     SearchPattern.R_PATTERN_MATCH);
    if (p2 == null || p2a == null) throw new BedrockException("Illegal target pattern " + tgt);
@@ -139,7 +139,7 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
       if (cn.isDone()) continue;
       cn.markDone();
 
-      BedrockPlugin.logD("CALL: WORK ON " + je.getKey() + " " + cn.getLevel());
+      BedrockPlugin.logD("CALL: WORK ON " + je.getKey() + " " + cn.getLevel() + " " + sh.contains(je));
 
       if (shortest && sh.contains(je)) break;
       int lvl = cn.getLevel() + 1;
@@ -189,6 +189,34 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
       cn.output(xw,done,nodes);
     }
    xw.end("PATH");
+}
+
+
+
+private String fixConstructor(String s)
+{
+   String r = s;
+
+   int idx0 = r.indexOf("(");
+   String tail = "";
+   if (idx0 > 0) {
+      tail = r.substring(idx0);
+      r = r.substring(0,idx0);
+    }
+
+   int idx1 = r.lastIndexOf(".");
+   if (idx1 <= 0) return s;
+   int idx2 = r.lastIndexOf(".",idx1-1);
+   if (idx2 <= 0) return s;
+
+   String r1 = r.substring(idx2+1,idx1);
+   String r2 = r.substring(idx1+1);
+   if (!r1.equals(r2)) return s;
+
+   r = r.substring(0,idx1);
+   r += tail;
+
+   return r;
 }
 
 

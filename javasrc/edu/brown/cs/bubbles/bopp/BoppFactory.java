@@ -26,8 +26,6 @@ package edu.brown.cs.bubbles.bopp;
 import edu.brown.cs.bubbles.board.BoardImage;
 import edu.brown.cs.bubbles.buda.*;
 
-import org.w3c.dom.Node;
-
 import javax.swing.*;
 
 import java.awt.*;
@@ -107,12 +105,7 @@ public static void initialize(BudaRoot br)
    btn1.setBackground(new Color(0,true));
    btn1.setToolTipText("Options for Code Bubbles");
 
-   if (option_set.getTabNames().size() == 0) {
-      btn1.addActionListener(new OptionsListener(br));
-    }
-   else {
-      btn1.addActionListener(new OptionsListenerNew(br));
-    }
+   btn1.addActionListener(new OptionsListenerNew(br));
 
    br.addButtonPanelButton(btn1);
 }
@@ -134,59 +127,12 @@ static void repaintBubbleArea()
  * Returns a new options panel
  */
 
-public static JPanel getBoppPanel(BudaBubbleArea area)
-{
-   BoppPanelHandler b = new BoppPanelHandler(area);
-   return b.getUIPanel();
-}
-
-
 public static BoppOptionPanel getBoppPanelNew(BudaBubbleArea area)
 {
    BoppOptionPanel bopp = new BoppOptionPanel(option_set);
    return bopp;
 }
 
-
-/**
- * Makes an option
- *
- * @param n
- *	     Option name (e.g. Beam.note.width)
- * @param tn
- *	     List of tabs that contain the option
- * @param d
- *	     Description that will be visible to users
- * @param p
- *	     Package name (e.g. Beam)
- * @param t
- *	     Option type
- * @return
- */
-
-static BoppOption makeOption(String n,ArrayList<TabName> tn,String d,String p,
-				OptionType t,Node node)
-{
-   if (t == null) return null;
-
-   switch (t) {
-      case INTEGER:
-	 return new BoppIntOption(n,tn,d,p,t,node);
-      case BOOLEAN:
-	 return new BoppBoolOption(n,tn,d,p,t);
-      case STRING:
-	 return new BoppStringOption(n,tn,d,p,t);
-      case COLOR:
-	 return new BoppColorOption(n,tn,d,p,t);
-      case DIVIDER:
-	 return new BoppDividerOption(n,tn,d,p,t);
-      case COMBO:
-	 return new BoppComboOption(n,tn,d,p,t,node);
-      case FONT:
-	 // return new BoppFontOption(n, tn, d, p, t);
-    }
-   return null;
-}
 
 
 
@@ -195,42 +141,6 @@ static BoppOption makeOption(String n,ArrayList<TabName> tn,String d,String p,
 /*	Handler for options button						*/
 /*										*/
 /********************************************************************************/
-
-private static class OptionsListener implements ActionListener {
-
-   private BudaRoot		       for_root;
-   private Map<BudaBubbleArea, JPanel> options_panel;
-
-   OptionsListener(BudaRoot br) {
-      for_root = br;
-      options_panel = new HashMap<BudaBubbleArea, JPanel>();
-    }
-
-   @Override public void actionPerformed(ActionEvent evt) {
-      BudaBubbleArea bba = for_root.getCurrentBubbleArea();
-      if (bba == null) return;
-
-      JPanel pnl = options_panel.get(bba);
-      if (pnl == null) {
-	 pnl = BoppFactory.getBoppPanel(bba);
-	 options_panel.put(bba, pnl);
-       }
-      else if (pnl.getParent() != null && pnl.getParent().isVisible()) {
-	 pnl.getParent().setVisible(false);
-	 return;
-       }
-
-      Rectangle r = bba.getViewport();
-      Dimension d = pnl.getPreferredSize();
-      BudaConstraint bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,r.x
-						+ r.width - d.width,r.y);
-      pnl.setSize(d);
-      bba.add(pnl, bc, 0);
-      pnl.setVisible(true);
-    }
-
-}	// end of inner class OptionsListener
-
 
 private static class OptionsListenerNew implements ActionListener {
 
@@ -245,18 +155,18 @@ private static class OptionsListenerNew implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       BudaBubbleArea bba = for_root.getCurrentBubbleArea();
       if (bba == null) return;
-
+   
       BoppOptionPanel pnl = options_panel.get(bba);
       if (pnl == null) {
-	 pnl = BoppFactory.getBoppPanelNew(bba);
-	 options_panel.put(bba,pnl);
+         pnl = BoppFactory.getBoppPanelNew(bba);
+         options_panel.put(bba,pnl);
        }
       else if (pnl.getPanel().getParent() != null &&
-	    pnl.getPanel().getParent().isVisible()) {
-	 pnl.getPanel().getParent().setVisible(false);
-	 return;
+            pnl.getPanel().getParent().isVisible()) {
+         pnl.getPanel().getParent().setVisible(false);
+         return;
        }
-
+   
       JPanel jp = pnl.getPanel();
       Rectangle r = bba.getViewport();
       Dimension d = jp.getPreferredSize();

@@ -45,13 +45,14 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.debug.core.*;
 import org.eclipse.jdt.debug.eval.IEvaluationResult;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ltk.core.refactoring.*;
 import org.eclipse.ltk.core.refactoring.resource.*;
 import org.eclipse.text.edits.*;
 
 import java.io.File;
 import java.util.*;
-
+import java.net.URL;
 
 
 
@@ -1117,6 +1118,16 @@ private static void outputSymbol(IJavaElement elt,String what,String nm,String k
 	    xw.field("QNAME",par.getFullyQualifiedName() + "." + nm);
 	  }
 	 xw.field("FLAGS",fgs);
+       }
+      catch (JavaModelException e) { }
+    }
+
+   if (elt instanceof IPackageFragment || elt instanceof IType) {
+      try {
+	 URL u = JavaUI.getJavadocBaseLocation(elt);
+	 if (u != null) {
+	    xw.field("JAVADOC",u.toString());
+	  }
        }
       catch (JavaModelException e) { }
     }

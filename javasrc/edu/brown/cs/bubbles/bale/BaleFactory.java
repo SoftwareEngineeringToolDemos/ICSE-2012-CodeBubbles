@@ -30,8 +30,7 @@
 
 package edu.brown.cs.bubbles.bale;
 
-import edu.brown.cs.bubbles.board.BoardAttributes;
-import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
@@ -40,12 +39,15 @@ import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import javax.swing.JPopupMenu;
+import javax.swing.*;
 import javax.swing.text.*;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+
 
 /**
  *	This class provides access to bubbles and editor components for code
@@ -655,8 +657,6 @@ AttributeSet getAttributes(String id)
 }
 
 
-
-
 /********************************************************************************/
 /*										*/
 /*	Highlighting methods							*/
@@ -733,7 +733,11 @@ BaleDocumentIde getDocument(String proj,File f)
 }
 
 
-@Override public void handlePropertyChange()			{ }
+@Override public void handlePropertyChange()
+{
+   bale_attributes.reload();
+}
+
 
 
 /********************************************************************************/
@@ -1067,6 +1071,7 @@ private BaleFragmentEditor getEditorFromLocations(List<BumpLocation> locs,
    if (locs == null || locs.size() == 0) return null;
 
    List<BaleRegion> rgns = getRegionsFromLocations(locs);
+   if (rgns == null || rgns.size() == 0) return null;
 
    BumpLocation loc0 = locs.get(0);
    String proj = loc0.getSymbolProject();
@@ -1203,12 +1208,7 @@ private static class ProblemHover implements BaleContextListener {
       List<BumpProblem> probs = bd.getProblemsAtLocation(cfg.getOffset());
       if (probs != null) {
 	 for (BumpProblem bp : probs) {
-	    if (bp.getFixes() != null) {
-	       for (BumpFix bf : bp.getFixes()) {
-		  BaleFixer fixer = new BaleFixer(bp,bf);
-		  if (fixer.isValid()) menu.add(fixer);
-		}
-	     }
+	    menu.add(new QuickFix(cfg.getEditor(),bp));
 	  }
        }
     }
@@ -1230,6 +1230,63 @@ private static class ProblemHover implements BaleContextListener {
 
 
 
+
+/********************************************************************************/
+/*										*/
+/*	Quick fix button action 						*/
+/*										*/
+/********************************************************************************/
+
+static class QuickFix extends AbstractAction {
+
+   private Component for_editor;
+   private BumpProblem for_problem;
+
+   private static final long serialVersionUID = 1;
+
+
+   QuickFix(Component root,BumpProblem bp) {
+      super("Quick Fix: " + fixMessage(bp));
+      for_problem = bp;
+      for_editor = root;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      List<BaleFixer> fixes = new ArrayList<BaleFixer>();
+      List<BumpFix> fixlist = for_problem.getFixes();
+      if (fixlist != null) {
+	 for (BumpFix bf : fixlist) {
+	    BaleFixer fixer = new BaleFixer(for_problem,bf);
+	    if (fixer.isValid()) fixes.add(fixer);
+	 }
+      }
+      if (fixes.isEmpty()) {
+	 JOptionPane.showMessageDialog(for_editor,"No quick fixes available");
+	 return;
+       }
+
+      BaleFixer fix = null;
+      Object [] fixalts = fixes.toArray();
+      fix = (BaleFixer) JOptionPane.showInputDialog(for_editor,"Select Quick Fix",
+						       "Quick Fix Selector",
+						       JOptionPane.QUESTION_MESSAGE,
+						       null,fixalts,fixes.get(0));
+      if (fix == null) return;
+
+      fix.actionPerformed(e);
+      BoardMetrics.noteCommand("BALE","QuickFixOption");
+    }
+
+}	// end of inner class QuickFix
+
+
+private static String fixMessage(BumpProblem bp)
+{
+   String msg = bp.getMessage();
+   int idx = msg.indexOf(". ");
+   if (idx >= 0) msg = msg.substring(0,idx);
+   return msg;
+}
 
 
 }	// end of class BaleFactory

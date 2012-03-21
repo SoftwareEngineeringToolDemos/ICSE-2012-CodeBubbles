@@ -248,6 +248,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
        }
       else if (cmd.equals("Edit")) {
 	 PathEntry pe = (PathEntry) path_display.getSelectedValue();
+	 if (pe == null) return;
 	 EditPathEntryBubble bb = new EditPathEntryBubble(pe);
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
 	 BudaBubble rbb = BudaRoot.findBudaBubble(this);
@@ -276,14 +277,14 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
       Object [] sels = path_display.getSelectedValues();
       boolean edok = false;
       for (Object sel : sels) {
-         PathEntry pe = (PathEntry) sel;
-         if (pe.getPathType() == PathType.LIBRARY) {
-            if (edok) {
-               edok = false;
-               break;
-             }
-            edok = true;
-          }
+	 PathEntry pe = (PathEntry) sel;
+	 if (pe.getPathType() == PathType.LIBRARY) {
+	    if (edok) {
+	       edok = false;
+	       break;
+	     }
+	    edok = true;
+	  }
        }
       edit_button.setEnabled(edok);
       delete_button.setEnabled(sels.length >= 1);

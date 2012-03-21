@@ -140,13 +140,13 @@ private static class FileChange implements BvcrFileChange {
       source_line = slno;
       target_line = tlno;
       if (del.size() > 0) {
-	 delete_lines = new String[del.size()];
-	 delete_lines = del.toArray(delete_lines);
+         delete_lines = new String[del.size()];
+         delete_lines = del.toArray(delete_lines);
        }
       else delete_lines = null;
       if (add.size() > 0) {
-	 add_lines = new String[add.size()];
-	 add_lines = add.toArray(add_lines);
+         add_lines = new String[add.size()];
+         add_lines = add.toArray(add_lines);
        }
     }
 
@@ -185,17 +185,18 @@ private static class FileChange implements BvcrFileChange {
       else if (delete_lines != null) typ = "DELETE";
       if (typ == null) return;
       xw.begin("CHANGE");
+      xw.field("TYPE",typ);
       xw.field("SOURCE",source_line);
       xw.field("TARGET",target_line);
       if (delete_lines != null) {
-	 for (String s : delete_lines) {
-	    xw.cdataElement("DELETE",s);
-	  }
+         for (String s : delete_lines) {
+            xw.cdataElement("DELETE",s);
+          }
        }
       if (add_lines != null) {
-	 for (String s : add_lines) {
-	    xw.cdataElement("INSERT",s);
-	  }
+         for (String s : add_lines) {
+            xw.cdataElement("INSERT",s);
+          }
        }
       xw.end("CHANGE");
     }

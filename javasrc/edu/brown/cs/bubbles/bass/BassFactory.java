@@ -30,8 +30,7 @@
 
 package edu.brown.cs.bubbles.bass;
 
-import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
@@ -67,7 +66,7 @@ public class BassFactory implements BudaRoot.SearchBoxCreator, BassConstants, Bu
 /********************************************************************************/
 
 private SwingEventListenerList<BassPopupHandler> popup_handlers;
-private SwingEventListenerList<BassFlagger> flag_checkers; 
+private SwingEventListenerList<BassFlagger> flag_checkers;
 
 
 private static BassRepositoryLocation	bass_repository;
@@ -258,7 +257,7 @@ public void addNewBubble(BudaBubble searchbox,Point loc,BudaBubble bbl)
       ypos = r.y;
     }
 
-   sbox.addAndLocateBubble(bbl,ypos);
+   sbox.addAndLocateBubble(bbl,ypos,loc);
 }
 
 
@@ -366,9 +365,9 @@ public File findActualFile(File f)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Flag management routines                                                */
-/*                                                                              */
+/*										*/
+/*	Flag management routines						*/
+/*										*/
 /********************************************************************************/
 
 public void addFlagChecker(BassFlagger bf)
@@ -386,20 +385,20 @@ public void removeFlagChecker(BassFlagger bf)
 BassFlag getFlagForName(String name)
 {
    BassFlag best = null;
-   
+
    for (BassFlagger bf : flag_checkers) {
       BassFlag xf = bf.getFlagForName(name);
       if (xf != null) {
-         if (best == null || best.getPriority() < xf.getPriority()) {
-            best = xf;
-          }
+	 if (best == null || best.getPriority() < xf.getPriority()) {
+	    best = xf;
+	  }
        }
     }
-   
+
    return best;
 }
 
-      
+
 
 /********************************************************************************/
 /*										*/
@@ -539,6 +538,8 @@ private static class EclipseProjectAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BASS","EclipseProjectProperties");
+      BudaRoot.hideSearchBubble(e);
       BumpClient bc = BumpClient.getBump();
       bc.saveAll();
       bc.editProject(for_project);
@@ -564,6 +565,8 @@ private static class ProjectAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BASS","EditProjectProperties");
+      BudaRoot.hideSearchBubble(e);
       BuenoProjectDialog dlg = new BuenoProjectDialog(for_project);
       BudaBubble bb = dlg.createProjectEditor();
       if (bb == null) return;
@@ -583,6 +586,8 @@ private static class NewProjectAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BASS","CreateProject");
+      BudaRoot.hideSearchBubble(e);
       BumpClient bc = BumpClient.getBump();
       bc.createProject();
     }

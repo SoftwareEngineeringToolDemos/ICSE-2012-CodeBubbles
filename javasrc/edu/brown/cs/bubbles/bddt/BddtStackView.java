@@ -531,7 +531,8 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
     }
 
    @Override protected void paintComponent(Graphics g) {
-      if (!is_frozen && !is_extinct && value_model.hasBeenFrozen()) is_frozen = true;
+      if (!is_frozen && !is_extinct && value_model.hasBeenFrozen()) 
+	 is_frozen = true;
 
       Dimension sz = getSize();
       Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);

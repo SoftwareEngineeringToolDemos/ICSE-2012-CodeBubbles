@@ -81,7 +81,7 @@ private BassTest()				{ }
 private void test()
 {
    BumpClient bc = BumpClient.getBump();
-   bc.startIDE();
+   bc.waitForIDE();
 
    Runtime.getRuntime().addShutdownHook(new CloseBedrock());
 

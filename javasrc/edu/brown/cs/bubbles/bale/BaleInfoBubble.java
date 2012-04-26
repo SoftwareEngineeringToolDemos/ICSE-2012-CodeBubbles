@@ -225,13 +225,13 @@ private class ContextActionHandler extends MouseAdapter {
       String cmd = lb.getToolTipText();
       String acmd = action_names.get(cmd);
       if (acmd != null) {
-	 ActionEvent nevt = new ActionEvent(bale_editor,e.getID(),acmd,e.getWhen(),e
-					       .getModifiers());
-	 Action a = BaleEditorKit.findAction(acmd);
-	 a.actionPerformed(nevt);
+         ActionEvent nevt = new ActionEvent(bale_editor,e.getID(),acmd,e.getWhen(),e
+        				       .getModifiers());
+         Action a = BaleEditorKit.findAction(acmd);
+         a.actionPerformed(nevt);
        }
       else {
-	 BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
+         BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
        }
       setVisible(false);
     }

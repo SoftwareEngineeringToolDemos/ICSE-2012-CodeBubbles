@@ -135,7 +135,8 @@ private void setupPanel()
 	 project_name = pnl.addChoice("Project",pnms,lp,this);
 	 String xp = (String) project_name.getSelectedItem();
 	 if (xp != null && (lp == null || !xp.equals(lp))) {
-	    launch_config = launch_config.setProject(xp);
+	    BumpLaunchConfig blc = launch_config.setProject(xp);
+	    if (blc != null) launch_config = blc;
 	  }
        }
     }
@@ -148,7 +149,9 @@ private void setupPanel()
 		  bn.getNameType() == BassNameType.METHOD &&
 		  Modifier.isPublic(bn.getModifiers()) &&
 		  Modifier.isStatic(bn.getModifiers())) {
-	    String cn = bn.getPackageName() + "." + bn.getClassName();
+	    String cn = bn.getClassName();
+	    String pn = bn.getPackageName();
+	    if (pn != null) cn = pn + "." + cn;
 	    starts.add(cn);
 	  }
        }
@@ -315,9 +318,9 @@ private String getNewName()
    else if (cmd.equals("CLONE")) {
       BumpLaunchConfig blc = launch_config.clone(getNewName());
       if (edit_config != null) {
-	 blc.setArguments(edit_config.getArguments());
-	 blc.setVMArguments(edit_config.getVMArguments());
-	 blc.setMainClass(edit_config.getMainClass());
+	 blc = blc.setArguments(edit_config.getArguments());
+	 blc = blc.setVMArguments(edit_config.getVMArguments());
+	 blc = blc.setMainClass(edit_config.getMainClass());
        }
       if (blc != null) {
 	 BddtLaunchBubble bbl = new BddtLaunchBubble(blc);

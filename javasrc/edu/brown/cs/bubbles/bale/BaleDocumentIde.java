@@ -70,11 +70,14 @@ class BaleDocumentIde extends BaleDocumentBase implements BaleConstants,
 
 private String		project_name;
 private File		file_name;
+private BoardLanguage	file_language;
 private boolean 	doing_load;
 private boolean 	doing_remote;
 private boolean 	doing_eload;
 private boolean 	is_dirty;
 private int		checkpoint_counter;
+private boolean 	is_readonly;
+private Element 	elision_data;	// for readonly files
 
 private Map<BaleFragment,FragmentData> fragment_map;
 
@@ -105,7 +108,7 @@ BaleDocumentIde()
    synchronized (BaleDocumentIde.class) {
       if (bump_client == null) {
 	 bump_client = BumpClient.getBump();
-	 bump_client.startIDE();
+	 bump_client.waitForIDE();
 	 bump_client.setEditParameter("AUTOELIDE","TRUE");
 	 int edelay = BALE_PROPERTIES.getInt(BALE_TYPEIN_DELAY,250);
 	 bump_client.setEditParameter("ELIDEDELAY",Integer.toString(edelay));
@@ -130,6 +133,8 @@ BaleDocumentIde()
    newline_adjust = 0;
    line_offsets = null;
    addDocumentListener(new LineOffsetListener());
+   is_readonly = false;
+   file_language = null;
 }
 
 
@@ -138,6 +143,19 @@ BaleDocumentIde(String proj,File file)
 {
    this();
    setFile(proj,file);
+}
+
+
+
+BaleDocumentIde(String proj,File file,boolean local)
+{
+   this();
+   if (local) {
+      setLocalFile(proj,file);
+      is_readonly = true;
+      elision_data = bump_client.getElisionForFile(file_name);
+   }
+   else setFile(proj,file);
 }
 
 
@@ -168,8 +186,23 @@ void checkProjectName(String name)
 }
 
 @Override File getFile()		{ return file_name; }
+@Override BoardLanguage getLanguage()
+{
+   if (file_language != null) return file_language;
+   return super.getLanguage();
+}
 
+@Override boolean isEditable()		{ return !is_readonly; }
+Element getReadonlyElisionData()	{ return elision_data; }
 
+void setReadonly()
+{
+   if (is_readonly) return;
+
+   is_readonly = true;
+
+   if (elision_data == null) elision_data = bump_client.getElisionForFile(file_name);
+}
 
 
 private void setFile(String proj,File file)
@@ -179,6 +212,7 @@ private void setFile(String proj,File file)
 
    project_name = proj;
    file_name = file;
+   setLanguage();
 
    // TODO: check out the file for write using current version manager
 
@@ -215,6 +249,9 @@ private void setFile(String proj,File file)
       else in = new StringReader(cnts);
       setupLineOffsets(in,linesep);
     }
+   catch (FileNotFoundException e) {
+      BoardLog.logI("BALE","File disappeared " + file);
+    }
    catch (Exception e) {
       BoardLog.logE("BALE","Problem loading file " + file,e);
     }
@@ -223,19 +260,75 @@ private void setFile(String proj,File file)
       writeUnlock();
     }
 
-   /*********************
-   int ln = getLength();
-   for (int i = 0; i <= ln; ++i) {
-      int v0 = mapOffsetToEclipse(i);
-      int v1 = mapOffsetToJava(v0);
-      BoardLog.logD("BALE","MAP " + i + " => " + v0 + " " + v1);
-    }
-   ****************/
-
    addDocumentListener(new EclipseUpdater());
 }
 
 
+
+private void setLocalFile(String proj,File file)
+{
+   String linesep = null;
+
+   project_name = proj;
+   file_name = file;
+   setLanguage();
+
+   try {
+      FileReader fr = new FileReader(file);
+      for ( ; ; ) {
+	 int ch = fr.read();
+	 if (ch < 0) break;
+	 if (ch == '\r') {
+	    ch = fr.read();
+	    if (ch == '\n') linesep = "\r\n";
+	    else linesep = "\r";
+	    break;
+	  }
+	 else if (ch == '\n') {
+	    ch = fr.read();
+	    if (ch == '\r') linesep = "\n\r";
+	    else linesep = "\n";
+	    break;
+	  }
+       }
+      fr.close();
+    }
+   catch (IOException e) { }
+
+   DefaultEditorKit dek = new DefaultEditorKit();
+   is_dirty = false;
+
+   writeLock();
+   try {
+      doing_load = true;
+      Reader in = null;
+      in = new BufferedReader(new FileReader(file));
+
+      dek.read(in,this,0);
+
+      in = new BufferedReader(new FileReader(file));
+      setupLineOffsets(in,linesep);
+    }
+   catch (Exception e) {
+      BoardLog.logE("BALE","Problem loading file " + file,e);
+    }
+   finally {
+      doing_load = false;
+      writeUnlock();
+    }
+}
+
+
+
+private void setLanguage()
+{
+   String f = file_name.getName();
+   file_language = BoardLanguage.JAVA;
+   if (f != null) {
+      if (f.endsWith(".py") || f.endsWith(".PY")) file_language = BoardLanguage.PYTHON;
+      if (f.endsWith(".java")) file_language = BoardLanguage.JAVA;
+    }
+}
 
 
 void revert()
@@ -389,6 +482,13 @@ void redoElision()
 
 private void fixupElision()
 {
+   // TODO: Need to handle RO files correctly here
+   if (is_readonly) {
+      int id = getEditCounter();
+      handleElisionData(file_name,id,elision_data);
+      return;
+   }
+
    String rgns = null;
    if (fragment_map.size() > 0) {
       IvyXmlWriter xw = new IvyXmlWriter();

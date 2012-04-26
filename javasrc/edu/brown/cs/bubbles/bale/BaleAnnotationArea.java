@@ -38,6 +38,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -458,7 +459,9 @@ private void recheckLines()
 
    for_document.baleReadLock();
    try {
-      BaleElement root = (BaleElement) for_document.getDefaultRootElement();
+      Element e1 = for_document.getDefaultRootElement();
+      if (!(e1 instanceof BaleElement)) return;
+      BaleElement root = (BaleElement) e1;
       start_line = for_document.findLineNumber(0);
       int endlno = for_document.findLineNumber(for_document.getLength());
       int len = endlno-start_line+1;

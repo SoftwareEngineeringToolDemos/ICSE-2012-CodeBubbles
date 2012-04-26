@@ -105,17 +105,17 @@ private void setupLogger()
    File wsd = null;
    switch (BoardSetup.getSetup().getRunMode()) {
       case CLIENT :
-         File f1 = BoardSetup.getPropertyBase();
-         File f2 = new File(f1,"logs");
-         f2.mkdirs();
-         wsd = f2;
-         break;
+	 File f1 = BoardSetup.getPropertyBase();
+	 File f2 = new File(f1,"logs");
+	 f2.mkdirs();
+	 wsd = f2;
+	 break;
       case NORMAL :
       case SERVER :
-         String wsn = bp.getProperty(BOARD_PROP_ECLIPSE_WS);
-         if (wsn != null) wsd = new File(wsn);
-         break;
-    } 
+	 String wsn = bp.getProperty(BOARD_PROP_ECLIPSE_WS);
+	 if (wsn != null) wsd = new File(wsn);
+	 break;
+    }
    if (wsd == null) use_stderr = true;
 
    String id = "";
@@ -141,12 +141,22 @@ private void setupLogger()
       monitor_log = new File(wsd,"monitor_log.log");
     }
 
+   String bnm = "bubbles_log";
+   switch (BoardSetup.getSetup().getLanguage()) {
+      default :
+      case JAVA :
+	 break;
+      case PYTHON :
+	 bnm = "pybles_log";
+	 break;
+    }
+
    if (wsd != null) {
       if (use_stderr) {
 	 // doing debugging: use a single file and keep it around
-	 debug_log = new File(wsd,"bubbles_log" + id + ".log");
+	 debug_log = new File(wsd,bnm + id + ".log");
 	 File t1 = new File(wsd,"bedrock_log" + ".save");
-	 File t2 = new File(wsd,"bubbles_log" + id + ".save");
+	 File t2 = new File(wsd,bnm + id + ".save");
 	 if (bedrock_log.exists()) bedrock_log.renameTo(t1);
 	 if (debug_log.exists()) debug_log.renameTo(t2);
        }
@@ -154,7 +164,7 @@ private void setupLogger()
 	 // normal run: find an unused file, delete after exit
 	 // file should be available for sending a bug report
 	 for (int i = 0; i < 100; ++i) {
-	    String lognm = "bubbles_log_" + i + ".log";
+	    String lognm = bnm + "_" + i + ".log";
 	    debug_log = new File(wsd,lognm);
 	    if (!debug_log.exists()) {
 	       debug_log.deleteOnExit();
@@ -205,6 +215,8 @@ private void setupLogger()
    log(LogLevel.NONE,"BOARD","Version: " + BoardUpdate.getVersionData(),null);
    log(LogLevel.NONE,"BOARD","Logging: " + debug_log,null);
    log(LogLevel.NONE,"BOARD","Bedrock: " + bedrock_log,null);
+   log(LogLevel.NONE,"BOARD","Props: " + bp.getProperty(BOARD_PROP_ECLIPSE_FOREGROUND) + " " +
+	  bp.getProperty(BOARD_PROP_AUTO_UPDATE),null);
 }
 
 

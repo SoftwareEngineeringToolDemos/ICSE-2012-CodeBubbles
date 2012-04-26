@@ -616,7 +616,7 @@ private synchronized long getNextId()
 	    use_begin = true;
 	  }
 	 catch (SQLException e) {
-	    BoardLog.logD("BNOTE","Attempt to do BEGIN/COMMIT failed: " + e);
+	    // BoardLog.logD("BNOTE","Attempt to do BEGIN/COMMIT failed: " + e);
 	    use_begin = false;
 	  }
        }

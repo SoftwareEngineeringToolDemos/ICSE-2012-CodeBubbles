@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2006 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -320,6 +320,15 @@ private void setBreakProperty(IBreakpoint bp,String p,String v) throws BedrockEx
        }
       else if (p.equals("DISABLE") || p.equals("DISABLED")) {
 	 bp.setEnabled(false);
+       }
+      else if (p.equals("CAUGHT") || p.equals("UNCAUGHT")) {
+	 if (bp instanceof IJavaExceptionBreakpoint) {
+	    IJavaExceptionBreakpoint eb = (IJavaExceptionBreakpoint) bp;
+	    boolean v0 = true;
+	    if (v != null) v0 = Boolean.parseBoolean(v);
+	    if (p.equals("CAUGHT")) eb.setCaught(v0);
+	    else eb.setUncaught(v0);
+	  }
        }
       // TODO: handle other properties
     }

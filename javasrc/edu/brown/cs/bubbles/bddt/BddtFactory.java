@@ -62,6 +62,7 @@ public class BddtFactory implements BddtConstants, BudaConstants.ButtonListener,
 private BudaChannelSet		debug_channels;
 private BumpLaunchConfig	current_configuration;
 private JLabel			launch_label;
+private BudaRoot		buda_root;
 
 private static BddtConsoleController console_controller;
 private static BddtHistoryController history_controller;
@@ -237,6 +238,8 @@ void setCurrentLaunchConfig(BumpLaunchConfig blc)
 private void setupDebugging(BudaRoot br)
 {
    if (debug_channels != null) return;
+
+   buda_root = br;
 
    debug_channels = new BudaChannelSet(br,BDDT_CHANNEL_TOP_COLOR,BDDT_CHANNEL_BOTTOM_COLOR);
 
@@ -736,7 +739,12 @@ private static class CreateConfigAction extends AbstractAction {
       BumpClient bc = BumpClient.getBump();
       BumpRunModel brm = bc.getRunModel();
       BumpLaunchConfig blc = brm.createLaunchConfiguration(null,config_type);
-      if (blc != null) blc.save();
+      if (blc != null) {
+	 blc = blc.save();
+	 BddtLaunchBubble bb = new BddtLaunchBubble(blc);
+	 BudaBubbleArea bba = the_factory.buda_root.getCurrentBubbleArea();
+	 bba.addBubble(bb,null,null,PLACEMENT_NEW|PLACEMENT_USER);
+       }
     }
 
 }	// end of inner class CreateConfigAction

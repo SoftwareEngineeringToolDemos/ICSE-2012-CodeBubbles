@@ -596,6 +596,10 @@ private void setupCommandData()
    Runtime rt = Runtime.getRuntime();
    saveCommand("PROPERTY","java.maxmemory="+Long.toString(rt.maxMemory()),start_time);
    saveCommand("PROPERTY","java.processors="+Integer.toString(rt.availableProcessors()),start_time);
+
+   BoardProperties bp = BoardProperties.getProperties("System");
+   saveCommand("PROPERTY","updates="+bp.getProperty(BOARD_PROP_ECLIPSE_FOREGROUND) + "," +
+		  bp.getProperty(BOARD_PROP_AUTO_UPDATE),start_time);
 }
 
 

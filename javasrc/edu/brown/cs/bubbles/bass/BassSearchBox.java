@@ -460,7 +460,7 @@ private void createBubble(BassName bn,int ypos)
    BowiFactory.startTask(BowiTaskType.CREATE_BUBBLE);
    try {
       BudaBubble bb = bn.createBubble();
-      addAndLocateBubble(bb, ypos);
+      addAndLocateBubble(bb,ypos,null);
     }
    finally { BowiFactory.stopTask(BowiTaskType.CREATE_BUBBLE); }
 }
@@ -471,21 +471,26 @@ private void createBubble(BassName bn,int ypos)
 private void createTextSearchBubble()
 {
    BassTextBubble btb = new BassTextBubble(input_field.getText());
-   addAndLocateBubble(btb, 0);
+   addAndLocateBubble(btb,0,null);
    if (!is_static) setVisible(false);
 }
 
 
 
 
-void addAndLocateBubble(BudaBubble bb, int ypos)
+void addAndLocateBubble(BudaBubble bb, int ypos,Point ploc)
 {
    BudaRoot root = BudaRoot.findBudaRoot(this);
    Rectangle loc = BudaRoot.findBudaLocation(this);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-   if (bba == null || loc == null) return;
+   if (bba == null) return;
 
-   if (ypos == 0) ypos = loc.y;
+   if (ypos == 0) {
+      if (loc != null) ypos = loc.y;
+      else if (ploc != null) ypos = ploc.y;
+   }
+   if (loc == null && ploc != null) loc = new Rectangle(ploc);
+   if (loc == null) return;
 
    if (is_static && bb != null) {
       Dimension bsz = bb.getSize();

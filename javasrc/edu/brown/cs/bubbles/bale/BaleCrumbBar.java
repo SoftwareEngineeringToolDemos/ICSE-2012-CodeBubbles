@@ -253,7 +253,7 @@ private synchronized void setFragmentName(String name,boolean dirty)
 	 add(component_list.getLast());
        }
 
-      String lastcomp = fragment_name.substring(idx+1, fragment_name.length());
+      String lastcomp = fragment_name.substring(idx+1);
       int parenloc = lastcomp.indexOf("(");
       boolean stoplast = false;
       if (parenloc >= 0) {

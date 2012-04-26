@@ -79,6 +79,8 @@ BedrockEclipseMonitor()
    IWorkspace ws = ResourcesPlugin.getWorkspace();
    String filename = ws.getRoot().getLocation().append("monitor_log.log").toOSString();
    log_file = new File(filename);
+   MonitorUiPlugin.getDefault();	// see if this exists
+
    is_start = false;
 }
 

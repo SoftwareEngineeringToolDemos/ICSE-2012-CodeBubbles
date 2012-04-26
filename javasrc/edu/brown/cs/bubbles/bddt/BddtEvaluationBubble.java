@@ -30,11 +30,14 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.*;
 
+import edu.brown.cs.ivy.swing.*;
+
 import javax.swing.*;
 import javax.swing.table.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.*;
 import java.util.*;
 import java.util.regex.*;
 import java.util.List;
@@ -57,6 +60,9 @@ private EvaluationTable 	eval_table;
 private JLabel			frame_label;
 private JTextField		input_field;
 private BumpStackFrame		active_frame;
+private Color			display_color;
+private Color			outline_color;
+
 
 enum EvalState {
    NONE,
@@ -84,6 +90,8 @@ BddtEvaluationBubble(BddtLaunchControl ctrl)
 
    for_control = ctrl;
    active_frame = null;
+   display_color = BDDT_EVALUATION_COLOR;
+   outline_color = BDDT_EVALUATION_OUTLINE;
 
    eval_model = new EvaluationTableModel();
 
@@ -96,10 +104,12 @@ BddtEvaluationBubble(BddtLaunchControl ctrl)
    input_field = new JTextField();
    input_field.addActionListener(new ExprAdder());
 
-   JPanel mainpanel = new JPanel(new BorderLayout());
-   mainpanel.add(frame_label,BorderLayout.NORTH);
-   mainpanel.add(scroll,BorderLayout.CENTER);
-   mainpanel.add(input_field,BorderLayout.SOUTH);
+   SwingGridPanel mainpanel = new EvaluationPanel();
+   mainpanel.addGBComponent(frame_label,0,0,0,1,10,0);
+   mainpanel.addGBComponent(scroll,0,1,0,1,10,10);
+   JLabel prompt = new JLabel(BoardImage.getIcon("debug/interactprompt"));
+   mainpanel.addGBComponent(prompt,0,2,1,1,0,0);
+   mainpanel.addGBComponent(input_field,1,2,0,1,10,0);
 
    setContentPane(mainpanel,input_field);
 
@@ -156,6 +166,8 @@ BddtEvaluationBubble(BddtLaunchControl ctrl)
    if (ee != null) {
       popup.add(new RemoveAction(ee));
       popup.add(new EditAction(ee));
+      // add an expand action (ee.toString(); ee.x + ee.y + ...)
+      
     }
 
    popup.add(getFloatBubbleAction());
@@ -228,6 +240,31 @@ private static class EditAction extends AbstractAction {
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Display Panel   							*/
+/*										*/
+/********************************************************************************/
+
+private class EvaluationPanel extends SwingGridPanel {
+
+   EvaluationPanel() {
+      setOpaque(false);
+   }
+
+   @Override public void paintComponent(Graphics g0) {
+      Graphics2D g = (Graphics2D) g0;
+      g.setColor(outline_color);
+      Dimension sz = getSize();
+      Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+      g.fill(r);
+      super.paintComponent(g0);
+   }
+
+}       // end of inner class EvaluationPanel
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -259,7 +296,7 @@ private class EvaluationTable extends JTable {
       Graphics2D g2 = (Graphics2D) g.create();
       Dimension sz = getSize();
       Rectangle r = new Rectangle(0,0,sz.width,sz.height);
-      g2.setColor(new Color(0xffff80));
+      g2.setColor(display_color);
       g2.fill(r);
       super.paintComponent(g);
     }

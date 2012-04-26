@@ -29,6 +29,7 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JPopupMenu;
 import javax.swing.text.*;
@@ -76,7 +77,9 @@ enum BaleFragmentType {
    FILE,
    FIELDS,				// set of fields
    STATICS,				// static initializers
-   HEADER				// class header
+   HEADER,				// class header
+   ROFILE,				// Read-only file (not in IDE)
+   ROMETHOD,				// read-only method (not in IDE)
 }
 
 
@@ -141,6 +144,9 @@ enum BaleTokenType {
    FINALLY,				// the keyword finally
    INTERFACE,				// the keyword interface
    SYNCHRONIZED,			// the keyword synchronized
+   CONTINUE,			   // the keyword continue
+   PASS,			   // the keyword pass
+   RAISE,			   // the keyword raise
    TYPEKEY,				// type keyword (int, void, ...)
    NUMBER,				// numeric literal
    CHARLITERAL, 			// character literal
@@ -162,6 +168,7 @@ enum BaleTokenType {
    AT,					// at sign @
    OP,					// valid operator
    EQUAL,				// equals sign
+   BACKSLASH,			   // backslash
    BADSTRING,				// unclosed string
    BADCHARLIT,				// unclosed character literal
    BADNUMBER,				// 0x, ###e ###e+ ###e-
@@ -193,6 +200,10 @@ interface BaleToken {
  **/
    int getLength();
 }
+
+
+int EXDENT_UNKNOWN = -10;
+int EXDENT_CONTINUE = -11;
 
 
 
@@ -252,7 +263,8 @@ enum BaleAstIdType {
    FIELD_DECL,
    LOCAL_DECL,
    UNDEF,
-   ANNOT
+   ANNOT,
+   BUILTIN
 }
 
 
@@ -388,7 +400,7 @@ Color BALE_FIND_HIGHLIGHT_COLOR = new Color(0,100,150,50);
  **/
 Color BALE_PORT_ANNOT_COLOR = new Color(0x20ff00ff,true);
 
-			
+	
 
 
 /********************************************************************************/
@@ -580,7 +592,7 @@ int BALE_THICK_CARET_WIDTH = 3; 		// width of thick text editing caret
 String BALE_DOES_DOCUMENT_MOVEMENT = "Bale.caret.movement";
 
 
-				
+		
 
 /********************************************************************************/
 /*										*/
@@ -1252,6 +1264,22 @@ interface BaleContextListener extends EventListener {
    String getToolTipHtml(BaleContextConfig cfg);
 
 }	// end of inner interface BaleContextHandler
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Language-specific command interface					*/
+/*										*/
+/********************************************************************************/
+
+interface BaleLanguageKit {
+
+   Action [] getActions();
+   Keymap getKeymap(Keymap base);
+
+
+}	// end of inner class BaleLanguageKit
 
 
 

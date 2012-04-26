@@ -428,32 +428,34 @@ private class TableUpdater implements Runnable {
    @Override public void run() {
       BumpThread bt;
       switch (run_event.getEventType()) {
-	 case THREAD_ADD :
-	    bt = run_event.getThread();
-	    if (bt != null) {
-	       thread_set.add(bt);
-	       synchronized (bump_threads) {
-		  bump_threads.clear();
-		  bump_threads.addAll(thread_set);
-		}
-	     }
-	    break;
-	 case THREAD_REMOVE :
-	    bt = run_event.getThread();
-	    if (bt != null) {
-	       thread_set.remove(bt);
-	       synchronized (bump_threads) {
-		  bump_threads.remove(bt);
-		}
-	     }
-	    break;
-	 case THREAD_CHANGE :
-	     // BoardLog.logD("BDDT","THREAD CHANGE " + run_event.getThread().getThreadState());
-	    //TODO: Update thread
-	    break;
-	 case THREAD_TRACE :
-	 case THREAD_HISTORY :
-	    return;
+         case THREAD_ADD :
+            bt = run_event.getThread();
+            if (bt != null) {
+               if (!thread_set.add(bt)) {
+        	  BoardLog.logD("BDDT","THREAD ALREADY IN THREADSET " + bt.getId());
+               }
+               synchronized (bump_threads) {
+        	  bump_threads.clear();
+        	  bump_threads.addAll(thread_set);
+        	}
+             }
+            break;
+         case THREAD_REMOVE :
+            bt = run_event.getThread();
+            if (bt != null) {
+               thread_set.remove(bt);
+               synchronized (bump_threads) {
+        	  bump_threads.remove(bt);
+        	}
+             }
+            break;
+         case THREAD_CHANGE :
+             // BoardLog.logD("BDDT","THREAD CHANGE " + run_event.getThread().getThreadState());
+            //TODO: Update thread
+            break;
+         case THREAD_TRACE :
+         case THREAD_HISTORY :
+            return;
        }
       threads_model.fireTableDataChanged();
     }
@@ -499,7 +501,9 @@ private static class ThreadComparator implements Comparator<BumpThread> {
       if (t1.getName() == null && t2.getName() == null) return 0;
       else if (t1.getName() == null) return -1;
       else if (t2.getName() == null) return 1;
-      return t1.getName().compareTo(t2.getName());
+      int sts = t1.getName().compareTo(t2.getName());
+      if (sts != 0) return sts;
+      return t1.getId().compareTo(t2.getId());
     }
 
 }	// end of inner class ThreadComparator

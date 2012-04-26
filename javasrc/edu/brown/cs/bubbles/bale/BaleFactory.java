@@ -37,6 +37,9 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
+import edu.brown.cs.ivy.xml.IvyXml;
+
+import org.w3c.dom.Element;
 
 import javax.swing.JPopupMenu;
 import javax.swing.*;
@@ -91,7 +94,7 @@ private static boolean		is_setup = false;
 
 private BaleFactory()
 {
-   bump_client.startIDE();
+   bump_client.waitForIDE();
 
    file_documents = new HashMap<File,BaleDocumentIde>();
    style_context = new StyleContext();
@@ -235,6 +238,68 @@ BaleFragmentEditor createFileEditor(String proj,String cls)
    List<BumpLocation> locs = bump_client.findCompilationUnit(proj,cls);
 
    return getEditorFromLocations(locs,BaleFragmentType.FILE,cls + ".<FILE>");
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Factory methods for local file editors					*/
+/*										*/
+/********************************************************************************/
+
+BaleFragmentEditor createLocalFileEditor(String proj,File file,String cnm,String fnm,int lno)
+{
+   BaleDocumentIde fdoc = getDocument(proj,file,true);
+   BaleRegion rgn = null;
+
+   int spos = 0;
+   int epos = (int) file.length();
+
+   if (lno > 0 && fnm != null) {
+      Element ed = fdoc.getReadonlyElisionData();
+      int off = fdoc.findLineOffset(lno);
+      // BoardLog.logD("BALE","FIND " + fnm + " " + off + " IN " + IvyXml.convertXmlToString(ed));
+
+      Element me = findMethodElement(ed,off);
+      if (me != null) {
+	 spos = IvyXml.getAttrInt(me,"START");
+	 epos = IvyXml.getAttrInt(me,"LENGTH") + spos + 1;
+       }
+   }
+
+   try {
+      Position pos0 = fdoc.createPosition(spos);
+      Position pos1 = fdoc.createPosition(epos);
+      rgn = new BaleRegion(pos0,pos1);
+    }
+   catch (BadLocationException e) { }
+   List<BaleRegion> rgns = new ArrayList<BaleRegion>();
+   rgns.add(rgn);
+
+   return new BaleFragmentEditor(proj,file,fnm,fdoc,BaleFragmentType.ROFILE,rgns);
+}
+
+
+private Element findMethodElement(Element e,int off)
+{ 
+   if (e == null) return null;
+
+   if (IvyXml.isElement(e,"ELIDE")) {
+      int spos = IvyXml.getAttrInt(e,"START");
+      int epos = IvyXml.getAttrInt(e,"LENGTH") + spos - 1;
+      if (off < spos || off > epos) return null;
+
+      String nty = IvyXml.getAttrString(e,"NODE");
+      if (nty != null && nty.equals("METHOD")) return e;
+    }
+
+   for (Element ce : IvyXml.children(e,"ELIDE")) {
+      Element fe = findMethodElement(ce,off);
+      if (fe != null) return fe;
+    }
+
+   return null;
 }
 
 
@@ -416,16 +481,18 @@ public BudaBubble createMethodBubble(String proj,String fct)
  *	file to be used is passed in.
  **/
 
-public BudaBubble createSystemMethodBubble(String proj,String fct,File src)
+public BudaBubble createSystemMethodBubble(String proj,String fct,File src,int lno)
 {
-   // this doesn't do what we want it to
-   List<BumpLocation> locs = bump_client.findMethod(proj,fct,true);
+   String cnm = fct;
+   int idx = fct.indexOf("(");
+   if (idx >= 0) {
+      int idx1 = fct.lastIndexOf(".",idx);
+      cnm = fct.substring(0,idx1);
+   }
 
-   if (locs == null || locs.isEmpty()) return null;
+   BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,src,cnm,fct,lno);
 
-   // need to create a bubble using the given file here
-
-   return null;
+   return bb;
 }
 
 
@@ -505,6 +572,17 @@ public BudaBubble createFileBubble(String proj,String cls)
 }
 
 
+public BudaBubble createFileBubble(String proj,File file,String cnm,String fnm,int lno)
+{
+   BaleFragmentEditor bfe = createLocalFileEditor(proj,file,cnm,fnm,lno);
+   if (bfe == null) return null;
+
+   return new BaleEditorBubble(bfe);
+}
+
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -520,6 +598,11 @@ public BudaBubble createFileBubble(String proj,String cls)
 public BaleFileOverview getFileOverview(String proj,File file)
 {
    return getDocument(proj,file);
+}
+
+public BaleFileOverview getFileOverview(String proj,File file,boolean lcl)
+{
+   return getDocument(proj,file,lcl);
 }
 
 
@@ -683,6 +766,12 @@ synchronized BaleHighlightContext getGlobalHighlightContext()
 
 BaleDocumentIde getDocument(String proj,File f)
 {
+   return getDocument(proj,f,false);
+}
+
+
+BaleDocumentIde getDocument(String proj,File f,boolean lcl)
+{
    BaleDocumentIde fdoc = null;
 
    if (f == null) return null;
@@ -690,10 +779,14 @@ BaleDocumentIde getDocument(String proj,File f)
    synchronized (file_documents) {
       fdoc = file_documents.get(f);
       if (fdoc == null) {
-	 fdoc = new BaleDocumentIde(proj,f);
+	 fdoc = new BaleDocumentIde(proj,f,lcl);
 	 file_documents.put(f,fdoc);
        }
     }
+
+   if (lcl && fdoc.isEditable()) {
+      fdoc.setReadonly();
+   }
 
    return fdoc;
 }
@@ -949,7 +1042,9 @@ private BaleFragmentEditor getEditorFromLocations(List<BumpLocation> locs)
       case FUNCTION :
       case CONSTRUCTOR :
 	 ftyp = BaleFragmentType.METHOD;
-	 fragname += loc0.getParameters();
+	 String prms = loc0.getParameters();
+	 if (prms != null) fragname += prms;
+	 else fragname += "(...)";
 	 break;
       case CLASS :
       case INTERFACE :

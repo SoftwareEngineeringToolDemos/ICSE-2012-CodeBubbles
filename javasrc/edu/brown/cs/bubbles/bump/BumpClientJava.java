@@ -111,7 +111,25 @@ BumpClientJava()
 
 private void ensureRunning()
 {
-   if (tryPing()) return;
+   for ( ; ; ) {
+      String r = getStringReply("PING",null,null,null,5000);
+      if (r != null && r.startsWith("<RESULT>")) {
+	 r = r.substring(8);
+	 int idx = r.indexOf("<");
+	 if (idx >= 0) r = r.substring(0,idx);
+      }
+      if (r == null) break;		// nothing there
+      if (r.equals("EXIT") || r.equals("UNSET")) {
+	 BoardLog.logX("BUMP","Eclipse caught during exit " + r);
+	 // Eclipse is exiting; wait for that and try again
+	 try {
+	    Thread.sleep(3000);
+	  }
+	 catch (InterruptedException e) { }
+       }
+      else return;			// eclipse already running
+    }
+
    if (BoardSetup.getSetup().getRunMode() == BoardConstants.RunMode.CLIENT) {
       BoardLog.logE("BUMP","Client mode with no eclipse found");
       JOptionPane.showMessageDialog(null,

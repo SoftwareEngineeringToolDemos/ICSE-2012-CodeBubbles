@@ -209,7 +209,8 @@ Connection getLogDatabase()
 	 bnote_conn = DriverManager.getConnection(url,props);
        }
       catch (SQLException e) {
-	 BoardLog.logE("BNOTE","Problem creating database",e);
+	 // TODO: Should warn the user here
+	 BoardLog.logE("BNOTE","Problem creating database: " + e);
       }
     }
    else {
@@ -361,7 +362,7 @@ private void setupDerbyServer()
 	    }
 	    catch (InterruptedException e) { }
 	 }
-     
+
 	 if (sts == 0) {
 	    File f2 = new File(pbase,".derby");
 	    FileWriter fw = new FileWriter(f2);

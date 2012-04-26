@@ -307,6 +307,7 @@ private void startDebugServer()
 
       List<String> args = new ArrayList<String>();
       args.add("java");
+      args.add("-Xmx256m");
       args.add("-cp");
       args.add(System.getProperty("java.class.path"));
       args.add("edu.brown.cs.bubbles.bump.BumpDebugServer");
@@ -592,15 +593,17 @@ private void handleProcessEvent(Element xml)
 	 break;
       case CREATE :
       case CHANGE :
-	 pd = active_processes.get(id);
-	 if (pd == null) {
-	    pd = new ProcessData(proc);
-	    active_processes.put(id,pd);
-	    evt = new ProcessEvent(BumpRunEventType.PROCESS_ADD,pd);
-	  }
-	 else {
-	    pd.updateProcess(proc);
-	    evt = new ProcessEvent(BumpRunEventType.PROCESS_CHANGE,pd);
+	 synchronized (active_processes) {
+	    pd = active_processes.get(id);
+	    if (pd == null) {
+	       pd = new ProcessData(proc);
+	       active_processes.put(id,pd);
+	       evt = new ProcessEvent(BumpRunEventType.PROCESS_ADD,pd);
+	     }
+	    else {
+	       pd.updateProcess(proc);
+	       evt = new ProcessEvent(BumpRunEventType.PROCESS_CHANGE,pd);
+	     }
 	  }
 	 break;
       default :
@@ -832,7 +835,6 @@ private void handleTargetEvent(Element xml,long when)
    for (BumpThread bt : pd.getThreads()) {
       ThreadData td = (ThreadData) bt;
       BumpThreadState ost = td.getThreadState();
-      BoardLog.logD("BUMP","Target thread change " + td.getName() + " " + ost);
       switch (kind) {
 	 case SUSPEND :
 	    handleTargetThreadState(td,ost.getStopState(),dtl,when);

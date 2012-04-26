@@ -472,7 +472,7 @@ private List<BaleElement> scanText(String text,int baseoffset,
 				      IdentifierMap idmap,
 				      boolean top)
 {
-   BaleTokenizer toks = new BaleTokenizer(text,sstate);
+   BaleTokenizer toks = BaleTokenizer.create(text,sstate,base_document.getLanguage());
    BaleDocument doc = root_element.getBaleDocument();
 
    List<BaleElement> rslt = new ArrayList<BaleElement>();
@@ -481,6 +481,7 @@ private List<BaleElement> scanText(String text,int baseoffset,
    rslt.add(cur);
    int ctr = 0;
    BaleTokenState nstate = sstate;
+   BaleElement xelt = null;
 
    for (BaleToken bt : toks.scan()) {
       int soff = bt.getStartOffset() + baseoffset;
@@ -492,7 +493,10 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	    nelt = new BaleElement.Eol(doc,cur,soff,eoff);
 	    break;
 	 case SPACE :
-	    nelt = new BaleElement.Space(doc,cur,soff,eoff);
+	    if (xelt == null || xelt.isEndOfLine()) 
+	       nelt = new BaleElement.Indent(doc,cur,soff,eoff);	 
+	    else
+	       nelt = new BaleElement.Space(doc,cur,soff,eoff);
 	    break;
 	 case LINECOMMENT :
 	    nelt = new BaleElement.LineComment(doc,cur,soff,eoff);
@@ -532,6 +536,9 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	 case INTERFACE :
 	 case SYNCHRONIZED :
 	 case TYPEKEY :
+         case CONTINUE :
+         case PASS :
+         case RAISE :
 	    nelt = new BaleElement.Keyword(doc,cur,soff,eoff,bt.getType());
 	    break;
 	 case RETURN :
@@ -570,6 +577,7 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	 case LANGLE :
 	 case RANGLE :
 	 case OTHER :
+         case BACKSLASH :
 	    nelt = new BaleElement.Token(doc,cur,soff,eoff,bt.getType());
 	    break;
 	 case LBRACE :
@@ -595,6 +603,7 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	    cur.add(nelt);
 	    ++ctr;
 	  }
+	 xelt = nelt;
        }
     }
 

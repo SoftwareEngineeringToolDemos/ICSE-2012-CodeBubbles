@@ -30,11 +30,18 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.*;
 
+import edu.brown.cs.ivy.swing.*;
+
 import javax.swing.*;
 import javax.swing.text.*;
+import javax.swing.text.html.*;
 
-import java.awt.*;
 import java.awt.event.*;
+import java.awt.*;
+import java.awt.geom.*;
+import java.io.*;
+
+
 
 
 class BddtInteractionBubble extends BudaBubble implements BddtConstants, BudaConstants,
@@ -54,23 +61,21 @@ private JTextField		input_field;
 private BumpStackFrame		active_frame;
 private BumpStackFrame		last_frame;
 
-private static SimpleAttributeSet	frame_attrs;
-private static SimpleAttributeSet	input_attrs;
-private static SimpleAttributeSet	output_attrs;
-private static SimpleAttributeSet	error_attrs;
+private Element 		body_element;
+private Element 		frame_element;
+private int			frame_counter;
+private String			last_frameid;
+
+private Color                   background_color;
+private Color			outline_color;
 
 
 private static final long serialVersionUID = 1;
 
+private static String header_string;
 
 static {
-   frame_attrs = new SimpleAttributeSet();
-   frame_attrs.addAttribute(StyleConstants.Bold,Boolean.TRUE);
-   input_attrs = new SimpleAttributeSet();
-   output_attrs = new SimpleAttributeSet();
-   output_attrs.addAttribute(StyleConstants.Foreground,Color.GREEN);
-   error_attrs = new SimpleAttributeSet();
-   error_attrs.addAttribute(StyleConstants.Foreground,Color.RED);
+   header_string = "<html><body id='body'>";
 }
 
 
@@ -90,8 +95,16 @@ BddtInteractionBubble(BddtLaunchControl ctrl)
    active_frame = null;
    last_frame = null;
 
-   display_area = new JEditorPane("text/html",null);
+   background_color = BDDT_INTERACTION_COLOR;
+   outline_color = BDDT_INTERACTION_OUTLINE;
+   display_area = new InteractEditor("text/html",header_string);
    display_area.setEditable(false);
+   display_area.setOpaque(false);
+   display_area.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES,Boolean.TRUE);
+   body_element = findElementById("body");
+   frame_element = null;
+   frame_counter = 0;
+   last_frameid = null;
 
    input_field = new JTextField();
    input_field.addActionListener(new ExprTypein());
@@ -99,10 +112,15 @@ BddtInteractionBubble(BddtLaunchControl ctrl)
    JScrollPane scrl = new JScrollPane(display_area);
    scrl.setPreferredSize(BDDT_INTERACTION_INITIAL_SIZE);
 
-   JPanel pnl = new JPanel(new BorderLayout());
+   SwingGridPanel pnl = new InteractPanel();
+   pnl.addGBComponent(scrl,0,0,0,1,10,10);
+   pnl.addGBComponent(input_field,1,1,0,1,10,0);
+   JLabel prompt = new JLabel(BoardImage.getIcon("debug/interactprompt"));
+   pnl.addGBComponent(prompt,0,1,1,1,0,0);
 
-   pnl.add(scrl,BorderLayout.CENTER);
-   pnl.add(input_field,BorderLayout.SOUTH);
+   // JPanel pnl = new JPanel(new BorderLayout());
+   // pnl.add(scrl,BorderLayout.CENTER);
+   // pnl.add(input_field,BorderLayout.SOUTH);
 
    setContentPane(pnl,input_field);
    pnl.addMouseListener(new FocusOnEntry(input_field));
@@ -162,40 +180,138 @@ private void evaluate(String expr)
 {
    if (active_frame == null) return;
    if (!active_frame.match(last_frame)) {
-      addText("\nFRAME: " + active_frame.getDisplayString() + "\n",frame_attrs);
+      String ftxt = getFrameHtml(active_frame.getDisplayString());
+      insertBeforeEnd(body_element,ftxt);
       last_frame = active_frame;
+      frame_element = findElementById(last_frameid);
     }
 
-   addText(expr,input_attrs);
-   addText(" = ",input_attrs);
+   StringBuffer buf = new StringBuffer();
+   buf.append("<div ALIGN='LEFT'>");
+   buf.append(expr);
+   buf.append(" = ");
 
    ExpressionValue ev = for_control.evaluateExpression(active_frame,expr);
    if (ev != null) {
-      if (ev.isValid()) addText(ev.formatResult(),output_attrs);
-      else addText(ev.getError(),error_attrs);
+      if (ev.isValid()) {
+	 buf.append("<font color='green'>");
+	 buf.append(ev.formatResult());
+	 buf.append("</font>");
+       }
+      else {
+	 buf.append("<font color='red'>");
+	 buf.append(ev.getError().trim());
+	 buf.append("</font>");
+       }
     }
-   addText("\n",null);
+   buf.append("</div>");
+
+   insertBeforeEnd(frame_element,buf.toString());
+   
+   String txt = display_area.getText();
+   System.err.println("RESULT: " + txt);
 }
 
 
 
-private synchronized void addText(String t,AttributeSet attr)
+
+private String getFrameHtml(String desc)
 {
-   if (t == null || t.length() == 0) return;
+   StringBuffer buf = new StringBuffer();
 
-   Document d = display_area.getDocument();
-   int ln = d.getLength();
+   if (last_frame != null) buf.append("<br>");
 
+   ++frame_counter;
+   last_frameid = "frame_" + frame_counter;
+
+   buf.append("<p ALIGN='CENTER'><b>");
+   buf.append(desc);
+   buf.append("</b></p><div ALIGN='LEFT' id='" + last_frameid + "'></div>");
+
+   return buf.toString();
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Insertion methods							*/
+/*										*/
+/********************************************************************************/
+
+private Element findElementById(String id)
+{
+   HTMLDocument hd = (HTMLDocument) display_area.getDocument();
+   return hd.getElement(id);
+}
+
+
+
+private void insertBeforeEnd(Element e,String txt)
+{
+   HTMLDocument hd = (HTMLDocument) display_area.getDocument();
    try {
-      d.insertString(ln,t,attr);
+      hd.insertBeforeEnd(e,txt);
     }
-   catch (BadLocationException e) {
-      BoardLog.logE("BDDT","Problem inserting evaluation output",e);
+   catch (IOException ex) {
+      BoardLog.logE("BDDT","Problem inserting evaluation output",ex);
+    }
+   catch (BadLocationException ex) {
+      BoardLog.logE("BDDT","Problem inserting evaluation output",ex);
     }
 }
 
 
 
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Implementations of widgets for drawing                                  */
+/*                                                                              */
+/********************************************************************************/
+
+private class InteractPanel extends SwingGridPanel {
+
+   InteractPanel() {
+      setOpaque(false);
+    }
+   
+   @Override public void paintComponent(Graphics g0) {
+      Graphics2D g = (Graphics2D) g0;
+      g.setColor(outline_color);
+      Dimension sz = getSize();
+      Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+      g.fill(r);
+      super.paintComponent(g0);
+    }
+
+}       // end of inner class InteractPanel
+
+
+
+private class InteractEditor extends JEditorPane {
+   
+   InteractEditor(String typ,String cnts) {
+      super(typ,cnts);
+    }
+   
+   @Override public void paintComponent(Graphics g0) {
+      Graphics2D g = (Graphics2D) g0;
+      g.setColor(background_color);
+      Dimension sz = getSize();
+      Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+      g.fill(r);
+      super.paintComponent(g);
+    }
+   
+}       // end of inner class InteractEditor
+
+/********************************************************************************/
+/*										*/
+/*	Type in action listener 						*/
+/*										*/
+/********************************************************************************/
 
 private class ExprTypein implements ActionListener {
 

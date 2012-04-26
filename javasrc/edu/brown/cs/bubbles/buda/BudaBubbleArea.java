@@ -776,37 +776,39 @@ void checkAreaDimensions()
       if (r.x + r.width > maxx) maxx = r.x + r.width;
       if (r.y < miny) miny = r.y;
       if (r.y + r.height > maxy) maxy = r.y + r.height;
-   }
+    }
 
    int deltax = 0;
    int deltay = 0;
    if (minx < 0) {
       deltax = -minx;
       maxx += deltax;
-   }
+    }
    if (miny < 0) {
       deltay = -miny;
       maxy += deltay;
-   }
+    }
+
    if (deltax > 0 || deltay > 0) {
       for (Component c : cnts) {
 	 if (c instanceof BudaBubble) {
 	    BudaBubble bb = (BudaBubble) c;
 	    if (bb.isFloating()) continue;
-	 }
+	  }
 	 r = c.getBounds(r);
 	 r.x += deltax;
 	 r.y += deltay;
 	 c.setBounds(r);
-      }
+       }
       if (!auto_scroller.isRunning())
 	 for_root.moveCurrentViewport(deltax,deltay);
-   }
+    }
+
    if (maxx > osz.width || maxy > osz.height) {
       osz.width = Math.max(osz.width,maxx);
       osz.height = Math.max(osz.height,maxy);
       setSize(osz);
-   }
+    }
 }
 
 
@@ -2738,11 +2740,14 @@ private class AutoScroller extends javax.swing.Timer implements ActionListener
       delta_y = dy;
       if (dx == 0 && dy == 0) {
 	 if (isRunning()) {
-	    BoardMetrics.noteCommand("BUDA","autoScroll");
+	    BoardMetrics.noteCommand("BUDA","autoScrollStop");
 	    stop();
 	  }
        }
-      else if (!isRunning()) start();
+      else if (!isRunning()) {
+	 start();
+	 BoardMetrics.noteCommand("BUDA","autoScrollStart");
+      }
     }
 
    public void actionPerformed(ActionEvent e) {

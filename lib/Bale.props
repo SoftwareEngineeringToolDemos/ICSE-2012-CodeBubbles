@@ -45,6 +45,8 @@
 <entry key="StaticCallId.italic">true</entry>
 <entry key="UndefCallId.parent">CallId</entry>
 <entry key="UndefId.parent">Bale</entry>
+<entry key="BuiltinId.parent">Bale</entry>
+<entry key="BuiltinId.foreground">#00c0c0</entry>
 <entry key="AnnotationId.parent">Bale</entry>
 <entry key="AnnotationId.foreground">#a00000</entry>
 <entry key="DeprecatedCallId.parent">CallId</entry>
@@ -74,7 +76,7 @@
 <entry key="Bale.editor.top.color">ffffffff</entry>
 <entry key="Bale.editor.bottom.color">ffcce0e0</entry>
 <entry key="Bale.crumb.font">LucindaSansRegular.ttf/0/11</entry>
-<entry key="Bale.crumb.showmethod">false</entry>
+<entry key="Bale.crumb.showmethod">true</entry>
 <entry key="visualization.icon.enable">false</entry>
 <entry key="visualization.icon.indication">package</entry>
 <entry key="visualization.icon.transparent">100</entry>

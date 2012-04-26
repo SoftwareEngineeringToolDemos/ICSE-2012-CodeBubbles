@@ -84,6 +84,7 @@ static {
    ast_types.put("ANNOT",BaleAstNodeType.ANNOTATION);
    ast_types.put("COMPUNIT",BaleAstNodeType.FILE);
    ast_types.put("METHOD",BaleAstNodeType.METHOD);
+   ast_types.put("FUNCTION",BaleAstNodeType.METHOD);
 
    id_types = new HashMap<String,BaleAstIdType>();
    id_types.put("CALL",BaleAstIdType.CALL);
@@ -110,6 +111,10 @@ static {
    id_types.put("LOCALDECL",BaleAstIdType.LOCAL_DECL);
    id_types.put("UNDEF",BaleAstIdType.UNDEF);
    id_types.put("ANNOT",BaleAstIdType.ANNOT);
+   id_types.put("BUILTIN",BaleAstIdType.BUILTIN) ;
+
+   // python-specific ids
+   id_types.put("VARDECL",BaleAstIdType.FIELD_STATIC);
 }
 
 

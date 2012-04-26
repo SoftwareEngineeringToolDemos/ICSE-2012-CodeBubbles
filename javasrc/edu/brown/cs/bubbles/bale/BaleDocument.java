@@ -184,8 +184,8 @@ BaleElement getActualCharacterElement(int pos)
        }
       return (BaleElement) e;
     }
-   finally { 
-      // readUnlock(); 
+   finally {
+      // readUnlock();
       }
 }
 
@@ -532,6 +532,18 @@ String getProjectName() 			{ return null; }
 File getFile()					{ return null; }
 String getFragmentName()			{ return null; }
 BaleFragmentType getFragmentType()		{ return BaleFragmentType.NONE; }
+BoardLanguage getLanguage()
+{
+   String f = getFile().getName();
+   if (f == null) return BoardLanguage.JAVA;
+   if (f.endsWith(".py") || f.endsWith(".PY")) return BoardLanguage.PYTHON;
+   if (f.endsWith(".java")) return BoardLanguage.JAVA;
+   return BoardLanguage.JAVA;
+}
+
+
+boolean isEditable()				{ return true; }
+
 
 int getEditCounter()				{ return id_counter; }
 long getLastEditTime()				{ return last_edit; }
@@ -571,7 +583,7 @@ BaleSimpleRegion getFragmentRegion(int docoffset,int len)
 
 
 BaleRegion createDocumentRegion(Position start,Position end,boolean incleol)
-        throws BadLocationException
+	throws BadLocationException
 {
    return new BaleRegion(savePosition(start),savePosition(end),incleol);
 }
@@ -726,29 +738,6 @@ void noteOpen() 						{ }
 /*										*/
 /********************************************************************************/
 
-int getLineIndent(int off)
-{
-   BaleIndenter bind = getIndenter();
-
-   int nind = bind.getDesiredIndentation(off);
-   int oind = bind.getCurrentIndentation(off);
-
-   BoardLog.logD("BALE","LINE INDENT: " + oind + " -> " + nind);
-
-   return nind;
-}
-
-
-
-int getCurrentLineIndent(int off)
-{
-   BaleIndenter bind = getIndenter();
-   int oind = bind.getCurrentIndentation(off);
-   return oind;
-}
-
-
-
 int getSplitIndent(int off)
 {
    BaleIndenter bind = getIndenter();
@@ -805,7 +794,15 @@ void fixLineIndent(int lno)
 private BaleIndenter getIndenter()
 {
    if (our_indenter == null) {
-      our_indenter = new BaleIndenter(this);
+      switch (getLanguage()) {
+	 case JAVA :
+	 default :
+	    our_indenter = new BaleIndenterJava(this);
+	    break;
+	 case PYTHON :
+	    our_indenter = new BaleIndenterPython(this);
+	    break;
+       }
     }
 
    return our_indenter;

@@ -96,10 +96,12 @@ void handleQuickFix(String bid,String proj,String file,int off,int len,List<Elem
 	throws BedrockException
 {
    CompilationUnit cu = our_plugin.getAST(bid,proj,file);
+   BedrockPlugin.logD("QUICK FIX FOR AST: " + cu);
+
    ICompilationUnit icu = our_plugin.getCompilationUnit(proj,file);
 
    List<CategorizedProblem> probs = getProblems(cu,problems);
-   if (probs == null || probs.size() == 0) return;
+   if (probs == null || probs.size() == 0) throw new BedrockException("Problem not found");
    if (off < 0) {
       CategorizedProblem p = probs.get(0);
       off = p.getSourceStart();
@@ -188,6 +190,7 @@ private List<CategorizedProblem> getProblems(CompilationUnit cu,List<Element> xm
       int sln = IvyXml.getAttrInt(e,"START");
       if (sln < 0) continue;
       for (IProblem ip : probs) {
+	 BedrockPlugin.logD("Consider problem " + ip.getID() + " " + ip.getSourceStart() + " " + ip.getClass());
 	 if (!(ip instanceof CategorizedProblem)) continue;
 	 if (ip.getID() != mid) continue;
 	 if (Math.abs(ip.getSourceStart() - sln) > 2) continue;

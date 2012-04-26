@@ -537,6 +537,8 @@ protected abstract class AbstractNode implements ValueTreeNode, TreeNode {
     }
 
    @Override public int getChildCount() {
+      if (children_known && getType() == ValueSetType.THREAD && child_nodes.isEmpty()) 
+	 children_known = false;
       computeChildren();
       return child_nodes.size();
     }
@@ -749,7 +751,8 @@ private class RootNode extends AbstractNode {
 	    if (pn == null) return true;
 	  }
 	 AbstractNode nn = replaceNode(pn,an);
-	 if (nn == null) return false;
+	 if (nn == null) 
+	    return false;
 	 nl.addFirst(nn);
 	 pn = nn;
       }
@@ -761,12 +764,16 @@ private class RootNode extends AbstractNode {
    AbstractNode replaceNode(AbstractNode pn,AbstractNode xn) {
       if (pn == null) return null;
       AbstractNode newbase = null;
-      for (int i = 0; i < pn.getChildCount(); ++i) {
+      int ct = pn.getChildCount();
+      for (int i = 0; i < ct; ++i) {
 	 AbstractNode cn = (AbstractNode) pn.getChildAt(i);
 	 if (cn == xn) return cn;
 	 if (cn.getType() == xn.getType() && cn.sameNode(xn))
 	    newbase = cn;
        }
+      if (newbase == null) {
+	 System.err.println("REPLACEMENT NOT FOUND");
+      }
       return newbase;
     }
 
@@ -798,7 +805,7 @@ private class ThreadNode extends AbstractNode {
 	 addChild(new FrameNode(this,stk.getFrame(i)));
        }
     }
-
+   
    @Override String getName()		{ return for_thread.getName(); }
 
    @Override ValueSetType getType()	{ return ValueSetType.THREAD; }

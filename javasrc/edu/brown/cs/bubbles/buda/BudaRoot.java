@@ -78,7 +78,7 @@ private BudaRelations		relation_data;
 private BudaChannelSet		cur_channels;
 private JPanel			channel_area;
 private BoardProperties 	buda_properties;
-private BudaShareManager        share_manager;
+private BudaShareManager	share_manager;
 
 private static MouseEvent	last_mouse;
 
@@ -342,7 +342,7 @@ public BudaBubbleArea getCurrentBubbleArea()
 
 BudaBubbleArea getBubbleArea()			{ return bubble_area; }
 
-BudaShareManager getShareManager()              { return share_manager; }
+BudaShareManager getShareManager()		{ return share_manager; }
 
 
 
@@ -659,6 +659,32 @@ public void createSearchBubble(Point pt,String proj,String pfx,boolean showmenu)
 public void hideSearchBubble()
 {
    if (search_bubble != null) search_bubble.setVisible(false);
+}
+
+
+public static void hideSearchBubble(ActionEvent e)
+{
+   hideSearchBubble(e.getSource());
+}
+
+public static void hideSearchBubble(Object src)
+{
+   if (src == null) return;
+   if (src instanceof Component) {
+      Component c = (Component) src;
+      BudaRoot br = BudaRoot.findBudaRoot(c);
+      if (br == null || br.search_bubble == null) return;
+      for (Component c1 = c; c1 != null; c1 = c1.getParent()) {
+	 if (c1 instanceof JPopupMenu && c1 != br.search_bubble) {
+	    c1 = ((JPopupMenu) c1).getInvoker();
+	    if (c1 == null) break;
+	 }
+         if (c1 == br.search_bubble) {
+            br.hideSearchBubble();
+            break;
+          }
+       }
+    }
 }
 
 BudaBubble getPackageExplorer(BudaBubbleArea bba) { return search_creator.getPackageExplorer(bba); }
@@ -1075,6 +1101,8 @@ private void setupGlobalActions()
 			KeyStroke.getKeyStroke(KeyEvent.VK_F10, menudown|InputEvent.SHIFT_DOWN_MASK));
    registerKeyAction(new SearchKeyHandler(true,false,false),"Search in Project",
 			KeyStroke.getKeyStroke(KeyEvent.VK_F10,0));
+   registerKeyAction(new SearchKeyHandler(true,false,false),"Search in Project",
+			KeyStroke.getKeyStroke(KeyEvent.VK_O,menudown));
    registerKeyAction(new SearchKeyHandler(true,true,false),"Search",
 			KeyStroke.getKeyStroke(KeyEvent.VK_F11,0));
    registerKeyAction(new SearchKeyHandler(false,true,false),"Search for Documentation",
@@ -1518,15 +1546,15 @@ BudaBubble createBubble(BudaBubbleArea bba,Element e,Rectangle delta,int dx)
 int matchConfiguration(String key,Element e,BudaBubble bb)
 {
    if (key == null) return 0;
-   
+
    BudaBubbleOutputer bbo = bb.getBubbleOutputer();
    if (bbo == null) return 0;
    if (!bbo.getConfigurator().equals(key)) return 0;
    // could ask bbo to output xml to a BudaXmlWriter and then compare
-   
+
    BubbleConfigurator bc = bubble_config.get(key);
    if (bc != null && bc.matchBubble(bb,e)) return 2;
-   
+
    return 1;
 }
 
@@ -1871,13 +1899,13 @@ private static class TaskComparator implements Comparator<BudaTask> {
       String name1 = t1.getName();
       String name2 = t2.getName();
       if (Character.isLetter(name1.charAt(0))) {
-         if (Character.isLetter(name2.charAt(0))) {
-            return name1.compareTo(name2);
-         }
-         return -1;
+	 if (Character.isLetter(name2.charAt(0))) {
+	    return name1.compareTo(name2);
+	 }
+	 return -1;
        }
       if (Character.isLetter(name2.charAt(0))) {
-         return 1;
+	 return 1;
        }
       return name1.compareTo(name2);
       //return t1.getName().compareTo(t2.getName());

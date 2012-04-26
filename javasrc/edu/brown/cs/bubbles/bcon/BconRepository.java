@@ -27,10 +27,10 @@ package edu.brown.cs.bubbles.bcon;
 
 import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
-import edu.brown.cs.bubbles.buda.BudaBubble;
-import edu.brown.cs.bubbles.buda.BudaConstants;
+import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.*;
 
@@ -210,6 +210,8 @@ private static class PackageAction extends AbstractAction
 
    @Override public void actionPerformed(ActionEvent e) {
       // this should be done in a separate thread
+      BoardMetrics.noteCommand("BCON","CreatePackageBubble");
+      BudaRoot.hideSearchBubble(e);
       BudaBubble bb = BconFactory.getFactory().createPackageBubble(source_bubble,project_name,
 								      package_name);
       if (bb == null) return;
@@ -247,7 +249,7 @@ private static class PackageAction extends AbstractAction
    checkNames();
 }
 
-@Override public void handleFileStarted(String proj,String file)                { }
+@Override public void handleFileStarted(String proj,String file)		{ }
 
 
 

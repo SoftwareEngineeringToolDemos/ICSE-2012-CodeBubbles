@@ -183,11 +183,6 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	 link = bd.getBubble();
 	 linkline = bd.getLineNumber();
 	 linkto = false;
-//	 xpos = r.x + r.width + 40;
-//	 xpos = r.x - 300;
-//	 if (xpos < 0) xpos = 0;
-//	 ypos = r.y;
-//	 link = bd.getBubble();
        }
       else if (r != null) {
 	 // xpos = r.x + r.width + 40;
@@ -233,7 +228,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    if (frame.getFile() != null && frame.getFile().exists()) {
       String mid = frame.getMethod() + frame.getSignature();
       if (frame.isSystem()) {
-	 bb = BaleFactory.getFactory().createSystemMethodBubble(proj,mid,frame.getFile());
+	 bb = BaleFactory.getFactory().createSystemMethodBubble(proj,mid,frame.getFile(),frame.getLineNumber());
 	 if (bb == null) {
 	    if (libbbl) {
 	       bb = new BddtLibraryBubble(frame);

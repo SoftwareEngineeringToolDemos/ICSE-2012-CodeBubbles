@@ -186,7 +186,7 @@ private void addLine()
    addElementNode(cur_line,0);
    cur_parent = cur_line;
 
-   boolean haveindent = false;
+   boolean haveindent = true;
    for (BaleElement ce : line_elements) {
       fixInnerParent(ce);
       ce = fixLeafElement(ce,haveindent);
@@ -449,6 +449,11 @@ private BaleElement fixLeafElement(BaleElement be,boolean first)
 	 case UNDEF :
 	    if (!(be instanceof BaleElement.UndefId)) {
 	       be = new BaleElement.UndefId(for_document,cur_parent,be.getStartOffset(),be.getEndOffset());
+	     }
+	    break;
+	 case BUILTIN :
+	    if (!(be instanceof BaleElement.BuiltinId)) {
+	       be = new BaleElement.BuiltinId(for_document,cur_parent,be.getStartOffset(),be.getEndOffset());
 	     }
 	    break;
 	 default :

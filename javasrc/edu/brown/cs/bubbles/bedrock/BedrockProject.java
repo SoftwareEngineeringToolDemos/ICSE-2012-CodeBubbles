@@ -42,13 +42,13 @@ import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jdt.core.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.IShellProvider;
-import org.eclipse.jface.preference.IPreferenceStore;
+// import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.eclipse.ui.actions.NewProjectAction;
-import org.eclipse.debug.ui.DebugUITools;
+// import org.eclipse.debug.ui.DebugUITools;
 
 import org.w3c.dom.*;
 
@@ -793,11 +793,16 @@ void handlePreferences(String proj,IvyXmlWriter xw)
       xw.end("PREF");
     }
 
-   String key = "org.eclipse.debug.ui.cancel_launch_with_compile_errors";
-   IPreferenceStore ips = DebugUITools.getPreferenceStore();
-   if (ips != null) ips.setValue(key,"always");
-
    xw.end("PREFERENCES");
+
+//   try {
+//	String key = "org.eclipse.debug.ui.cancel_launch_with_compile_errors";
+//	IPreferenceStore ips = DebugUITools.getPreferenceStore();
+//	if (ips != null) ips.setValue(key,"always");
+//    }
+//   catch (Throwable t) {
+//	BedrockPlugin.logD("Problem setting compiler preference: " + t);
+//    }
 }
 
 
@@ -810,7 +815,7 @@ void handlePreferences(String proj,IvyXmlWriter xw)
 
 private Collection<IFile> findSourceFiles(IResource ir,Collection<IFile> rslt)
 {
-   if (rslt == null) rslt = new ArrayList<IFile>();
+   if (rslt == null) rslt = new HashSet<IFile>();
 
    try {
       if (ir instanceof IFile) {

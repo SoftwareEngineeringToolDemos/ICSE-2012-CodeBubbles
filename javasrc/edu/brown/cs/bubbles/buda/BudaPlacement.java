@@ -124,12 +124,16 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
 	 r = BudaRoot.findBudaLocation(last_focus);
 	 grpb = last_focus;
        }
-      else if (last_placement != null) {
-	 r = BudaRoot.findBudaLocation(last_placement);
-	 grpb = last_placement;
+      if (r == null) {
+	 if (last_placement != null) {
+	    r = BudaRoot.findBudaLocation(last_placement);
+	    grpb = last_placement;
+	  }
+	 else {
+	    r = new Rectangle(300,100);
+	  }
        }
     }
-
 
    Rectangle r0 = new Rectangle(r);
 

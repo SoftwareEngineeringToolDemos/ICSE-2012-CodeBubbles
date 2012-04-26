@@ -1,5 +1,4 @@
-/********************************************************************************/
-/*										*/
+/********************************************************************************/ /*										   */
 /*		BedrockEditor.java						*/
 /*										*/
 /*	Handle editor-related commands for Bubbles				*/
@@ -355,23 +354,25 @@ void elisionSetup(String proj,String bid,String file,boolean compute,
 
 
 
- /********************************************************************************/
-/*                                                                              */
-/*      Remote file editing commands                                            */
-/*                                                                              */
+/********************************************************************************/
+/*										*/
+/*	Remote file editing commands						*/
+/*										*/
 /********************************************************************************/
 
 void fileElide(byte [] bytes,IvyXmlWriter xw)
 {
    BedrockElider be = new BedrockElider();
-   
+
+   // would really like to resolvie bindings here
+
    ASTParser ap = ASTParser.newParser(AST.JLS3);
    String s1 = new String(bytes);
    char [] cdata = s1.toCharArray();
    be.addElideRegion(0,cdata.length);
    ap.setSource(cdata);
    CompilationUnit cu = (CompilationUnit) ap.createAST(null);
-   
+
    be.computeElision(cu,xw);
 }
 
@@ -1143,7 +1144,8 @@ CompilationUnit getAST(String bid,String proj,String file) throws BedrockExcepti
 {
    FileData fd = findFile(proj,file,null,null);
 
-   return fd.getDefaultRoot(bid);
+// return fd.getDefaultRoot(bid);
+   return fd.getAstRoot(bid,null);
 }
 
 

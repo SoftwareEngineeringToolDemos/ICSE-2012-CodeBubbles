@@ -148,7 +148,7 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
       String nm = je.getElementName();
       if (nm == null) continue;
       String cnm = je.getDeclaringType().getFullyQualifiedName();
-      if (cnm != null) nm = cnm + "." + nm;
+      if (cnm != null) nm = cnm.replace("$",".") + "." + nm;
       nm += "(";
       String [] ptyps = je.getParameterTypes();
       for (int i = 0; i < ptyps.length; ++i) {
@@ -157,8 +157,10 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
        }
       nm += ")";
 
+	
       SearchPattern p3;
       try {
+	 BedrockPlugin.logD("CALL: Search for: " + nm + " " + je.isConstructor());
 	 if (je.isConstructor()) {
 	    p3 = SearchPattern.createPattern(nm,IJavaSearchConstants.CONSTRUCTOR,
 						IJavaSearchConstants.REFERENCES,
@@ -272,6 +274,7 @@ private static class CallHandler extends SearchRequestor {
     }
 
    @Override public void acceptSearchMatch(SearchMatch mat) {
+      BedrockPlugin.logD("CALL: found match " + mat.getElement());
       Object o = mat.getElement();
       if (o != null && o instanceof IMethod) {
 	 IMethod je = (IMethod) o;

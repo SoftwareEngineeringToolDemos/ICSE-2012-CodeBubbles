@@ -93,6 +93,7 @@ protected BaleEditorPane()
    try {
       setUI(new BaleTextUI(getUI()));
       setCaret(new BaleCaret());
+      if (!bd.isEditable()) setEditable(false);
     }
    finally { bd.baleWriteUnlock(); }
 
@@ -383,15 +384,15 @@ private class ContextMenuHandler implements ActionListener {
       String cmd = e.getActionCommand();
       String acmd = context_names.get(cmd);
       if (acmd != null) {
-	 ActionEvent nevt = new ActionEvent(BaleEditorPane.this,e.getID(),acmd,e.getWhen(),e.getModifiers());
-	 Action a = BaleEditorKit.findAction(acmd);
-	 if (a != null) {
-	    a.actionPerformed(nevt);
-	    BoardMetrics.noteCommand("BALE","CONTEXT_" + cmd);
-	  }
+         ActionEvent nevt = new ActionEvent(BaleEditorPane.this,e.getID(),acmd,e.getWhen(),e.getModifiers());
+         Action a = BaleEditorKit.findAction(acmd);
+         if (a != null) {
+            a.actionPerformed(nevt);
+            BoardMetrics.noteCommand("BALE","CONTEXT_" + cmd);
+          }
        }
       else {
-	 BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
+         BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
        }
     }
 

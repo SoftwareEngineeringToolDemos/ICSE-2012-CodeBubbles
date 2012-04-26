@@ -196,21 +196,21 @@ private class TaskSelector extends TaskDialog implements ActionListener {
       task_box = null;
       current_project = proj;
       result_status = 0;
-
+   
       beginLayout();
       addBannerLabel("Programmer's Log Book");
       addSeparator();
-
+   
       List<String> plist = BbookFactory.getFactory().getProjects();
       if (proj == null && plist.size() > 0) {
-	 proj = plist.get(0);
-	 current_project = proj;
+         proj = plist.get(0);
+         current_project = proj;
        }
       addChoice("Project",plist,proj,this);
-
+   
       task_box = addChoice("Task",(Collection<Object>) null,0,this);
       setupTasks();
-
+   
       addBottomButton("Cancel","Cancel",this);
       note_button = addBottomButton("Add Note","Add Note",this);
       addBottomButton("New Task","New Task",this);
@@ -296,12 +296,12 @@ private class TaskSelector extends TaskDialog implements ActionListener {
       List<BnoteTask> tasks = BnoteFactory.getFactory().getTasksForProject(current_project);
       Collections.sort(tasks,new TaskTimeCompare());
       if (tasks != null && tasks.size() > 0) {
-	 for (BnoteTask t : tasks) {
-	    task_box.addItem(t);
-	  }
+         for (BnoteTask t : tasks) {
+            task_box.addItem(t);
+          }
        }
       else {
-	 task_box.addItem("< New Task >");
+         task_box.addItem("< New Task >");
        }
       task_box.setSelectedIndex(0);
       updateButtons();

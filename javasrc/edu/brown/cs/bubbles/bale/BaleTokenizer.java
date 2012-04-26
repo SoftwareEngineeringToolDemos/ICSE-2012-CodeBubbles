@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -31,12 +31,11 @@
 package edu.brown.cs.bubbles.bale;
 
 
-import javax.swing.text.Segment;
 
 import java.util.*;
 
 
-class BaleTokenizer implements BaleConstants
+abstract class BaleTokenizer implements BaleConstants
 {
 
 
@@ -48,17 +47,18 @@ class BaleTokenizer implements BaleConstants
 /********************************************************************************/
 
 private String		input_text;
-private Segment 	input_segment;
 private int		cur_offset;
 private int		end_offset;
 private BaleTokenState	token_state;
 private int		token_start;
 private boolean 	ignore_white;
 
-private static Map<String,BaleTokenType> keyword_map;
-private static Set<String>	op_set;
+private static Map<String,BaleTokenType> java_keyword_map;
+private static Set<String>	java_op_set;
+private static Map<String,BaleTokenType> python_keyword_map;
+private static Set<String>	python_op_set;
 
-private static final String OP_CHARS = "=<!~?:>|&+-*/^%";
+private static final String OP_CHARS = "=<!~?:>|&+-*/^%\\";
 
 
 
@@ -69,31 +69,28 @@ private static final String OP_CHARS = "=<!~?:>|&+-*/^%";
 /*										*/
 /********************************************************************************/
 
-BaleTokenizer(String text,BaleTokenState start)
+static BaleTokenizer create(String text,BaleTokenState start,BoardLanguage bl)
+{
+   switch (bl) {
+      default :
+      case JAVA :
+	 return new JavaTokenizer(text,start);
+      case PYTHON :
+	 return new PythonTokenizer(text,start);
+    }
+}
+
+
+
+private BaleTokenizer(String text,BaleTokenState start)
 {
    input_text = (text == null ? "" : text);
-   input_segment = null;
    cur_offset = 0;
    end_offset = (text == null ? 0 : input_text.length());
    token_state = start;
    ignore_white = false;
 }
 
-
-
-BaleTokenizer(Segment seg)
-{
-   this(seg,0,seg.length());
-}
-
-
-BaleTokenizer(Segment seg,int start,int end)
-{
-   input_segment = seg;
-   cur_offset = start;
-   end_offset = end;
-   ignore_white = false;
-}
 
 
 
@@ -105,6 +102,11 @@ BaleTokenizer(Segment seg,int start,int end)
 
 void setIgnoreWhitespace(boolean fg)		{ ignore_white = fg; }
 
+abstract protected BaleTokenType getKeyword(String s);
+abstract protected boolean isOperator(String s);
+abstract protected boolean useSlashStarComments();
+abstract protected boolean useSlashSlashComments();
+abstract protected boolean useHashComments();
 
 
 
@@ -213,7 +215,7 @@ private BaleToken getNextToken()
        }
       backup();
       String text = getInputString(token_start,cur_offset);
-      BaleTokenType tt = keyword_map.get(text);
+      BaleTokenType tt = getKeyword(text);
       if (tt != null) return buildToken(tt);
       else return buildToken(BaleTokenType.IDENTIFIER);
     }
@@ -301,16 +303,15 @@ private BaleToken getNextToken()
 	  }
        }
     }
+   else if (ch == '#' && useHashComments()) {
+      return scanLineComment();
+    }
    else if (ch == '/') {
       ch = nextChar();
       if (ch == '/') {
 	  return scanLineComment(); //added by amc6
        }
-      else if (ch != '*') {
-	 if (ch != '=') backup();
-	 return buildToken(BaleTokenType.OP);		     // / or /=
-       }
-      else {
+      else if (ch == '*' && useSlashStarComments()) {
 	 boolean formal = false;
 	 ch = nextChar();
 	 if (ch == '*') {
@@ -323,7 +324,12 @@ private BaleToken getNextToken()
 	  }
 	 else backup();
 	 return scanComment(formal);
+       }      
+      else {
+	 if (ch != '=') backup();
+	 return buildToken(BaleTokenType.OP);		     // / or /=
        }
+    
     }
    else if (ch == '{') return buildToken(BaleTokenType.LBRACE);
    else if (ch == '}') return buildToken(BaleTokenType.RBRACE);
@@ -333,6 +339,7 @@ private BaleToken getNextToken()
    else if (ch == ']') return buildToken(BaleTokenType.RBRACKET);
    else if (ch == ';') return buildToken(BaleTokenType.SEMICOLON);
    else if (ch == ',') return buildToken(BaleTokenType.COMMA);
+   else if (ch == '\\') return buildToken(BaleTokenType.BACKSLASH);
    else if (ch == '.') {
       if (nextChar() == '.') {
 	 if (nextChar() == '.') return buildToken(BaleTokenType.OP);
@@ -352,7 +359,7 @@ private BaleToken getNextToken()
 	 ch = nextChar();
 	 if (ch < 0 || ch == 0xffff || OP_CHARS.indexOf(ch) < 0) break;
 	 String op = getInputString(token_start,cur_offset);
-	 if (!op_set.contains(op)) break;
+	 if (!isOperator(op)) break;
 	 eql = (ch == '=');
        }
       backup();
@@ -473,8 +480,6 @@ private char nextChar()
       return (char) -1;
     }
 
-   if (input_segment != null) return input_segment.charAt(cur_offset++);
-
    return input_text.charAt(cur_offset++);
 }
 
@@ -489,10 +494,6 @@ private void backup()
 
 private String getInputString(int start,int end)
 {
-   if (input_segment != null) {
-      return input_segment.subSequence(start,end).toString();
-    }
-
    return input_text.substring(start,end);
 }
 
@@ -540,104 +541,219 @@ private static class Token implements BaleToken {
 
 /********************************************************************************/
 /*										*/
-/*	Static definitions							*/
+/*	Java tokenizer								*/
 /*										*/
 /********************************************************************************/
 
-static {
-   keyword_map = new HashMap<String,BaleTokenType>();
-   keyword_map.put("abstract",BaleTokenType.KEYWORD);
-   keyword_map.put("assert",BaleTokenType.KEYWORD);
-   keyword_map.put("boolean",BaleTokenType.KEYWORD);
-   keyword_map.put("break",BaleTokenType.BREAK);
-   keyword_map.put("byte",BaleTokenType.TYPEKEY);
-   keyword_map.put("case",BaleTokenType.CASE);
-   keyword_map.put("catch",BaleTokenType.CATCH);
-   keyword_map.put("char",BaleTokenType.TYPEKEY);
-   keyword_map.put("class",BaleTokenType.CLASS);
-   keyword_map.put("const",BaleTokenType.KEYWORD);
-   keyword_map.put("continue",BaleTokenType.KEYWORD);
-   keyword_map.put("default",BaleTokenType.DEFAULT);
-   keyword_map.put("do",BaleTokenType.DO);
-   keyword_map.put("double",BaleTokenType.TYPEKEY);
-   keyword_map.put("else",BaleTokenType.ELSE);
-   keyword_map.put("enum",BaleTokenType.ENUM);
-   keyword_map.put("extends",BaleTokenType.KEYWORD);
-   keyword_map.put("false",BaleTokenType.KEYWORD);
-   keyword_map.put("final",BaleTokenType.KEYWORD);
-   keyword_map.put("finally",BaleTokenType.FINALLY);
-   keyword_map.put("float",BaleTokenType.TYPEKEY);
-   keyword_map.put("for",BaleTokenType.FOR);
-   keyword_map.put("goto",BaleTokenType.GOTO);
-   keyword_map.put("if",BaleTokenType.IF);
-   keyword_map.put("implements",BaleTokenType.KEYWORD);
-   keyword_map.put("import",BaleTokenType.KEYWORD);
-   keyword_map.put("instanceof",BaleTokenType.KEYWORD);
-   keyword_map.put("int",BaleTokenType.TYPEKEY);
-   keyword_map.put("interface",BaleTokenType.INTERFACE);
-   keyword_map.put("long",BaleTokenType.TYPEKEY);
-   keyword_map.put("native",BaleTokenType.KEYWORD);
-   keyword_map.put("new",BaleTokenType.NEW);
-   keyword_map.put("null",BaleTokenType.KEYWORD);
-   keyword_map.put("package",BaleTokenType.KEYWORD);
-   keyword_map.put("private",BaleTokenType.KEYWORD);
-   keyword_map.put("protected",BaleTokenType.KEYWORD);
-   keyword_map.put("public",BaleTokenType.KEYWORD);
-   keyword_map.put("return",BaleTokenType.RETURN);
-   keyword_map.put("short",BaleTokenType.TYPEKEY);
-   keyword_map.put("static",BaleTokenType.STATIC);
-   keyword_map.put("strictfp",BaleTokenType.KEYWORD);
-   keyword_map.put("super",BaleTokenType.KEYWORD);
-   keyword_map.put("switch",BaleTokenType.SWITCH);
-   keyword_map.put("synchronized",BaleTokenType.SYNCHRONIZED);
-   keyword_map.put("this",BaleTokenType.KEYWORD);
-   keyword_map.put("throw",BaleTokenType.KEYWORD);
-   keyword_map.put("throws",BaleTokenType.KEYWORD);
-   keyword_map.put("transient",BaleTokenType.KEYWORD);
-   keyword_map.put("true",BaleTokenType.KEYWORD);
-   keyword_map.put("try",BaleTokenType.TRY);
-   keyword_map.put("void",BaleTokenType.TYPEKEY);
-   keyword_map.put("volatile",BaleTokenType.KEYWORD);
-   keyword_map.put("while",BaleTokenType.WHILE);
+private static class JavaTokenizer extends BaleTokenizer {
 
-   op_set = new HashSet<String>();
-   op_set.add("=");
-   op_set.add("<");
-   op_set.add("!");
-   op_set.add("~");
-   op_set.add("?");
-   op_set.add(":");
-   op_set.add("==");
-   op_set.add("<=");
-   op_set.add(">=");
-   op_set.add("!=");
-   op_set.add("||");
-   op_set.add("&&");
-   op_set.add("++");
-   op_set.add("--");
-   op_set.add("+");
-   op_set.add("-");
-   op_set.add("*");
-   op_set.add("/");
-   op_set.add("&");
-   op_set.add("|");
-   op_set.add("^");
-   op_set.add("%");
-   op_set.add("<<");
-   op_set.add("+=");
-   op_set.add("-=");
-   op_set.add("*=");
-   op_set.add("/=");
-   op_set.add("&=");
-   op_set.add("|=");
-   op_set.add("^=");
-   op_set.add("%=");
-   op_set.add("<<=");
-   op_set.add(">>=");
-   op_set.add(">>>=");
-   op_set.add(">>");
-   op_set.add(">>>");
-   op_set.add(">");
+   JavaTokenizer(String text,BaleTokenState start) {
+      super(text,start);
+    }
+
+   protected BaleTokenType getKeyword(String s) { return java_keyword_map.get(s); }
+   protected boolean isOperator(String s)	{ return java_op_set.contains(s); }
+   protected boolean useSlashSlashComments()	{ return true; }
+   protected boolean useSlashStarComments()	{ return true; }
+   protected boolean useHashComments()		{ return false; }
+
+}	// end of inner class JavaTokenizer
+
+
+static {
+   java_keyword_map = new HashMap<String,BaleTokenType>();
+   java_keyword_map.put("abstract",BaleTokenType.KEYWORD);
+   java_keyword_map.put("assert",BaleTokenType.KEYWORD);
+   java_keyword_map.put("boolean",BaleTokenType.KEYWORD);
+   java_keyword_map.put("break",BaleTokenType.BREAK);
+   java_keyword_map.put("byte",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("case",BaleTokenType.CASE);
+   java_keyword_map.put("catch",BaleTokenType.CATCH);
+   java_keyword_map.put("char",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("class",BaleTokenType.CLASS);
+   java_keyword_map.put("const",BaleTokenType.KEYWORD);
+   java_keyword_map.put("continue",BaleTokenType.KEYWORD);
+   java_keyword_map.put("default",BaleTokenType.DEFAULT);
+   java_keyword_map.put("do",BaleTokenType.DO);
+   java_keyword_map.put("double",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("else",BaleTokenType.ELSE);
+   java_keyword_map.put("enum",BaleTokenType.ENUM);
+   java_keyword_map.put("extends",BaleTokenType.KEYWORD);
+   java_keyword_map.put("false",BaleTokenType.KEYWORD);
+   java_keyword_map.put("final",BaleTokenType.KEYWORD);
+   java_keyword_map.put("finally",BaleTokenType.FINALLY);
+   java_keyword_map.put("float",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("for",BaleTokenType.FOR);
+   java_keyword_map.put("goto",BaleTokenType.GOTO);
+   java_keyword_map.put("if",BaleTokenType.IF);
+   java_keyword_map.put("implements",BaleTokenType.KEYWORD);
+   java_keyword_map.put("import",BaleTokenType.KEYWORD);
+   java_keyword_map.put("instanceof",BaleTokenType.KEYWORD);
+   java_keyword_map.put("int",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("interface",BaleTokenType.INTERFACE);
+   java_keyword_map.put("long",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("native",BaleTokenType.KEYWORD);
+   java_keyword_map.put("new",BaleTokenType.NEW);
+   java_keyword_map.put("null",BaleTokenType.KEYWORD);
+   java_keyword_map.put("package",BaleTokenType.KEYWORD);
+   java_keyword_map.put("private",BaleTokenType.KEYWORD);
+   java_keyword_map.put("protected",BaleTokenType.KEYWORD);
+   java_keyword_map.put("public",BaleTokenType.KEYWORD);
+   java_keyword_map.put("return",BaleTokenType.RETURN);
+   java_keyword_map.put("short",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("static",BaleTokenType.STATIC);
+   java_keyword_map.put("strictfp",BaleTokenType.KEYWORD);
+   java_keyword_map.put("super",BaleTokenType.KEYWORD);
+   java_keyword_map.put("switch",BaleTokenType.SWITCH);
+   java_keyword_map.put("synchronized",BaleTokenType.SYNCHRONIZED);
+   java_keyword_map.put("this",BaleTokenType.KEYWORD);
+   java_keyword_map.put("throw",BaleTokenType.KEYWORD);
+   java_keyword_map.put("throws",BaleTokenType.KEYWORD);
+   java_keyword_map.put("transient",BaleTokenType.KEYWORD);
+   java_keyword_map.put("true",BaleTokenType.KEYWORD);
+   java_keyword_map.put("try",BaleTokenType.TRY);
+   java_keyword_map.put("void",BaleTokenType.TYPEKEY);
+   java_keyword_map.put("volatile",BaleTokenType.KEYWORD);
+   java_keyword_map.put("while",BaleTokenType.WHILE);
+
+   java_op_set = new HashSet<String>();
+   java_op_set.add("=");
+   java_op_set.add("<");
+   java_op_set.add("!");
+   java_op_set.add("~");
+   java_op_set.add("?");
+   java_op_set.add(":");
+   java_op_set.add("==");
+   java_op_set.add("<=");
+   java_op_set.add(">=");
+   java_op_set.add("!=");
+   java_op_set.add("||");
+   java_op_set.add("&&");
+   java_op_set.add("++");
+   java_op_set.add("--");
+   java_op_set.add("+");
+   java_op_set.add("-");
+   java_op_set.add("*");
+   java_op_set.add("/");
+   java_op_set.add("&");
+   java_op_set.add("|");
+   java_op_set.add("^");
+   java_op_set.add("%");
+   java_op_set.add("<<");
+   java_op_set.add("+=");
+   java_op_set.add("-=");
+   java_op_set.add("*=");
+   java_op_set.add("/=");
+   java_op_set.add("&=");
+   java_op_set.add("|=");
+   java_op_set.add("^=");
+   java_op_set.add("%=");
+   java_op_set.add("<<=");
+   java_op_set.add(">>=");
+   java_op_set.add(">>>=");
+   java_op_set.add(">>");
+   java_op_set.add(">>>");
+   java_op_set.add(">");
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Python tokenizer							*/
+/*										*/
+/********************************************************************************/
+
+private static class PythonTokenizer extends BaleTokenizer {
+
+   PythonTokenizer(String text,BaleTokenState start) {
+      super(text,start);
+    }
+
+   protected BaleTokenType getKeyword(String s) { return python_keyword_map.get(s); }
+   protected boolean isOperator(String s)	{ return python_op_set.contains(s); }
+   protected boolean useSlashSlashComments()	{ return false; }
+   protected boolean useSlashStarComments()	{ return false; }
+   protected boolean useHashComments()		{ return true; }
+
+}	// end of inner class PythonTokenizer
+
+
+
+static {
+   python_keyword_map = new HashMap<String,BaleTokenType>();
+   python_keyword_map.put("and",BaleTokenType.KEYWORD);
+   python_keyword_map.put("as",BaleTokenType.KEYWORD);
+   python_keyword_map.put("assert",BaleTokenType.KEYWORD);
+   python_keyword_map.put("break",BaleTokenType.BREAK);
+   python_keyword_map.put("class",BaleTokenType.CLASS);
+   python_keyword_map.put("continue",BaleTokenType.CONTINUE);
+   python_keyword_map.put("def",BaleTokenType.KEYWORD);
+   python_keyword_map.put("del",BaleTokenType.KEYWORD);
+   python_keyword_map.put("elif",BaleTokenType.ELSE);
+   python_keyword_map.put("else",BaleTokenType.ELSE);
+   python_keyword_map.put("except",BaleTokenType.KEYWORD);
+   python_keyword_map.put("False",BaleTokenType.KEYWORD);
+   python_keyword_map.put("finally",BaleTokenType.FINALLY);
+   python_keyword_map.put("for",BaleTokenType.FOR);
+   python_keyword_map.put("from",BaleTokenType.KEYWORD);
+   python_keyword_map.put("global",BaleTokenType.KEYWORD);
+   python_keyword_map.put("if",BaleTokenType.IF);
+   python_keyword_map.put("import",BaleTokenType.KEYWORD);
+   python_keyword_map.put("in",BaleTokenType.KEYWORD);
+   python_keyword_map.put("is",BaleTokenType.KEYWORD);
+   python_keyword_map.put("lambda",BaleTokenType.KEYWORD);
+   python_keyword_map.put("None",BaleTokenType.KEYWORD);
+   python_keyword_map.put("nonlocal",BaleTokenType.KEYWORD);
+   python_keyword_map.put("not",BaleTokenType.KEYWORD);
+   python_keyword_map.put("or",BaleTokenType.KEYWORD);
+   python_keyword_map.put("pass",BaleTokenType.PASS);
+   python_keyword_map.put("raise",BaleTokenType.RAISE);
+   python_keyword_map.put("return",BaleTokenType.RETURN);
+   python_keyword_map.put("True",BaleTokenType.KEYWORD);
+   python_keyword_map.put("try",BaleTokenType.TRY);
+   python_keyword_map.put("while",BaleTokenType.WHILE);
+   python_keyword_map.put("with",BaleTokenType.KEYWORD);
+   python_keyword_map.put("yield",BaleTokenType.KEYWORD);
+
+   python_op_set = new HashSet<String>();
+   python_op_set.add("=");
+   python_op_set.add("<");
+   python_op_set.add("~");
+   python_op_set.add(":");
+   python_op_set.add("==");
+   python_op_set.add("<=");
+   python_op_set.add(">=");
+   python_op_set.add("!=");
+   python_op_set.add("+");
+   python_op_set.add("-");
+   python_op_set.add("*");
+   python_op_set.add("/");
+   python_op_set.add("&");
+   python_op_set.add("|");
+   python_op_set.add("^");
+   python_op_set.add("%");
+   python_op_set.add("<<");
+   python_op_set.add("+=");
+   python_op_set.add("-=");
+   python_op_set.add("*=");
+   python_op_set.add("/=");
+   python_op_set.add("&=");
+   python_op_set.add("|=");
+   python_op_set.add("^=");
+   python_op_set.add("%=");
+   python_op_set.add("<<=");
+   python_op_set.add(">>=");
+   python_op_set.add(">>>=");
+   python_op_set.add(">>");
+   python_op_set.add(">");
+   python_op_set.add("//");   
+   python_op_set.add("**");   
+   python_op_set.add("->");   
+   python_op_set.add("//=");  
+   python_op_set.add("**=");
+   python_op_set.add("\\");
 }
 
 

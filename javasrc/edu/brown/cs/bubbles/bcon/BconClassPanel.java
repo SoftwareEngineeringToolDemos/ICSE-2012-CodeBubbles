@@ -627,7 +627,7 @@ void addHeaderRegion(BumpLocation bl,RegionType rt,Segment s,int offset)
 {
    int spos = bale_file.mapOffsetToJava(bl.getOffset())-offset;
    int epos = bale_file.mapOffsetToJava(bl.getEndOffset())-offset;
-   if (spos < 0 || epos >= s.length()) return;
+   if (spos < 0 || epos >= s.length() || epos < spos) return;
 
    if (rt == RegionType.REGION_CLASS_HEADER) {
       for (BconRegion br : region_set) {
@@ -1242,7 +1242,7 @@ private class MethodCreator extends AbstractCreator implements BuenoBubbleCreato
 
    @Override public void actionPerformed(ActionEvent e) {
       BuenoMethodDialog bmd = new BuenoMethodDialog(getBubble(),popup_point,
-						       property_set,getLocation(),this);
+        					       property_set,getLocation(),this);
       bmd.showDialog();
     }
 

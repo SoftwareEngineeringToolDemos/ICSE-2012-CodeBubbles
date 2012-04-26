@@ -52,6 +52,32 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
 	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
       </path>
+      <path id='pybles.classpath'>
+	 <pathelement location='${BUBBLES}/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='Lobo/**/*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jmf/**/*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='javax.servlet.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='pydev.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.text.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.text.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.equinox.common.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.resources.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.jobs.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.runtime.jar' />
+	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
+      </path>
    </target>
 
    <target name='compile' depends='init'>
@@ -188,7 +214,7 @@
 
    <target name='pybles' depends='compile'>
       <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
-	 <classpath refid='test.classpath' />
+	 <classpath refid='pybles.classpath' />
 	 <jvmarg value="-Xmx1024m" />
 	 <arg value="-python" />
 	 <arg value="-m" />

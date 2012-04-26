@@ -933,12 +933,12 @@ private class ExtractTrigger implements RegionAction {
       Point pt = new Point(e.getX(),e.getY());
       int pos = bep.viewToModel(pt);
       if (pos < 0) return;
-
+   
       bep.setCaretPosition(pos);
       Action act = BaleEditorKit.findAction("FragmentAction");
       ActionEvent ae = new ActionEvent(bep,ActionEvent.ACTION_FIRST,"FragmentAction");
       if (act != null) act.actionPerformed(ae);
-
+   
       // TODO: Might want to do this explicitly rather than through the action
     }
 

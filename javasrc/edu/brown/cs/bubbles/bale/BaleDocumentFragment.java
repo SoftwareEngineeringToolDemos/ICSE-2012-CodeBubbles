@@ -96,7 +96,10 @@ BaleDocumentFragment(BaleDocumentIde base,BaleFragmentType typ,List<BaleRegion> 
    base_document.redoElision();
    base_document.addDocumentListener(this);	// handles UndoableEdit and Document events
 
-   checkForNameChange((BaleElement) getDefaultRootElement());
+   Element e = getDefaultRootElement();
+   if (e != null && e instanceof BaleElement) {
+      checkForNameChange((BaleElement) getDefaultRootElement());
+   }
 }
 
 
@@ -122,12 +125,15 @@ BaleDocumentFragment(BaleDocumentIde base,BaleFragmentType typ,List<BaleRegion> 
 @Override String getProjectName()	{ return base_document.getProjectName(); }
 
 @Override File getFile()		{ return base_document.getFile(); }
+@Override BoardLanguage getLanguage()   { return base_document.getLanguage(); }
 
 @Override String getFragmentName()	{ return fragment_name; }
 
 @Override int getEditCounter()		{ return base_document.getEditCounter(); }
 
 @Override BaleFragmentType getFragmentType()	{ return fragment_type; }
+
+@Override boolean isEditable()		{ return base_document.isEditable(); }
 
 
 
@@ -471,6 +477,7 @@ private void setupElements()
 	 root = new BaleElement.DeclSet(this,null);
 	 break;
       case FILE :
+      case ROFILE :
 	 root = new BaleElement.CompilationUnitNode(this,null);
 	 break;
       case FIELDS :
@@ -569,7 +576,10 @@ BaleRegion getRegionFromEclipse(int soff,int eoff)
 
 @Override void noteOpen()
 {
-   checkForNameChange((BaleElement) getDefaultRootElement());
+   Element e = getDefaultRootElement();
+   if (e != null && e instanceof BaleElement) {
+      checkForNameChange((BaleElement) getDefaultRootElement());
+   }
 }
 
 
@@ -588,6 +598,7 @@ private boolean checkForNameChange(BaleElement be)
        }
       String id = be.getFullName();
       if (id == null) return false;
+      if(!id.contains("(")) id += "(...)";
       fragment_name = id;
       return true;
     }

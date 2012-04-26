@@ -37,6 +37,7 @@ import edu.brown.cs.ivy.xml.IvyXml;
 import org.w3c.dom.Element;
 
 import javax.swing.text.BadLocationException;
+import java.io.File;
 
 
 
@@ -71,6 +72,9 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
       switch (ftyp) {
 	 case NONE :
 	    break;
+         case ROFILE :
+            bb = bf.createFileBubble(proj,new File(head),null,null,0);
+            break;
 	 case FILE :
 	    bb = bf.createFileBubble(proj,head);
 	    break;

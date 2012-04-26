@@ -408,6 +408,7 @@ public void setDefaultWorkspace(String ws)
 {
    default_workspace = ws;
    if (!checkWorkspace()) default_workspace = null;
+   else has_changed = true;
 }
 
 /**
@@ -548,16 +549,27 @@ public static File getBubblesPluginDirectory()
 		       bs.install_jar);
     }
 
-   File f1 = new File(wsd,".metadata");
-   File f2 = new File(f1,".plugins");
-   File f3 = new File(f2,"edu.brown.cs.bubbles.bedrock");
 
-   if (!f3.exists()) f3.mkdirs();
-   if (!f3.exists() || !f3.isDirectory()) {
-      BoardLog.logE("BOARD","Bad plugin directory " + f3);
+   File pdir = null;
+
+   switch (bs.board_language) {
+      default:
+      case JAVA :
+	 File f1 = new File(wsd,".metadata");
+	 File f2 = new File(f1,".plugins");
+	 pdir = new File(f2,"edu.brown.cs.bubbles.bedrock");
+	 break;
+      case PYTHON :
+	 pdir = new File(wsd,".pybase");
+	 break;
     }
 
-   return f3;
+   if (!pdir.exists()) pdir.mkdirs();
+   if (!pdir.exists() || !pdir.isDirectory()) {
+      BoardLog.logE("BOARD","Bad plugin directory " + pdir);
+    }
+
+   return pdir;
 }
 
 
@@ -569,11 +581,17 @@ public static File getBubblesPluginDirectory()
 
 public static File getBubblesWorkingDirectory()
 {
+   return getBubblesWorkingDirectory(null);
+}
+
+
+public static File getBubblesWorkingDirectory(File wsd)
+{
    BoardSetup bs = getSetup();
 
-   File wsd = new File(bs.default_workspace);
+   if (wsd == null && bs.default_workspace != null) wsd = new File(bs.default_workspace);
 
-   if (!wsd.exists() || !wsd.isDirectory()) {
+   if (wsd == null || !wsd.exists() || !wsd.isDirectory()) {
       BoardLog.logX("BOARD","Bad board setup " + bs.default_workspace + " " + bs.eclipse_directory + " " +
 		       bs.jar_file + " " + bs.jar_directory + " " + bs.install_path + " " +
 		       bs.install_jar);
@@ -947,7 +965,7 @@ public boolean doSetup()
       if (needsetup) handleSetup();
       else if (ask_workspace || has_changed) {
 	 WorkspaceDialog wd = new WorkspaceDialog();
-	 if (!wd.process()) {
+	 if (ask_workspace && !wd.process()) {
 	    BoardLog.logE("BOARD","BUBBLES: Setup aborted");
 	    System.exit(1);
 	  }
@@ -1522,11 +1540,12 @@ private boolean checkWorkspace()
 private static boolean checkWorkspaceDirectory(File wsd,boolean create)
 {
    if (wsd == null) return false;
-   if (!wsd.exists() || !wsd.isDirectory()) return false;
 
    if (create) {
       if (wsd.getParentFile().exists()) return true;
     }
+
+   if (!wsd.exists() || !wsd.isDirectory()) return false;
 
    File df = new File(wsd,BOARD_ECLIPSE_WS_DATA);
 
@@ -1618,6 +1637,7 @@ private void updatePlugin()
        }
       File pdf = getPluginDirectory();
       File bdf = new File(pdf,BOARD_BUBBLES_PLUGIN);
+
       OutputStream ots = new FileOutputStream(bdf);
 
       copyFile(ins,ots);
@@ -1626,7 +1646,14 @@ private void updatePlugin()
     }
    catch (IOException e) {
       BoardLog.logE("BOARD","Problem updating bubble eclipse plugin: " + e);
-      reportError("Problem updating bubble eclipse plugin: " + e);
+      File pdf = getPluginDirectory();
+      if (pdf.exists() && !pdf.canWrite()) {		// user lacks permissions
+	 File bdf = new File(pdf,BOARD_BUBBLES_PLUGIN);
+	 if (bdf.exists()) return;	// leave things be if it is there already
+	 reportError("Can't add plugin to your Eclipse installation: " + pdf);
+       }
+      else reportError("Problem updating bubble eclipse plugin: " + e);
+
       System.exit(3);
     }
 }
@@ -1639,9 +1666,9 @@ private File getPluginDirectory()
 
    File pdf = new File(edf,BOARD_ECLIPSE_PLUGINS);
 
-   if (!pdf.exists() || !pdf.isDirectory()) {
+   if (!pdf.exists() || !pdf.isDirectory() || !pdf.canWrite()) {
       File ddf = new File(edf,BOARD_ECLIPSE_DROPINS);
-      if (ddf.exists() && ddf.isDirectory()) pdf = ddf;
+      if (ddf.exists() && ddf.isDirectory() && ddf.canWrite()) pdf = ddf;
     }
 
    return pdf;
@@ -1789,6 +1816,7 @@ private boolean checkDefaultInstallation()
       firsttime = false;
     }
    has_changed = true;
+   ask_workspace = true;
 
    return firsttime;
 }
@@ -1824,7 +1852,7 @@ private class SetupDialog implements ActionListener, CaretListener {
 	    pnl.addFileField("Eclipse Installation Directory",eclipse_directory,
 		  JFileChooser.DIRECTORIES_ONLY,
 		  new EclipseDirectoryFilter(),this,this,null);
-	
+
 	    eclipse_warning = new JLabel("Warning!");  //edited by amc6
 	    eclipse_warning.setToolTipText("Not a valid Eclipse installation directory");
 	    eclipse_warning.setForeground(WARNING_COLOR);

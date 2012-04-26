@@ -62,6 +62,17 @@ private boolean 	is_elided;
 private static boolean	elide_statement = BALE_PROPERTIES.getBoolean("Bale.elide.statement");
 private static boolean	elide_body = BALE_PROPERTIES.getBoolean("Bale.elide.body");
 private static boolean	elide_members = BALE_PROPERTIES.getBoolean("Bale.elide.members");
+private static int	tab_size;
+
+static {
+   String v = BALE_PROPERTIES.getProperty("indent.tabluation.size");
+   if (v == null) v = BALE_PROPERTIES.getProperty("Bale.tabsize");
+   tab_size = 8;
+   try {
+      if (v != null) tab_size = Integer.parseInt(v);
+   }
+   catch (NumberFormatException e) { }
+}
 
 
 
@@ -102,6 +113,8 @@ BaleAstNode getAstNode()			{ return ast_node; }
 void setAstNode(BaleAstNode bn) 		{ ast_node = bn; }
 
 boolean isEndOfLine()				{ return false; }
+
+BaleElement.Indent getIndent()			{ return null; }
 boolean isLineElement() 			{ return false; }
 boolean isUnknown()				{ return false; }
 boolean isInsideLine()				{ return false; }
@@ -1417,6 +1430,20 @@ static class AnnotationId extends Identifier {
 
 
 
+static class BuiltinId extends Identifier {
+
+   BuiltinId(BaleDocument d,BaleElement.Branch p,int offs,int offe) {
+      super(d,p,offs,offe);
+    }
+
+   @Override public String getName()		{ return "BuiltinId"; }
+
+   @Override boolean isUndefined()		{ return true; }
+
+}	// end of inner class BuiltinId
+
+
+
 static class UndefId extends Identifier {
 
    UndefId(BaleDocument d,BaleElement.Branch p,int offs,int offe) {
@@ -1508,13 +1535,38 @@ static class Space extends Leaf {
 
 static class Indent extends Space {
 
+   private int first_column;
+   private int num_exdent;
+
    Indent(BaleDocument d,BaleElement.Branch p,int offs,int offe) {
       super(d,p,offs,offe);
+      num_exdent = EXDENT_UNKNOWN;
+      first_column = -1;
+      try {
+	 String txt = d.getText(offs,offe-offs);
+	 int c = 0;
+	 for (int i = 0; i < txt.length(); ++i) {
+	    char ch = txt.charAt(i);
+	    if (ch == ' ') ++c;
+	    else if (ch == '\t') c = (c+tab_size)/tab_size*tab_size;
+	    else if (Character.isWhitespace(c)) ;
+	    else break;
+	  }
+	 first_column = c+1;
+       }
+      catch (BadLocationException e) {
+	 BoardLog.logE("BALE","Problem looking at indent text",e);
+       }
     }
 
    @Override public String getName()		{ return "Indent"; }
 
-   @Override boolean isEmpty()			{ return true; }
+   @Override Indent getIndent() 		{ return this; }
+
+   public int getFirstColumn()			{ return first_column; }
+
+   public int getNumExdent()			{ return num_exdent; }
+   public void setNumExdent(int fg)		{ num_exdent = fg; }
 
 }	// end of inner class Space
 

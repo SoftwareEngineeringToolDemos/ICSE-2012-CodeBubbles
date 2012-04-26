@@ -119,7 +119,6 @@ private void test00()
    sendCommand("PROJECTS",null,null,null);
    sendCommand("OPENPROJECT",proj,null,null);
    sendCommand("PREFERENCES",proj,null,null);
-   sendCommand("GETPROJECTFILES",proj,null,null);
    sendCommand("BUILDPROJECT",proj,"CLEAN='1' FULL='1' REFRESH='1'",null);
    sendCommand("BUILDPROJECT",proj,"REFRESH='TRUE'",null);
    sendCommand("GETALLNAMES",proj,null,null);
@@ -150,8 +149,6 @@ private void test00()
    sendCommand("EDITFILE",proj,"FILE='" + src1 + "' ID='2'",
 		  "<EDIT START='54' END='54'>System.</EDIT>");
    sendCommand("GETCOMPLETIONS",proj,"FILE='" + src1 + "' OFFSET='61'",null);
-
-   sendCommand("CLOSEPROJECT",proj,null,null);
 
    synchronized (this) {
       try {

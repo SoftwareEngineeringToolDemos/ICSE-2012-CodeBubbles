@@ -27,6 +27,7 @@ package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.board.BoardSetup;
 import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
@@ -64,6 +65,7 @@ class BaleEditorKit extends DefaultEditorKit implements BaleConstants, ViewFacto
 
 private final static long serialVersionUID = 1;
 
+private BaleLanguageKit language_kit;
 private Action []	bale_actions;
 
 private static final Action undo_action = BurpHistory.getUndoAction();
@@ -116,7 +118,6 @@ private static final Action goto_type_action = new GotoTypeAction();
 private static final Action class_search_action = new ClassSearchAction();
 private static final Action bud_action;
 private static final Action fragment_action;
-private static final Action open_eclipse_editor_action = new OpenEclipseEditorAction();
 private static final Action quick_fix_action = new QuickFixAction();
 private static final Action marquis_comment_action = new CommentAction("MarquisComment",BuenoType.NEW_MARQUIS_COMMENT);
 private static final Action block_comment_action = new CommentAction("BlockComment",BuenoType.NEW_BLOCK_COMMENT);
@@ -183,7 +184,6 @@ private static final Action [] local_actions = {
    class_search_action,
    bud_action,
    fragment_action,
-   open_eclipse_editor_action,
 
    quick_fix_action,
    marquis_comment_action,
@@ -290,13 +290,21 @@ static {
 /*										*/
 /********************************************************************************/
 
-BaleEditorKit()
+BaleEditorKit(BoardLanguage lang)
 {
-   Action [] supact = super.getActions();
-   bale_actions = new Action[supact.length + local_actions.length];
-   int ct = 0;
-   for (int i = 0; i < supact.length; ++i) bale_actions[ct++] = supact[i];
-   for (int j = 0; j < local_actions.length; ++j) bale_actions[ct++] = local_actions[j];
+   if (lang == null) language_kit = null;
+   else {
+      switch (lang) {
+	 case JAVA :
+	    language_kit = new BaleEditorKitJava();
+	    break;
+	 case PYTHON :
+	    language_kit = new BaleEditorKitPython();
+	    break;
+       }
+    }
+
+   bale_actions = null;
 }
 
 
@@ -308,7 +316,30 @@ BaleEditorKit()
 /*										*/
 /********************************************************************************/
 
-@Override public Action [] getActions() 	{ return bale_actions; }
+@Override public synchronized Action [] getActions()
+{
+   if (bale_actions == null) {
+      Action [] supact = super.getActions();
+      Action [] subact = getLanguageActions();
+      bale_actions = new Action[supact.length + local_actions.length + subact.length];
+      int ct = 0;
+      for (int i = 0; i < supact.length; ++i) bale_actions[ct++] = supact[i];
+      for (int j = 0; j < local_actions.length; ++j) bale_actions[ct++] = local_actions[j];
+      for (int k = 0; k < subact.length; ++k) bale_actions[ct++] = subact[k];
+    }
+
+   return bale_actions;
+}
+
+
+Action [] getLanguageActions()
+{
+   Action [] langacts = null;
+   if (language_kit != null) langacts = language_kit.getActions();
+
+   if (langacts == null) return new Action[0];
+   return langacts;
+}
 
 
 
@@ -321,13 +352,43 @@ BaleEditorKit()
 
 void setupKeyMap(JTextComponent tc)
 {
-   tc.setKeymap(bale_keymap);
+   Keymap km = bale_keymap;
+   if (language_kit != null) km = language_kit.getKeymap(km);
+   tc.setKeymap(km);
 }
 
 
 
 static Action findAction(String name)
 {
+   BoardSetup bs = BoardSetup.getSetup();
+   return findAction(name,bs.getLanguage());
+}
+
+
+
+
+static Action findAction(String name,BoardLanguage lang)
+{
+   BaleLanguageKit lkit = null;
+   if (lang != null) {
+      switch (lang) {
+	 case JAVA :
+	    lkit = new BaleEditorKitJava();
+	    break;
+	 case PYTHON :
+	    lkit = new BaleEditorKitPython();
+	    break;
+       }
+    }
+   if (lkit != null) {
+      Action [] langacts = lkit.getActions();
+      for (int i = 0; i < langacts.length; ++i) {
+	 String nm = (String) langacts[i].getValue(Action.NAME);
+	 if (nm != null && nm.equals(name)) return langacts[i];
+       }
+    }
+
    if (local_actions != null) {
       for (int i = 0; i < local_actions.length; ++i) {
 	 String nm = (String) local_actions[i].getValue(Action.NAME);
@@ -408,6 +469,7 @@ static class FragmentKit extends BaleEditorKit {
    private final static long serialVersionUID = 1;
 
    FragmentKit(BaleDocumentIde base,BaleFragmentType typ,List<BaleRegion> rgns) {
+      super(base.getLanguage());
       base_document = base;
       fragment_type = typ;
       fragment_regions = rgns;
@@ -422,13 +484,15 @@ static class FragmentKit extends BaleEditorKit {
 
 
 
+
+
 /********************************************************************************/
 /*										*/
 /*	Utilities for action management 					*/
 /*										*/
 /********************************************************************************/
 
-private static BaleEditorPane getBaleEditor(ActionEvent e)
+static BaleEditorPane getBaleEditor(ActionEvent e)
 {
    if (e == null) return null;
 
@@ -437,7 +501,7 @@ private static BaleEditorPane getBaleEditor(ActionEvent e)
 
 
 
-private static boolean checkEditor(BaleEditorPane e)
+static boolean checkEditor(BaleEditorPane e)
 {
    if (e == null) return false;
    if (!e.isEditable()) return false;
@@ -458,7 +522,7 @@ private static boolean checkEditor(BaleEditorPane e)
 
 
 
-private static boolean checkReadEditor(BaleEditorPane e)
+static boolean checkReadEditor(BaleEditorPane e)
 {
    if (e == null) return false;
    if (!e.isEnabled()) return false;
@@ -1965,55 +2029,55 @@ private static class GotoReferenceAction extends TextAction {
    @Override public void actionPerformed(ActionEvent e) {
       BowiFactory.startTask(BowiTaskType.FIND_ALL_REFERENCES);
       try {
-	 BaleEditorPane target = getBaleEditor(e);
-	 if (!checkReadEditor(target)) return;
-	 BaleDocument bd = target.getBaleDocument();
-	 int soff = target.getSelectionStart();
-	 int eoff = target.getSelectionEnd();
-	 BaleElement be = bd.getCharacterElement(soff);
-
-	 BumpClient bc = BumpClient.getBump();
-	 Collection<BumpLocation> locs;
-	 BalePosition sp;
-
-	 String fullnm = null;
-
-	 fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
-					       bd.mapOffsetToEclipse(soff),
-					       bd.mapOffsetToEclipse(eoff));
-
-
-	 try {
-	    sp = (BalePosition) bd.createPosition(soff);
-	    locs = bc.findReferences(bd.getProjectName(),
-					bd.getFile(),
-					bd.mapOffsetToEclipse(soff),
-					bd.mapOffsetToEclipse(eoff));
-	  }
-	 catch (BadLocationException ex) {
-	    return;
-	  }
-
-	 if (fullnm == null) {
-	    BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
-	    Action act = findAction(beepAction);
-	    if (act != null) act.actionPerformed(e);
-	    return;
-	  }
-
-	 if (doClassSearchAction(locs)) {
-	    goto_search_action.actionPerformed(e);
-	    return;
-	  }
-
-	 if (locs == null || locs.size() == 0) {
-	    BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.REF, sp);
-	    Action act = findAction(beepAction);
-	    if (act != null) act.actionPerformed(e);
-	    return;
-	  }
-
-	 BaleBubbleStack.createBubbles(target,sp,null,false,locs,BudaLinkStyle.STYLE_REFERENCE);
+         BaleEditorPane target = getBaleEditor(e);
+         if (!checkReadEditor(target)) return;
+         BaleDocument bd = target.getBaleDocument();
+         int soff = target.getSelectionStart();
+         int eoff = target.getSelectionEnd();
+         BaleElement be = bd.getCharacterElement(soff);
+   
+         BumpClient bc = BumpClient.getBump();
+         Collection<BumpLocation> locs;
+         BalePosition sp;
+   
+         String fullnm = null;
+   
+         fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
+        				       bd.mapOffsetToEclipse(soff),
+        				       bd.mapOffsetToEclipse(eoff));
+   
+   
+         try {
+            sp = (BalePosition) bd.createPosition(soff);
+            locs = bc.findReferences(bd.getProjectName(),
+        				bd.getFile(),
+        				bd.mapOffsetToEclipse(soff),
+        				bd.mapOffsetToEclipse(eoff));
+          }
+         catch (BadLocationException ex) {
+            return;
+          }
+   
+         if (fullnm == null) {
+            BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
+            Action act = findAction(beepAction);
+            if (act != null) act.actionPerformed(e);
+            return;
+          }
+   
+         if (doClassSearchAction(locs)) {
+            goto_search_action.actionPerformed(e);
+            return;
+          }
+   
+         if (locs == null || locs.size() == 0) {
+            BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.REF, sp);
+            Action act = findAction(beepAction);
+            if (act != null) act.actionPerformed(e);
+            return;
+          }
+   
+         BaleBubbleStack.createBubbles(target,sp,null,false,locs,BudaLinkStyle.STYLE_REFERENCE);
        }
       finally { BowiFactory.stopTask(BowiTaskType.FIND_ALL_REFERENCES); }
       BoardMetrics.noteCommand("BALE","GoToReference");
@@ -2039,70 +2103,70 @@ private static class GotoDocAction extends TextAction {
       int soff = target.getSelectionStart();
       int eoff = target.getSelectionEnd();
       BumpClient bc = BumpClient.getBump();
-
+   
       String fullnm = null;
-
+   
       fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
-					    bd.mapOffsetToEclipse(soff),
-					    bd.mapOffsetToEclipse(eoff));
-
+        				    bd.mapOffsetToEclipse(soff),
+        				    bd.mapOffsetToEclipse(eoff));
+   
       BalePosition sp = null;
       try {
-	 sp = (BalePosition) bd.createPosition(soff);
+         sp = (BalePosition) bd.createPosition(soff);
        }
       catch (BadLocationException ex) { }
-
+   
       BaleElement be = bd.getCharacterElement(soff);
-
+   
       if (fullnm != null) {
-	 // BoardLog.logD("BALE","FIND DOCUMENTATION FOR " + fullnm);
-	 BudaBubble bb = BudaRoot.createDocumentationBubble(fullnm);
-	 if (bb != null) {
-	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
-	    BudaBubble obbl = BudaRoot.findBudaBubble(target);
-
-	    Point lp = null;
-	    BudaConstants.LinkPort port0 = null;
-	    if (sp != null) {
-	       port0 = new BaleLinePort(target,sp,"Find Link");
-	       lp = port0.getLinkPoint(obbl,obbl.getLocation());
-	     }
-	    else port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
-
-	    bba.addBubble(bb,target,lp,PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW);
-
-	    /****************
-	    BudaRoot root = BudaRoot.findBudaRoot(target);
-	    Rectangle loc = BudaRoot.findBudaLocation(target);
-	    if (lp != null) loc.y = lp.y;
-	    root.add(bb,new BudaConstraint(loc.x+loc.width+BUBBLE_CREATION_SPACE,loc.y));
-	    ****************/
-
-	    BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
-	    BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
-	    bba.addLink(lnk);
-	    BoardMetrics.noteCommand("BALE","GoToDocumentation");
-	    return;
-	  }
-	 else {
-	    if (e.getActionCommand() == null) {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
-	     }
-	    else if (e.getActionCommand().equals("GotoImplementationAction")) {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.IMPLDOC, sp);
-	     }
-	    else if (e.getActionCommand().equals("GotoDefinitionAction")) {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DEFDOC, sp);
-	     }
-	    else {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
-	     }
-	  }
+         // BoardLog.logD("BALE","FIND DOCUMENTATION FOR " + fullnm);
+         BudaBubble bb = BudaRoot.createDocumentationBubble(fullnm);
+         if (bb != null) {
+            BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
+            BudaBubble obbl = BudaRoot.findBudaBubble(target);
+   
+            Point lp = null;
+            BudaConstants.LinkPort port0 = null;
+            if (sp != null) {
+               port0 = new BaleLinePort(target,sp,"Find Link");
+               lp = port0.getLinkPoint(obbl,obbl.getLocation());
+             }
+            else port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
+   
+            bba.addBubble(bb,target,lp,PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW);
+   
+            /****************
+            BudaRoot root = BudaRoot.findBudaRoot(target);
+            Rectangle loc = BudaRoot.findBudaLocation(target);
+            if (lp != null) loc.y = lp.y;
+            root.add(bb,new BudaConstraint(loc.x+loc.width+BUBBLE_CREATION_SPACE,loc.y));
+            ****************/
+   
+            BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
+            BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
+            bba.addLink(lnk);
+            BoardMetrics.noteCommand("BALE","GoToDocumentation");
+            return;
+          }
+         else {
+            if (e.getActionCommand() == null) {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
+             }
+            else if (e.getActionCommand().equals("GotoImplementationAction")) {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.IMPLDOC, sp);
+             }
+            else if (e.getActionCommand().equals("GotoDefinitionAction")) {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DEFDOC, sp);
+             }
+            else {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
+             }
+          }
        }
       else {
-	 BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
+         BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
        }
-
+   
       Action act = findAction(beepAction);
       if (act != null) act.actionPerformed(e);
     }
@@ -2337,35 +2401,7 @@ private static void handleSearchAction(ActionEvent e,Collection<BumpLocation> lo
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Actions to talk to Eclipse						*/
-/*										*/
-/********************************************************************************/
 
-private static class OpenEclipseEditorAction extends TextAction {
-
-   private static final long serialVersionUID = 1;
-
-   OpenEclipseEditorAction() {
-      super("OpenEclipseEditorAction");
-    }
-
-   @Override public void actionPerformed(ActionEvent e) {
-      BaleEditorPane target = getBaleEditor(e);
-      if (!checkReadEditor(target)) return;
-      BaleDocument bd = target.getBaleDocument();
-      int soff = target.getSelectionStart();
-
-      BumpClient bc = BumpClient.getBump();
-      BoardMetrics.noteCommand("BALE","JumpToEclipse");
-
-      bc.openEclipseEditor(bd.getProjectName(),
-			      bd.getFile(),
-			      bd.findLineNumber(soff));
-    }
-
-}	// end of inner class OpenEclipseEditorAction
 
 
 
@@ -2391,28 +2427,28 @@ private static class QuickFixAction extends TextAction {
       int soff = target.getSelectionStart();
       List<BumpProblem> probs = bd.getProblemsAtLocation(soff);
       if (probs == null) return;
-   
+
       List<BaleFixer> fixes = new ArrayList<BaleFixer>();
       for (BumpProblem bp : probs) {
-         if (bp.getFixes() != null) {
-            for (BumpFix bf : bp.getFixes()) {
-               BaleFixer fixer = new BaleFixer(bp,bf);
-               if (fixer.isValid()) fixes.add(fixer);
-             }
-          }
+	 if (bp.getFixes() != null) {
+	    for (BumpFix bf : bp.getFixes()) {
+	       BaleFixer fixer = new BaleFixer(bp,bf);
+	       if (fixer.isValid()) fixes.add(fixer);
+	     }
+	  }
        }
       if (fixes.isEmpty()) return;
-   
+
       BaleFixer fix = null;
       if (fixes.size() == 1) fix = fixes.get(0);
       else {
-         Object [] fixalts = fixes.toArray();
-         fix = (BaleFixer) JOptionPane.showInputDialog(target,"Select Quick Fix","Quick Fix Selector",
-        						  JOptionPane.QUESTION_MESSAGE,
-        						  null,fixalts,fixes.get(0));
+	 Object [] fixalts = fixes.toArray();
+	 fix = (BaleFixer) JOptionPane.showInputDialog(target,"Select Quick Fix","Quick Fix Selector",
+							  JOptionPane.QUESTION_MESSAGE,
+							  null,fixalts,fixes.get(0));
        }
       if (fix == null) return;
-   
+
       fix.actionPerformed(e);
       BoardMetrics.noteCommand("BALE","QuickFix");
     }

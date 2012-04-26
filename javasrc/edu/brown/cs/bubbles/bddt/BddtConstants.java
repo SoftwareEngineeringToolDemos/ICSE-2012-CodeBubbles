@@ -279,12 +279,15 @@ interface BddtFrameListener extends EventListener {
  **/
 
 Dimension BDDT_EVALUATION_INITIAL_SIZE = new Dimension(320,130);
-
 String BDDT_PROPERTY_FLOAT_EVALUATION = "Evaluation.float";
+Color BDDT_EVALUATION_COLOR = new Color(255,255,128);
+Color BDDT_EVALUATION_OUTLINE = new Color(170,170,85);
 
 
 Dimension BDDT_INTERACTION_INITIAL_SIZE = new Dimension(320,130);
 String BDDT_PROPERTY_FLOAT_INTERACTION = "Interaction.float";
+Color BDDT_INTERACTION_COLOR = new Color(245,222,179);
+Color BDDT_INTERACTION_OUTLINE = new Color(139,126,102);
 
 
 

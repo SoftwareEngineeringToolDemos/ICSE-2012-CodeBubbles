@@ -204,8 +204,10 @@ public abstract String getName();
  *	actually needs to use the backend, they should use waitForIDE.
  **/
 
-public void startIDE()
+private void startIDE()
 {
+   if (ide_active) return;
+
    localStartIDE();
 
    try {
@@ -233,6 +235,7 @@ public void startIDE()
 				       "<html><p>Eclipse was not started correctly.<p>Perhaps it hadn't terminated yet." +
 				       "<p>Please try starting again.",
 				       "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
+      // should find and dump the eclipse log at this point?
       System.exit(1);
     }
 
@@ -630,15 +633,15 @@ private static class FileGetClientHandler implements MintHandler {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Local file editing methods                                              */
-/*                                                                              */
+/*										*/
+/*	Local file editing methods						*/
+/*										*/
 /********************************************************************************/
 
 public Element getElisionForFile(File f)
 {
    IvyXmlWriter fxw = new IvyXmlWriter();
-   
+
    if (!f.exists() || !f.canRead()) return null;
    long ln0 = f.length();
    if (ln0 >= Integer.MAX_VALUE) return null;
@@ -649,23 +652,23 @@ public Element getElisionForFile(File f)
    try {
       FileInputStream ins = new FileInputStream(f);
       while (ct < ln) {
-         int rln = ins.read(b,ct,ln-ct);
-         if (rln <= 0) {
-            ins.close();
-            return null;
-          }
-         ct += rln;
+	 int rln = ins.read(b,ct,ln-ct);
+	 if (rln <= 0) {
+	    ins.close();
+	    return null;
+	  }
+	 ct += rln;
        }
       ins.close();
     }
    catch (IOException e) {
       BoardLog.logE("BUMP","Problem reading local file " + f,e);
     }
-   
+
    fxw.bytesElement("FILE",b);
-   
+
    waitForIDE();
-   
+
    return getXmlReply("FILEELIDE",null,null,fxw.toString(),0);
 }
 
@@ -1633,6 +1636,9 @@ public Element getTypeHierarchy(String proj,String pkg,String cls,boolean all)
 
 public List<BumpLocation> getCallPath(String proj,String from,String to)
 {
+   from = IvyXml.xmlSanitize(from);
+   to = IvyXml.xmlSanitize(to);
+
    String rq = "FROM='" + from + "' TO='" + to + "' SHORTEST='T' LEVELS='4'";
 
    Element xml = getXmlReply("CALLPATH",proj,rq,null,0);
@@ -1791,7 +1797,7 @@ public Element computeQuickFix(BumpProblem bp,int off,int len)
    String p = "<PROBLEM MSGID='" + id + "' START='" + boff + "' />";
    Element r = getXmlReply("QUICKFIX",bp.getProject(),q,p,0);
    if (r == null || !IvyXml.isElement(r,"RESULT")) return null;
-   
+
    return r;
 }
 

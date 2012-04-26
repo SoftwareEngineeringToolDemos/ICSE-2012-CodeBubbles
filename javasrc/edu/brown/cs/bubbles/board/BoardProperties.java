@@ -746,31 +746,31 @@ public void save() throws IOException
 
 private void loadProperties(String id)
 {
-   File f1;
+   prop_file = loadIfPossible(id);
+   loadIfPossible(id + "." + BOARD_ARCH);
 
-   f1 = new File(base_directory,id);
-   if (!loadFileProps(f1)) {
-      f1 = new File(base_directory,id + ".props");
-      prop_file = f1;				   // set default prop file
-      loadFileProps(f1);
-    }
+   if (id.equals("System") || id.equals("Board")) return;	// these need to be inited before we can use them  
 
-   f1 = new File(base_directory,id + "." + BOARD_ARCH);
-   if (!loadFileProps(f1)) {
-      f1 = new File(base_directory,id + "." + BOARD_ARCH + ".props");
-      loadFileProps(f1);
-    }
-
-   if (id.equals("System") || id.equals("Board")) return;
+   String s = BoardSetup.getSetup().getLanguage().toString().toLowerCase();
+   loadIfPossible(id + "." + s);
+   loadIfPossible(id + "." + s + "." + BOARD_ARCH);
 
    String cnm = BoardSetup.getSetup().getCourseName();
    if (cnm != null) {
-      f1 = new File(base_directory,id + "." + cnm);
-      if (!loadFileProps(f1)) {
-	 f1 = new File(base_directory,id + "." + cnm + ".props");
-	 loadFileProps(f1);
-       }
+      loadIfPossible(id + "." + cnm);
     }
+}
+
+
+
+private File loadIfPossible(String id)
+{
+   File f1 = new File(base_directory,id);
+   if (!loadFileProps(f1)) {
+      f1 = new File(base_directory,id + ".props");
+      loadFileProps(f1);
+    }
+   return f1;
 }
 
 

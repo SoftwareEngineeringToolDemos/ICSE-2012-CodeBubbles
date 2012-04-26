@@ -174,8 +174,9 @@ private class NewMethodAction extends NewAction implements BuenoConstants.BuenoB
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","NewMethod");
+      BudaRoot.hideSearchBubble(e);
       BuenoMethodDialog bmd = new BuenoMethodDialog(search_bubble,access_point,
-						       property_set,for_location,this);
+        					       property_set,for_location,this);
       bmd.showDialog();
     }
 
@@ -199,8 +200,9 @@ private class NewFieldAction extends NewAction implements BuenoConstants.BuenoBu
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","NewField");
+      BudaRoot.hideSearchBubble(e);
       BuenoFieldDialog bfd = new BuenoFieldDialog(search_bubble,access_point,
-						       property_set,for_location,this);
+        					       property_set,for_location,this);
       bfd.showDialog();
     }
 
@@ -226,8 +228,9 @@ private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBub
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","NewType");
+      BudaRoot.hideSearchBubble(e);
       BuenoClassDialog bcd = new BuenoClassDialog(search_bubble,access_point,create_type,
-						     property_set,for_location,this);
+        					     property_set,for_location,this);
       bcd.showDialog();
     }
 
@@ -251,8 +254,9 @@ private class NewInnerTypeAction extends NewAction implements BuenoConstants.Bue
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","NewInnerType");
+      BudaRoot.hideSearchBubble(e);
       BuenoInnerClassDialog bcd = new BuenoInnerClassDialog(search_bubble,access_point,create_type,
-						     property_set,for_location,this);
+        					     property_set,for_location,this);
       bcd.showDialog();
     }
 
@@ -276,8 +280,9 @@ private class NewPackageAction extends NewAction implements BuenoConstants.Bueno
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","NewPackage");
+      BudaRoot.hideSearchBubble(e);
       BuenoPackageDialog bpd = new BuenoPackageDialog(search_bubble,access_point,
-							 property_set,for_location,this);
+        						 property_set,for_location,this);
       bpd.showDialog();
     }
 

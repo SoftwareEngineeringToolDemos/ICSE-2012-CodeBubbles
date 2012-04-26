@@ -299,6 +299,13 @@ public void earlyStartup()
 
    bedrock_project.terminate();
    if (bedrock_monitor != null) bedrock_monitor.stopMonitoring();
+
+   if (!doing_exit) {
+      doing_exit = true;
+      shutdown_mint = true;
+      mint_control.shutDown();
+    }
+
    super.stop(ctx);
 }
 
@@ -429,7 +436,9 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    xw.begin("RESULT");
 
    if (cmd.equals("PING")) {
-      xw.text("PONG");
+      if (PlatformUI.isWorkbenchRunning()) xw.text("PONG");
+      else if (doing_exit || shutdown_mint) xw.text("EXIT");
+      else xw.text("UNSET");
     }
    else if (cmd.equals("PROJECTS")) {
       bedrock_project.listProjects(xw);
@@ -440,9 +449,6 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				     IvyXml.getAttrBool(xml,"CLASSES",false),
 				     IvyXml.getAttrBool(xml,"OPTIONS",false),xw);
     }
-   else if (cmd.equals("CLOSEPROJECT")) {
-      bedrock_project.closeProject(proj,xw);
-    }
    else if (cmd.equals("EDITPROJECT")) {
       bedrock_project.editProject(proj,IvyXml.getAttrBool(xml,"LOCAL"),
 	    IvyXml.getChild(xml,"PROJECT"),xw);
@@ -452,14 +458,11 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if(cmd.equals("IMPORTPROJECT")){
       try{
-	bedrock_project.importExistingProject(proj);
-      }catch(Throwable t)
-      {
+	 bedrock_project.importExistingProject(proj);
+       }
+      catch(Throwable t) {
 	 throw new BedrockException("Exception constructing project: " + t.getMessage());
-      }
-   }
-   else if (cmd.equals("GETPROJECTFILES")) {
-      bedrock_project.listSourceFiles(proj,xw);
+       }
     }
    else if (cmd.equals("BUILDPROJECT")) {
       bedrock_project.buildProject(proj,IvyXml.getAttrBool(xml,"CLEAN"),
@@ -678,7 +681,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				     IvyXml.getAttrBool(xml,"COMPUTE",true),
 				     getElements(xml,"REGION"),xw);
     }
-   else if (cmd.equals("FILEELIDE")) { 
+   else if (cmd.equals("FILEELIDE")) {
       bedrock_editor.fileElide(IvyXml.getBytesElement(xml,"FILE"),xw);
     }
    else if (cmd.equals("RENAME")) {
@@ -738,9 +741,6 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if (cmd.equals("PREFERENCES")) {
       bedrock_project.handlePreferences(proj,xw);
-    }
-   else if (cmd.equals("WAITFOREDITS")) {
-      waitForEdits();
     }
    else if (cmd.equals("LOGLEVEL")) {
       log_level = IvyXml.getAttrEnum(xml,"LEVEL",BedrockLogLevel.ERROR);

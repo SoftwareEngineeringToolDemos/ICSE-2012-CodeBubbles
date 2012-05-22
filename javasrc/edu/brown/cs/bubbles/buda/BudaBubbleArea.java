@@ -668,6 +668,7 @@ void removeWorkingSet(BudaWorkingSetImpl ws)
 public BudaWorkingSet findWorkingSetForBubble(BudaBubble bb)
 {
    Rectangle r1 = BudaRoot.findBudaLocation(bb);
+   if (r1 == null) return null;
 
    for (BudaWorkingSetImpl ws : getWorkingSets()) {
       Rectangle r2 = ws.getRegion();
@@ -837,11 +838,13 @@ void collapseLinks(Collection<BudaBubbleLink> lnks0)
       Rectangle r1 = done.get(sb);
       if (r1 == null) r1 = BudaRoot.findBudaLocation(sb);
       Rectangle r2 = BudaRoot.findBudaLocation(tb);
-      int x = r1.x + r1.width + BUBBLE_CREATION_NEAR_SPACE;
-      int y = ps.y - pt.y + r2.y;
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(sb);
-      bba.moveBubble(tb,new Point(x,y),true);
-      done.put(tb,new Rectangle(x,y,r2.width,r2.height));
+      if (r1 != null && r2 != null && bba != null) {
+	 int x = r1.x + r1.width + BUBBLE_CREATION_NEAR_SPACE;
+	 int y = ps.y - pt.y + r2.y;
+	 bba.moveBubble(tb,new Point(x,y),true);
+	 done.put(tb,new Rectangle(x,y,r2.width,r2.height));
+       }
     }
 }
 
@@ -853,6 +856,8 @@ private static class LinkComparator implements Comparator<BudaBubbleLink> {
       BudaBubble b2 = l2.getSource();
       Rectangle r1 = BudaRoot.findBudaLocation(b1);
       Rectangle r2 = BudaRoot.findBudaLocation(b2);
+      if (r1 == null) return -1;
+      if (r2 == null) return 1;
       if (r1.x < r2.x) return -1;
       if (r1.x > r2.x) return 1;
       if (r1.y < r2.y) return -1;
@@ -861,6 +866,8 @@ private static class LinkComparator implements Comparator<BudaBubbleLink> {
       b2 = l2.getTarget();
       r1 = BudaRoot.findBudaLocation(b1);
       r2 = BudaRoot.findBudaLocation(b2);
+      if (r1 == null) return -1;
+      if (r2 == null) return 1;
       if (r1.x < r2.x) return -1;
       if (r1.x > r2.x) return 1;
       if (r1.y < r2.y) return -1;
@@ -1041,9 +1048,13 @@ public int getRegionSpace()
    Dimension sz = getSize();
 
    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
-   // Paint p = new GradientPaint(0f,0f,top_color,0f,sz.height,bottom_color);
-   // g2.setPaint(p);
-   g2.setColor(middle_color);
+   if (DISPLAY_SHOW_GRADIENT)  {
+      Paint p = new GradientPaint(0f,0f,top_color,0f,sz.height,bottom_color);
+      g2.setPaint(p);
+    }
+   else {
+      g2.setColor(middle_color);
+    }
    g2.fill(r);
 
    for (BudaWorkingSetImpl ws : working_sets) {

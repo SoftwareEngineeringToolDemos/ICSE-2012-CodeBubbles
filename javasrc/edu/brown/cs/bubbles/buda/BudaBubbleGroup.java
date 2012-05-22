@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -698,8 +698,10 @@ private class GroupTitle extends JTextField implements ActionListener, FocusList
       if (ottl == null && t != null && t.length() > 0 && group_bubbles.size() > 1) {
 	 for (BudaBubble bb : group_bubbles) {
 	    BudaRoot br = BudaRoot.findBudaRoot(bb);
-	    br.noteNamedBubbleGroup(BudaBubbleGroup.this);
-	    break;
+	    if (br != null) {
+	       br.noteNamedBubbleGroup(BudaBubbleGroup.this);
+	       break;
+	     }
 	  }
        }
     }

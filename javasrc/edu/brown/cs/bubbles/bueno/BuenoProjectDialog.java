@@ -148,7 +148,7 @@ public BuenoProjectDialog(String proj)
 
 /********************************************************************************/
 /*										*/
-/*	Methods to create an editor bubble							    */
+/*	Methods to create an editor bubble				*/
 /*										*/
 /********************************************************************************/
 
@@ -198,7 +198,7 @@ private void closeWindow(Component c)
 {
    BudaBubble bb = BudaRoot.findBudaBubble(c);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(c);
-   if (bba != null) bba.removeBubble(bb);
+   if (bba != null && bb != null) bba.removeBubble(bb);
 }
 
 
@@ -235,6 +235,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
 
       path_display = new JList(library_paths);
       path_display.setVisibleRowCount(10);
+      path_display.addListSelectionListener(this);
       addGBComponent(new JScrollPane(path_display),0,0,1,y++,1,1);
     }
 
@@ -252,7 +253,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
 	 EditPathEntryBubble bb = new EditPathEntryBubble(pe);
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
 	 BudaBubble rbb = BudaRoot.findBudaBubble(this);
-	 bba.addBubble(bb,rbb,null,dialog_placement);
+	 if (bba != null) bba.addBubble(bb,rbb,null,dialog_placement);
        }
       else if (cmd.equals("Delete")) {
 	 for (Object o : path_display.getSelectedValues()) {
@@ -270,7 +271,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
       NewPathEntryBubble bb = new NewPathEntryBubble(ff,mode);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
       BudaBubble rbb = BudaRoot.findBudaBubble(this);
-      bba.addBubble(bb,rbb,null,dialog_placement);
+      if (bba != null) bba.addBubble(bb,rbb,null,dialog_placement);
     }
 
    private void updateButtons() {

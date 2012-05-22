@@ -108,7 +108,9 @@ BassImportProjectAction()
       catch (Throwable t) {
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_source);
 	 BudaErrorBubble bub = new BudaErrorBubble("Error importing project: " + t.getMessage());
-	 bba.addBubble(bub, the_source, null, BudaRoot.PLACEMENT_LEFT);
+	 if (bba != null) {
+	    bba.addBubble(bub, the_source, null, BudaRoot.PLACEMENT_LEFT);
+	  }
 	 return;
        }
       BumpClient bc = BumpClient.getBump();
@@ -119,8 +121,10 @@ BassImportProjectAction()
       File wsdir = new File(proj_dir,"workingsets");
       String[] wlist = wsdir.list();
       if (wlist != null && wlist.length > 0) {
-	 BudaRoot.findBudaBubbleArea(the_source).addBubble(new WorkingSetConfirmDialog(),
-							      the_source, null, BudaRoot.PLACEMENT_LEFT);
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_source);
+	 if (bba != null) {
+	    bba.addBubble(new WorkingSetConfirmDialog(),the_source, null, BudaRoot.PLACEMENT_LEFT);
+	  }
        }
     }
 }
@@ -178,7 +182,7 @@ private void loadWorkingSets()
 	 fixFilePaths(xml, proj_dir.getName());
 
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_source);
-	 bba.addWorkingSet(xml);
+	 if (bba != null) bba.addWorkingSet(xml);
        }
     }
 }

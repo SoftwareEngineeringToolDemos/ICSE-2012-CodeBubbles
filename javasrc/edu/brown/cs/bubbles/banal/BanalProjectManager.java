@@ -183,6 +183,7 @@ private void checkClassData()
 }
 
 @Override public void handleFileStarted(String proj,String file)        { }
+@Override public void handleProjectOpened(String proj)                  { }
 
 @Override public void handleFileRemoved(String proj,String file)
 {

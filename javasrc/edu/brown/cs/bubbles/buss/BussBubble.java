@@ -488,9 +488,6 @@ private class Hoverer extends BudaHover implements ComponentListener {
    @Override public void endHover() {
       if (preview_bubble != null){
 	 preview_bubble.setVisible(false);
-	 // BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(self);
-	 // bba.remove(preview_bubble);
-
 	 preview_bubble = null;
       }
     }

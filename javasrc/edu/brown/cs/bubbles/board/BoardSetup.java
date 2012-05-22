@@ -41,6 +41,7 @@ import java.net.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
+import java.util.regex.*;
 
 
 
@@ -170,7 +171,7 @@ private BoardSetup()
    force_metrics = false;
 
    install_path = system_properties.getProperty(BOARD_PROP_INSTALL_DIR);
-   auto_update = (System.getProperty("edu.brown.cs.bubbles.NO_UPDATE") != null);
+   auto_update = (System.getProperty("edu.brown.cs.bubbles.NO_UPDATE") == null);
    auto_update = system_properties.getBoolean(BOARD_PROP_AUTO_UPDATE,auto_update);
    install_jar = false;
    jar_directory = null;
@@ -597,9 +598,6 @@ public static File getBubblesWorkingDirectory(File wsd)
 		       bs.install_jar);
     }
 
-   // File f1 = new File(wsd,".metadata");
-   // File f2 = new File(f1,".plugins");
-   // File f3 = new File(f2,"edu.brown.cs.bubbles.bedrock");
    File f3 = new File(wsd,".bubbles");
 
    if (!f3.exists()) f3.mkdirs();
@@ -946,6 +944,7 @@ public boolean doSetup()
 	 needsetup |= !checkInstall() && !install_jar;
 	 break;
       case PYTHON :
+	 needsetup |= !checkInstall() && !install_jar;
 	 break;
     }
    needsetup |= !checkWorkspace();
@@ -1239,8 +1238,25 @@ private static boolean checkEclipseDirectory(File ed)
 
    File pdf = new File(ed,BOARD_ECLIPSE_PLUGINS);
    if (!pdf.exists() || !pdf.isDirectory()) {
-      File ddf = new File(ed,BOARD_ECLIPSE_DROPINS);
-      if (!ddf.exists() || !ddf.isDirectory()) return false;
+      pdf = new File(ed,BOARD_ECLIPSE_DROPINS);
+      if (!pdf.exists() || !pdf.isDirectory()) return false;
+    }
+
+   for (String fnm : pdf.list()) {
+      if (fnm.startsWith("org.eclipse.platform_")) {
+	 Pattern p = Pattern.compile("(\\d+\\.\\d+)\\.\\d\\.");
+	 Matcher m = p.matcher(fnm);
+	 if (m.find()) {
+	    String ver = m.group(1);
+	    if (ver != null) {
+	       double d = Double.parseDouble(ver);
+	       if (d < 3.5) {
+		  return false; 			// illegal Eclipse version
+		}
+	     }
+	  }
+	 break;
+      }
     }
 
    return true;

@@ -1404,7 +1404,7 @@ private class FloatAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent evt) {
       boolean fg = !isFloating();
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BudaBubble.this);
-      bba.setBubbleFloating(BudaBubble.this,fg);
+      if (bba != null) bba.setBubbleFloating(BudaBubble.this,fg);
     }
 
 }	// end of FloatAction
@@ -1427,7 +1427,7 @@ private class RemoveAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent evt) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BudaBubble.this);
-      bba.userRemoveBubble(BudaBubble.this);
+      if (bba != null) bba.userRemoveBubble(BudaBubble.this);
     }
 
 }	// end of FloatAction

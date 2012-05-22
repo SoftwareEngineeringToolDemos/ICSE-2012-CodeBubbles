@@ -75,8 +75,8 @@ enum BaleFragmentType {
    METHOD,
    CLASS,
    FILE,
-   FIELDS,				// set of fields
-   STATICS,				// static initializers
+   FIELDS,				// set of fields (python attributes)
+   STATICS,				// static initializers (python evaluations)
    HEADER,				// class header
    ROFILE,				// Read-only file (not in IDE)
    ROMETHOD,				// read-only method (not in IDE)
@@ -400,7 +400,7 @@ Color BALE_FIND_HIGHLIGHT_COLOR = new Color(0,100,150,50);
  **/
 Color BALE_PORT_ANNOT_COLOR = new Color(0x20ff00ff,true);
 
-	
+
 
 
 /********************************************************************************/
@@ -592,7 +592,7 @@ int BALE_THICK_CARET_WIDTH = 3; 		// width of thick text editing caret
 String BALE_DOES_DOCUMENT_MOVEMENT = "Bale.caret.movement";
 
 
-		
+
 
 /********************************************************************************/
 /*										*/

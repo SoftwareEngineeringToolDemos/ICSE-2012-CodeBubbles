@@ -502,7 +502,8 @@ private class StackNode extends CommonNode {
        }
       if (bb == null) return;
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtSwingPanel.this);
-      bba.addBubble(bb,BddtSwingPanel.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+      if (bba != null)
+	 bba.addBubble(bb,BddtSwingPanel.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
     }
 
    private void checkFile() {

@@ -171,7 +171,8 @@ private class FileHandler implements BumpChangeHandler {
 
    @Override public void handleFileAdded(String proj,String file)	{ }
    @Override public void handleFileRemoved(String proj,String file)	{ }
-   @Override public void handleFileStarted(String proj,String file)     { }
+   @Override public void handleFileStarted(String proj,String file)	{ }
+   @Override public void handleProjectOpened(String proj)               { }
 
    @Override public void handleFileChanged(String proj,String file) {
       noteFileChanged(new File(file));
@@ -308,7 +309,9 @@ private void handleBubbleAdded(BudaBubble bb)
 
    if (create && config_done && auto_show) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
-      BbookFactory.getFactory().createTaskSelector(bba,bb,null,bb.getContentProject());
+      if (bba != null) {
+	 BbookFactory.getFactory().createTaskSelector(bba,bb,null,bb.getContentProject());
+       }
     }
 
    BnoteTask task = tr.getTask();

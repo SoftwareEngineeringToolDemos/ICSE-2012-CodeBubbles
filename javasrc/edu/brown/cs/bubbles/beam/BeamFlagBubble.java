@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Andrew Bragdon		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -146,7 +146,7 @@ BeamFlagBubble(String imagePath)
 }
 
 
-String getImagePath()                   { return _ImagePath; }
+String getImagePath()			{ return _ImagePath; }
 
 
 /********************************************************************************/
@@ -165,7 +165,7 @@ private void changeIcon(String iconPath)
    _ImagePath = iconPath;
 
    BudaRoot br = BudaRoot.findBudaRoot(this);
-   br.repaint();
+   if (br != null) br.repaint();
 }
 
 
@@ -178,7 +178,11 @@ private void changeIcon(String iconPath)
 
 protected void paintContentOverview(Graphics2D g)
 {
-   if (_OverviewImage == _Icon.getImage()) _OverviewImage = _OverviewImage.getScaledInstance(BudaRoot.findBudaBubbleArea(this).getHeight()/6, BudaRoot.findBudaBubbleArea(this).getHeight()/6, Image.SCALE_SMOOTH);
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+
+   if (_OverviewImage == _Icon.getImage() && bba != null) {
+      _OverviewImage = _OverviewImage.getScaledInstance(bba.getHeight()/6,bba.getHeight()/6, Image.SCALE_SMOOTH);
+    }
 
    AffineTransform gtrans = g.getTransform();
 

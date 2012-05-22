@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -65,6 +65,8 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
       BaleFragmentType ftyp = IvyXml.getAttrEnum(cnt,"FRAGTYPE",BaleFragmentType.NONE);
       String proj = IvyXml.getAttrString(cnt,"PROJECT");
       String name = IvyXml.getAttrString(cnt,"NAME");
+      String filn = IvyXml.getAttrString(cnt,"FILE");
+      File file = (filn == null ? null : new File(filn));
       int idx = name.lastIndexOf(".");
       if (name.length() == 0) name = null;
       String head = name;
@@ -72,9 +74,9 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
       switch (ftyp) {
 	 case NONE :
 	    break;
-         case ROFILE :
-            bb = bf.createFileBubble(proj,new File(head),null,null,0);
-            break;
+	 case ROFILE :
+	    bb = bf.createFileBubble(proj,new File(head),null,null,0);
+	    break;
 	 case FILE :
 	    bb = bf.createFileBubble(proj,head);
 	    break;
@@ -85,7 +87,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	    bb = bf.createFieldsBubble(proj,head);
 	    break;
 	 case STATICS :
-	    bb = bf.createStaticsBubble(proj,head);
+	    bb = bf.createStaticsBubble(proj,head,file);
 	    break;
 	 case HEADER :
 	    bb = bf.createClassPrefixBubble(proj,head);
@@ -104,7 +106,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 {
    Element cnt = IvyXml.getChild(xml,"CONTENT");
    String typ = IvyXml.getAttrString(cnt,"TYPE");
-   
+
    if (typ.equals("FRAGMENT") && bb instanceof BaleEditorBubble) {
       BaleEditorBubble eb = (BaleEditorBubble) bb;
       String proj = IvyXml.getAttrString(cnt,"PROJECT");
@@ -112,14 +114,14 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
       String name = IvyXml.getAttrString(cnt,"NAME");
       BaleDocument bd = (BaleDocument) eb.getContentDocument();
       if (bd.getFile().getPath().equals(file) &&
-            bd.getProjectName().equals(proj) &&
-            name.equals(bd.getFragmentName())) 
-         return true;
+	    bd.getProjectName().equals(proj) &&
+	    name.equals(bd.getFragmentName()))
+	 return true;
     }
-   
+
    return false;
 }
-      
+
 /********************************************************************************/
 /*										*/
 /*	Port creation methods							*/

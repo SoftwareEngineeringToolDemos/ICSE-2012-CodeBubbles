@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -96,9 +96,10 @@ synchronized void moveBubble(BudaBubble m,Point target,boolean update)
    if (move_bubbles.size() == 1) {
       refresh_set = null;
       if (bubble_area == null) bubble_area = BudaRoot.findBudaBubbleArea(m);
+      if (bubble_area == null) return;
       move_timer.start();
     }
-   
+
    if (update) {
       if (refresh_set == null) refresh_set = new ArrayList<BudaBubble>();
       refresh_set.add(m);
@@ -131,9 +132,9 @@ synchronized boolean isActive()
 	 if (mb.nextMove()) it.remove();
        }
       if (move_bubbles.size() == 0) {
-         stop = true;
-         upds = refresh_set;
-         refresh_set = null;
+	 stop = true;
+	 upds = refresh_set;
+	 refresh_set = null;
        }
     }
 
@@ -141,10 +142,10 @@ synchronized boolean isActive()
       bubble_area.checkAreaDimensions();
       move_timer.stop();
     }
-   
+
    if (upds != null && upds.size() > 0) {
       for (BudaBubble xbb : upds) {
-         bubble_area.fixupBubble(xbb);
+	 bubble_area.fixupBubble(xbb);
        }
     }
 }

@@ -409,7 +409,7 @@ private class MenuBtn extends JMenuItem implements MenuComponent, ActionListener
       Component c = (Component) evt.getSource();
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(c);
       ButtonListener bc = for_item.getCallback();
-      if (bc != null) {
+      if (bc != null && bba != null) {
 	 BoardMetrics.noteCommand("BUDA","menu_" + for_item.getName());
 	 bc.buttonActivated(bba,for_item.getId(),start_point);
        }
@@ -596,7 +596,7 @@ private class MenuConfigurator implements BubbleConfigurator {
 
       return bb;
     }
-   
+
    @Override public boolean matchBubble(BudaBubble bb,Element xml) {
       Element cnt = IvyXml.getChild(xml,"CONTENT");
       String typ = IvyXml.getAttrString(cnt,"TYPE");

@@ -121,6 +121,8 @@ private BconFactory()
 public BudaBubble createOverviewBubble(Component source,Point pt)
 {
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source);
+   if (bba == null) return null;
+
    BconOverviewPanel pnl = new BconOverviewPanel(bba,pt);
    current_panel.put(bba,pnl);
 

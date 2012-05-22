@@ -317,6 +317,8 @@ private void process()
        }
       catch (IOException e) { }
     }
+
+   System.exit(0);
 }
 
 

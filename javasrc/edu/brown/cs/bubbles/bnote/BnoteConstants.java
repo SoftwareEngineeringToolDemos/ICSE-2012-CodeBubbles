@@ -37,6 +37,7 @@
 
 package edu.brown.cs.bubbles.bnote;
 
+import edu.brown.cs.ivy.xml.*;
 
 import java.util.*;
 
@@ -84,6 +85,7 @@ enum BnoteKey {
 
 
 
+   
 /********************************************************************************/
 /*										*/
 /*	Task Definition 							*/
@@ -98,6 +100,8 @@ interface BnoteTask {
    String getDescription();
    Date getFirstTime();
    Date getLastTime();
+   
+   void outputXml(IvyXmlWriter xw);
 
 }	// end of interface BnoteTask
 
@@ -119,6 +123,8 @@ interface BnoteEntry {
    String getProperty(String id);
    Set<String> getPropertyNames();
 
+   void outputXml(IvyXmlWriter xw);
+   
 }	// end of interface BnoteEntry
 
 

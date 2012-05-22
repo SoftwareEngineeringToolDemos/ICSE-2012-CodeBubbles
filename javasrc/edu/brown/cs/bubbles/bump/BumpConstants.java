@@ -88,6 +88,7 @@ enum BumpSymbolType {
    FUNCTION,
    CONSTRUCTOR,
    STATIC_INITIALIZER,
+   MODULE,
    PACKAGE,
    PROJECT,
    LOCAL
@@ -227,7 +228,7 @@ interface BumpFix {
  *	Return parameters describing the fix.  These are dependent on the fix.
  **/
    String getParameter(String id);
-   
+
    Element getEdits();
 
 }
@@ -902,6 +903,7 @@ interface BumpChangeHandler extends EventListener {
    void handleFileChanged(String project,String file);
    void handleFileAdded(String project,String file);
    void handleFileRemoved(String project,String file);
+   void handleProjectOpened(String project);
 
 }
 

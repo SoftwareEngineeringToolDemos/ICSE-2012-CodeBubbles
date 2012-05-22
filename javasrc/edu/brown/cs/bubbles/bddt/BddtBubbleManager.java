@@ -132,6 +132,7 @@ void createUserStackBubble(BubbleData bd)
    if (bddt_properties.getBoolean("Bddt.show.values")) {
       BddtStackView sv = new BddtStackView(launch_control,bt);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
+      if (bba == null) return;
       BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
       bubble_map.put(sv,nbd);
       bba.addBubble(sv,bb,null,PLACEMENT_BELOW|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
@@ -213,8 +214,10 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	    case THREADS :
 	    case EVAL :
 	       Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
-	       xpos = Math.max(xpos,rx.x + rx.width + 40);
-	       ypos = Math.min(ypos,rx.y);
+	       if (rx != null) {
+		  xpos = Math.max(xpos,rx.x + rx.width + 40);
+		  ypos = Math.min(ypos,rx.y);
+		}
 	       continue;
 	  }
        }
@@ -338,6 +341,8 @@ BudaBubble createThreadBubble()
     }
 
    BudaRoot br = BudaRoot.findBudaRoot(launch_control);
+   if (br == null) return null;
+
    BudaBubble bb = new BddtThreadView(launch_control);
    Rectangle r = launch_control.getBounds();
    int x = r.x;
@@ -379,6 +384,7 @@ BudaBubble createConsoleBubble()
     }
 
    BudaRoot br = BudaRoot.findBudaRoot(launch_control);
+   if (br == null) return null;
    BudaBubble bb = BddtFactory.getFactory().getConsoleControl().createConsole(launch_control);
 
    Rectangle r = launch_control.getBounds();
@@ -422,6 +428,7 @@ BudaBubble createHistoryBubble()
     }
 
    BudaRoot br = BudaRoot.findBudaRoot(launch_control);
+   if (br == null) return null;
    BudaBubble bb = BddtFactory.getFactory().getHistoryControl().createHistory(launch_control);
 
    Rectangle r = launch_control.getBounds();
@@ -465,6 +472,7 @@ BudaBubble createSwingBubble()
     }
 
    BudaRoot br = BudaRoot.findBudaRoot(launch_control);
+   if (br == null) return null;
    BudaBubble bb = new BddtSwingPanel(launch_control);
 
    Rectangle r = launch_control.getBounds();
@@ -634,7 +642,7 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
       if (bd.getThread() == bt && bd.getBubbleType() == BubbleType.EXEC) {
 	 BudaBubble bb = bd.getBubble();
 	 Rectangle r = BudaRoot.findBudaLocation(bb);
-	 if (r.x + r.width > rmost) {
+	 if (r != null && r.x + r.width > rmost) {
 	    rmost = r.x + r.width;
 	    best = bd;
 	  }

@@ -200,9 +200,9 @@ BaleFragmentEditor createFieldFragmentEditor(String proj,String cls)
 /*										*/
 /********************************************************************************/
 
-BaleFragmentEditor createStaticsFragmentEditor(String proj,String cls)
+BaleFragmentEditor createStaticsFragmentEditor(String proj,String cls,File file)
 {
-   List<BumpLocation> locs = bump_client.findClassInitializers(proj,cls);
+   List<BumpLocation> locs = bump_client.findClassInitializers(proj,cls,file);
 
    return getEditorFromLocations(locs,BaleFragmentType.STATICS,cls + ".<INITIALIZERS>");
 }
@@ -282,7 +282,7 @@ BaleFragmentEditor createLocalFileEditor(String proj,File file,String cnm,String
 
 
 private Element findMethodElement(Element e,int off)
-{ 
+{
    if (e == null) return null;
 
    if (IvyXml.isElement(e,"ELIDE")) {
@@ -370,9 +370,12 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 	 idx = fnm.lastIndexOf(".");
 	 if (idx > 0) {
 	    String cnm = fnm.substring(0,idx);
-	    fed = createStaticsFragmentEditor(bl.getSymbolProject(),cnm);
+	    fed = createStaticsFragmentEditor(bl.getSymbolProject(),cnm,bl.getFile());
 	  }
 	 break;
+      case MODULE :
+         // fed = createFileEditor(bl.getSymbolProject(),null,bl.getFile());
+         break;
     }
 
    if (fed == null) return null;
@@ -462,7 +465,7 @@ public BudaBubble createMethodBubble(String proj,String fct)
       BoardLog.logD("BALE","Creating method bubble for static initializer");
       int idx = fct.indexOf(".<clinit>()");
       String cls = fct.substring(0,idx);
-      return createStaticsBubble(proj,cls);
+      return createStaticsBubble(proj,cls,null);
     }
 
    BaleFragmentEditor bfe = createMethodFragmentEditor(proj,fct);
@@ -516,9 +519,9 @@ public BudaBubble createFieldsBubble(String proj,String cls)
  *	Return the code bubble for all static initializers of the given class.
  **/
 
-public BudaBubble createStaticsBubble(String proj,String cls)
+public BudaBubble createStaticsBubble(String proj,String cls,File file)
 {
-   BaleFragmentEditor bfe = createStaticsFragmentEditor(proj,cls);
+   BaleFragmentEditor bfe = createStaticsFragmentEditor(proj,cls,file);
    if (bfe == null) return null;
 
    return new BaleEditorBubble(bfe);
@@ -984,6 +987,7 @@ List<BaleRegion> getFragmentRegions(BaleDocument doc)
    List<BumpLocation> locs = null;
    String proj = doc.getProjectName();
    String nam = doc.getFragmentName();
+   File fil = doc.getFile();
    if (nam == null) return null;
    int idx = nam.lastIndexOf(".");
    String cnam = nam;
@@ -1003,7 +1007,7 @@ List<BaleRegion> getFragmentRegions(BaleDocument doc)
 	 locs = bump_client.findFields(proj,cnam);
 	 break;
       case STATICS :
-	 locs = bump_client.findClassInitializers(proj,cnam);
+	 locs = bump_client.findClassInitializers(proj,cnam,fil);
 	 break;
       case HEADER :
 	 locs = bump_client.findClassHeader(proj,cnam);
@@ -1061,6 +1065,10 @@ private BaleFragmentEditor getEditorFromLocations(List<BumpLocation> locs)
 	 int idx = fragname.lastIndexOf(".");
 	 fragname = fragname.substring(0,idx) + ".< FIELDS >";
 	 break;
+      case MODULE :
+         ftyp = BaleFragmentType.FILE;
+         fragname = loc0.getFile().getPath();
+         break;
       default :
 	 return null;
     }

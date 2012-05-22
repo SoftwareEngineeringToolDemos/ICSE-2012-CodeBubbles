@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -77,20 +77,22 @@ BaleLinePort(Component c,Position where,String desc)
    }
    if (bfe == null) {
       BudaBubble bb = BudaRoot.findBudaBubble(c);
-      bfe = (BaleFragmentEditor) bb.getContentPane();
+      if (bb != null) bfe = (BaleFragmentEditor) bb.getContentPane();
    }
 
-   for_editor = bfe.getEditor();
+   if (bfe != null) for_editor = bfe.getEditor();
    port_description = desc;
 
    file_position = where;
 
    port_annot = null;
-   BaleAnnotationArea baa = for_editor.getAnnotationArea();
-   if (baa != null) {
-      port_annot = new PortAnnotation();
-      baa.addAnnotation(port_annot);
-   }
+   if (for_editor != null) {
+      BaleAnnotationArea baa = for_editor.getAnnotationArea();
+      if (baa != null) {
+	 port_annot = new PortAnnotation();
+	 baa.addAnnotation(port_annot);
+       }
+    }
 }
 
 
@@ -230,13 +232,13 @@ private class PortAnnotation implements BaleAnnotation {
    @Override public String getToolTip() 			{ return port_description; }
 
    @Override public Color getLineColor()			{ return BALE_PORT_ANNOT_COLOR; }
-   
-   @Override public Color getBackgroundColor()                  { return null; }
+
+   @Override public Color getBackgroundColor()			{ return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
 
    @Override public int getPriority()				{ return 1; }
-   
+
    @Override public void addPopupButtons(Component c,JPopupMenu m) { }
 
 }	// end of inner class PortAnnotation

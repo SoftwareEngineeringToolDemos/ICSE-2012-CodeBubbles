@@ -149,6 +149,13 @@ BumpRunManager()
    source_map = new HashMap<String,File>();
 
    thread_filters = new HashMap<BumpThread,SwingEventListenerList<BumpThreadFilter>>();
+
+   switch (BoardSetup.getSetup().getRunMode()) {
+      case CLIENT :
+      case SERVER :
+	 use_debug_server = false;
+	 break;
+    }
 }
 
 
@@ -1341,8 +1348,10 @@ private class ThreadData implements BumpThread {
 
    void updateThread(Element xml) {
       if (!IvyXml.isElement(xml,"THREAD")) xml = IvyXml.getChild(xml,"THREAD");
-      thread_name = IvyXml.getAttrString(xml,"NAME");
-      thread_group = IvyXml.getAttrString(xml,"GROUP");
+      String val = IvyXml.getAttrString(xml,"NAME");
+      if (val != null) thread_name = val;
+      val = IvyXml.getAttrString(xml,"GROUP");
+      if (val != null) thread_group = val;
 
       if (IvyXml.getAttrBool(xml,"SYSTEM")) thread_type = BumpThreadType.SYSTEM;
       else {
@@ -1429,7 +1438,7 @@ private class ThreadData implements BumpThread {
 	 if (state.isRunning() == thread_state.isRunning() && !thread_state.isException()) {
 	    chng = true;
 	    thread_state = state;
-	    System.err.println("SET BANDAID STATE OF " + thread_name + " TO " + state);
+	    // System.err.println("SET BANDAID STATE OF " + thread_name + " TO " + state);
 	 }
        }
       cpu_time = IvyXml.getAttrLong(xml,"CPUTM");

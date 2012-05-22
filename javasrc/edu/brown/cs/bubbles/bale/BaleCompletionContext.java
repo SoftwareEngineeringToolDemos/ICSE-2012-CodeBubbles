@@ -809,7 +809,7 @@ private static class CompletionItemNewMethod extends CompletionItem implements
       if (link_editor != null) {
 	 BudaBubble bbo = BudaRoot.findBudaBubble(link_editor);
 	 BudaRoot root = BudaRoot.findBudaRoot(bbo);
-	 if (bbo.isShowing() && link_point != null) {
+	 if (bbo != null && root != null && bbo.isShowing() && link_point != null) {
 	    BudaConstants.LinkPort p0 = new BaleLinePort(link_editor,link_point,null);
 	    BudaConstants.LinkPort p1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
 	    BudaBubbleLink lnk = new BudaBubbleLink(bbo,p0,bb,p1);

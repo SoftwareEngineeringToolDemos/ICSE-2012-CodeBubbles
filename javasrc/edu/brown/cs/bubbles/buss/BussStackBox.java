@@ -295,9 +295,9 @@ private void createAllBubbles()
 {
    Rectangle loc = BudaRoot.findBudaLocation(this);
    BudaRoot broot = BudaRoot.findBudaRoot(this);
-
    BudaBubble bbl = BudaRoot.findBudaBubble(this);
-   bbl.setVisible(false);
+
+   if (bbl != null) bbl.setVisible(false);
 
    createAllBubbles((TreeNode) tree_model.getRoot(),broot,loc);
 }
@@ -311,9 +311,9 @@ private void createSelectedBubble()
 
    Rectangle loc = BudaRoot.findBudaLocation(this);
    BudaRoot broot = BudaRoot.findBudaRoot(this);
-
    BudaBubble bbl = BudaRoot.findBudaBubble(this);
-   bbl.setVisible(false);
+
+   if (bbl != null) bbl.setVisible(false);
 
    createAllBubbles(tn,broot,loc);
 }
@@ -323,6 +323,8 @@ private void createSelectedBubble()
 
 private void createAllBubbles(TreeNode tn,BudaRoot br,Rectangle loc)
 {
+   if (br == null) return;
+
    BussEntry ent = ((BussTreeNode) tn).getEntry();
 
    if (ent != null) {
@@ -343,7 +345,7 @@ private void createEntryBubble(BussEntry be,BudaRoot root,Rectangle loc)
 {
    BudaBubble bb = be.getBubble();
    BussBubble bbl = (BussBubble) BudaRoot.findBudaBubble(this);
-   if (bb == null) return;
+   if (bb == null || bbl == null) return;
 
    BudaBubble sbb = bbl.getSourceBubble();
    if (sbb != null && sbb.getContentName() != null && sbb.getContentFile() != null &&

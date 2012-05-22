@@ -518,7 +518,9 @@ private class SourceAction extends AbstractAction {
       BudaBubble bb = bf.createMethodBubble(null,nm);
       if (bb == null) return;
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BattStatusBubble.this);
-      bba.addBubble(bb,BattStatusBubble.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+      if (bba != null) {
+	 bba.addBubble(bb,BattStatusBubble.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+       }
     }
 
 }	// end of inner class SourceAction

@@ -360,7 +360,7 @@ private class CallPathCompute implements Runnable {
 	    else port0 = new BaleLinePort(b0,spos,"Call Path Link");
 	    BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
 	    BudaBubbleLink lnk = new BudaBubbleLink(b0,port0,target_bubble,port1);
-	    root.addLink(lnk);
+	    if (root != null) root.addLink(lnk);
 	  }
        }
     }
@@ -417,7 +417,7 @@ private void createPreview(BudaBubble bb, int xpos, int ypos)
    BudaRoot root = BudaRoot.findBudaRoot(this);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
    Rectangle loc = BudaRoot.findBudaLocation(this);
-   if (bba == null || loc == null) return;
+   if (bba == null || loc == null || root == null) return;
 
    int x0 = xpos + 50;
    int y0 = ypos + 25;
@@ -459,6 +459,7 @@ private class Hoverer extends BudaHover {
       if (preview_bubble != null && editor_pane.isShowing()) {
 	 Component c0 = (Component) e.getSource();
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(c0);
+	 if (bba == null) return;
 	 try {
 	    Point pt = SwingUtilities.convertPoint(c0,e.getPoint(),bba);
 	    createPreview(preview_bubble, pt.x, pt.y);

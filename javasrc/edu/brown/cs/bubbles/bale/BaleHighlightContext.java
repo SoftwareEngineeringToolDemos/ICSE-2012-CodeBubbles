@@ -312,6 +312,8 @@ private void startHighlight(CaretEvent start)
 							doc.getFile(),spos,epos);
 		  removeDefs(locsd);
 		  break;
+               case MODULE :
+                  break;
 	     }
 	  }
 	 else {

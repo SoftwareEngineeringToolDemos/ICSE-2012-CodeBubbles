@@ -195,7 +195,9 @@ private class ClickHandler extends MouseAdapter {
 
 	 if (bb == null) return;
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(perf_table);
-	 bba.addBubble(bb,BddtPerfViewTable.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	 if (bba != null) {
+	    bba.addBubble(bb,BddtPerfViewTable.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	  }
        }
     }
 

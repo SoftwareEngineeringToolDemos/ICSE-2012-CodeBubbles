@@ -164,6 +164,38 @@ protected void setupAnnotation(StringBuffer buf,BuenoProperties props)
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Creation methods for modules                                            */
+/*										*/
+/********************************************************************************/
+
+protected void createModule(BuenoLocation where,BuenoProperties props)
+{
+   StringBuffer buf = new StringBuffer();
+   
+   setupModule(buf,props);
+   
+   String nm = props.getStringProperty(BuenoKey.KEY_PACKAGE) + "." +
+      props.getStringProperty(BuenoKey.KEY_NAME);
+   
+   BumpClient bc = BumpClient.getBump();
+   bc.saveAll();
+   File cf = bc.createNewClass(where.getProject(),nm,false,buf.toString());
+   where.setFile(cf);
+   // bc.compile(false,false,true);
+}
+
+
+
+protected void setupModule(StringBuffer buf,BuenoProperties props)
+{
+   moduleText(buf,props);
+}
+
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -502,13 +534,13 @@ protected void methodText(StringBuffer buf,BuenoProperties props)
 protected void classText(StringBuffer buf,BuenoProperties props)
 {
    String pkg = props.getStringProperty(BuenoKey.KEY_PACKAGE);
-
+   
    if (pkg != null) {
       buf.append("package " + pkg + ";\n");
     }
-
+   
    buf.append("\n");
-
+   
    String [] imps = props.getImports();
    if (imps != null && imps.length > 0) {
       for (String s : imps) {
@@ -516,7 +548,7 @@ protected void classText(StringBuffer buf,BuenoProperties props)
        }
     }
    buf.append("\n");
-
+   
    String cmmt = props.getStringProperty(BuenoKey.KEY_COMMENT);
    if (props.getBooleanProperty(BuenoKey.KEY_ADD_JAVADOC)) {
       setupJavadocComment(buf,props,cmmt);
@@ -524,7 +556,7 @@ protected void classText(StringBuffer buf,BuenoProperties props)
    else if (props.getBooleanProperty(BuenoKey.KEY_ADD_COMMENT)) {
       setupBlockComment(buf,props,cmmt);
     }
-
+   
    int mods = props.getModifiers();
    int ct = 0;
    ct = addModifier(buf,"private",Modifier.isPrivate(mods),ct);
@@ -535,11 +567,11 @@ protected void classText(StringBuffer buf,BuenoProperties props)
    ct = addModifier(buf,"native",Modifier.isNative(mods),ct);
    ct = addModifier(buf,"final",Modifier.isFinal(mods),ct);
    if (ct > 0) buf.append(" ");
-
+   
    String typ = props.getStringProperty(BuenoKey.KEY_TYPE);
    if (typ == null) typ = "class";
    String nam = props.getStringProperty(BuenoKey.KEY_NAME);
-
+   
    buf.append(typ + " " + nam);
    String ext = props.getStringProperty(BuenoKey.KEY_EXTENDS);
    if (ext != null) buf.append(" extends " + ext);
@@ -551,12 +583,42 @@ protected void classText(StringBuffer buf,BuenoProperties props)
 	 else buf.append(", ");
 	 buf.append(im);
        }
-     }
+    }
    buf.append(" {\n");
    buf.append("\n");
    buf.append("\n");
    buf.append("}\n");
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Simple Class creation							*/
+/*										*/
+/********************************************************************************/
+
+protected void moduleText(StringBuffer buf,BuenoProperties props)
+{
+   String cmmt = props.getStringProperty(BuenoKey.KEY_COMMENT);
+   if (props.getBooleanProperty(BuenoKey.KEY_ADD_COMMENT)) {
+      setupBlockComment(buf,props,cmmt);
+    }
+   
+   String [] imps = props.getImports();
+   if (imps != null && imps.length > 0) {
+      for (String s : imps) {
+	 buf.append(s + "\n");
+       }
+    }
+   buf.append("\n");
+}
+
+
+
+
+
+
 
 
 

@@ -424,8 +424,8 @@ private class EditorPane extends BaleEditorPane implements BaleEditor {
    @Override public BaleAnnotationArea getAnnotationArea()	{ return annot_area; }
 
    @Override void toggleFindBar() {
+      BudaBubble bb = BudaRoot.findBudaBubble(find_bar);
       if (find_bar.isVisible()) {
-	 BudaBubble bb = BudaRoot.findBudaBubble(find_bar);
 	 if (bb != null && bb.isVisible()) {
 	    find_bar.setVisible(false);
 	    return;
@@ -433,11 +433,13 @@ private class EditorPane extends BaleEditorPane implements BaleEditor {
        }
 
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-      Rectangle bounds = BudaRoot.findBudaBubble(this).getBounds();
+      BudaBubble bbx = BudaRoot.findBudaBubble(this);
+      if (bba == null || bbx == null) return;
+      Rectangle bounds = bbx.getBounds();
       int findwidth = find_bar.getWidth();
       bounds.x = bounds.x + (bounds.width/2) - (findwidth/2);
       bba.add(find_bar, new BudaConstraint(BudaBubblePosition.FIXED, bounds.x, bounds.y+bounds.height));
-      bba.setLayer(BudaRoot.findBudaBubble(find_bar), 1);
+      if (bb != null) bba.setLayer(bb, 1);
       find_bar.setVisible(true);
    }
 
@@ -493,6 +495,7 @@ void relocateFindBar()
     }
    annot_area.addAnnotation(ba);
    BudaBubble bb = BudaRoot.findBudaBubble(this);
+   if (bb == null) return;
 
    if (ba.getForceVisible(bb)) {
       try {
@@ -523,6 +526,7 @@ void checkInitialAnnotations()
    check_annotations = false;
 
    BudaBubble bb = BudaRoot.findBudaBubble(this);
+   if (bb == null) return;
 
    synchronized (document_annotations) {
       for (BaleAnnotation ba : document_annotations) {
@@ -640,7 +644,7 @@ private static class ProblemAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return null; }
-   @Override public Color getBackgroundColor()                  { return null; }
+   @Override public Color getBackgroundColor()			{ return null; }
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
    @Override public int getPriority()				{ return 10; }
    @Override public void addPopupButtons(Component c,JPopupMenu m) {
@@ -697,7 +701,7 @@ private static class BreakpointAnnot implements BaleAnnotation {
     }
 
    @Override public Color getLineColor()			{ return null; }
-   @Override public Color getBackgroundColor()                  { return null; }
+   @Override public Color getBackgroundColor()			{ return null; }
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
    @Override public int getPriority()				{ return 5; }
    @Override public void addPopupButtons(Component c,JPopupMenu m) { }

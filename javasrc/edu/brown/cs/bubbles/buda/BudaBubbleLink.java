@@ -297,7 +297,7 @@ void handlePopupMenu(MouseEvent e)
    pm.add(m);
    pm.add(new CollapseAction());
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
-   pm.show(bba,e.getX(),e.getY());
+   if (bba != null) pm.show(bba,e.getX(),e.getY());
 }
 
 
@@ -310,7 +310,7 @@ private class RemoveAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
       BoardMetrics.noteCommand("BUDA","actionRemoveLink");
-      bba.removeLink(BudaBubbleLink.this);
+      if (bba != null) bba.removeLink(BudaBubbleLink.this);
    }
 
 }	// end of inner class RemoveAction
@@ -329,7 +329,7 @@ private class StyleAction extends AbstractAction {
       setStyle(set_style);
       BoardMetrics.noteCommand("BUDA","actionStyleLink");
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
-      bba.repaint();
+      if (bba != null) bba.repaint();
     }
 
 }	// end of inner class StyleAction
@@ -346,7 +346,7 @@ private class CollapseAction extends AbstractAction {
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);
       List<BudaBubbleLink> lnks = new ArrayList<BudaBubbleLink>();
       lnks.add(BudaBubbleLink.this);
-      bba.collapseLinks(lnks);
+      if (bba != null) bba.collapseLinks(lnks);
     }
 
 }	// end of inner class CollapseAction

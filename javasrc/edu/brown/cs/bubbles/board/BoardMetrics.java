@@ -487,7 +487,7 @@ private class MetricsDialog extends JDialog implements ActionListener, CaretList
       comment += "<p>For more information, contact Steven Reiss (spr@cs.brown.edu).";
       JEditorPane ep = new JEditorPane("text/html",comment);
       ep.setEditable(false);
-      Dimension sz = new Dimension(350,270);
+      Dimension sz = new Dimension(350,280);
       ep.setSize(sz);
       ep.setPreferredSize(sz);
       pnl.addLabellessRawComponent("COMMENT",ep);

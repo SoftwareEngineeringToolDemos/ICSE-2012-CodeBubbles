@@ -159,8 +159,8 @@ boolean isBeingChanged()		{ return being_changed; }
 
 void setCreateTime(long when)		{ create_time = when; }
 
-boolean isShared()                      { return is_shared; }
-void setShared(boolean fg)              { is_shared = fg; }
+boolean isShared()			{ return is_shared; }
+void setShared(boolean fg)		{ is_shared = fg; }
 
 
 
@@ -213,7 +213,7 @@ BudaTask createTask()
 {
    if (set_label == null) return null;
 
-   /***
+   /*******************
    File f1 = BoardSetup.getPropertyBase();
    File dir = new File(f1,"TaskImages");
    if (!dir.exists()) dir.mkdir();
@@ -221,9 +221,10 @@ BudaTask createTask()
    try {
       my_pdf = File.createTempFile(set_label, ".gif", dir);
       BudaRoot.findBudaRoot(bubble_area).exportAsPdf(my_pdf, set_region);
-   } catch (IOException e) { System.out.println("couldn't make the temp file");}
+    }
+   catch (IOException e) { System.out.println("couldn't make the temp file");}
    catch (Exception e) { System.out.println("couldn't pdf!"); }
-   ****/
+   ***********8****/
 
    BudaXmlWriter xw = new BudaXmlWriter();
    createTask(xw);

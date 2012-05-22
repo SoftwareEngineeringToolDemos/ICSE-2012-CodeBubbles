@@ -117,6 +117,7 @@ static void createInfoBubble(BaleEditorPane target,String elmtype,
    if (bib == null) return;
    // Might want to use source position to compute y offset
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
+   if (bba == null) return;
    bba.addBubble(bib,target,null,PLACEMENT_RIGHT|PLACEMENT_GROUPED);
 
    // BudaRoot broot = BudaRoot.findBudaRoot(target);
@@ -188,6 +189,8 @@ private BaleInfoBubble(BaleEditorPane target,String[] btnmsg,String bbmsg,
 private void addBubbleLink(Position p)
 {
    BudaRoot root = BudaRoot.findBudaRoot(bale_editor);
+   if (root == null) return;
+
    BudaConstants.LinkPort p0;
    if (p != null) {
       p0 = new BaleLinePort(bale_editor,p,null);
@@ -198,6 +201,7 @@ private void addBubbleLink(Position p)
 
    BudaConstants.LinkPort p1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
    BudaBubble obbl = BudaRoot.findBudaBubble(bale_editor);
+   if (obbl == null) return;
    BudaBubbleLink lnk = new BudaBubbleLink(obbl,p0,this,p1,true,BudaLinkStyle.STYLE_SOLID);
    root.addLink(lnk);
 }
@@ -225,13 +229,13 @@ private class ContextActionHandler extends MouseAdapter {
       String cmd = lb.getToolTipText();
       String acmd = action_names.get(cmd);
       if (acmd != null) {
-         ActionEvent nevt = new ActionEvent(bale_editor,e.getID(),acmd,e.getWhen(),e
-        				       .getModifiers());
-         Action a = BaleEditorKit.findAction(acmd);
-         a.actionPerformed(nevt);
+	 ActionEvent nevt = new ActionEvent(bale_editor,e.getID(),acmd,e.getWhen(),e
+					       .getModifiers());
+	 Action a = BaleEditorKit.findAction(acmd);
+	 a.actionPerformed(nevt);
        }
       else {
-         BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
+	 BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
        }
       setVisible(false);
     }

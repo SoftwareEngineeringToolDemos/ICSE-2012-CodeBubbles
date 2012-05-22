@@ -74,7 +74,7 @@ public class BemaMain implements BemaConstants
 
 public static void main(String [] args)
 {
-   BemaMain bm = new BemaMain(args);
+    BemaMain bm = new BemaMain(args);
 
    if (System.getProperty("java.vm.vendor").startsWith("Apple")) {
       try {

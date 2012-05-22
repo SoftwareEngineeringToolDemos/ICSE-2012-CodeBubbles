@@ -100,6 +100,7 @@ BaleCompactFragment(BaleDocument bd,Collection<BumpLocation> locs,int wd)
 	 case INTERFACE :
 	 case ENUM :
 	 case THROWABLE :
+         case MODULE :
 	    if (bl.getDefinitionOffset() == bl.getOffset() &&
 	       bl.getDefinitionEndOffset() == bl.getEndOffset()) {
 	       // add dummy line
@@ -186,6 +187,9 @@ private void initContentData()
 
 	 for (BaleSimpleRegion bsr : ld.getHighlights()) {
 	    int hoff = bsr.getStart() - soff;
+
+	    if (index >= s.length()) continue;
+	    if (hoff >= s.length()) hoff = s.length();
 	    if (hoff < index) continue;
 
 	    strList.add(s.subSequence(index, hoff).toString());

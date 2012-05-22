@@ -43,7 +43,6 @@
 package edu.brown.cs.bubbles.bale;
 
 
-import java.util.*;
 
 class BaleIndenterPython extends BaleIndenter implements BaleConstants {
 
@@ -54,9 +53,10 @@ class BaleIndenterPython extends BaleIndenter implements BaleConstants {
 /*										*/
 /********************************************************************************/
 
-private int     indent_space;
-private int     paren_indent;
-private int     tab_size;
+private int	indent_space;
+private int     continue_space;
+private int	paren_indent;
+private int	tab_size;
 
 
 
@@ -70,7 +70,7 @@ private int     tab_size;
 BaleIndenterPython(BaleDocument bd)
 {
    super(bd);
-   
+
    loadProperties();
 }
 
@@ -78,22 +78,22 @@ BaleIndenterPython(BaleDocument bd)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
 protected int getTabSize()
 {
-   return tab_size; 
+   return tab_size;
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Action methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Action methods								*/
+/*										*/
 /********************************************************************************/
 
 int getSplitIndentationDelta(int offset)
@@ -103,25 +103,25 @@ int getSplitIndentationDelta(int offset)
       int cur = getCurrentIndentation(offset);
       return cur + paren_indent;
     }
-   finally { bale_document.readUnlock(); } 
+   finally { bale_document.readUnlock(); }
 }
-   
 
 
-int getDesiredIndentation(int offset) 
+
+int getDesiredIndentation(int offset)
 {
-   int ind = 0; 
+   int ind = 0;
    // if this is a new line we don't need to compute exdents
    bale_document.readLock();
    try {
       int lno = bale_document.findLineNumber(offset);
       int loff = bale_document.findLineOffset(lno);
       BaleElement elt = bale_document.getActualCharacterElement(loff);
-      computeExdents();
+      // computeExdents();
       ind = findLineIndentation(elt);
     }
    finally { bale_document.readUnlock(); }
-   
+
    return ind;
 }
 
@@ -129,9 +129,9 @@ int getDesiredIndentation(int offset)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Python indentation code                                                 */
-/*                                                                              */
+/*										*/
+/*	Python indentation code 						*/
+/*										*/
 /********************************************************************************/
 
 private int findLineIndentation(BaleElement elt)
@@ -139,106 +139,166 @@ private int findLineIndentation(BaleElement elt)
    int delta = 0;
    boolean continuation = false;
    int base = 0;
-   
+   BaleAstNode startast = elt.getAstNode();
+   BaleAstNode lineast = null;
+
    for (BaleElement nelt = elt; nelt != null; nelt = getNextElement(nelt,true)) {
       if (!nelt.isEmpty()) {
-         switch (nelt.getTokenType()) {
-            case ELSE :                         // includes elif
-               delta = -1;
-               break;
-          }
+	 startast = nelt.getAstNode();
+	 switch (nelt.getTokenType()) {
+	    case ELSE : 			// includes elif
+	       delta = -1;
+	       break;
+	  }
+	 break;
        }
       else if (nelt.isEndOfLine()) break;
     }
-   
+
    boolean eol = elt.isEndOfLine();
+//   BaleElement.Indent ind0 = elt.getIndent();
+//   if (ind0 != null) {
+//      int exd = ind0.getNumExdent();
+//      if (exd > 0) delta = -exd;
+//    }
+      
    int pct = 0;
-   for (BaleElement pelt = elt.getPreviousCharacterElement(); pelt != null; pelt = pelt.getPreviousCharacterElement()) {
+   BaleElement pelt = elt.getPreviousCharacterElement();
+   for ( ; pelt != null; pelt = pelt.getPreviousCharacterElement()) {
+      if (!pelt.isEmpty()) lineast = pelt.getAstNode();
       if (eol) {
-         switch (pelt.getTokenType()) {
-            case BACKSLASH :
-               continuation = true;
-               break;
-            case COLON :
-               delta += 1;
-               break;
-          }
+	 switch (pelt.getTokenType()) {
+	    case BACKSLASH :
+	       continuation = true;
+	       break;
+	    case COLON :
+	       delta += 1;
+	       break;
+	  }
        }
       switch (pelt.getTokenType()) {
-         case LBRACE :
-         case LBRACKET :
-         case LPAREN :
-            pct += 1;
-            break;
-         case RBRACE :
-         case RBRACKET :
-         case RPAREN :
-            pct -= 1;
-            break;
-         case BREAK :
-         case CONTINUE : 
-         case RETURN :
-         case PASS :
-         case RAISE :
-            delta -= 1;
-            break;
-         case CLASS :
-         case ELSE :
-         // anything that can start a statement here
-            break;
+	 case LBRACE :
+	 case LBRACKET :
+	 case LPAREN :
+	    pct += 1;
+	    break;
+	 case RBRACE :
+	 case RBRACKET :
+	 case RPAREN :
+	    pct -= 1;
+	    break;
+	 case BREAK :
+	 case CONTINUE :
+	 case RETURN :
+	 case PASS :
+	 case RAISE :
+	    delta -= 1;
+	    break;
+	 case CLASS :
+	 case ELSE :
+	 // anything that can start a statement here
+	    break;
        }
       // check for INDENT element, get information from it if so
       BaleElement.Indent ind = pelt.getIndent();
       if (ind != null) {
-         int frst = ind.getFirstColumn();
-         int exd = ind.getNumExdent();
-         if (exd == EXDENT_CONTINUE) {
-          }
-         else if (exd == EXDENT_UNKNOWN) {
-          }
-         else {
-            base = frst;
-            break;
-          }
+	 int frst = ind.getFirstColumn();
+         if (checkRelevantLine(pelt)) {
+	    base = frst-1;
+	    break;
+	  }
        }
       if (pelt.isEndOfLine()) {
-         if (pct != 0) continuation = true;
-         eol = true;
-         // 
+	 if (pct != 0) continuation = true;
+	 eol = true;
        }
-         
-    }      
+	
+    }	
    
-   System.err.println("INDENT: " + base + " " + delta + " " + continuation);
+   while (startast != null && startast.getNodeType() != BaleAstNodeType.BLOCK)
+      startast = startast.getParent();
    
-   if (continuation) return base + indent_space;
+   if (startast != null && lineast != null) {
+      int bct = 0;
+      for (BaleAstNode n = lineast; n != null; n = n.getParent()) {
+	 if (n == startast) {
+	    delta -= bct;
+	    break;
+	 }
+	 else if (n.getNodeType() == BaleAstNodeType.BLOCK) ++bct;
+      }
+      
+   }
    
-   return base + delta*indent_space;
+   if (continuation) return base + continue_space;
+   if (delta >= 0) return base + delta * indent_space;
+   if (base == 0 || pelt == null) return 0;
+   
+   while (delta < 0) {
+      pelt = pelt.getPreviousCharacterElement();
+      if (pelt == null) return 0;
+      BaleElement.Indent ind = pelt.getIndent();
+      if (ind != null && checkRelevantLine(pelt)) {
+         int frst = ind.getFirstColumn();
+         if (frst < base) {
+            base = frst - 1;
+            ++delta;
+          }
+       }
+    }
+
+   return base;
 }
 
 
 
+
+private boolean checkRelevantLine(BaleElement elt)
+{
+   // first ensure the line is not a continuation
+   BaleElement pelt = elt.getPreviousCharacterElement();
+   if (pelt.isEndOfLine()) pelt = pelt.getPreviousCharacterElement();
+   if (pelt.getTokenType() == BaleTokenType.BACKSLASH) return false;
+   
+   // then check that this line has content
+   BaleElement nelt = elt.getNextCharacterElement();
+   while (nelt != null && !nelt.isEndOfLine()) {
+      if (!nelt.isEmpty()) return true;
+    }
+      
+   return false;
+}
+   
+
+
+
 /********************************************************************************/
-/*                                                                              */
-/*      Property methods                                                        */
-/*                                                                              */
+/*										*/
+/*	Property methods							*/
+/*										*/
 /********************************************************************************/
 
 private void loadProperties()
 {
     indent_space = BALE_PROPERTIES.getInt("Bale.python.indent",4);
+    continue_space = BALE_PROPERTIES.getInt("Bale.python.continue.indent",4);
     // use_tabs = BALE_PROPERTIES.getBoolean("Bale.python.use_tabs",false);
-    paren_indent = BALE_PROPERTIES.getInt("Bale.python.paren_indent",4);
+    paren_indent = BALE_PROPERTIES.getInt("Bale.python.paren_indent",2);
     tab_size = BALE_PROPERTIES.getInt("Bale.tabsize",8);
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Current indentation computation                                         */
-/*                                                                              */
+/*										*/
+/*	Current indentation computation 					*/
+/*										*/
 /********************************************************************************/
+
+/*********************************
+ 
+private static final int MIN_DELTA = 1;		// min space difference that is significant
+
 
 private void computeExdents()
 {
@@ -249,82 +309,78 @@ private void computeExdents()
    boolean contline = false;
    BaleElement.Indent curind = null;
    int pct = 0;
-   
+
    BaleElement e0 = bale_document.getActualCharacterElement(0);
    while (e0 != null) {
       if (eol && pct == 0 && !contline) {
-         havecnts = false;
-         curind = null;
-         BaleElement.Indent in = e0.getIndent();
-         if (in != null) {
-            curind = in;
-            int wd = in.getFirstColumn() - 1;
-            if (wd == offsets.peek()) {
-               in.setNumExdent(0);
-             }
-            else if (wd > offsets.peek()) {
-               in.setNumExdent(-1);
-               offsets.push(wd);
-             }
-            else {
-               int ect = 1;
-               while (wd < offsets.peek()) {
-                  ++ect;
-                  offsets.pop();
-                }
-               if (wd > offsets.peek()) {
-                  offsets.pop();
-                  offsets.push(wd);
-                }
-               in.setNumExdent(ect); 
-             }
-          }
-         else if (e0.isComment()) ;
-         else if (e0.isEndOfLine()) ;
-         else { 
-            while (offsets.size() > 1) offsets.pop();
-          }
+	 havecnts = false;
+	 curind = null;
+	 BaleElement.Indent in = e0.getIndent();
+	 if (in != null) {
+	    curind = in;
+	    int wd = in.getFirstColumn() - 1;
+	    if (Math.abs(wd - offsets.peek()) <= MIN_DELTA) {
+	       in.setNumExdent(0);
+	     }
+	    else if (wd > offsets.peek()) {
+	       in.setNumExdent(-1);
+	       offsets.push(wd);
+	     }
+	    else {
+	       int ect = 0;
+	       while (wd < offsets.peek()) {
+		  ++ect;
+		  offsets.pop();
+		}
+	       if (wd > offsets.peek()) {
+		  offsets.pop();
+		  offsets.push(wd);
+		}
+	       in.setNumExdent(ect);
+	     }
+	  }
+	 else if (e0.isComment()) ;
+	 else if (e0.isEndOfLine()) ;
+	 else {
+	    while (offsets.size() > 1) offsets.pop();
+	  }
        }
-      else if (eol) { 
-         BaleElement.Indent in = e0.getIndent();   // continuation line of some sort
-         if (in != null) {
-            in.setNumExdent(EXDENT_CONTINUE);
-          }
+      else if (eol) {
+	 BaleElement.Indent in = e0.getIndent();   // continuation line of some sort
+	 if (in != null) {
+	    in.setNumExdent(EXDENT_CONTINUE);
+	  }
        }
       else if (!e0.isEmpty()) havecnts = true;
       if (e0.isEndOfLine()) {
-         if (!havecnts && curind != null) curind.setNumExdent(-2);
-         eol = true;
+	 if (!havecnts && curind != null) curind.setNumExdent(-2);
+	 eol = true;
        }
       else eol = false;
       switch (e0.getTokenType()) {
-         case LBRACE :
-         case LBRACKET :
-         case LPAREN :
-             ++pct;
-             contline = false;
-             break;
-         case RBRACE :
-         case RBRACKET :
-         case RPAREN :
-            if (pct > 0) --pct;
-            contline = false;
-            break;
-         case BACKSLASH :
-            contline = true;
-            break;
-         default :
-            contline = false;
-            break;
+	 case LBRACE :
+	 case LBRACKET :
+	 case LPAREN :
+	     ++pct;
+	     contline = false;
+	     break;
+	 case RBRACE :
+	 case RBRACKET :
+	 case RPAREN :
+	    if (pct > 0) --pct;
+	    contline = false;
+	    break;
+	 case BACKSLASH :
+	    contline = true;
+	    break;
+	 default :
+	    contline = false;
+	    break;
        }
       e0 = e0.getNextCharacterElement();
     }
-}  
-               
-      
-   
-
-
+}
+************************/	
 
 
 

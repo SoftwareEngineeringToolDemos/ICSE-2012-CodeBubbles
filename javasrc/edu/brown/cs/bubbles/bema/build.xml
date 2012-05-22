@@ -240,7 +240,7 @@
 	 <arg value="-m" />
 	 <arg value="BUBBLES_DEBUG_spr" />
 	 <arg value='-w' />
-	 <arg value='/home/spr/Eclipse/workspace2' />
+	 <arg value='/home/spr/Eclipse/bubblesx' />
       </java>
    </target>
 
@@ -253,7 +253,7 @@
 	 <arg value="-m" />
 	 <arg value="BUBBLES_DEBUG_spr" />
 	 <arg value='-w' />
-	 <arg value='/home/spr/Eclipse/workspace2' />
+	 <arg value='/home/spr/Eclipse/bubblesx' />
       </java>
    </target>
 

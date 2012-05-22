@@ -291,8 +291,8 @@ void reopenBubble(String path,BtedBubble oldBubble)
    BudaRoot br = BudaRoot.findBudaRoot(bba);
    BudaConstraint bc = new BudaConstraint(BudaBubblePosition.MOVABLE,oldBubble.getX(),
 	    oldBubble.getY());
-   bba.removeBubble(oldBubble);
-   br.add(bb, bc);
+   if (bba != null) bba.removeBubble(oldBubble);
+   if (br != null) br.add(bb, bc);
 }
 
 

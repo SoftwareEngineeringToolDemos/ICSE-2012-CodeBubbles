@@ -129,9 +129,9 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
 	    r = BudaRoot.findBudaLocation(last_placement);
 	    grpb = last_placement;
 	  }
-	 else {
-	    r = new Rectangle(300,100);
-	  }
+       }
+      if (r == null) {
+	 r = new Rectangle(300,100);
        }
     }
 
@@ -295,6 +295,7 @@ private void expandForGroup(Rectangle r,BudaBubble grpb)
       for (BudaBubble gb : grp.getBubbles()) {
 	 if (used.contains(gb)) continue;
 	 Rectangle r1 = BudaRoot.findBudaLocation(gb);
+	 if (r1 == null) continue;
 	 if (r1.intersects(rhor)) {
 	    int lx = Math.min(r.x,r1.x);
 	    int rx = Math.max(r.x + r.width, r1.x + r1.width);

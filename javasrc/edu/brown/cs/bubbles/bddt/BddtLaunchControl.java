@@ -191,8 +191,8 @@ private void setupPanel()
    if (bp.getBoolean("Bddt.buttons.Performance",true)) bblbar.add(new PerformanceAction());
    if (bp.getBoolean("Bddt.buttons.Swing",false)) bblbar.add(new SwingAction());
 
-   bblbar.add(new EvalBubbleAction());
-   bblbar.add(new InteractionBubbleAction());
+   bblbar.add(new ValueViewerBubbleAction());
+   bblbar.add(new EvaluationBubbleAction());
    bblbar.addSeparator();
    bblbar.add(new NewChannelAction());
    bblbar.setFloatable(false);
@@ -214,6 +214,7 @@ private void setupPanel()
 void setupKeys()
 {
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+   if (bba == null) return;
 
    registerKey(bba,new StepUserAction(),KeyStroke.getKeyStroke(KeyEvent.VK_F5,0));
    registerKey(bba,new StepIntoAction(),KeyStroke.getKeyStroke(KeyEvent.VK_F5,InputEvent.SHIFT_DOWN_MASK));
@@ -697,41 +698,41 @@ private class PerformanceAction extends AbstractAction {
 
 
 
-private class EvalBubbleAction extends AbstractAction {
+private class ValueViewerBubbleAction extends AbstractAction {
 
    private static final long serialVersionUID = 1;
 
-   EvalBubbleAction() {
+   ValueViewerBubbleAction() {
       super("Evaluation",BoardImage.getIcon("debug/eval"));
+      putValue(SHORT_DESCRIPTION,"Bring up value viewer bubble");
+   }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BoardMetrics.noteCommand("BDDT","CreateValueViewerBubble");
+      BddtFactory.getFactory().makeValueViewerBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+   }
+
+}	// end of inner class ValueViewerBubbleAction
+
+
+
+
+
+private class EvaluationBubbleAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   EvaluationBubbleAction() {
+      super("Interaction",BoardImage.getIcon("debug/interact"));
       putValue(SHORT_DESCRIPTION,"Bring up evaluation bubble");
    }
 
    @Override public void actionPerformed(ActionEvent evt) {
       BoardMetrics.noteCommand("BDDT","CreateEvaluationBubble");
-      BddtFactory.getFactory().makeEvaluationBubble(BddtLaunchControl.this,BddtLaunchControl.this);
-   }
-
-}	// end of inner class EvalBubbleAction
-
-
-
-
-
-private class InteractionBubbleAction extends AbstractAction {
-
-   private static final long serialVersionUID = 1;
-
-   InteractionBubbleAction() {
-      super("Interaction",BoardImage.getIcon("debug/interact"));
-      putValue(SHORT_DESCRIPTION,"Bring up interaction bubble");
-   }
-
-   @Override public void actionPerformed(ActionEvent evt) {
-      BoardMetrics.noteCommand("BDDT","CreateInteractionBubble");
       BddtFactory.getFactory().makeInteractionBubble(BddtLaunchControl.this,BddtLaunchControl.this);
    }
 
-}	// end of inner class InteractionBubbleAction
+}	// end of inner class EvaluationBubbleAction
 
 
 
@@ -826,9 +827,9 @@ private class RunEventHandler implements BumpRunEventHandler {
    @Override public void handleLaunchEvent(BumpRunEvent evt) { }
 
    @Override synchronized public void handleProcessEvent(BumpRunEvent evt) {
+      BumpLaunchConfig elc = evt.getLaunchConfiguration();
       switch (evt.getEventType()) {
 	 case PROCESS_ADD :
-	    BumpLaunchConfig elc = evt.getLaunchConfiguration();
 	    if (cur_process == null && launch_state == LaunchState.STARTING &&
 		   (elc == null || elc == launch_config)) {
 	       cur_process = evt.getProcess();
@@ -845,6 +846,12 @@ private class RunEventHandler implements BumpRunEventHandler {
 	       cur_process = null;
 	       last_stopped = null;
 	     }
+	    else if (cur_process == null && launch_state == LaunchState.STARTING &&
+			(elc == null || elc == launch_config)) {
+	       setLaunchState(LaunchState.TERMINATED);
+	       thread_states.clear();
+	       last_stopped = null;
+	     }
 	    break;
        }
     }
@@ -854,35 +861,35 @@ private class RunEventHandler implements BumpRunEventHandler {
       BumpThread bt = evt.getThread();
       BumpThreadState ost = thread_states.get(bt);
       BumpThreadState nst = bt.getThreadState();
-   
+
       switch (evt.getEventType()) {
-         case THREAD_ADD :
-            nst = BumpThreadState.RUNNING;
-            //$FALL-THROUGH$
-         case THREAD_CHANGE :
-            thread_states.put(bt,nst);
-            if (bt.getThreadState() != ost) {
-               handleThreadStateChange(bt,ost);
-               if (bt.getThreadState().isStopped()) last_stopped = bt;
-               else if (last_stopped == bt) last_stopped = null;
-             }
-            break;
-         case THREAD_REMOVE :
-            removeExecutionAnnot(bt);
-            if (bt == last_stopped) last_stopped = null;
-            thread_states.remove(bt);
-            break;
-         case THREAD_TRACE :
-         case THREAD_HISTORY :
-            return;
+	 case THREAD_ADD :
+	    nst = BumpThreadState.RUNNING;
+	    //$FALL-THROUGH$
+	 case THREAD_CHANGE :
+	    thread_states.put(bt,nst);
+	    if (bt.getThreadState() != ost) {
+	       handleThreadStateChange(bt,ost);
+	       if (bt.getThreadState().isStopped()) last_stopped = bt;
+	       else if (last_stopped == bt) last_stopped = null;
+	     }
+	    break;
+	 case THREAD_REMOVE :
+	    removeExecutionAnnot(bt);
+	    if (bt == last_stopped) last_stopped = null;
+	    thread_states.remove(bt);
+	    break;
+	 case THREAD_TRACE :
+	 case THREAD_HISTORY :
+	    return;
        }
-   
+
       int tct = thread_states.size();
       int rct = 0;
       for (Map.Entry<BumpThread,BumpThreadState> ent : thread_states.entrySet()) {
-         BumpThreadState bts = ent.getValue();
-         if (bts.isStopped() && last_stopped == null) last_stopped = ent.getKey();
-         else if (bts.isRunning()) ++rct;
+	 BumpThreadState bts = ent.getValue();
+	 if (bts.isStopped() && last_stopped == null) last_stopped = ent.getKey();
+	 else if (bts.isRunning()) ++rct;
        }
       if (tct == 0) setLaunchState(LaunchState.TERMINATED);
       else if (rct == 0) setLaunchState(LaunchState.PAUSED);
@@ -1013,7 +1020,7 @@ private class ExecutionAnnot implements BaleAnnotation {
       for_frame = frm;
       for_file = frm.getFile();
       boolean lcl = frm.isSystem();
-      
+
       for_document = BaleFactory.getFactory().getFileOverview(null,for_file,lcl);
       int off = for_document.findLineOffset(frm.getLineNumber());
       BoardProperties bp = BoardProperties.getProperties("Bddt");
@@ -1383,8 +1390,10 @@ private class ValueEvalListener implements BumpEvaluationHandler, Runnable {
       BddtStackView bsv = new BddtStackView(BddtLaunchControl.this,run_value,false);
       if (!bsv.isStackValid()) return;
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtLaunchControl.this);
-      bba.addBubble(bsv,config_context.getEditor(),null,
-	    PLACEMENT_BELOW|PLACEMENT_LOGICAL|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+      if (bba != null) {
+	 bba.addBubble(bsv,config_context.getEditor(),null,
+			  PLACEMENT_BELOW|PLACEMENT_LOGICAL|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+       }
     }
 
 

@@ -418,7 +418,7 @@ public void handleProblemsUpdated()
    if (element_buffer != null) {
       baleWriteLock();
       try {
-	 element_buffer.updateProblems();
+	  element_buffer.updateProblems();
        }
       finally { baleWriteUnlock(); }
     }

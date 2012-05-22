@@ -189,6 +189,8 @@ public void newDebugger(BumpLaunchConfig blc)
 	 PLACEMENT_EXPLICIT,bbp);
 
    BudaRoot br = BudaRoot.findBudaRoot(bba);
+   if (br == null) return;
+
    br.setCurrentChannel(ctrl);
 
    ctrl.setupKeys();
@@ -322,6 +324,7 @@ private class PanelHandler implements ActionListener {
    @Override public void actionPerformed(ActionEvent e) {
       JButton btn = (JButton) e.getSource();
       BudaRoot br = BudaRoot.findBudaRoot(btn);
+      if (br == null) return;
       String cmd = e.getActionCommand();
       if (cmd.equals("DEBUG")) {
 	 BoardMetrics.noteCommand("BDDT","GotoDebug");
@@ -354,6 +357,8 @@ private class PanelHandler implements ActionListener {
 BudaBubble makeThreadBubble(BudaBubble pview,BddtLaunchControl ctrl)
 {
    BudaRoot br = BudaRoot.findBudaRoot(pview);
+   if (br == null) return null;
+
    BudaBubble bb = null;
    bb = new BddtThreadView(ctrl);
    Rectangle r = pview.getBounds();
@@ -384,6 +389,8 @@ BudaBubble makeConsoleBubble(BudaBubble src,BddtLaunchControl ctrl)
    if (ctrl == null) return null;
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
+
    BudaBubble bb = null;
    bb = console_controller.createConsole(ctrl);
    Rectangle r = src.getBounds();
@@ -411,6 +418,8 @@ BudaBubble makeConsoleBubble(BudaBubble src,BumpProcess proc)
    if (proc == null) return null;
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
+
    BudaBubble bb = null;
    bb = console_controller.createConsole(proc);
    Rectangle r = src.getBounds();
@@ -438,6 +447,8 @@ BudaBubble makeHistoryBubble(BudaBubble src,BddtLaunchControl ctrl)
    if (ctrl == null) return null;
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
+
    BudaBubble bb = null;
    bb = history_controller.createHistory(ctrl);
    if (bb == null) return null;
@@ -466,6 +477,8 @@ BudaBubble makePerformanceBubble(BudaBubble src,BddtLaunchControl ctrl)
    if (ctrl == null) return null;
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
+
    BudaBubble bb = null;
    bb = new BddtPerfViewTable(ctrl);
 
@@ -489,11 +502,13 @@ BudaBubble makePerformanceBubble(BudaBubble src,BddtLaunchControl ctrl)
 
 
 
-BudaBubble makeEvaluationBubble(BudaBubble src,BddtLaunchControl ctrl)
+BudaBubble makeValueViewerBubble(BudaBubble src,BddtLaunchControl ctrl)
 {
    if (ctrl == null) return null;
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
+
    BudaBubble bb = null;
    bb = new BddtEvaluationBubble(ctrl);
 
@@ -521,6 +536,8 @@ BudaBubble makeInteractionBubble(BudaBubble src,BddtLaunchControl ctrl)
    if (ctrl == null) return null;
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
+
    BudaBubble bb = null;
    bb = new BddtInteractionBubble(ctrl);
 
@@ -548,6 +565,8 @@ BudaBubble makeSwingBubble(BudaBubble src,BddtLaunchControl ctrl)
    if (ctrl == null) return null;
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
+   if (bba == null) return null;
+
    BudaBubble bb = null;
    bb = new BddtSwingPanel(ctrl);
 
@@ -610,10 +629,9 @@ private static class SaveButton implements ActionListener, Runnable
 {
    private BudaRoot buda_root;
 
-
    @Override public void actionPerformed(ActionEvent e)  {
       buda_root = BudaRoot.findBudaRoot((Component) e.getSource());
-      BoardThreadPool.start(this);
+      if (buda_root != null) BoardThreadPool.start(this);
    }
 
    @Override public void run() {

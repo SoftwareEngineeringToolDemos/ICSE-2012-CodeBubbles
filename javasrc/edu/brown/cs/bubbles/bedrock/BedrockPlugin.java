@@ -297,7 +297,6 @@ public void earlyStartup()
 
    BedrockPlugin.logI("Stop called");
 
-   bedrock_project.terminate();
    if (bedrock_monitor != null) bedrock_monitor.stopMonitoring();
 
    if (!doing_exit) {
@@ -305,6 +304,8 @@ public void earlyStartup()
       shutdown_mint = true;
       mint_control.shutDown();
     }
+
+   bedrock_project.terminate();
 
    super.stop(ctx);
 }
@@ -955,7 +956,8 @@ private class CommandHandler implements MintHandler {
 	 rslt = "<ERROR><![CDATA[" + xmsg + "]]></ERROR>";
        }
       catch (Throwable t) {
-	 String xmsg = "BEDROCK: Problem processing command " + cmd + ": " + t;
+	 String xmsg = "BEDROCK: Problem processing command " + cmd + ": " + t + " " +
+	    doing_exit + shutdown_mint + " " +  num_clients;
 	 BedrockPlugin.logE(xmsg);
 	 System.err.println(xmsg);
 	 t.printStackTrace();

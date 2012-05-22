@@ -132,7 +132,7 @@ BeamNoteAnnotation(Element xml)
    return note_position.getOffset();
 }
 
-@Override public synchronized Icon getIcon()	
+@Override public synchronized Icon getIcon()
 {
    if (note_icon == null) {
       note_icon = BoardImage.getIcon("note");
@@ -143,7 +143,7 @@ BeamNoteAnnotation(Element xml)
 @Override public String getToolTip()			{ return "Note Bubble"; }
 
 @Override public Color getLineColor()			{ return annot_color; }
-@Override public Color getBackgroundColor()             { return null; }
+@Override public Color getBackgroundColor()		{ return null; }
 
 @Override public boolean getForceVisible(BudaBubble bbl) {
    return false;
@@ -215,12 +215,13 @@ private class NoteAction extends AbstractAction {
       if (note_name == null) return;
       BeamNoteBubble nb = new BeamNoteBubble(note_name,null,BeamNoteAnnotation.this);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((Component) e.getSource());
+      BudaBubble eb = BudaRoot.findBudaBubble((Component) e.getSource());
       Rectangle r1 = BudaRoot.findBudaLocation((Component) e.getSource());
+      if (r1 == null || bba == null || eb == null) return;
       Rectangle r2 = nb.getBounds();
       int x = r1.x - r2.width - 25;
       int y = r1.y;
       bba.addBubble(nb,x,y);
-      BudaBubble eb = BudaRoot.findBudaBubble((Component) e.getSource());
       BaleFileOverview bfo = BaleFactory.getFactory().getFileOverview(null,for_file);
       int lno = bfo.findLineNumber(note_position.getOffset());
       BudaConstants.LinkPort p1 = BaleFactory.getFactory().findPortForLine(eb,lno);

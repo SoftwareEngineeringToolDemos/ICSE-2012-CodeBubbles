@@ -241,6 +241,7 @@ private class BudAction extends TextAction {
 	    r1 = bd.createDocumentRegion(soff1,eoff1,true);
 	    startpos = target.modelToView(soff2);
 	    BudaBubble bbl = BudaRoot.findBudaBubble(target);
+	    if (bbl == null) return false;
 	    startpos.setLocation(SwingUtilities.convertPoint(target,startpos.getLocation(),bbl));
 	 }
 	 catch (BadLocationException ex) {
@@ -268,7 +269,7 @@ private class BudAction extends TextAction {
       if (bfe != null) {
 	 BudaRoot broot = BudaRoot.findBudaRoot(target);
 	 Rectangle loc = BudaRoot.findBudaLocation(target);
-
+	 if (broot == null || loc == null) return false;
 	 BaleEditorBubble bb = new BaleEditorBubble(bfe);
 	 broot.add(bb,new BudaConstraint(loc.x + startpos.x,loc.y + startpos.y));
 	 bb.markBubbleAsNew();
@@ -355,9 +356,11 @@ private class FragmentAction extends TextAction {
 	 BaleEditorBubble bb = new BaleEditorBubble(bfe);
 
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
-	 bba.addBubble(bb,target,null,
-			  PLACEMENT_NEW |
-			  PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	 if (bba != null) {
+	    bba.addBubble(bb,target,null,
+			     PLACEMENT_NEW |
+			     PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	  }
 
 	 /*************
 	 BudaRoot broot = BudaRoot.findBudaRoot(target);

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -107,6 +107,9 @@ BassNameLocation(BumpLocation bl)
       case STATIC_INITIALIZER :
 	 name_type = BassNameType.STATICS;
 	 break;
+      case MODULE :
+         name_type = BassNameType.FILE;
+         break;
       default :
 	 name_type = BassNameType.NONE;
 	 break;
@@ -277,7 +280,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 bb = bf.createFieldsBubble(getProject(),getNameHead());
 	 break;
       case STATICS :
-	 bb = bf.createStaticsBubble(getProject(),getNameHead());
+	 bb = bf.createStaticsBubble(getProject(),getNameHead(),getFile());
 	 break;
       case CLASS :
       case ENUM :
@@ -290,6 +293,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 break;
       case FILE :
 	 bb = bf.createFileBubble(getProject(),getNameHead());
+	 break;
+      case PROJECT :
 	 break;
       default :
 	 BoardLog.logW("BASS","NO BUBBLE FOR " + getKey());

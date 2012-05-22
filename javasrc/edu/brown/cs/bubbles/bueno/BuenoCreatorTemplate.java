@@ -77,6 +77,22 @@ BuenoCreatorTemplate()
 
 
 
+@Override protected void moduleText(StringBuffer buf,BuenoProperties props)
+{
+   Reader r = findTemplate("module",props);
+   if (r != null) {
+      try {
+         expand(r,props,null,buf);
+         return;
+       }
+      catch (IOException e) { }
+    }
+   
+   super.moduleText(buf,props);
+}
+
+
+
 
 
 @Override protected void innerClassText(StringBuffer buf,BuenoProperties props)

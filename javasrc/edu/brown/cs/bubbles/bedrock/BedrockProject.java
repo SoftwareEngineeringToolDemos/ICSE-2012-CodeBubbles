@@ -1324,7 +1324,7 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
 
 @Override public void resourceChanged(IResourceChangeEvent evt)
 {
-   /*********************
+/*********************
    BedrockPlugin.logD("Resource Change: " + evt.getBuildKind() + " " + evt.getType());
    IvyXmlWriter dxw = new IvyXmlWriter();
    dxw.begin("RESOURCECHANGE");
@@ -1333,7 +1333,7 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
    BedrockUtil.outputResource(drd,dxw);
    dxw.end();
    BedrockPlugin.logD("Resource: " + dxw.toString());
-   *************************/
+*************************/
 
    if (evt.getType() == IResourceChangeEvent.POST_CHANGE) {
       try {
@@ -1353,8 +1353,10 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
 	 IvyXmlWriter xw = our_plugin.beginMessage("BUILDDONE");
 	 IResourceDelta rd = evt.getDelta();
 	 int ctr = BedrockUtil.outputResource(rd,xw);
-	 if (ctr == 0) return;				   // nothing output
-	 our_plugin.finishMessage(xw);
+	 if (ctr != 0) our_plugin.finishMessage(xw);
+	 else {
+	    checkForProjectOpen(rd);
+	  }
        }
       catch (Throwable t) {
 	 BedrockPlugin.logE("Problem with resource: " + t);
@@ -1368,12 +1370,33 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
 private void dumpDelta(int lvl,IResourceDelta drd)
 {
    if (drd == null) return;
-   BedrockPlugin.logD("Resource " + lvl + " Delta: " + drd + " " + drd.getFullPath() + " " + drd.getFlags());
+   BedrockPlugin.logD("Resource " + lvl + " Delta: " + drd + " " + drd.getFullPath() + " " +
+			 drd.getFlags());
    for (IResourceDelta xrd : drd.getAffectedChildren()) {
       dumpDelta(lvl+1,xrd);
     }
 }
 ********************/
+
+
+
+private void checkForProjectOpen(IResourceDelta rd)
+{
+   IResource ir = rd.getResource();
+   if (rd.getFlags() == IResourceDelta.OPEN) {
+      if (ir != null && ir.getProject() != null && ir.getType() == IResource.PROJECT) {
+	 IvyXmlWriter xw = our_plugin.beginMessage("PROJECTOPEN");
+	 xw.field("PROJECT",ir.getProject().getName());
+	 our_plugin.finishMessage(xw);
+       }
+    }
+   else if (ir.getType() == IResource.ROOT) {
+      for (IResourceDelta crd : rd.getAffectedChildren()) {
+	 checkForProjectOpen(crd);
+       }
+    }
+}
+
 
 
 

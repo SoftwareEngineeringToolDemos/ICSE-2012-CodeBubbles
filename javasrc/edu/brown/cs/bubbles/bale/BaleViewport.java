@@ -111,13 +111,15 @@ BaleViewport(JEditorPane editor,JPanel annot)
 
 private void handleViewportSized()
 {
+   // Rectangle r0 = getViewport().getViewRect();
+   
    Dimension sz = getViewport().getSize();
    BaleDocument bd = (BaleDocument) editor_pane.getDocument();
    Dimension vsz = getViewport().getViewSize();
 
    if (vsz.height > sz.height) {
       vsz.height = sz.height;
-      getViewport().setViewSize(vsz);
+      // getViewport().setViewSize(vsz);
     }
 
    if (sz.height > last_height && last_height != 0) {
@@ -137,7 +139,13 @@ private void handleViewportSized()
       Component c1 = getViewport().getView();
       if (r == null || c1 == null) return;
       r = SwingUtilities.convertRectangle(editor_pane,r,c1);
-      getViewport().scrollRectToVisible(r);
+      // Rectangle r1 = getViewport().getViewRect();
+      // r0.height = r.height;
+      // r0.width = r.width;
+      // getViewport().scrollRectToVisible(r0);
+      // getViewport().scrollRectToVisible(r);
+      // Rectangle r2 = getViewport().getViewRect();
+      // BoardLog.logD("BALE","COMPARE " + r1 + " " + r2);
     }
    catch (BadLocationException ex) { }
 }
@@ -174,7 +182,8 @@ private void checkScrollBars()
 
 private void handleScroll(int nline,boolean lr)
 {
-   BudaRoot.findBudaBubbleArea(this).invalidateLinks();
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+   if (bba != null) bba.invalidateLinks();
    Point p0 = getViewport().getViewPosition();
    Dimension sz = getViewport().getExtentSize();
    Dimension vsz = getViewport().getViewSize();
@@ -288,6 +297,7 @@ private class ViewportManager extends ComponentAdapter {
 private class ViewManager implements ChangeListener {
 
    @Override public void stateChanged(ChangeEvent e) {
+      // BoardLog.logD("BALE","VIEW CHANGED " + getViewport().getViewRect());
       checkScrollBars();
       BudaBubble bbl = BudaRoot.findBudaBubble(BaleViewport.this);
       if (bbl != null) {

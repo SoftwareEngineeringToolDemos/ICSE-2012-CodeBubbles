@@ -260,6 +260,7 @@ static void setDefault(String proj,String pfx)
    if (txt.equals(old_text)) return;
 
    BudaRoot br = BudaRoot.findBudaRoot(this);
+   if (br == null) return;
    br.noteSearchUsed(this);
 
    if ((old_text == null || txt.startsWith(old_text)) && !txt.endsWith(":")) doPrune(txt);
@@ -483,7 +484,8 @@ void addAndLocateBubble(BudaBubble bb, int ypos,Point ploc)
    BudaRoot root = BudaRoot.findBudaRoot(this);
    Rectangle loc = BudaRoot.findBudaLocation(this);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-   if (bba == null) return;
+   BudaBubble obb = BudaRoot.findBudaBubble(this);
+   if (bba == null || root == null || obb == null) return;
 
    if (ypos == 0) {
       if (loc != null) ypos = loc.y;
@@ -496,7 +498,7 @@ void addAndLocateBubble(BudaBubble bb, int ypos,Point ploc)
       Dimension bsz = bb.getSize();
       int potx = loc.x - bsz.width - BUBBLE_CREATION_SPACE;
       if (potx < root.getCurrentViewport().x)
-	 loc.x = loc.x + BudaRoot.findBudaBubble(this).getWidth() + BUBBLE_CREATION_SPACE;
+	 loc.x = loc.x + obb.getWidth() + BUBBLE_CREATION_SPACE;
       else loc.x = potx;
       loc.y = ypos;
    }
@@ -506,7 +508,7 @@ void addAndLocateBubble(BudaBubble bb, int ypos,Point ploc)
       Rectangle r;
       for(BudaBubble b : cbb){
 	 r = b.getBounds();
-	 if (b != BudaRoot.findBudaBubble(this) && r.contains(loc.getLocation())) {
+	 if (b != obb && r.contains(loc.getLocation())) {
 	    loc.x = r.x + r.width + BUBBLE_CREATION_NEAR_SPACE;
 	    break;
 	 }
@@ -528,7 +530,7 @@ private BudaBubble createPreviewBubble(BassName bn, int xpos, int ypos)
    BudaRoot root = BudaRoot.findBudaRoot(this);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
    Rectangle loc = BudaRoot.findBudaLocation(this);
-   if (bba == null || loc == null) return null;
+   if (bba == null || loc == null || root == null) return null;
 
    BudaBubble previewbubble = bn.createPreviewBubble();
    if (previewbubble == null) return null;
@@ -586,6 +588,8 @@ void handlePopupMenu(MouseEvent e)
 
    Point where = new Point(rowrect.x,rowrect.y+rowrect.height);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(active_options);
+   if (bba == null) return;
+
    Point bbawhere = SwingUtilities.convertPoint(active_options,where,bba);
    JPopupMenu menu = new JPopupMenu();
 
@@ -968,9 +972,9 @@ private class Mouser extends MouseAdapter {
       if (spath != null && e.getClickCount() == cct) {
 	    BassTreeNode tn = (BassTreeNode) spath.getLastPathComponent();
 	    BassName bn = tn.getBassName();
-	    if (bn != null) {
-	       Point pt = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),
-			BudaRoot.findBudaBubbleArea(active_options));
+	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(active_options);
+	    if (bn != null && bba != null) {
+	       Point pt = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),bba);
 	       createBubble(bn,pt.y);
 	       if (!is_static && getParent() != null) getParent().setVisible(false);
 	     }
@@ -1040,7 +1044,7 @@ private class Hoverer extends BudaHover {
 	    BudaRoot root = BudaRoot.findBudaRoot(BassSearchBox.this);
 	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BassSearchBox.this);
 	    Rectangle loc = BudaRoot.findBudaLocation(BassSearchBox.this);
-	    if (loc == null) return;
+	    if (loc == null || bba == null || root == null) return;
 	    int x0 = loc.x + xpos + 50;
 	    int y0 = loc.y + ypos + 45;
 	    Dimension bsz = tt.getPreferredSize();
@@ -1058,10 +1062,8 @@ private class Hoverer extends BudaHover {
    @Override public void endHover(){
       if (preview_bubble != null){
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(self);
-
-	 bba.removeBubble(preview_bubble);
+	 if (bba != null) bba.removeBubble(preview_bubble);
 	 preview_bubble.disposeBubble();
-
 	 preview_bubble = null;
        }
       if (preview_component != null) {
@@ -1132,8 +1134,8 @@ private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer imple
        }
       else if (leaf) {
 	 BassName bn = ((BassTreeNode)value).getBassName();
-         icn = bn.getDisplayIcon();
-       }     
+	 icn = bn.getDisplayIcon();
+       }
       else {
 	 if (expanded) icn = btb.getCollapseIcon();
 	 else icn = btb.getExpandIcon();
@@ -1146,14 +1148,14 @@ private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer imple
       else {
 	 label.setBackground(TRANSPARENT);
        }
-      
+
       BassFlag f = BassFactory.getFactory().getFlagForName(btb.getFullName());
       if (f != null) {
-         Icon i1 = f.getOverlayIcon();
-         if (i1 != null) {
-            if (icn == null) icn = i1;
-            else icn = new OverlayIcon(icn,i1);
-          }
+	 Icon i1 = f.getOverlayIcon();
+	 if (i1 != null) {
+	    if (icn == null) icn = i1;
+	    else icn = new OverlayIcon(icn,i1);
+	  }
        }
 
       label.setIcon(icn);
@@ -1167,39 +1169,39 @@ private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer imple
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Class for composting icons                                              */
-/*                                                                              */
+/*										*/
+/*	Class for composting icons						*/
+/*										*/
 /********************************************************************************/
 
 private static class OverlayIcon implements Icon {
-   
-   private List<Icon> icon_set; 
-   
+
+   private List<Icon> icon_set;
+
    OverlayIcon(Icon ... base) {
       icon_set = new ArrayList<Icon>();
       for (Icon ic : base) {
-         icon_set.add(ic);
+	 icon_set.add(ic);
        }
-    } 
-   
+    }
+
    @Override public int getIconHeight() {
       if (icon_set.isEmpty()) return 0;
       return icon_set.get(0).getIconHeight();
     }
-   
+
    @Override public int getIconWidth() {
       if (icon_set.isEmpty()) return 0;
       return icon_set.get(0).getIconWidth();
     }
-   
+
    @Override public void paintIcon(Component c,Graphics g,int x,int y) {
       for (Icon ic : icon_set) {
-         ic.paintIcon(c,g,x,y);
+	 ic.paintIcon(c,g,x,y);
        }
     }
-   
-}       // end of inner class OverlayIcon
+
+}	// end of inner class OverlayIcon
 
 
 

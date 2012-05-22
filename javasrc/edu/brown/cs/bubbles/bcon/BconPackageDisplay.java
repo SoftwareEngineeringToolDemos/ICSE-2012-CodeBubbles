@@ -974,8 +974,10 @@ private class SourceAction extends AbstractAction {
       if (bb == null) return;
       BoardMetrics.noteCommand("BCON","GotoMethodSource");
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BconPackageDisplay.this);
-      bba.addBubble(bb,BconPackageDisplay.this,null,
-		       PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+      if (bba != null) {
+	 bba.addBubble(bb,BconPackageDisplay.this,null,
+			  PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+       }
     }
 
 }	// end of inner class SourceAction
@@ -999,8 +1001,10 @@ private class SearchAction extends AbstractAction {
       if (bb == null) return;
       BoardMetrics.noteCommand("BCON","GotoSearch");
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BconPackageDisplay.this);
-      bba.addBubble(bb,BconPackageDisplay.this,null,
-		       PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+      if (bba != null) {
+	 bba.addBubble(bb,BconPackageDisplay.this,null,
+			  PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+       }
     }
 
 }	// end of inner class SearchAction

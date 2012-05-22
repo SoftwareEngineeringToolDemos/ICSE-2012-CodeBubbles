@@ -137,7 +137,7 @@ public void showDialog()
    if (bba == null) return;
 
    bba.addBubble(bb,source_component,start_point,
-         PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO|PLACEMENT_LOGICAL);
+	 PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO|PLACEMENT_LOGICAL);
 }
 
 
@@ -237,6 +237,26 @@ protected class StringField extends JTextField implements ActionListener, CaretL
 
 
 
+protected class BooleanField extends JCheckBox implements ActionListener {
+   
+   private BuenoKey   field_key;
+   private static final long serialVersionUID = 1;
+   
+   BooleanField(BuenoKey key) {
+      setSelected(property_set.getBooleanProperty(key));
+      setFont(button_font);
+      field_key = key;
+      addActionListener(this);
+    }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      property_set.put(field_key,isSelected());
+    }
+   
+}	// end of inner class BooleanField
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -292,10 +312,10 @@ protected class ModifierButton extends JToggleButton implements ActionListener {
    @Override public void actionPerformed(ActionEvent e) {
       int v0 = property_set.getModifiers();
       if (isSelected()) {
-         v0 |= modifier_value;
+	 v0 |= modifier_value;
        }
       else {
-         v0 &= ~modifier_value;
+	 v0 &= ~modifier_value;
        }
       property_set.put(BuenoKey.KEY_MODIFIERS,v0);
     }
@@ -317,7 +337,7 @@ private class DialogBubble extends BudaBubble {
       addMouseListener(new BudaConstants.FocusOnEntry(focus_field));
     }
 
-}
+}	// end of inner class DialogBubble
 
 
 
@@ -331,7 +351,9 @@ private class DialogBubble extends BudaBubble {
 {
    String cmd = evt.getActionCommand();
    BudaBubble bb = BudaRoot.findBudaBubble((Component) evt.getSource());
+   if (bb == null) return;
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
+   if (bba == null) return;
    Point where = bb.getLocation();
 
    if (cmd == null) ;

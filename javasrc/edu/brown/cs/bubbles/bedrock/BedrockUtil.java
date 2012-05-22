@@ -681,13 +681,41 @@ static void outputThread(IJavaThread trd,IvyXmlWriter xw)
    xw.begin("THREAD");
    try {
       xw.field("NAME",trd.getName());
+    }
+   catch (DebugException e) {
+      BedrockPlugin.logE("Problem outputing thread",e);
+    }
+   try {
       xw.field("GROUP",trd.getThreadGroupName());
+    }
+   catch (DebugException e) {
+      BedrockPlugin.logE("Problem outputing thread",e);
+    }
+   try {
       xw.field("STACK",trd.hasStackFrames());
+    }
+   catch (DebugException e) {
+      BedrockPlugin.logE("Problem outputing thread",e);
+    }
+   try {
       xw.field("SYSTEM",trd.isSystemThread());
+    }
+   catch (DebugException e) {
+      BedrockPlugin.logE("Problem outputing thread",e);
+    }
+   try {
       xw.field("DAEMON",trd.isDaemon());
+    }
+   catch (DebugException e) {
+      BedrockPlugin.logE("Problem outputing thread",e);
+    }
+   try {
       xw.field("FRAMES",trd.getFrameCount());
     }
-   catch (DebugException e) { }
+   catch (DebugException e) {
+      BedrockPlugin.logE("Problem outputing thread",e);
+    }
+
    if (trd.isTerminated()) xw.field("TERMINATED",true);
    else {
       xw.field("CANTERM",trd.canTerminate());

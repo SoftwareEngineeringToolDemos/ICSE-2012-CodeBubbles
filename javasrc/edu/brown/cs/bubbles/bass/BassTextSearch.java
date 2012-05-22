@@ -193,7 +193,7 @@ private class Searcher implements Runnable {
       in_place = inp;
       search_result = null;
       search_location = BudaRoot.findBudaLocation(BassTextSearch.this);
-  }
+    }
 
    @Override public void run() {
       if (search_result == null) {

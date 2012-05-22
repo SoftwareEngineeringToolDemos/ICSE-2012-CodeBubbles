@@ -266,19 +266,26 @@ void updateProblems()
 {
    Set<BumpProblem> found = new HashSet<BumpProblem>();
    BaleDocument doc = root_element.getBaleDocument();
+   int numadd = 0;
+   int numrem = 0;
+   int numerr = 0;
 
    synchronized (problem_map) {
       for (BumpProblem bp : doc.getProblems()) {
 	 found.add(bp);
+	 if (isError(bp)) ++numerr;
 	 ProblemData pd = problem_map.get(bp);
 	 if (pd == null) {
+	    if (isError(bp)) ++numadd;
 	    pd = new ProblemData(bp,doc);
 	    problem_map.put(bp,pd);
 	  }
        }
       for (Iterator<Map.Entry<BumpProblem,ProblemData>> it = problem_map.entrySet().iterator(); it.hasNext(); ) {
 	 Map.Entry<BumpProblem,ProblemData> ent = it.next();
-	 if (!found.contains(ent.getKey())) {
+	 BumpProblem bp = ent.getKey();
+	 if (!found.contains(bp)) {
+	    if (isError(bp)) ++numrem;
 	    ent.getValue().clear(false);
 	    it.remove();
 	  }
@@ -288,6 +295,21 @@ void updateProblems()
 	 pd.setup(root_element,base_document,false);
        }
     }
+
+   if ((numerr != 0 && numadd == numerr) || (numerr == 0 && numrem > 0)) {
+      int off = root_element.getStartOffset();
+      int len = root_element.getEndOffset() - root_element.getStartOffset();
+      if (len <= 0) return;
+      doc.reportEvent(doc,off,len,DocumentEvent.EventType.CHANGE,null,null);
+    }
+}
+
+
+
+private static boolean isError(BumpProblem bp)
+{
+   return bp.getErrorType() == BumpErrorType.FATAL ||
+      bp.getErrorType() == BumpErrorType.ERROR;
 }
 
 
@@ -493,8 +515,8 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	    nelt = new BaleElement.Eol(doc,cur,soff,eoff);
 	    break;
 	 case SPACE :
-	    if (xelt == null || xelt.isEndOfLine()) 
-	       nelt = new BaleElement.Indent(doc,cur,soff,eoff);	 
+	    if (xelt == null || xelt.isEndOfLine())
+	       nelt = new BaleElement.Indent(doc,cur,soff,eoff);
 	    else
 	       nelt = new BaleElement.Space(doc,cur,soff,eoff);
 	    break;
@@ -536,9 +558,9 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	 case INTERFACE :
 	 case SYNCHRONIZED :
 	 case TYPEKEY :
-         case CONTINUE :
-         case PASS :
-         case RAISE :
+	 case CONTINUE :
+	 case PASS :
+	 case RAISE :
 	    nelt = new BaleElement.Keyword(doc,cur,soff,eoff,bt.getType());
 	    break;
 	 case RETURN :
@@ -577,7 +599,7 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	 case LANGLE :
 	 case RANGLE :
 	 case OTHER :
-         case BACKSLASH :
+	 case BACKSLASH :
 	    nelt = new BaleElement.Token(doc,cur,soff,eoff,bt.getType());
 	    break;
 	 case LBRACE :

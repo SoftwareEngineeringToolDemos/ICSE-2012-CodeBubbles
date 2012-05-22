@@ -143,6 +143,7 @@ public void log(Component src,BnoteEntryType type,Object ... args)
 {
    if (src == null || !isEnabled()) return;
    BudaBubble bb = BudaRoot.findBudaBubble(src);
+   if (bb == null) return;
    BbookRegion tr = region_manager.findTaskRegion(bb);
    if (tr == null) return;
    BnoteTask task = tr.getTask();
@@ -254,7 +255,7 @@ private static class TaskConfig implements BubbleConfigurator {
    @Override public BudaBubble createBubble(BudaBubbleArea bba,Element xml) {
       return null;
     }
-   
+
    @Override public boolean matchBubble(BudaBubble bb,Element xml) {
       if (bb instanceof BbookDisplayBubble) return true;
       return false;

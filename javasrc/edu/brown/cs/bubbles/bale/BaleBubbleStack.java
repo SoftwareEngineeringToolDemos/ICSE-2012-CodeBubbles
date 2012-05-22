@@ -82,6 +82,7 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 	 case INTERFACE :
 	 case ENUM :
 	 case THROWABLE :
+         case MODULE :
 	    key = bl.getSymbolName();
 	    key = key + ".<PREFIX>";
 	    break;
@@ -188,6 +189,7 @@ private void setupStack()
 	 case INTERFACE :
 	 case ENUM :
 	 case THROWABLE :
+         case MODULE :
 	    TypeStackEntry te = new TypeStackEntry(locs);
 	    entries.add(te);
 	    break;
@@ -208,6 +210,7 @@ private void setupStack()
    BussBubble bb = bussf.createBubbleStack(entries, contentwidth + title_width);
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_bubble);
+   if (bba == null) return;
    int place = PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW;
    if (place_near) place |= PLACEMENT_GROUPED;
    bba.addBubble(bb,source_bubble,source_point,place);
@@ -216,9 +219,11 @@ private void setupStack()
       BudaConstants.LinkPort p0 = new BaleLinePort(source_bubble,source_position,null);
       BudaConstants.LinkPort p1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
       BudaBubble obbl = BudaRoot.findBudaBubble(source_bubble);
-      BudaBubbleLink lnk = new BudaBubbleLink(obbl,p0,bb,p1,true,link_style);
-      bba.addLink(lnk);
-      bb.setSourceBubbleInfomation(obbl, p0);
+      if (obbl != null) {
+	 BudaBubbleLink lnk = new BudaBubbleLink(obbl,p0,bb,p1,true,link_style);
+	 bba.addLink(lnk);
+	 bb.setSourceBubbleInfomation(obbl, p0);
+       }
     }
 
    BudaRoot.addBubbleViewCallback(new EditorBubbleCallback(bb));
@@ -369,7 +374,7 @@ private class InitializerStackEntry extends GenericStackEntry {
 
    @Override protected BaleFragmentEditor createFullFragment() {
       BaleFragmentEditor ed = BaleFactory.getFactory().createStaticsFragmentEditor(
-	 def_location.getSymbolProject(),class_name);
+	 def_location.getSymbolProject(),class_name,def_location.getFile());
       ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
       return ed;
     }

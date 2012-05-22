@@ -300,8 +300,10 @@ private class ValuesAction extends AbstractAction {
       BoardMetrics.noteCommand("BDDT","ThreadValues");
       BddtStackView sv = new BddtStackView(launch_control,for_thread);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
-      bba.addBubble(sv,BddtThreadView.this,null,
-	    PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+      if (bba != null) {
+	 bba.addBubble(sv,BddtThreadView.this,null,
+			  PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+       }
     }
 
 }	// end of inner class ValuesAction
@@ -330,8 +332,10 @@ private class SourceAction extends AbstractAction {
       if (bb != null) {
 	 BoardMetrics.noteCommand("BDDT","ThreadSource");
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
-	 bba.addBubble(bb,BddtThreadView.this,null,
-	       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+	 if (bba != null) {
+	    bba.addBubble(bb,BddtThreadView.this,null,
+			     PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+	  }
        }
     }
 
@@ -360,8 +364,10 @@ private class ExceptionAction extends AbstractAction {
       if (bb != null) {
 	 BoardMetrics.noteCommand("BDDT","ThreadSource");
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
-	 bba.addBubble(bb,BddtThreadView.this,null,
-	       PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+	 if (bba != null) {
+	    bba.addBubble(bb,BddtThreadView.this,null,
+			     PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+	  }
        }
     }
 
@@ -384,8 +390,10 @@ private class HistoryAction extends AbstractAction {
       BoardMetrics.noteCommand("BDDT","ThreadHistory");
       BudaBubble bb = new BddtStopTraceBubble(launch_control,for_thread);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtThreadView.this);
-      bba.addBubble(bb,BddtThreadView.this,null,
-	    PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+      if (bba != null) {
+	 bba.addBubble(bb,BddtThreadView.this,null,
+			  PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO);
+       }
     }
 
 }	// end of inner class HistoryAction
@@ -428,34 +436,34 @@ private class TableUpdater implements Runnable {
    @Override public void run() {
       BumpThread bt;
       switch (run_event.getEventType()) {
-         case THREAD_ADD :
-            bt = run_event.getThread();
-            if (bt != null) {
-               if (!thread_set.add(bt)) {
-        	  BoardLog.logD("BDDT","THREAD ALREADY IN THREADSET " + bt.getId());
-               }
-               synchronized (bump_threads) {
-        	  bump_threads.clear();
-        	  bump_threads.addAll(thread_set);
-        	}
-             }
-            break;
-         case THREAD_REMOVE :
-            bt = run_event.getThread();
-            if (bt != null) {
-               thread_set.remove(bt);
-               synchronized (bump_threads) {
-        	  bump_threads.remove(bt);
-        	}
-             }
-            break;
-         case THREAD_CHANGE :
-             // BoardLog.logD("BDDT","THREAD CHANGE " + run_event.getThread().getThreadState());
-            //TODO: Update thread
-            break;
-         case THREAD_TRACE :
-         case THREAD_HISTORY :
-            return;
+	 case THREAD_ADD :
+	    bt = run_event.getThread();
+	    if (bt != null) {
+	       if (!thread_set.add(bt)) {
+		  BoardLog.logD("BDDT","THREAD ALREADY IN THREADSET " + bt.getId());
+	       }
+	       synchronized (bump_threads) {
+		  bump_threads.clear();
+		  bump_threads.addAll(thread_set);
+		}
+	     }
+	    break;
+	 case THREAD_REMOVE :
+	    bt = run_event.getThread();
+	    if (bt != null) {
+	       thread_set.remove(bt);
+	       synchronized (bump_threads) {
+		  bump_threads.remove(bt);
+		}
+	     }
+	    break;
+	 case THREAD_CHANGE :
+	     // BoardLog.logD("BDDT","THREAD CHANGE " + run_event.getThread().getThreadState());
+	    //TODO: Update thread
+	    break;
+	 case THREAD_TRACE :
+	 case THREAD_HISTORY :
+	    return;
        }
       threads_model.fireTableDataChanged();
     }

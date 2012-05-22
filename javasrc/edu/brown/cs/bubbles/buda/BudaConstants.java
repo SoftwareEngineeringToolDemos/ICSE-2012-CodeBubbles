@@ -94,7 +94,7 @@ int BUBBLE_OVERVIEW_HEIGHT = 75;		// height of the overview bar
 /**
  *	Width of the virtual bubble area.  Currently this is not expandable.
  **/
-int BUBBLE_DISPLAY_WIDTH = 32000;		// width of the virtual bubble area
+int BUBBLE_DISPLAY_WIDTH = 48000;		// width of the virtual bubble area
 
 
 /**
@@ -132,38 +132,39 @@ int BUBBLE_TOP_BAR_HEIGHT = 12;
 /**
  *	Color at the top of the display area
  **/
-Color DISPLAY_TOP_COLOR = new Color(0xff78aac8); // color at the top of the bubble area
+Color DISPLAY_TOP_COLOR = BUDA_PROPERTIES.getColor("Buda.area.top.color",new Color(0xff78aac8));
 
 
 /**
  *	Color at the bottom of the display area.  The display is a gradiant from the top color
  *	to the bottom color
  **/
-Color DISPLAY_BOTTOM_COLOR = Color.WHITE;	// color at the bottom of the bubble area
+Color DISPLAY_BOTTOM_COLOR = BUDA_PROPERTIES.getColor("Buda.area.bottom.color",Color.WHITE);
 
+boolean DISPLAY_SHOW_GRADIENT = BUDA_PROPERTIES.getBoolean("Buda.area.gradient",false);
 
 /**
  *	Color of the top bar on the display.  This is used for labeling working sets.
  **/
-Color TOP_BAR_COLOR = new Color(0xff80aac0);	// color for the top bar
+Color TOP_BAR_COLOR = BUDA_PROPERTIES.getColor("Buda.topbar.color",new Color(0xff80aac0));
 
 
 /**
  *	Color (top) of the background in the overview area
  **/
-Color OVERVIEW_TOP_COLOR = new Color(0xffe1e6eb);	// color for the overview bar background
+Color OVERVIEW_TOP_COLOR = BUDA_PROPERTIES.getColor("Buda.overview.top.color",new Color(0xffe1e6eb));
 
 /**
  *	Color (bottom) of the background in the overview area
  **/
-Color OVERVIEW_BOTTOM_COLOR = new Color(0xffc4cdd7);	// color for the overview bar background
+Color OVERVIEW_BOTTOM_COLOR = BUDA_PROPERTIES.getColor("Buda.overview.bottom.color",new Color(0xffc4cdd7));
 
 
 
 /**
  *	Color for the rectangle showing the current view in the overview area.
  **/
-Color OVERVIEW_VIEW_COLOR = new Color(0x80cccc00,true); // color showing the current view
+Color OVERVIEW_VIEW_COLOR = BUDA_PROPERTIES.getColor("Buda.overview.view.color",new Color(0x80cccc00));
 
 /**
  *  Color for the border of bubbles displayed in the overview area when not using stylized viewport

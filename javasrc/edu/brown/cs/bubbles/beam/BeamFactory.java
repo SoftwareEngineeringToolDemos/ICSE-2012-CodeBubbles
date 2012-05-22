@@ -324,6 +324,7 @@ private static class NoteAction extends AbstractAction {
       BeamNoteAnnotation ann = new BeamNoteAnnotation(fil,bfo,off);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(context_config.getEditor());
       Rectangle r = BudaRoot.findBudaLocation(context_config.getEditor());
+      if (r == null || bba == null) return;
       int x = r.x + r.width + 50;
       int y = r.y;
       BeamNoteBubble nb = new BeamNoteBubble(null,null,ann);
@@ -443,13 +444,13 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
       if (pr == null || pnm == null) return;
       pnm = pr + ":." + pnm;
       while (pnm != null) {
-	addFlag(mpf,pnm,pf); 
+	addFlag(mpf,pnm,pf);
 	int idx1 = pnm.lastIndexOf(".");
 	if (idx1 < 0) break;
 	pnm = pnm.substring(0,idx1);
       }
    }
-   
+
    private void addFlag(Map<String,ProblemFlag> mpf,String s,ProblemFlag pf) {
       if (s == null || pf == null) return;
       ProblemFlag opf = mpf.get(s);

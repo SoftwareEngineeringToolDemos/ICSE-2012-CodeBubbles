@@ -228,23 +228,23 @@ BeamProblemBubble(String typs,boolean task)
 boolean matchTypes(String typs,boolean task)
 {
    if (task != for_tasks) return false;
-   
+
    EnumSet<BumpErrorType> es = EnumSet.noneOf(BumpErrorType.class);
    StringTokenizer tok = new StringTokenizer(typs);
    while (tok.hasMoreTokens()) {
       String s = tok.nextToken();
       try {
-         BumpErrorType bet = BumpErrorType.valueOf(s);
-         es.add(bet);
+	 BumpErrorType bet = BumpErrorType.valueOf(s);
+	 es.add(bet);
        }
       catch (IllegalArgumentException e) { }
     }
-   
-   return es.equals(allow_types); 
+
+   return es.equals(allow_types);
 }
 
 
-   
+
 private String getErrorType(BumpProblem bp)
 {
    switch (bp.getErrorType()) {
@@ -332,7 +332,9 @@ private class BubbleShower implements Runnable {
 	 BudaBubble bb = bass_name.createBubble();
 	 if (bb == null) return;
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BeamProblemBubble.this);
-	 bba.addBubble(bb,BeamProblemBubble.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	 if (bba != null) {
+	    bba.addBubble(bb,BeamProblemBubble.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	  }
        }
     }
 
@@ -574,7 +576,7 @@ private static class ErrorRenderer implements TableCellRenderer {
     }
 
    @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
-        						       boolean foc,int r,int c) {
+							       boolean foc,int r,int c) {
       JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
       cmp.setForeground(PROBLEM_ERROR_COLOR);
       cmp.setOpaque(false);

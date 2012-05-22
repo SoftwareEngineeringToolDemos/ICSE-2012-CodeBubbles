@@ -201,12 +201,15 @@ BconClassPanel(String proj,File f,String cls,boolean inner)
 @Override public void handlePopupMenu(MouseEvent e)
 {
    BudaBubble bbl = BudaRoot.findBudaBubble(class_panel);
+   if (bbl == null) return;
    Point pt = SwingUtilities.convertPoint(bbl,e.getPoint(),class_list);
    int row = class_list.locationToIndex(pt);
    if (row < 0) return;
    BconRegion br = (BconRegion) list_model.getElementAt(row);
    if (br == null) return;
-   popup_point = SwingUtilities.convertPoint(class_list,pt,BudaRoot.findBudaBubbleArea(class_list));
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(class_list);
+   if (bba == null) return;
+   popup_point = SwingUtilities.convertPoint(class_list,pt,bba);
 
    JPopupMenu popup = new JPopupMenu();
 
@@ -1242,7 +1245,7 @@ private class MethodCreator extends AbstractCreator implements BuenoBubbleCreato
 
    @Override public void actionPerformed(ActionEvent e) {
       BuenoMethodDialog bmd = new BuenoMethodDialog(getBubble(),popup_point,
-        					       property_set,getLocation(),this);
+						       property_set,getLocation(),this);
       bmd.showDialog();
     }
 
@@ -1322,7 +1325,8 @@ private class TypeCreator extends AbstractCreator implements BuenoBubbleCreator 
 
 
 @Override public void handleFileAdded(String proj,String file)		{ }
-@Override public void handleFileStarted(String proj,String file)        { }
+@Override public void handleFileStarted(String proj,String file)	{ }
+@Override public void handleProjectOpened(String proj)                  { }
 
 @Override public void handleFileRemoved(String proj,String file)
 {
@@ -1351,7 +1355,7 @@ private class ClassBubbleAction extends AbstractAction {
       if (bb == null) return;
       Rectangle r = BudaRoot.findBudaLocation(class_panel);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(class_panel);
-      bba.addBubble(bb,r.x + r.width + 40, r.y);
+      if (bba != null && r != null) bba.addBubble(bb,r.x + r.width + 40, r.y);
     }
 
 }	// end of inner class ClassBubbleAction

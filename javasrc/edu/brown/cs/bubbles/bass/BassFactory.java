@@ -229,6 +229,7 @@ public void removePopupHandler(BassPopupHandler ph)
 void addButtons(Component c,Point where,JPopupMenu m,String fnm,BassName bn)
 {
    BudaBubble bb = BudaRoot.findBudaBubble(c);
+   if (bb == null) return;
 
    for (BassPopupHandler ph : popup_handlers) {
       ph.addButtons(bb,where,m,fnm,bn);
@@ -254,7 +255,7 @@ public void addNewBubble(BudaBubble searchbox,Point loc,BudaBubble bbl)
    if (loc != null) ypos = loc.y;
    else {
       Rectangle r = BudaRoot.findBudaLocation(searchbox);
-      ypos = r.y;
+      if (r != null) ypos = r.y;
     }
 
    sbox.addAndLocateBubble(bbl,ypos,loc);
@@ -422,6 +423,7 @@ private static class PackageExplorerButton implements BudaConstants.ButtonListen
       package_explorers.put(bba,peb);
 
       BudaRoot br = BudaRoot.findBudaRoot(bba);
+      if (br == null) return;
       Rectangle r = br.getCurrentViewport();
       Dimension d = peb.getPreferredSize();
       d.height = r.height;
@@ -452,6 +454,7 @@ private static class TextSearchButton implements BudaConstants.ButtonListener
    @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt) {
       BowiFactory.startTask(BowiTaskType.TEXT_SEARCH);
       BudaRoot br = BudaRoot.findBudaRoot(bba);
+      if (br == null) return;
       BudaBubble bb = the_factory.createTextSearch();
       BudaConstraint bc = new BudaConstraint(BudaBubblePosition.STATIC,pt);
       br.add(bb,bc);
@@ -516,10 +519,18 @@ private static class ProjectProps implements BassPopupHandler {
       if (idx <= 0) return;
       String proj = fullname.substring(0,idx);
 
-      menu.add(new EclipseProjectAction(proj));
-      menu.add(new ProjectAction(proj,bb,where));
-      menu.add(new NewProjectAction());
-      menu.add(new BassImportProjectAction());
+      switch (BoardSetup.getSetup().getLanguage()) {
+	 case JAVA :
+	    menu.add(new EclipseProjectAction(proj));
+	    menu.add(new ProjectAction(proj,bb,where));
+	    menu.add(new NewProjectAction(bb,where));
+	    menu.add(new BassImportProjectAction());
+	    break;
+	 case PYTHON :
+	    menu.add(new PythonProjectAction(proj,bb,where));
+	    menu.add(new NewPythonProjectAction(bb,where));
+	    break;
+       }
     }
 
 }	// end of inner class ProjectProps
@@ -567,8 +578,9 @@ private static class ProjectAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","EditProjectProperties");
       BudaRoot.hideSearchBubble(e);
+      BudaBubble bb = null;
       BuenoProjectDialog dlg = new BuenoProjectDialog(for_project);
-      BudaBubble bb = dlg.createProjectEditor();
+      bb = dlg.createProjectEditor();
       if (bb == null) return;
       BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
     }
@@ -577,11 +589,39 @@ private static class ProjectAction extends AbstractAction {
 
 
 
+private static class PythonProjectAction extends AbstractAction {
+
+   private String for_project;
+   private BudaBubble rel_bubble;
+   private Point rel_point;
+
+   private static final long serialVersionUID = 1;
+
+   PythonProjectAction(String proj,BudaBubble rel,Point pt) {
+      super("Edit Properties of Project " + proj);
+      for_project = proj;
+      rel_bubble = rel;
+      rel_point = pt;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BASS","EditPythonProjectProperties");
+      BudaRoot.hideSearchBubble(e);
+      BudaBubble bb = null;
+      bb = BuenoPythonProject.createEditPythonProjectBubble(for_project);
+      if (bb == null) return;
+      BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
+    }
+
+}	// end of inner class PythonProjectAction
+
+
+
 private static class NewProjectAction extends AbstractAction {
 
    private static final long serialVersionUID = 1;
 
-   NewProjectAction() {
+   NewProjectAction(BudaBubble bb,Point pt) {
       super("Create New Project");
     }
 
@@ -590,6 +630,34 @@ private static class NewProjectAction extends AbstractAction {
       BudaRoot.hideSearchBubble(e);
       BumpClient bc = BumpClient.getBump();
       bc.createProject();
+    }
+
+}	// end of inner class ProjectAction
+
+
+
+private static class NewPythonProjectAction extends AbstractAction {
+
+   private BudaBubble rel_bubble;
+   private Point rel_point;
+
+   private static final long serialVersionUID = 1;
+
+   NewPythonProjectAction(BudaBubble bb,Point pt) {
+      super("Create New Project");
+      rel_bubble = bb;
+      rel_point = pt;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BASS","CreatePythonProject");
+      BudaRoot.hideSearchBubble(e);
+
+      BudaBubble bb = null;
+      bb = BuenoPythonProject.createNewPythonProjectBubble();
+      if (bb != null) {
+	 BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
+       }
     }
 
 }	// end of inner class ProjectAction

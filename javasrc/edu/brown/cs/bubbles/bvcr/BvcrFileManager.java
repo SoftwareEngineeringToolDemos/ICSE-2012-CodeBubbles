@@ -94,6 +94,8 @@ BvcrFileManager()
 @Override public void handleFileChanged(String proj,String file)	{ }
 @Override public void handleFileAdded(String proj,String file)		{ }
 @Override public void handleFileRemoved(String proj,String file)	{ }
+@Override public void handleProjectOpened(String proj)                  { }
+
 
 
 

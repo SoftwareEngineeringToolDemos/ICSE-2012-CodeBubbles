@@ -38,6 +38,9 @@
 package edu.brown.cs.bubbles.bnote;
 
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.ivy.xml.*;
+
+import org.w3c.dom.*;
 
 import java.sql.*;
 import java.util.*;
@@ -113,6 +116,16 @@ BnoteDatabase()
    loadTasks();
 }
 
+
+BnoteDatabase(boolean local)
+{
+   id_count = 0;
+   next_id = 0;
+   id_request = 32;
+   use_begin = null;
+   all_tasks = new ArrayList<TaskImpl>();
+   use_streams = false;
+}
 
 
 
@@ -372,6 +385,8 @@ synchronized TaskImpl defineTask(String name,String proj,String desc)
 
 
 
+
+
 private void loadTasks()
 {
    all_tasks = new ArrayList<TaskImpl>();
@@ -458,6 +473,8 @@ synchronized List<String> getUsersForTask(String proj,BnoteTask task)
 
 synchronized List<Date> getDatesForTask(String proj,BnoteTask task)
 {
+   if (note_conn == null) return null;
+   
    List<Date> rslt = new ArrayList<Date>();
 
    BoardLog.logD("BNOTE","GET DATES FOR TASK");
@@ -582,7 +599,7 @@ synchronized List<BnoteEntry> getEntriesForTask(String proj,BnoteTask task)
 
 
 
-BnoteTask findTaskById(int id)
+BnoteTask findTaskById(long id)
 {
    if (id <= 0 || note_conn == null) return null;
 
@@ -592,6 +609,26 @@ BnoteTask findTaskById(int id)
 
    return null;
 }
+
+
+BnoteTask findTaskById(Element xml)
+{
+   long id = IvyXml.getAttrLong(xml,"ID");
+   BnoteTask bt = findTaskById(id);
+   if (bt == null) {
+      TaskImpl ti = new TaskImpl(xml);
+      all_tasks.add(ti);
+      bt = ti;
+    }
+   return bt;
+}
+
+
+BnoteEntry createEntry(Element xml)
+{
+   return new EntryImpl(xml);
+}
+   
 
 
 
@@ -673,6 +710,15 @@ private class TaskImpl implements BnoteTask, BnoteValue {
       start_date = null;
       end_date = null;
     }
+   
+   TaskImpl(Element xml) {
+      task_id = IvyXml.getAttrLong(xml,"ID");
+      task_name = IvyXml.getAttrString(xml,"NAME");
+      task_project = IvyXml.getAttrString(xml,"PROJECT");
+      task_description = IvyXml.getTextElement(xml,"DESCRIPTION");
+      start_date = IvyXml.getAttrDate(xml,"START");
+      end_date = IvyXml.getAttrDate(xml,"END");
+    }
 
    @Override public long getTaskId()			{ return task_id; }
    @Override public String getName()			{ return task_name; }
@@ -695,6 +741,17 @@ private class TaskImpl implements BnoteTask, BnoteValue {
       return end_date;
     }
 
+   @Override public void outputXml(IvyXmlWriter xw) {
+      xw.begin("TASK");
+      xw.field("ID",task_id);
+      xw.field("NAME",task_name);
+      xw.field("PROJECT",task_project);
+      xw.field("START",getFirstTime());
+      xw.field("END",getLastTime());
+      xw.cdataElement("DESCRIPTION",task_description);
+      xw.end("TASK");
+    }
+   
    void noteUse()					{ end_date = new Date(); }
 
    private void loadDates() {
@@ -742,6 +799,23 @@ private class EntryImpl implements BnoteEntry {
 	 catch (IllegalArgumentException e) { }
        }
     }
+   
+   EntryImpl(Element xml) {
+      entry_id = IvyXml.getAttrInt(xml,"ID");
+      entry_project = IvyXml.getAttrString(xml,"PROJECT");
+      Element tel = IvyXml.getChild(xml,"TASK");
+      entry_task = findTaskById(tel);
+      entry_user = IvyXml.getAttrString(xml,"USER");
+      entry_time = IvyXml.getAttrDate(xml,"TIME");
+      entry_type = IvyXml.getAttrEnum(xml,"TYPE",BnoteEntryType.NONE);
+      prop_set = new HashMap<String,String>();
+      for (Element pel : IvyXml.children(xml,"PROP")) {
+         String k = IvyXml.getAttrString(pel,"KEY");
+         String v = IvyXml.getAttrString(pel,"VALUE");
+         prop_set.put(k,v);
+       }
+    }
+   
 
    @Override public String getProject() 		{ return entry_project; }
    @Override public BnoteTask getTask() 		{ return entry_task; }
@@ -780,6 +854,24 @@ private class EntryImpl implements BnoteEntry {
 	 }
       }
     }
+   
+   @Override public void outputXml(IvyXmlWriter xw) {
+      xw.begin("ENTRY");
+      xw.field("ID",entry_id);
+      xw.field("PROJECT",entry_project);
+      xw.field("USER",entry_user);
+      xw.field("TIME",entry_time);
+      xw.field("TYPE",entry_type);
+      if (entry_task != null) entry_task.outputXml(xw);
+      if (prop_set != null) {
+         for (Map.Entry<String,String> ent : prop_set.entrySet()) {
+            xw.begin("PROP");
+            xw.field("KEY",ent.getKey());
+            xw.field("VALUE",ent.getValue());
+          }
+       }
+    }
+
 
 }	// end of inner class EntryImpl
 

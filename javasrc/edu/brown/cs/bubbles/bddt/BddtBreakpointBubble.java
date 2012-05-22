@@ -294,7 +294,9 @@ private void showBubble(File f,int line)
 
    BudaBubble bb = bn.createBubble();
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
-   bba.addBubble(bb,this,null,PLACEMENT_ABOVE|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+   if (bba != null) {
+      bba.addBubble(bb,this,null,PLACEMENT_ABOVE|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+    }
 }
 
 
@@ -671,7 +673,9 @@ private class NewExceptionAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BudaBubble bb = new BddtExceptionBreakpointBubble();
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtBreakpointBubble.this);
-      bba.addBubble(bb,BddtBreakpointBubble.this,null,PLACEMENT_ABOVE|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+      if (bba != null) {
+	 bba.addBubble(bb,BddtBreakpointBubble.this,null,PLACEMENT_ABOVE|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+       }
     }
 
 }	// end of inner class NewExceptionAction

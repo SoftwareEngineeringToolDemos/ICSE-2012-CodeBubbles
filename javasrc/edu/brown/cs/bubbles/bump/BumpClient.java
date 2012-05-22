@@ -523,6 +523,8 @@ public File getRemoteFile(File lcl,String kind,File rem)
    String msg = "<BUMP TYPE='FILEGET' ID='" + id + "'";
    if (kind != null) msg += " KIND='" + kind + "'";
    if (rem != null) msg += " FILE='" + rem.getPath() + "'";
+   msg += "/>";
+
    FileGetClientHandler ch = new FileGetClientHandler(lcl);
    mint_control.register("<BUMPFILE ID='" + id + "' />",ch);
    MintDefaultReply mr = new MintDefaultReply();
@@ -530,7 +532,7 @@ public File getRemoteFile(File lcl,String kind,File rem)
    String sts = mr.waitForString();
    if (!ch.isOkay()) sts = "<FAIL/>";
    mint_control.unregister(ch);
-   if (sts == null || !sts.equals("<OK/>")) {
+   if (sts == null || !sts.contains("OK")) {
       lcl.delete();
       return null;
     }
@@ -556,6 +558,7 @@ private class FileGetServerHandler implements MintHandler {
 	 f = new File(f1,f2.getName());
        }
       else f = new File(filenm);
+      BoardLog.logD("BUMP","Remote file request " + f + " " + filenm + " " + id);
 
       try {
 	 FileInputStream fr = new FileInputStream(f);
@@ -787,6 +790,19 @@ public void createProject()
    sendMessage("CREATEPROJECT",null,null,null);
 }
 
+public void createProject(String nm,File dir)
+{
+   waitForIDE();
+
+   String q = "NAME='" + nm +"'";
+   if (dir != null) {
+      q += " DIR='" + dir.getPath() + "'";
+    }
+
+   sendMessage("CREATEPROJECT",null,q,null);
+}
+
+
 public void importProject(String name)
 {
    waitForIDE();
@@ -936,14 +952,18 @@ public List<BumpLocation> findCompilationUnit(String proj,String clsn)
  *	the given class.  This does not include field definitions that have assignments.
  **/
 
-public List<BumpLocation> findClassInitializers(String proj,String clsn)
+public List<BumpLocation> findClassInitializers(String proj,String clsn,File file)
 {
    waitForIDE();
 
    clsn = localFixupName(clsn);
    clsn = IvyXml.xmlSanitize(clsn);
+   String filn = null;
+   if (file != null) filn = IvyXml.xmlSanitize(file.getPath());
 
-   String flds = "CLASS='" + clsn + "' STATICS='T'";
+   String flds = "STATICS='T'";
+   if (clsn != null) flds += " CLASS='" + clsn + "'";
+   if (filn != null) flds += " FILE='" + filn + "'";
    Element xml = getXmlReply("FINDREGIONS",proj,flds,null,0);
 
    return getSearchResults(proj,xml,false);
@@ -2621,6 +2641,14 @@ private void handleResourceChange(Element de)
 }
 
 
+private void handleProjectOpen(String proj)
+{
+   for (BumpChangeHandler bch : change_handlers.keySet()) {
+      bch.handleProjectOpened(proj);
+    }
+}
+
+
 
 
 /********************************************************************************/
@@ -2643,9 +2671,6 @@ private void grabPreferences()
 	 option_map.put(nm,vl);
        }
     }
-
-   // pe = getXmlReply("GETPROXY",null,"HOST='http://conifer.cs.brown.edu'",null,0);
-   // pe = getXmlReply("GETPROXY",null,"HOST='http://www.cs.brown.edu/people/spr/bubbles'",null,0);
 }
 
 
@@ -2859,9 +2884,17 @@ protected class IDEHandler implements MintHandler {
 	     }
 	    msg.replyTo("<OK/>");
 	  }
+	 else if (cmd.equals("BUILDDONE")) { }
+	 else if (cmd.equals("PROJECTOPEN")) {
+	    String proj = IvyXml.getAttrString(e,"PROJECT");
+	    if (proj != null) handleProjectOpen(proj);
+	  }
+	 else if (cmd.equals("STOP")) {
+	    BoardLog.logE("BUMP","STOP received from eclipse");
+	    // should shut down ?
+	  }
 	 else {
-	    BoardLog.logD("BUMP","Received " + cmd + " FROM ECLIPSE");
-	    BoardLog.logD("BUMP","Message: " + IvyXml.convertXmlToString(e));
+	    BoardLog.logX("BUMP","Received " + cmd + " FROM ECLIPSE: " + IvyXml.convertXmlToString(e));
 	  }
        }
       catch (Throwable t) {
@@ -2902,7 +2935,7 @@ protected static class NameCollector {
 	    ++ctr;
 	  }
        }
-      if (ctr == 0) {
+      if (ctr >= 0) {		// ignore this check and see what happens
 	 for (Element itm : IvyXml.children(xml,"ITEM")) {
 	    String pnm = IvyXml.getAttrString(itm,"PROJECT");
 	    String pth = IvyXml.getAttrString(itm,"PATH");

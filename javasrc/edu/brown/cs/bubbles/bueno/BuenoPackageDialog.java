@@ -71,7 +71,7 @@ public BuenoPackageDialog(BudaBubble source,Point locale,
 
 /********************************************************************************/
 /*										*/
-/*	Method dialog panel setup						*/
+/*	Package dialog panel setup						*/
 /*										*/
 /********************************************************************************/
 

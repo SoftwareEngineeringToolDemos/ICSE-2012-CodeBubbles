@@ -196,18 +196,21 @@ private void createNewBubble(BdocReference br)
 {
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(the_panel);
    BudaBubble bb = BudaRoot.findBudaBubble(the_panel);
+   if (bba == null) return;
 
    try {
       // This can take a while and should be done outside the UI thread, the rest should be done in UI thread
       BdocBubble nbb = new BdocBubble(br);
       bba.addBubble(nbb,the_panel,null,
 	    PLACEMENT_RIGHT|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-      BudaBubbleLink lnk = new BudaBubbleLink(
-	 bb,
-	 new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true),
-	 nbb,
-	 new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true));
-      bba.addLink(lnk);
+      if (bb != null) {
+	 BudaBubbleLink lnk = new BudaBubbleLink(
+	    bb,
+	    new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true),
+	    nbb,
+	    new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true));
+	 bba.addLink(lnk);
+       }
     }
    catch (BdocException e) {
       BoardLog.logE("BDOC","Problem creating new doc bubble: " + e);

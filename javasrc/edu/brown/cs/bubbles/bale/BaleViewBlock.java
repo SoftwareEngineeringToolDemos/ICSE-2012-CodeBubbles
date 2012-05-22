@@ -377,10 +377,21 @@ private void paintNormal(Graphics g,Rectangle alloc)
 	 int h = ic.getHeight(bep);
 	 int x0 = alloc.x + alloc.width - 2 - w;
 	 int y0 = alloc.y + alloc.height - 1 - h/2;
-	 g.drawImage(ic,x0,y0,bep);
-	 bep.addActiveRegion(x0,y0,w,h,extract_trigger);
+	 if (checkDrawn(g,x0,y0,w,h)) {
+	    g.drawImage(ic,x0,y0,bep);
+	    bep.addActiveRegion(x0,y0,w,h,extract_trigger);
+	 }
        }
     }
+}
+
+
+
+private boolean checkDrawn(Graphics g,int x0,int y0,int w,int h)
+{
+   Rectangle r = g.getClipBounds();
+   Rectangle r1 = new Rectangle(x0,y0,w,h);
+   return r1.intersects(r);
 }
 
 
@@ -411,9 +422,11 @@ private void paintElided(Graphics g,Rectangle alloc)
    g.drawImage(img,x,y,bep);
 
    drawElisionTrigger(g,alloc,false);
-
-   bep.addActiveRegion(x + BALE_ELLIPSES_INSIDE_DELTA,y,
-			  img.getWidth(bep) - 2 * BALE_ELLIPSES_INSIDE_DELTA,ht,null);
+   
+   if (checkDrawn(g,x,y,img.getWidth(bep),ht)) {
+      bep.addActiveRegion(x + BALE_ELLIPSES_INSIDE_DELTA,y,
+	       img.getWidth(bep) - 2 * BALE_ELLIPSES_INSIDE_DELTA,ht,null);
+   }
 }
 
 
@@ -433,9 +446,11 @@ private void paintElidedComment(Graphics g,Rectangle alloc)
    g.drawImage(img,x,y,bep);
 
    drawElisionTrigger(g,alloc,false);
-
-   bep.addActiveRegion(x + BALE_ELLIPSES_INSIDE_DELTA,y,
-			  img.getWidth(bep) - 2 * BALE_ELLIPSES_INSIDE_DELTA,ht,null);
+   
+   if (checkDrawn(g,x,y,img.getWidth(bep),ht)) {
+      bep.addActiveRegion(x + BALE_ELLIPSES_INSIDE_DELTA,y,
+	       img.getWidth(bep) - 2 * BALE_ELLIPSES_INSIDE_DELTA,ht,null);
+   }
 }
 
 
@@ -475,7 +490,8 @@ private void drawElisionTrigger(Graphics g,Rectangle alloc,boolean fg)
    int h = ic.getHeight(bep);
    g.drawImage(ic,x0,y0,bep);
 
-   bep.addActiveRegion(x0,y0,w,h,elision_trigger);
+   if (checkDrawn(g,x0,y0,w,h)) 
+      bep.addActiveRegion(x0,y0,w,h,elision_trigger);
 }
 
 

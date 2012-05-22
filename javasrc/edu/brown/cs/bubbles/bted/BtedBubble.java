@@ -158,43 +158,48 @@ private void setupGui()
    toolBar.setFloatable(false);
 
    AbstractAction newFileAction = new NewFileAction();
+   AbstractAction newFileBubbleAction = new NewFileBubbleAction();
    AbstractAction openFileAction = new OpenFileAction();
+   AbstractAction openFileBubbleAction = new OpenFileBubbleAction();
    AbstractAction saveFileAction = new SaveFileAction();
-   AbstractAction saveFileAsAction = new SaveFileAsAction();
 
-   JButton newButton = new JButton(newFileAction);
-   JButton openButton = new JButton(openFileAction);
-   JButton saveButton = new JButton(saveFileAction);
-   JButton saveAsButton = new JButton(saveFileAsAction);
-
+   JButton newButton = new JButton(newFileBubbleAction);
    newButton.setIcon(new ImageIcon(BoardImage.getImage("filenew.png")));
-   openButton.setIcon(new ImageIcon(BoardImage.getImage("fileopen.png")));
-   saveButton.setIcon(new ImageIcon(BoardImage.getImage("filesave.png")));
-   saveAsButton.setIcon(new ImageIcon(BoardImage.getImage("filesaveas.png")));
-
    newButton.setMargin(BUTTON_MARGIN);
-   openButton.setMargin(BUTTON_MARGIN);
-   saveButton.setMargin(BUTTON_MARGIN);
-   saveAsButton.setMargin(BUTTON_MARGIN);
-
+   newButton.setToolTipText("New File");
    toolBar.add(newButton);
+
+   JButton openButton = new JButton(openFileBubbleAction);
+   openButton.setIcon(new ImageIcon(BoardImage.getImage("fileopen.png")));
+   openButton.setMargin(BUTTON_MARGIN);
+   openButton.setToolTipText("Open File");
    toolBar.add(openButton);
+
+   JButton saveButton = new JButton(saveFileAction);
+   saveButton.setIcon(new ImageIcon(BoardImage.getImage("filesave.png")));
+   saveButton.setMargin(BUTTON_MARGIN);
+   saveButton.setToolTipText("Save File");
    toolBar.add(saveButton);
+
+   JButton saveAsButton = new JButton(new SaveFileAsAction());
+   saveAsButton.setIcon(new ImageIcon(BoardImage.getImage("filesaveas.png")));
+   saveAsButton.setMargin(BUTTON_MARGIN);
+   saveAsButton.setToolTipText("Save As");
    toolBar.add(saveAsButton);
 
    undo_action = new UndoAction();
    redo_action = new RedoAction();
 
    JButton undoButton = new JButton(undo_action);
-   JButton redoButton = new JButton(redo_action);
-
    undoButton.setIcon(new ImageIcon(BoardImage.getImage("undo.png")));
-   redoButton.setIcon(new ImageIcon(BoardImage.getImage("redo.png")));
-
    undoButton.setMargin(BUTTON_MARGIN);
-   redoButton.setMargin(BUTTON_MARGIN);
-
+   undoButton.setToolTipText("Undo");
    toolBar.add(undoButton);
+
+   JButton redoButton = new JButton(redo_action);
+   redoButton.setIcon(new ImageIcon(BoardImage.getImage("redo.png")));
+   redoButton.setMargin(BUTTON_MARGIN);
+   redoButton.setToolTipText("Redo");
    toolBar.add(redoButton);
 
    search_bar = new BtedFindBar(text_editor);
@@ -305,6 +310,23 @@ private void openFileFromMenu()
 }
 
 
+private void openBubbleFromMenu()
+{
+   JFileChooser chooser = new JFileChooser(last_directory);
+   int rv = chooser.showOpenDialog(this);
+   if (rv == JFileChooser.APPROVE_OPTION) {
+      File f = chooser.getSelectedFile();
+      BtedBubble bb = new BtedBubble(f.getPath(),false);
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+      if (bba != null) {
+	 bba.addBubble(bb,this,null,BudaConstants.PLACEMENT_RIGHT|
+			  BudaConstants.PLACEMENT_LOGICAL);
+       }
+    }
+}
+
+
+
 
 /**
  * Saves the file as the current_file unless it is null, in which case
@@ -366,6 +388,21 @@ private void newFile()
    current_file = null;
    name_label.setText("New File");
    burp_history.addEditor(text_editor);
+}
+
+
+
+/**
+ * Creates a new plain text document
+ */
+private void newFileBubble()
+{
+   BtedBubble bb = new BtedBubble(null,true);
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+   if (bba != null) {
+      bba.addBubble(bb,this,null,BudaConstants.PLACEMENT_RIGHT|
+		       BudaConstants.PLACEMENT_LOGICAL);
+    }
 }
 
 
@@ -496,12 +533,36 @@ private class OpenFileAction extends AbstractAction {
 
 
 
+private class OpenFileBubbleAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   @Override public void actionPerformed(ActionEvent e) {
+      openBubbleFromMenu();
+    }
+
+} // end of class OpenFileBubbleAction
+
+
+
 private class NewFileAction extends AbstractAction {
 
    private static final long serialVersionUID = 1;
 
    @Override public void actionPerformed(ActionEvent e) {
       newFile();
+    }
+
+} // end of class NewFileAction
+
+
+
+private class NewFileBubbleAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   @Override public void actionPerformed(ActionEvent e) {
+      newFileBubble();
     }
 
 } // end of class NewFileAction

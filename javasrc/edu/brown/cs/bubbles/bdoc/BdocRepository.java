@@ -680,7 +680,7 @@ private boolean loadXml(File f)
 
 /********************************************************************************/
 /*										*/
-/*	Handle retmoe access of documentation file							    */
+/*	Handle remote access of documentation file				*/			
 /*										*/
 /********************************************************************************/
 
@@ -692,6 +692,7 @@ private void handleRemoteAccess()
       case CLIENT :
 	 BumpClient bc = BumpClient.getBump();
 	 File f = BoardSetup.getDocumentationFile();
+	 if (f.exists()) break;
 	 bc.getRemoteFile(f,"BDOC",null);
 	 // ignore failures -- we'll just load the doc ourselves
 	 break;

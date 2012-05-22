@@ -37,6 +37,7 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import java.util.Collection;
+import java.util.EventListener;
 
 
 interface BassTreeModel extends TreeModel, BassConstants {
@@ -124,7 +125,7 @@ interface BassTreeUpdateEvent {
 }	// end of inner interface BassTreeUpdateEvent
 
 
-interface BassTreeUpdateListener {
+interface BassTreeUpdateListener extends EventListener {
 
    void handleTreeUpdated(BassTreeUpdateEvent evt);
 

@@ -291,7 +291,7 @@ private void rename()
    int eoff = for_document.mapOffsetToEclipse(for_id.getEndOffset());
 
    BudaRoot br = BudaRoot.findBudaRoot(for_editor);
-   br.handleSaveAllRequest();
+   if (br != null) br.handleSaveAllRequest();
 
    BumpClient bc = BumpClient.getBump();
    Element edits = bc.rename(for_document.getProjectName(),for_document.getFile(),soff,eoff,ntext);
@@ -303,7 +303,7 @@ private void rename()
    BaleApplyEdits bae = new BaleApplyEdits();
    bae.applyEdits(edits);
 
-   br.handleSaveAllRequest();
+   if (br != null) br.handleSaveAllRequest();
 }
 
 

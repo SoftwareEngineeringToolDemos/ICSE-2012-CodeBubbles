@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -29,6 +29,8 @@
 
 
 package edu.brown.cs.bubbles.bump;
+
+import edu.brown.cs.bubbles.board.BoardLog;
 
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -108,7 +110,7 @@ BumpCompletionImpl(Element e)
 
 
 @Override public CompletionType getType()	{ return completion_type; }
-		
+
 @Override public String getCompletion() 	{ return completion_text; }
 @Override public String getName()		{ return completion_name; }
 
@@ -128,7 +130,13 @@ int getRelevance()				{ return completion_relevance; }
 
 @Override public String getDeclaringType()
 {
-   return IvyFormat.formatTypeName(decl_signature);
+   try {
+      return IvyFormat.formatTypeName(decl_signature);
+    }
+   catch (Throwable t) {
+      BoardLog.logE("BUMP","Problem getting type name for " + decl_signature,t);
+      return decl_signature;
+    }
 }
 
 

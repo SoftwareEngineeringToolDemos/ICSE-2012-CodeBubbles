@@ -312,19 +312,26 @@ private class Searcher implements Runnable {
    BassFactory.reloadRepository(this);
 }
 
+@Override public void handleProjectOpened(String proj) 
+{
+   addNamesForFile(proj,null,true);
+}
+
 @Override public void handleFileStarted(String proj,String file)                { }
 
 
 private void removeNamesForFile(String proj,String file)
 {
-   File f = new File(file);
+   File f = null;
+   if (file != null) f = new File(file);
 
    synchronized (this) {
       for (Iterator<BassName> it = all_names.iterator(); it.hasNext(); ) {
 	 BassName bn = it.next();
 	 BumpLocation bl = bn.getLocation();
-	 if (bl != null && f.equals(bl.getFile()) &&
-		(proj == null || proj.equals(bl.getProject())))
+	 if (bl != null && 
+               (f == null || f.equals(bl.getFile())) &&
+               (proj == null || proj.equals(bl.getProject())))
 	    it.remove();
        }
     }
@@ -336,8 +343,11 @@ private void addNamesForFile(String proj,String file,boolean rem)
 {
    Map<String,BassNameLocation> fieldmap = new HashMap<String,BassNameLocation>();
    Map<String,BassNameLocation> staticmap = new HashMap<String,BassNameLocation>();
-   List<String> fls = new ArrayList<String>();
-   fls.add(file);
+   List<String> fls = null;
+   if (file != null) {
+      fls = new ArrayList<String>();
+      fls.add(file);
+    }
 
    Collection<BumpLocation> locs = BumpClient.getBump().findAllNames(proj,fls,true);
 

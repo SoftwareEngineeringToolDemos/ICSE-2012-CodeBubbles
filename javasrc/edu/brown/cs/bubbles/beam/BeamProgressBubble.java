@@ -114,7 +114,7 @@ private synchronized void startProgress(String id,String task,long sid)
    all_displays.put(id,pd);
    pd.setVisible(true);
    BudaBubble bb = BudaRoot.findBudaBubble(pd);
-   bb.setVisible(true);
+   if (bb != null) bb.setVisible(true);
 }
 
 

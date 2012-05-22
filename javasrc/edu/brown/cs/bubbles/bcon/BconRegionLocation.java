@@ -60,6 +60,7 @@ BconRegionLocation(BaleConstants.BaleFileOverview fov,BumpLocation bl)
       case UNKNOWN :
       case PACKAGE :
       case LOCAL :
+      case MODULE :
       default :
 	 region_type = RegionType.REGION_UNKNOWN;
 	 break;
@@ -192,8 +193,10 @@ boolean createBubble(Component src)
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
 
-   bba.addBubble(bb,src,null,BudaConstants.PLACEMENT_RIGHT|BudaConstants.PLACEMENT_LOGICAL|
-		    BudaConstants.PLACEMENT_NEW);
+   if (bba != null) {
+      bba.addBubble(bb,src,null,BudaConstants.PLACEMENT_RIGHT|BudaConstants.PLACEMENT_LOGICAL|
+		       BudaConstants.PLACEMENT_NEW);
+    }
 
    return true;
 }
@@ -211,6 +214,7 @@ BudaBubble makeBubble()
       case UNKNOWN :
       case LOCAL :
       case PACKAGE :
+      case MODULE : 
 	 break;
       case CLASS :
       case ENUM :
@@ -226,7 +230,7 @@ BudaBubble makeBubble()
 	 break;
       case STATIC_INITIALIZER :
 	 String inm = base_location.getSymbolName();
-	 bb = bf.createStaticsBubble(base_location.getProject(),inm);
+	 bb = bf.createStaticsBubble(base_location.getProject(),inm,base_location.getFile());
 	 break;
       case FIELD :
       case ENUM_CONSTANT :

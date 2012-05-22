@@ -214,9 +214,11 @@ private void outputProposals(IJavaCompletionProposal [] props,IvyXmlWriter xw)
    if (props == null) return;
 
    for (IJavaCompletionProposal p : props) {
-      BedrockPlugin.logD("COMPLETION: " + p.getRelevance() + " " + p.getDisplayString() + " " +
-			    p.getAdditionalProposalInfo() + " " +
-			    (p instanceof ChangeCorrectionProposal) + " " + p);
+      try {
+	 BedrockPlugin.logD("COMPLETION: " + p.getRelevance() + " " + p.getDisplayString() + " " +
+			       (p instanceof ChangeCorrectionProposal) + " " + p);
+       }
+      catch (Throwable t) { }
       if (isUsable(p)) {
 	 outputProposal(p,xw);
        }

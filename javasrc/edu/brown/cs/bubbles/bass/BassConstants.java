@@ -67,8 +67,9 @@ static final BoardProperties bass_properties = BoardProperties.getProperties("Ba
 
 /**
  *	This enumeration lists the types of names that symbols can represent.
- *	STATICS refers to static initializers.	HEADER refers to a class header
- *	(i.e. the imports, package, etc. information).
+ *	STATICS refers to static initializers (python evaluations); 
+ * 	HEADER refers to a class header (i.e. the imports, package, etc.
+ *      information).
  **/
 
 enum BassNameType {
@@ -108,6 +109,7 @@ enum BassNameType {
 
 enum BranchNodeType {
    NONE,
+   PROJECT,
    PACKAGE,
    CLASS,
    INTERFACE,

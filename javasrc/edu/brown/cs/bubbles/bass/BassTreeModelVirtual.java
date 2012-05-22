@@ -425,8 +425,14 @@ private boolean reset(Stack<BassTreeBase> pars,BassTreeBase node,BassNamePattern
 	  }
        }
     }
+   
+   boolean keepnode = true;
+   if (nitms == null) {
+      if (node.getLocalName().endsWith(":")) keepnode = true;
+      else keepnode = false;
+   }
 
-   return nitms != null;
+   return keepnode;
 }
 
 

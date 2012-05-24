@@ -8,6 +8,7 @@
    <target name='all'>
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bedrock" target='plugin' />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bandaid" target='jar' />
+      <ant antfile="build.xml" dir="edu/brown/cs/bubbles/pybase" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/board" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bqst" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bnote" />
@@ -36,7 +37,7 @@
 
    <path id='bubbles.classpath'>
       <pathelement location='${BUBBLES}/java' />
-      <pathelement location='${2AO}/ivy/java' />
+      <pathelement location='${PRO}/ivy/java' />
    </path>
 
    <path id='test.classpath'>

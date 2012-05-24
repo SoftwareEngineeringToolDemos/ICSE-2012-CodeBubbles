@@ -572,6 +572,8 @@ void setFocusBubble(BudaBubble bb,boolean fg)
 
    focusLinks(bb,fg);
 
+   if (bb != null) BoardMetrics.noteCommand("BUDA","changeFocus_" + bb.getId());
+
    for_root.noteFocusChanged(bb,fg);
 }
 

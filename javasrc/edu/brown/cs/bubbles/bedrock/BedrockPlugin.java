@@ -788,6 +788,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if (cmd.equals("EXIT")) {
       if (--num_clients <= 0) {
+	 xw.text("EXITING");
 	 forceExit();
        }
     }

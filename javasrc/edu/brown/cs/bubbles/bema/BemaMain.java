@@ -34,9 +34,9 @@ package edu.brown.cs.bubbles.bema;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bdoc.BdocFactory;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.board.BoardConstants.RunMode;
 import edu.brown.cs.bubbles.board.BoardConstants.BoardLanguage;
+import edu.brown.cs.bubbles.board.BoardConstants.RunMode;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bump.BumpClient;
 
@@ -44,7 +44,6 @@ import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 
-import javax.swing.ToolTipManager;
 import javax.swing.*;
 
 import java.io.*;

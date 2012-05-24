@@ -1386,7 +1386,7 @@ private class FileData implements IBufferChangedListener {
    void commit(boolean refresh,boolean save) throws JavaModelException {
       // TODO: This needs to be synchronized correctly among buffers
       for (BufferData bd : buffer_map.values()) {
-	 bd.commit(refresh,save);
+         bd.commit(refresh,save);
        }
       default_buffer = comp_unit.getBuffer();
       last_ast = null;
@@ -1636,35 +1636,35 @@ private class BufferData {
 
    synchronized void commit(boolean refresh,boolean save) throws JavaModelException {
       if (comp_unit != null) {
-	 if (save) {
-	    BedrockPlugin.log("COMMITING " + file_data.getFileName() + " " +
-				 comp_unit.isWorkingCopy() + " " +
-				 comp_unit.hasResourceChanged() + " " +
-				 comp_unit.getElementName() + " " +
-				 comp_unit.hasUnsavedChanges() + " " +
-				 comp_unit.isConsistent());
-	    if (comp_unit.isWorkingCopy()) {
-	       comp_unit.commitWorkingCopy(true,new BedrockProgressMonitor(our_plugin,"Committing"));
-	     }
-	    comp_unit.save(new BedrockProgressMonitor(our_plugin,"Saving"),false);
-	    // try this for now
-	    try {
-	       comp_unit = comp_unit.getWorkingCopy(
-		  copy_owner,
-		  new BedrockProgressMonitor(our_plugin,"Updating"));
-	     }
-	    catch (Throwable t) {
-	       BedrockPlugin.logE("Problem get working copy after a save",t);
-	     }
-	  }
-	 else if (refresh) {
-	    BedrockProgressMonitor bpm = new BedrockProgressMonitor(our_plugin,"Refreshing");
-	    comp_unit.restore();
-	    comp_unit = comp_unit.getPrimary();
-	    comp_unit.restore();
-	    comp_unit.makeConsistent(bpm);
-	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
-	  }
+         if (save) {
+            BedrockPlugin.log("COMMITING " + file_data.getFileName() + " " +
+        			 comp_unit.isWorkingCopy() + " " +
+        			 comp_unit.hasResourceChanged() + " " +
+        			 comp_unit.getElementName() + " " +
+        			 comp_unit.hasUnsavedChanges() + " " +
+        			 comp_unit.isConsistent());
+            if (comp_unit.isWorkingCopy()) {
+               comp_unit.commitWorkingCopy(true,new BedrockProgressMonitor(our_plugin,"Committing"));
+             }
+            comp_unit.save(new BedrockProgressMonitor(our_plugin,"Saving"),false);
+            // try this for now
+            try {
+               comp_unit = comp_unit.getWorkingCopy(
+        	  copy_owner,
+        	  new BedrockProgressMonitor(our_plugin,"Updating"));
+             }
+            catch (Throwable t) {
+               BedrockPlugin.logE("Problem get working copy after a save",t);
+             }
+          }
+         else if (refresh) {
+            BedrockProgressMonitor bpm = new BedrockProgressMonitor(our_plugin,"Refreshing");
+            comp_unit.restore();
+            comp_unit = comp_unit.getPrimary();
+            comp_unit.restore();
+            comp_unit.makeConsistent(bpm);
+            comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+          }
        }
     }
 

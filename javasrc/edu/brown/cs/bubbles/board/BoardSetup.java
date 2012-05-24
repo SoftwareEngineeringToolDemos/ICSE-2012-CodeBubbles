@@ -1423,6 +1423,10 @@ private void checkJarLibraries()
    for (String s : BOARD_LIBRARY_EXTRAS) {
       extractLibraryResource(s,libd,auto_update);
     }
+
+   File pyd = libd.getParentFile();
+   File pyd1 = new File(pyd,"pybles");
+   extractPybles(pyd1,libd,update_setup);
 }
 
 
@@ -1460,6 +1464,82 @@ private boolean extractLibraryResource(String s,File libd,boolean force)
     }
 
    return upd;
+}
+
+
+
+private void extractPybles(File pyd,File libd,boolean force)
+{
+   String pfx1 = null;
+   String pfx2 = null;
+   String pyblesfiles = null;
+   String libfiles = null;
+   try {
+      InputStream ins = BoardSetup.class.getClassLoader().getResourceAsStream("pyblesfiles.txt");
+      if (ins == null) return;
+      BufferedReader br = new BufferedReader(new InputStreamReader(ins));
+      String s = br.readLine();
+      if (s != null) {
+	 StringTokenizer tok = new StringTokenizer(s);
+	 pfx1 = tok.nextToken();
+	 pfx2 = tok.nextToken();
+       }
+      pyblesfiles = br.readLine();
+      libfiles = br.readLine();
+      ins.close();
+    }
+   catch (IOException e) {
+      return;
+    }
+   if (pfx1 == null || pfx2 == null || pyblesfiles == null || libfiles == null) return;
+
+   if (!pyd.exists()) pyd.mkdir();
+
+   for (StringTokenizer tok = new StringTokenizer(pyblesfiles,":"); tok.hasMoreTokens(); ) {
+      String pyf = tok.nextToken();
+      if (!pyf.startsWith(pfx1)) continue;
+      pyf = pyf.substring(pfx1.length());
+      while (pyf.startsWith("/")) pyf = pyf.substring(1);
+      File f1 = pyd;
+      for (StringTokenizer t1 = new StringTokenizer(pyf,"/"); t1.hasMoreTokens(); ) {
+	 String comp = t1.nextToken();
+	 if (!f1.exists()) f1.mkdir();
+	 f1 = new File(f1,comp);
+       }
+      if (!force && f1.exists()) continue;
+      try {
+	 InputStream ins = BoardSetup.class.getClassLoader().getResourceAsStream(pyf);
+	 if (ins != null) {
+	    FileOutputStream ots = new FileOutputStream(f1);
+	    copyFile(ins,ots);
+	  }
+       }
+      catch (IOException e) {
+	 BoardLog.logE("BOARD","Problem setting up pybles files: " + e);
+       }
+    }
+
+   for (StringTokenizer tok = new StringTokenizer(libfiles,":"); tok.hasMoreTokens(); ) {
+      String pyf = tok.nextToken();
+      if (!pyf.startsWith(pfx2)) continue;
+      pyf = pyf.substring(pfx2.length());
+      while (pyf.startsWith("/")) pyf = pyf.substring(1);
+      int idx = pyf.lastIndexOf("/");
+      String f1 = pyf;
+      if (idx >= 0) f1 = pyf.substring(idx+1);
+      File of = new File(libd,f1);
+      if (!force && of.exists()) continue;
+      try {
+	 InputStream ins = BoardSetup.class.getClassLoader().getResourceAsStream(pyf);
+	 if (ins != null) {
+	    FileOutputStream ots = new FileOutputStream(of);
+	    copyFile(ins,ots);
+	  }
+       }
+      catch (IOException e) {
+	 BoardLog.logE("BOARD","Problem setting up pybles library files: " + e);
+       }
+    }	
 }
 
 

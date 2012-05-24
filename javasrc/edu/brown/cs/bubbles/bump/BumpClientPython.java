@@ -56,7 +56,16 @@ public class BumpClientPython extends BumpClient
 
 private boolean 	python_starting;
 
-
+private static String [] python_libs = new String [] {
+   "pydev.jar",
+   "org.eclipse.core.jobs.jar",
+   "org.eclipse.core.resources.jar",
+   "org.eclipse.core.runtime.jar",
+   "org.eclipse.equinox.common.jar",
+   "org.eclipse.jface.jar",
+   "org.eclipse.jface.text.jar",
+   "org.eclipse.text.jar"
+};
 
 
 
@@ -128,13 +137,29 @@ private void ensureRunning()
    argl.add("java");
    argl.add("-Xmx1024m");
    argl.add("-Dedu.brown.cs.bubbles.MINT=" + mint_name);
+
+   String cp = System.getProperty("java.class.path");
+   for (String s : python_libs) {
+      String lib = BoardSetup.getSetup().getLibraryPath(s);
+      if (lib == null) continue; 
+      File f = new File(lib);
+      if (f.exists()) cp += File.pathSeparator + lib;
+    }
    argl.add("-cp");
-   argl.add(System.getProperty("java.class.path"));
+   argl.add(cp);
+
    argl.add(cls);
    if (ws != null) {
       argl.add("-ws");
       argl.add(ws);
     }
+
+   String run = null;
+   for (String s : argl) {
+      if (run == null) run = s;
+      else run += " " + s;
+    }
+   BoardLog.logE("BUMP","RUN: " + run);
 
    try {
       IvyExec ex = new IvyExec(argl,null,IvyExec.ERROR_OUTPUT);
@@ -154,7 +179,7 @@ private void ensureRunning()
 	 if (!ex.isRunning()) {
 	    BoardLog.logE("BUMP","Problem starting python");
 	    JOptionPane.showMessageDialog(null,
-					     "Python could not be started. Check the python log",
+					     "Python (Pybase) could not be started.",
 					     "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
 	    System.exit(1);
 	  }

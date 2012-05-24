@@ -457,7 +457,7 @@ private BaleElement fixLeafElement(BaleElement be,boolean first)
 	     }
 	    break;
 	 default :
-	    if (!(be instanceof BaleElement.Identifier)) {
+            if (be.getClass() != BaleElement.Identifier.class) {
 	       be = new BaleElement.Identifier(for_document,cur_parent,be.getStartOffset(),be.getEndOffset());
 	     }
 	    break;

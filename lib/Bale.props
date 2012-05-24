@@ -46,7 +46,7 @@
 <entry key="UndefCallId.parent">CallId</entry>
 <entry key="UndefId.parent">Bale</entry>
 <entry key="BuiltinId.parent">Bale</entry>
-<entry key="BuiltinId.foreground">#00c0c0</entry>
+<entry key="BuiltinId.foreground">#00a0a0</entry>
 <entry key="AnnotationId.parent">Bale</entry>
 <entry key="AnnotationId.foreground">#a00000</entry>
 <entry key="DeprecatedCallId.parent">CallId</entry>

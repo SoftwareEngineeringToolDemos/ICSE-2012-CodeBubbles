@@ -400,21 +400,21 @@ private class EndChecker extends Thread {
    @Override public void run() {
       int ctr = 0;
       for ( ; ; ) {
-	 try {
-	    sleep(60000);
-	  }
-	 catch (InterruptedException e) { }
-	 if (PlatformUI.isWorkbenchRunning()) {
-	    BedrockPlugin bp = BedrockPlugin.getPlugin();
-	    IvyXmlWriter xw = bp.beginMessage("PING");
-	    String resp = bp.finishMessageWait(xw);
-	    if (resp != null) ctr = 0;
-	    else if (++ctr >= 2) {
-	       xw = bp.beginMessage("STOP");
-	       bp.finishMessage(xw);
-	       bp.forceExit();
-	     }
-	  }
+         try {
+            sleep(60000);
+          }
+         catch (InterruptedException e) { }
+         if (PlatformUI.isWorkbenchRunning()) {
+            BedrockPlugin bp = BedrockPlugin.getPlugin();
+            IvyXmlWriter xw = bp.beginMessage("PING");
+            String resp = bp.finishMessageWait(xw);
+            if (resp != null) ctr = 0;
+            else if (++ctr >= 2) {
+               xw = bp.beginMessage("STOP");
+               bp.finishMessage(xw);
+               bp.forceExit();
+             }
+          }
        }
     }
 

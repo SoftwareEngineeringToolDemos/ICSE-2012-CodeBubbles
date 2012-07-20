@@ -51,7 +51,6 @@ import org.python.pydev.parser.jython.ast.NameTok;
 import org.python.pydev.parser.jython.ast.Pass;
 import org.python.pydev.parser.jython.ast.Str;
 import org.python.pydev.parser.jython.ast.stmtType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

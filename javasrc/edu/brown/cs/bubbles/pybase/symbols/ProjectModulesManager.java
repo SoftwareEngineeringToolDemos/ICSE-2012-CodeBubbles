@@ -37,7 +37,6 @@ import edu.brown.cs.bubbles.pybase.PybaseNature;
 import edu.brown.cs.bubbles.pybase.PybaseProject;
 
 import org.python.pydev.core.DeltaSaver;
-import org.python.pydev.core.ModulesKey;
 import org.python.pydev.core.Tuple;
 
 import java.io.File;

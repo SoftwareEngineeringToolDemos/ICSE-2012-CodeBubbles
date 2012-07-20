@@ -26,11 +26,20 @@
 package edu.brown.cs.bubbles.banal;
 
 import edu.brown.cs.bubbles.buda.BudaRoot;
+import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.BoardLog;
 
-import java.util.Collection;
+import edu.brown.cs.ivy.mint.*;
+import edu.brown.cs.ivy.exec.*;
+import edu.brown.cs.ivy.xml.*;
+
+import org.w3c.dom.Element;
+
+import java.util.*;
+import java.io.IOException;
 
 
-public class BanalFactory implements BanalConstants
+public class BanalFactory implements BanalConstants, MintConstants
 {
 
 
@@ -41,7 +50,7 @@ public class BanalFactory implements BanalConstants
 /*										*/
 /********************************************************************************/
 
-private BanalProjectManager	project_manager;
+private boolean 		server_running;
 
 private static BanalFactory	the_factory;
 
@@ -59,7 +68,9 @@ static {
 /********************************************************************************/
 
 private BanalFactory()
-{ }
+{
+   server_running = false;
+}
 
 
 public static BanalFactory getFactory() 	{ return the_factory; }
@@ -80,7 +91,7 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
-   the_factory.setupProjectManager();
+   the_factory.startBanalServer();
 }
 
 
@@ -93,25 +104,99 @@ public static void initialize(BudaRoot br)
 
 public Collection<BanalPackageNode> computePackageGraph(String proj,String pkg,boolean usemethods)
 {
-   setupProjectManager();
+   BanalPackageGraph pg = null;
 
-   BanalPackageGraph pg = new BanalPackageGraph(proj,pkg,usemethods);
-   BanalStaticLoader bsl = new BanalStaticLoader(project_manager,pg);
-   bsl.process();
+   if (server_running) {
+      BoardSetup bs = BoardSetup.getSetup();
+      MintControl mc = bs.getMintControl();
+      MintDefaultReply rply = new MintDefaultReply();
+      String cmd = "<BANAL DO='PACKAGEGRAPH'";
+      if (proj != null) cmd += " PROJECT='" + proj + "'";
+      if (pkg != null) cmd += " PACKAGE='" + pkg + "'";
+      cmd += " METHODS='" + usemethods + "' />";
+      mc.send(cmd,rply,MINT_MSG_FIRST_NON_NULL);
+      Element e = rply.waitForXml();
+      if (IvyXml.isElement(e,"RESULT")) {
+	 BoardLog.logD("BANAL","Graph reply: " + IvyXml.convertXmlToString(e));
+	 pg = new BanalPackageGraph(IvyXml.getChild(e,"GRAPH"));
+       }
+    }
+
+   if (pg == null) return new ArrayList<BanalPackageNode>();
+
    return pg.getAllNodes();
 }
 
 
 
-private synchronized void setupProjectManager()
+
+/********************************************************************************/
+/*										*/
+/*	Server methods								*/
+/*										*/
+/********************************************************************************/
+
+void startBanalServer()
 {
-   if (project_manager == null) {
-      project_manager = new BanalProjectManager();
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
+   IvyExec exec = null;
+
+   synchronized (this) {
+      if (server_running) return;
+
+      long mxmem = Runtime.getRuntime().maxMemory();
+      mxmem = Math.min(512*1024*1024L,mxmem);
+
+      List<String> args = new ArrayList<String>();
+      args.add("java");
+      args.add("-Xmx" + Long.toString(mxmem));
+      args.add("-cp");
+      args.add(System.getProperty("java.class.path"));
+      args.add("edu.brown.cs.bubbles.banal.BanalMain");
+      args.add("-S");
+      args.add("-m");
+      args.add(bs.getMintName());
+
+      for (int i = 0; i < 100; ++i) {
+	 MintDefaultReply rply = new MintDefaultReply();
+	 mc.send("<BANAL DO='PING' />",rply,MINT_MSG_FIRST_NON_NULL);
+	 String rslt = rply.waitForString(1000);
+	 if (rslt != null) {
+	    server_running = true;
+	    break;
+	  }
+	 if (i == 0) {
+	    try {
+	       exec = new IvyExec(args,null,IvyExec.ERROR_OUTPUT);
+	       BoardLog.logD("BANAL","Run " + exec.getCommand());
+	     }
+	    catch (IOException e) {
+	       break;
+	     }
+	  }
+	 else {
+	    try {
+	       if (exec != null) {
+		  // check if process exited (nothing to do)
+		  exec.exitValue();
+		  break;
+		}
+	     }
+	    catch (IllegalThreadStateException e) { }
+	  }
+	
+	 try {
+	    wait(2000);
+	  }
+	 catch (InterruptedException e) { }
+       }
+      if (!server_running) {
+	 BoardLog.logE("BANAL","Unable to start bvcr server");
+	 server_running = true; 	// don't try again
+       }
     }
 }
-
-
-
 
 
 }	// end of class BanalFactory

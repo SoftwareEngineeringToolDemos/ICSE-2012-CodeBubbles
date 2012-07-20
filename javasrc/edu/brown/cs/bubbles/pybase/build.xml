@@ -27,6 +27,23 @@
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${BUBBLES}/lib/' includes='pydev.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.text.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.equinox.common.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.resources.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.jobs.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.text.jar' />
+      </path>
+      <path id='test1.classpath'>
+	 <pathelement location='${BUBBLES}/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <fileset dir='/home/spr/eclipse35/eclipse/plugins/org.python.pydev.parser_1.6.1.2010080312'>
+	    <include name='parser.jar' />
+	 </fileset>
+	 <fileset dir='/home/spr/eclipse35/eclipse/plugins/org.python.pydev.parser_1.6.1.2010080312'>
+	    <include name='parser.jar' />
+	    <include name='retroweaver-rt.jar' />
+	 </fileset>
 	 <fileset dir='${BUBBLES}/eclipsejar'>
 	    <include name='*.jar' />
 	 </fileset>
@@ -47,6 +64,12 @@
    <target name='test' depends='compile'>
       <java classname='edu.brown.cs.bubbles.pybase.PybaseTest' fork='true'>
 	 <classpath refid='test.classpath' />
+      </java>
+   </target>
+
+   <target name='test1' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.pybase.PybaseTest' fork='true'>
+	 <classpath refid='test1.classpath' />
       </java>
    </target>
 

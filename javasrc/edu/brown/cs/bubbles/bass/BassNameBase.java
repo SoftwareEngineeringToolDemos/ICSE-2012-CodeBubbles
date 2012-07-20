@@ -189,6 +189,7 @@ public String getNameHead()
    switch (name_type) {
       case NONE :
       case PACKAGE :
+      case MODULE :
 	 break;
       case CLASS :
       case INTERFACE :
@@ -224,6 +225,7 @@ public String getNameHead()
       case INTERFACE :
       case ENUM :
       case THROWABLE :
+      case MODULE :
 	 return getNameHead();
       case FIELDS :
       case METHOD :

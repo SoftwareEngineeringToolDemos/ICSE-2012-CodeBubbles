@@ -26,6 +26,7 @@
 package edu.brown.cs.bubbles.burp;
 
 import javax.swing.undo.UndoableEdit;
+import javax.swing.text.Document;
 
 import java.util.*;
 
@@ -77,6 +78,31 @@ BurpChangeData(BurpHistory bh,UndoableEdit ue,BurpChangeData prior)
 
 /********************************************************************************/
 /*										*/
+/*	Access methods								*/
+/*										*/
+/********************************************************************************/
+
+BurpChangeData getPriorChange()
+{
+   return prior_global;
+}
+
+
+
+Document getBaseEditDocument()
+{
+   if (base_edit instanceof BurpSharedEdit) {
+      BurpSharedEdit bde = (BurpSharedEdit) base_edit;
+      return bde.getBaseEditDocument();
+    }
+
+   return null;
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Methods for getting next edit and associated editors			*/
 /*										*/
 /********************************************************************************/
@@ -92,7 +118,7 @@ BurpChangeData getNext(BurpEditorData ed)
 void addEditor(BurpEditorData ed)
 {
    BurpChangeData cd = ed.getCurrentChange();
-   if (cd != null && cd.next_editor !=null) cd.next_editor.put(ed,this);
+   if (cd != null && cd.next_editor != null) cd.next_editor.put(ed,this);
    next_editor.put(ed,null);
    prior_editor.put(ed,cd);
 }
@@ -128,9 +154,10 @@ void removeGlobal()
 /*										*/
 /********************************************************************************/
 
-void addDependencies()
+void addDependencies(List<BurpChangeData> dep0)
 {
    depend_upons = null;
+   if (dep0 != null && !dep0.isEmpty()) depend_upons = new ArrayList<BurpChangeData>(dep0);
    Set<BurpEditorData> eddeps = new HashSet<BurpEditorData>();
 
    if (next_editor != null) {
@@ -139,16 +166,18 @@ void addDependencies()
        }
     }
 
-   for (BurpChangeData cd = next_global; cd != null && !eddeps.isEmpty(); cd = cd.next_global) {
+   for (BurpChangeData cd = next_global; cd != null && cd != this && !eddeps.isEmpty(); cd = cd.next_global) {
       Set<BurpEditorData> rem = new HashSet<BurpEditorData>();
       for (BurpEditorData ed : eddeps) {
 	 if (cd.next_editor.containsKey(ed)) rem.add(ed);
        }
-      if (!rem.isEmpty()) {
+      boolean usefg = !rem.isEmpty();
+
+      if (usefg) {
 	 eddeps.removeAll(rem);
 	 if (depend_upons == null) depend_upons = new ArrayList<BurpChangeData>();
-	 depend_upons.add(cd);
-	 cd.addDependencies();
+	 if (!depend_upons.contains(cd)) depend_upons.add(cd);
+	 cd.addDependencies(null);
        }
     }
 }
@@ -216,6 +245,7 @@ void undo()
 	 cd.undo();
        }
     }
+   
    base_edit.undo();
    for_history.resetCurrentChange(this,prior_global,false);
    for (Map.Entry<BurpEditorData,BurpChangeData> ent : prior_editor.entrySet()) {
@@ -230,15 +260,18 @@ void undo()
 void redo()
 {
    base_edit.redo();
-   if (depend_upons != null) {
-      for (BurpChangeData cd : depend_upons) {
-	 cd.redo();
-       }
-    }
-   for_history.resetCurrentChange(this,prior_global,true);
+   
+   for_history.resetCurrentChange(prior_global,this,true);
    for (Map.Entry<BurpEditorData,BurpChangeData> ent : next_editor.entrySet()) {
       BurpEditorData ed = ent.getKey();
       ed.setCurrentChange(this);
+    }
+   
+   if (depend_upons != null) {
+      for (int i = depend_upons.size()-1; i >= 0; --i) {
+	 BurpChangeData cd = depend_upons.get(i);
+	 cd.redo();
+       }
     }
 }
 

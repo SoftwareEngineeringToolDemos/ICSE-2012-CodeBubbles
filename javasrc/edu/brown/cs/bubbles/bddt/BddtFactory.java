@@ -514,7 +514,7 @@ BudaBubble makeValueViewerBubble(BudaBubble src,BddtLaunchControl ctrl)
 
    Rectangle r = src.getBounds();
    int x = r.x + BDDT_CONSOLE_WIDTH + 20;
-   int y = r.y + r.height + 20;
+   int y = r.y;
 
    BudaConstraint bc;
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_EVALUATION)) {

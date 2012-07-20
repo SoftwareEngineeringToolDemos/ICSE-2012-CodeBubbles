@@ -244,7 +244,7 @@ private class ProcessHandler implements BumpRunEventHandler
    }
 
    @Override public void handleThreadEvent(BumpRunEvent evt)				{ }
-   @Override public void handleConsoleMessage(BumpProcess bp,boolean e,String msg)	{ }
+   @Override public void handleConsoleMessage(BumpProcess bp,boolean e,boolean f,String msg)	{ }
 
 }	// end of inner class ProcessHandler
 

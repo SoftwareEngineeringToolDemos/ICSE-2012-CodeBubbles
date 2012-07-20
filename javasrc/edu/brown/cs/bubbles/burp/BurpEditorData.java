@@ -143,7 +143,8 @@ void noteSave()
 /*										*/
 /********************************************************************************/
 
-@Override public void undoableEditHappened(UndoableEditEvent evt) {
+@Override public void undoableEditHappened(UndoableEditEvent evt)
+{
    for_history.handleNewEdit(this,evt.getEdit(),in_event,next_sig);
    next_sig = false;
 }
@@ -202,6 +203,18 @@ void noteSave()
 
 @Override public void mouseEntered(MouseEvent e)	{ }
 @Override public void mouseExited(MouseEvent e) 	{ }
+
+
+void beginEditAction()
+{
+   in_event = true;
+}
+
+
+void endEditAction()
+{
+   in_event = false;
+}
 
 
 private boolean isModifier(KeyEvent e)

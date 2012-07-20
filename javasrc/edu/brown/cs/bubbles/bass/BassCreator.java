@@ -311,7 +311,7 @@ private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBub
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
-      BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,name);
+      BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,null,name);
       if (bb != null) bba.add(bb,new BudaConstraint(p));
    }
 
@@ -363,7 +363,7 @@ private class NewPackageAction extends NewAction implements BuenoConstants.Bueno
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
-      BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,name);
+      BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,null,name);
       if (bb != null) bba.add(bb,new BudaConstraint(p));
    }
 
@@ -389,7 +389,7 @@ private class NewModuleAction extends NewAction implements BuenoConstants.BuenoB
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
-      BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,name);
+      BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,null,name);
       if (bb != null) bba.add(bb,new BudaConstraint(p));
    }
 

@@ -37,8 +37,6 @@ import edu.brown.cs.bubbles.pybase.symbols.ModulesFoundStructure.ZipContents;
 import edu.brown.cs.bubbles.pybase.symbols.PyFileListing.PyFileInfo;
 
 import org.python.pydev.core.FullRepIterable;
-import org.python.pydev.core.ModulesKey;
-import org.python.pydev.core.ModulesKeyForZip;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -575,16 +573,16 @@ public void saveToFile(File pythonpathhelperfile)
 
 public static boolean canAddAstInfoFor(ModulesKey key)
 {
-   if (key.file != null && key.file.exists()) {
+   if (key.getModuleFile() != null && key.getModuleFile().exists()) {
 
-      if (PythonPathHelper.isValidSourceFile(key.file.getName())) {
+      if (PythonPathHelper.isValidSourceFile(key.getModuleFile().getName())) {
 	 return true;
       }
 
       boolean isZipModule = key instanceof ModulesKeyForZip;
       if (isZipModule) {
 	 ModulesKeyForZip modulesKeyForZip = (ModulesKeyForZip) key;
-	 if (PythonPathHelper.isValidSourceFile(modulesKeyForZip.zipModulePath)) {
+	 if (PythonPathHelper.isValidSourceFile(modulesKeyForZip.getZipModulePath())) {
 	    return true;
 	 }
       }

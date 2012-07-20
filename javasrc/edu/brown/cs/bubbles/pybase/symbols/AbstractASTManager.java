@@ -37,7 +37,6 @@ import edu.brown.cs.bubbles.pybase.PybaseProject;
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.core.FullRepIterable;
 import org.python.pydev.core.ICompletionRequest;
-import org.python.pydev.core.ModulesKey;
 import org.python.pydev.core.Tuple;
 import org.python.pydev.core.Tuple3;
 import org.python.pydev.core.TupleN;
@@ -47,7 +46,6 @@ import org.python.pydev.parser.jython.ast.Import;
 import org.python.pydev.parser.jython.ast.ImportFrom;
 import org.python.pydev.parser.jython.ast.NameTok;
 import org.python.pydev.parser.jython.ast.aliasType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -286,10 +284,10 @@ public void getAbsoluteImportTokens(String moduleToGetTokensFrom,Set<AbstractTok
    while (itModules.hasNext()) {
       ModulesKey key = itModules.next();
 
-      String element = key.name;
+      String element = key.getModuleName();
       // if (element.startsWith(moduleToGetTokensFrom)) { we don't check that anymore because we
       // get all the modules starting with it already
-      if (onlyFilesOnSameLevel && key.file != null && key.file.isDirectory()) {
+      if (onlyFilesOnSameLevel && key.getModuleFile() != null && key.getModuleFile().isDirectory()) {
 	 continue; // we only want those that are in the same directory, and not in other
 	 // directories...
        }

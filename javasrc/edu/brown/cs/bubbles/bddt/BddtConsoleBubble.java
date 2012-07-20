@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -34,7 +34,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 
 
@@ -114,6 +114,11 @@ private BddtConsoleBubble(StyledDocument doc)
 
    menu.add(getFloatBubbleAction());
 
+   JCheckBoxMenuItem sitm = new JCheckBoxMenuItem("Auto Scroll");
+   sitm.setState(auto_scroll);
+   sitm.addActionListener(new AutoScrollAction());
+   menu.add(sitm);
+
    menu.show(this,e.getX(),e.getY());
 }
 
@@ -164,8 +169,8 @@ private class EndScroll implements DocumentListener, Runnable {
 	    if (r != null) {
 	       Dimension sz = text_pane.getSize();
 	       r.x = 0;
-	       r.y += 10;
-	       if (r.y + r.height > sz.height) r.y = sz.height - r.height;
+	       r.y += 20;
+	       if (r.y + r.height > sz.height) r.y = sz.height;
 	       text_pane.scrollRectToVisible(r);
 	     }
 	 }
@@ -179,6 +184,24 @@ private class EndScroll implements DocumentListener, Runnable {
     }
 
 }	// end of inner class EndScroll
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Action									*/
+/*										*/
+/********************************************************************************/
+
+private class AutoScrollAction implements ActionListener {
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      JCheckBoxMenuItem itm = (JCheckBoxMenuItem) evt.getSource();
+      auto_scroll = itm.getState();
+    }
+
+}	// end of inner class AutoScrollAction
 
 
 

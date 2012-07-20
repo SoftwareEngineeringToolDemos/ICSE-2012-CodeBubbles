@@ -1016,6 +1016,9 @@ public void handleDebugEvents(DebugEvent[] events)
       if (event.getSource() instanceof IProcess) {
 	 xw.field("TYPE","PROCESS");
 	 BedrockUtil.outputProcess((IProcess) event.getSource(),xw,false);
+	 if (event.getKind() == 8) {
+	    queueConsole(event.getSource().hashCode(),null,false,true);
+	  }
        }
       else if (event.getSource() instanceof IJavaThread) {
 	 xw.field("TYPE","THREAD");
@@ -1161,7 +1164,7 @@ private class ConsoleListener implements IStreamListener {
 
    @Override public void streamAppended(String txt,IStreamMonitor mon) {
       BedrockPlugin.logD("Console output: " + process_id + " " + txt);
-      queueConsole(process_id,txt,is_stderr);
+      queueConsole(process_id,txt,is_stderr,false);
     }
 
 }	// end of inner class ConsoleListener
@@ -1169,7 +1172,7 @@ private class ConsoleListener implements IStreamListener {
 
 
 
-private void queueConsole(int pid,String txt,boolean err)
+private void queueConsole(int pid,String txt,boolean err,boolean eof)
 {
    synchronized (console_map) {
       if (console_thread == null) {
@@ -1179,11 +1182,11 @@ private void queueConsole(int pid,String txt,boolean err)
 
       ConsoleData cd = console_map.get(pid);
       if (cd != null) {
-	 cd.addWrite(txt,err);
+	 cd.addWrite(txt,err,eof);
        }
       else {
 	 cd = new ConsoleData();
-	 cd.addWrite(txt,err);
+	 cd.addWrite(txt,err,eof);
 	 console_map.put(pid,cd);
 	 console_map.notifyAll();
        }
@@ -1196,14 +1199,17 @@ private static class ConsoleWrite {
 
    private String write_text;
    private boolean is_stderr;
+   private boolean is_eof;
 
-   ConsoleWrite(String txt,boolean err) {
+   ConsoleWrite(String txt,boolean err,boolean eof) {
       write_text = txt;
       is_stderr = err;
+      is_eof = eof;
     }
 
    String getText()			{ return write_text; }
    boolean isStdErr()			{ return is_stderr; }
+   boolean isEof()			{ return is_eof; }
 
 }	// end of inner class ConsoleWrite
 
@@ -1217,8 +1223,8 @@ private class ConsoleData {
       pending_writes = new ArrayList<ConsoleWrite>();
     }
 
-   synchronized void addWrite(String txt,boolean err) {
-      pending_writes.add(new ConsoleWrite(txt,err));
+   synchronized void addWrite(String txt,boolean err,boolean eof) {
+      pending_writes.add(new ConsoleWrite(txt,err,eof));
     }
 
    List<ConsoleWrite> getWrites()		{ return pending_writes; }
@@ -1266,22 +1272,30 @@ private class ConsoleThread extends Thread {
       StringBuffer buf = null;
       boolean iserr = false;
       for (ConsoleWrite cw : cd.getWrites()) {
-	 if (buf == null) {
-	    buf = new StringBuffer();
-	    iserr = cw.isStdErr();
-	    buf.append(cw.getText());
-	  }
-	 else if (iserr == cw.isStdErr()) {
-	    buf.append(cw.getText());
-	  }
-	 else {
-	    flushConsole(pid,buf,iserr);
-	    buf = null;
-	  }
-	 if (buf != null && buf.length() > 16384) {
-	    flushConsole(pid,buf,iserr);
-	    buf = null;
-	  }
+         if (cw.isEof()) {
+            if (buf != null) flushConsole(pid,buf,iserr);
+            buf = null;
+            eofConsole(pid);
+            continue;
+          }
+         if (buf == null) {
+            if (cw.getText() != null) {
+               buf = new StringBuffer();
+               iserr = cw.isStdErr();
+               buf.append(cw.getText());
+             }
+          }
+         else if (iserr == cw.isStdErr()) {
+            if (cw.getText() != null) buf.append(cw.getText());
+          }
+         else {
+            flushConsole(pid,buf,iserr);
+            buf = null;
+          }
+         if (buf != null && buf.length() > 32768) {
+            flushConsole(pid,buf,iserr);
+            buf = null;
+          }
        }
       if (buf != null) flushConsole(pid,buf,iserr);
     }
@@ -1293,7 +1307,16 @@ private class ConsoleThread extends Thread {
       //TODO: fix this correctly
       String txt = buf.toString();
       txt = txt.replace("]]>","] ]>");
+      if (txt.length() == 0) return;
       xw.cdataElement("TEXT",txt);
+      our_plugin.finishMessageWait(xw);
+      BedrockPlugin.logD("Console write " + txt.length());
+    }
+
+   private void eofConsole(int pid) {
+      IvyXmlWriter xw = our_plugin.beginMessage("CONSOLE");
+      xw.field("PID",pid);
+      xw.field("EOF",true);
       our_plugin.finishMessageWait(xw);
     }
 

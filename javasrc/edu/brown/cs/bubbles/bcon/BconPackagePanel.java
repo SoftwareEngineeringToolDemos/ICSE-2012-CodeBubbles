@@ -34,6 +34,7 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 import javax.swing.*;
 
 import java.awt.Dimension;
+import java.awt.Color;
 import java.awt.event.*;
 
 
@@ -243,7 +244,7 @@ private class EdgeTab extends JPanel implements ActionListener {
 
    EdgeTab() {
       setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-
+   
       addRelationButton("Superclass",ArcType.SUBCLASS);
       addRelationButton("Implements",ArcType.IMPLEMENTED_BY);
       addRelationButton("Extends",ArcType.EXTENDED_BY);
@@ -257,7 +258,7 @@ private class EdgeTab extends JPanel implements ActionListener {
       addRelationButton("Field",ArcType.FIELD);
       addRelationButton("Local",ArcType.LOCAL);
       addRelationButton("Members",ArcType.MEMBER_OF);
-
+   
       // add(new JSeparator()); -- make it fixed size
       JCheckBox cbx = new JCheckBox("Show Labels",graph_panel.getShowArcLabels());
       cbx.setToolTipText("Show edge labels");
@@ -270,6 +271,8 @@ private class EdgeTab extends JPanel implements ActionListener {
       JCheckBox btn = new JCheckBox(nm,fg);
       btn.addActionListener(new RelationAction(rtyp));
       btn.setToolTipText("Show " + nm.toLowerCase() + " relationships");
+      Color c = BconPackageDisplay.getArcColor(rtyp);
+      if (c != null) btn.setForeground(c);
       add(btn);
     }
 

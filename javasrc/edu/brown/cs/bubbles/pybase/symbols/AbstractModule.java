@@ -39,8 +39,6 @@ import edu.brown.cs.bubbles.pybase.PybaseParser;
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.core.FullRepIterable;
 import org.python.pydev.core.ICompletionCache;
-import org.python.pydev.core.ModulesKey;
-import org.python.pydev.core.ModulesKeyForZip;
 import org.python.pydev.core.TupleN;
 import org.python.pydev.core.structure.CompletionRecursionException;
 import org.python.pydev.parser.jython.SimpleNode;
@@ -198,11 +196,11 @@ public static AbstractModule createEmptyModule(ModulesKey key)
 {
    if (key instanceof ModulesKeyForZip) {
       ModulesKeyForZip e = ((ModulesKeyForZip) key);
-      return new EmptyModuleForZip(key.name,key.file,e.zipModulePath,e.isFile);
+      return new EmptyModuleForZip(key.getModuleName(),key.getModuleFile(),e.getZipModulePath(),e.isFile());
 
     }
    else {
-      return new EmptyModule(key.name,key.file);
+      return new EmptyModule(key.getModuleName(),key.getModuleFile());
     }
 }
 
@@ -348,7 +346,7 @@ private Map<String, AbstractToken> internalGenerateCachedTokens(PybaseNature nat
 
 /********************************************************************************/
 /*										*/
-/*	Abstract methods 							*/
+/*	Abstract methods							*/
 /*										*/
 /********************************************************************************/
 

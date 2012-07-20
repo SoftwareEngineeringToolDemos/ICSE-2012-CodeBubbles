@@ -47,7 +47,6 @@ import org.python.pydev.parser.jython.ast.Subscript;
 import org.python.pydev.parser.jython.ast.Tuple;
 import org.python.pydev.parser.jython.ast.aliasType;
 import org.python.pydev.parser.jython.ast.exprType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

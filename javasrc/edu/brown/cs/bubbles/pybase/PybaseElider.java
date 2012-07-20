@@ -776,6 +776,11 @@ private class ElidePass3 extends Visitor {
 	  }
 	 xml_writer.end("ELIDE");
        }
+      else if (stmts != null) {
+	 for (stmtType st : stmts) {
+	    if (st != null) st.accept(this);
+	 }
+      }
     }
 
    private void handleNode(SimpleNode n) throws Exception {

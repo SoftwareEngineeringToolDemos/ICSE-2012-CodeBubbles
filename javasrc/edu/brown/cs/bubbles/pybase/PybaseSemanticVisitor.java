@@ -44,6 +44,7 @@ import edu.brown.cs.bubbles.pybase.symbols.Found;
 import edu.brown.cs.bubbles.pybase.symbols.GenAndTok;
 import edu.brown.cs.bubbles.pybase.symbols.LocalScope;
 import edu.brown.cs.bubbles.pybase.symbols.MessagesManager;
+import edu.brown.cs.bubbles.pybase.symbols.NodeUtils;
 import edu.brown.cs.bubbles.pybase.symbols.NoSelfChecker;
 import edu.brown.cs.bubbles.pybase.symbols.Scope;
 import edu.brown.cs.bubbles.pybase.symbols.SourceModule;
@@ -92,7 +93,6 @@ import org.python.pydev.parser.jython.ast.argumentsType;
 import org.python.pydev.parser.jython.ast.comprehensionType;
 import org.python.pydev.parser.jython.ast.decoratorsType;
 import org.python.pydev.parser.jython.ast.exprType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -825,9 +825,9 @@ throws Exception
       if (!rep.equals("self") && !rep.equals("cls")) {
 	 cur_scope.addToken(token, token);
        }
-      else if (fnd1 != null) {
+      else {
 	 addToNamesToIgnore(node, false, false); // ignore self
-	 cur_scope.getCurrScopeItems().putRef(token,fnd1.o2);
+	 if (fnd1 != null) cur_scope.getCurrScopeItems().putRef(token,fnd1.o2);
        }
       //  }
     }
@@ -1015,8 +1015,7 @@ protected Object unhandled_node(SimpleNode node) throws Exception
 
 private void onAddUndefinedVarInImportMessage(AbstractToken foundTok,Found foundAs)
 {
-   messages_manager
-      .addUndefinedVarInImportMessage(foundTok, foundTok.getRepresentation());
+   messages_manager.addUndefinedVarInImportMessage(foundTok, foundTok.getRepresentation());
 }
 
 
@@ -1279,7 +1278,7 @@ private void endScope(SimpleNode node)
 	 // it won't be found.
 
 	 if (ACCEPTED_METHOD_AND_LAMBDA.contains(probablyNotDefinedFirst.getScopeFound().getScopeType())
-         		&& m.getScopeType() != ScopeType.CLASS) {
+			&& m.getScopeType() != ScopeType.CLASS) {
 	    if (foundItemFirst.getScopeId() < probablyNotDefinedFirst.getScopeId()) {
 	       found.setUsed(true);
 	       setUsed = true;

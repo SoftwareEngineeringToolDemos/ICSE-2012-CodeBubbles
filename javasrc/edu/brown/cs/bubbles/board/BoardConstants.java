@@ -302,7 +302,6 @@ String BOARD_BUBBLES_PLUGIN = "edu.brown.cs.bubbles.bedrock_1.0.0.jar";
 String BOARD_ECLIPSE_WS_DATA = ".metadata";
 
 
-
 /**
  *	Subdirectory of install to use for our various files
  **/

@@ -200,6 +200,14 @@ int getSplitIndentationDelta(int offset)
 
 
 
+int getUnindentSize()
+{
+   return pref_indentation_size;
+}
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Top level indentation checking methods for a line			*/

@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -26,7 +26,6 @@
 package edu.brown.cs.bubbles.banal;
 
 import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.board.BoardLog;
 
 import edu.brown.cs.ivy.xml.IvyXml;
 
@@ -52,6 +51,7 @@ private Map<String,Map<String,ClassData>> user_classes;
 
 private boolean 	classes_valid;
 private boolean 	accessing_data;
+private BanalMonitor	banal_monitor;
 
 
 
@@ -61,16 +61,12 @@ private boolean 	accessing_data;
 /*										*/
 /********************************************************************************/
 
-BanalProjectManager()
+BanalProjectManager(BanalMonitor bm)
 {
    user_classes = new HashMap<String,Map<String,ClassData>>();
    classes_valid = false;
    accessing_data = false;
-
-   BumpClient bc = BumpClient.getBump();
-   bc.addChangeHandler(this);
-
-   //TODO: register for update notifications from Eclipse
+   banal_monitor = bm;
 }
 
 
@@ -120,11 +116,9 @@ private void checkClassData()
     }
 
    for ( ; ; ) {
-      BumpClient bump = BumpClient.getBump();
-
-      Element projs = bump.getAllProjects();
+      Element projs = getAllProjects();
       if (projs == null) {
-	 BoardLog.logD("BANAL","No projects found");
+	 System.err.println("BANAL: No projects found");
 	 return;
        }
 
@@ -132,9 +126,9 @@ private void checkClassData()
 	 String pnm = IvyXml.getAttrString(pe,"NAME");
 	 if (user_classes.get(pnm) != null) continue;
 
-	 Element pinfo = bump.openProject(pnm);
-	 BoardLog.logD("BANAL","GET PROJECT " + pnm);
+	 Element pinfo = openProject(pnm);
 	 if (pinfo == null) continue;
+
 	 Map<String,ClassData> mcd = new HashMap<String,ClassData>();
 
 	 Element cinfo = IvyXml.getChild(pinfo,"CLASSES");
@@ -146,9 +140,6 @@ private void checkClassData()
 	    mcd.put(cnm,cd);
 	  }
 	 user_classes.put(pnm,mcd);
-
-	 // Element hinfo = bump.getTypeHierarchy(project_name,null,null);
-	 // System.err.println("HIERARCHY DATA: " + IvyXml.convertXmlToString(hinfo));
        }
 
       synchronized (this) {
@@ -163,6 +154,26 @@ private void checkClassData()
 }
 
 
+
+private Element getAllProjects()
+{
+   Element projs = null;
+
+   projs = banal_monitor.getAllProjects();
+
+   return projs;
+}
+
+
+
+private Element openProject(String nm)
+{
+   Element rslt = null;
+
+   rslt = banal_monitor.openProject(nm);
+
+   return rslt;
+}
 
 
 /********************************************************************************/
@@ -182,8 +193,8 @@ private void checkClassData()
    invalidate(proj);
 }
 
-@Override public void handleFileStarted(String proj,String file)        { }
-@Override public void handleProjectOpened(String proj)                  { }
+@Override public void handleFileStarted(String proj,String file)	{ }
+@Override public void handleProjectOpened(String proj)			{ }
 
 @Override public void handleFileRemoved(String proj,String file)
 {
@@ -191,7 +202,7 @@ private void checkClassData()
 }
 
 
-private void invalidate(String proj)
+void invalidate(String proj)
 {
    synchronized (this) {
       if (accessing_data) return;

@@ -201,10 +201,19 @@ private void scanArgs(String [] args)
 	 c.getConstructor();
 	 clss.add(c);
        }
-      catch (AssertionError e) { }
-      catch (IllegalArgumentException e) { }
-      catch (ExceptionInInitializerError e) { }
-      catch (NoSuchMethodException e) { }
+      catch (AssertionError e) {
+	 // System.err.println("Assertion error: " + e);
+       }
+      catch (IllegalArgumentException e) {
+	 // System.err.println("Arg exception: " + e);
+	 // e.printStackTrace();
+       }
+      catch (ExceptionInInitializerError e) {
+	 // System.err.println("Init exception: " + e);
+       }
+      catch (NoSuchMethodException e) {
+	 // System.err.println("No construtor: " + e);
+       }
       catch (NoClassDefFoundError e) {
 	 System.err.println("BATT: Class " + cnm + " not found");
        }
@@ -214,6 +223,8 @@ private void scanArgs(String [] args)
       catch (Throwable t) {
 	 System.err.println("BATT: Class " + cnm + " can't be loaded: " + t);
        }
+
+      // System.err.println("DONE: " + cnm);
     }
 
    class_set = new Class<?>[clss.size()];

@@ -139,7 +139,7 @@ private synchronized void setFileState(String file,FileState state)
    for (BattProject bp : project_set.values()) {
       rslt = bp.getClassesForFile(file,rslt);
     }
-   
+
    if (rslt != null) {
       if (state == FileState.CHANGED) {
 	 for (String s : rslt) changed_classes.put(s,state);
@@ -157,7 +157,7 @@ private synchronized void setFileState(String file,FileState state)
 	 for_batt.removeErrors(rslt);
        }
       else if (state == FileState.EDITED) {
-	 for_batt.addErrors(rslt); 		// mark the classes as invalid until compile
+	 for_batt.addErrors(rslt);		// mark the classes as invalid until compile
 	 for (String s : rslt) changed_classes.put(s,state);
        }
     }
@@ -305,7 +305,7 @@ private class EclipseHandler implements MintHandler {
 
       try {
 	 if (cmd == null) return;
-	 else if (cmd.equals("EDIT")) {
+	 else if (cmd.equals("FILECHANGE")) {
 	    setFileState(IvyXml.getAttrString(e,"FILE"),FileState.EDITED);
 	    updateTestState();
 	  }

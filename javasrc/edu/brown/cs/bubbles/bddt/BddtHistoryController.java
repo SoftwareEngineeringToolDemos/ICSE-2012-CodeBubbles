@@ -206,7 +206,7 @@ private class HistoryHandler implements BumpConstants.BumpRunEventHandler {
        }
     }
 
-   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,String msg) { }
+   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg) { }
 
 }	// end of inner class HistoryHandler
 

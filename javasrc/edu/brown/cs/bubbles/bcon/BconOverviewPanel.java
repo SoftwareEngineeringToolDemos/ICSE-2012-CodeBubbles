@@ -223,6 +223,10 @@ private void computeRegion()
       for (BconRegion br : rgns) br.setHasBubble(false);
       drawing_area.repaint();
     }
+   
+   // TODO: should remove the file from the set of displayed
+   // files if there are no more bubbles from it
+   // this involves removing it from class_files
 }
 
 
@@ -462,56 +466,56 @@ private class DrawingPanel extends JPanel implements BudaConstants.BudaBubbleOut
    @Override public String getToolTipText(MouseEvent e) {
       int ct = class_views.size();
       if (ct == 0) return null;
-
+   
       Dimension d = getSize();
       double wd,ht;
       if (is_vertical) {
-	 wd = (d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
-		  ct * NAME_SPACE)/ct;
-	 ht = d.height - 2 * TB_MARGIN_SPACE;
+         wd = (d.width - 2 * LR_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+        	  ct * NAME_SPACE)/ct;
+         ht = d.height - 2 * TB_MARGIN_SPACE;
        }
       else {
-	 wd = d.width - 2 * LR_MARGIN_SPACE;
-	 ht = (d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
-		  ct * NAME_SPACE)/ct;
+         wd = d.width - 2 * LR_MARGIN_SPACE;
+         ht = (d.height - 2 * TB_MARGIN_SPACE - (ct-1) * SEPARATION_SPACE -
+        	  ct * NAME_SPACE)/ct;
        }
-
+   
       int mxln = 1;
       for (BconOverviewClass cv : class_views.values()) {
-	 mxln = Math.max(mxln,cv.getLineCount());
+         mxln = Math.max(mxln,cv.getLineCount());
        }
-
+   
       int idx = 0;
       double ht0 = ht;
       double wd0 = wd;
       for (BconOverviewClass cv : class_views.values()) {
-	 int lct = cv.getLineCount();
-	 double sz0 = getRelativeHeight(lct,mxln);
-	 double ln0,x0,y0,x1,y1;
-
-	 if (is_vertical) {
-	    x0 = LR_MARGIN_SPACE + idx * (SEPARATION_SPACE + NAME_SPACE + wd);
-	    x1 = x0 + NAME_SPACE;
-	    y1 = TB_MARGIN_SPACE;
-	    ht0 = ht * sz0;
-	    ln0 = (e.getY() - y1)*lct/ht0;
-	  }
-	 else {
-	    x1 = LR_MARGIN_SPACE;
-	    y0 = TB_MARGIN_SPACE + idx * (SEPARATION_SPACE + NAME_SPACE + ht);
-	    y1 = y0 + NAME_SPACE;
-	    wd0 = wd * sz0;
-	    ln0 = (e.getX() - x1)*lct/wd0;
-	  }
-
-	 if (e.getX() >= x1 && e.getX() <= x1+wd0 && e.getY() >= y1 && e.getY() <= y1+ht0) {
-	    double z0 = (is_vertical ? ht0 : wd0);
-	    int ln1 = (int) Math.floor(ln0 - 2*lct/z0);
-	    int ln2 = (int) Math.ceil(ln0 + 2*lct/z0);
-	    return cv.computeToolTip(ln1,ln2);
-	  }
-
-	 ++idx;
+         int lct = cv.getLineCount();
+         double sz0 = getRelativeHeight(lct,mxln);
+         double ln0,x0,y0,x1,y1;
+   
+         if (is_vertical) {
+            x0 = LR_MARGIN_SPACE + idx * (SEPARATION_SPACE + NAME_SPACE + wd);
+            x1 = x0 + NAME_SPACE;
+            y1 = TB_MARGIN_SPACE;
+            ht0 = ht * sz0;
+            ln0 = (e.getY() - y1)*lct/ht0;
+          }
+         else {
+            x1 = LR_MARGIN_SPACE;
+            y0 = TB_MARGIN_SPACE + idx * (SEPARATION_SPACE + NAME_SPACE + ht);
+            y1 = y0 + NAME_SPACE;
+            wd0 = wd * sz0;
+            ln0 = (e.getX() - x1)*lct/wd0;
+          }
+   
+         if (e.getX() >= x1 && e.getX() <= x1+wd0 && e.getY() >= y1 && e.getY() <= y1+ht0) {
+            double z0 = (is_vertical ? ht0 : wd0);
+            int ln1 = (int) Math.floor(ln0 - 2*lct/z0);
+            int ln2 = (int) Math.ceil(ln0 + 2*lct/z0);
+            return cv.computeToolTip(ln1,ln2);
+          }
+   
+         ++idx;
        }
       return null;
     }

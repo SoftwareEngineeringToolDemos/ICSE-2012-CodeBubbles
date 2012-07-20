@@ -484,7 +484,7 @@ private class RunEventHandler implements BumpRunEventHandler {
        }
     }
 
-   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,String msg)	{ }
+   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg)	{ }
 
 }	// end of inner class RunEventHandler
 

@@ -67,7 +67,7 @@ class BedrockUtil implements BedrockConstants {
 /********************************************************************************/
 
 private static Set<String>	sources_sent;
-private static Map<Integer,String>  launch_ids;
+private static Map<ILaunchConfiguration,String>  launch_ids;
 
 private static Map<String,Integer> resource_types;
 private static Map<String,Integer> delta_kinds;
@@ -76,10 +76,12 @@ private static Map<String,Integer> completion_types;
 private static Map<String,Integer> accessibility_types;
 private static Map<String,Integer> access_flags;
 
+private static Random		random_gen = new Random();
+
 
 static {
    sources_sent = new HashSet<String>();
-   launch_ids = new HashMap<Integer,String>();
+   launch_ids = new HashMap<ILaunchConfiguration,String>();
 
    resource_types = new HashMap<String,Integer>();
    resource_types.put("FILE",1);
@@ -692,7 +694,12 @@ static void outputThread(IJavaThread trd,IvyXmlWriter xw)
       BedrockPlugin.logE("Problem outputing thread",e);
     }
    try {
-      xw.field("STACK",trd.hasStackFrames());
+      boolean fg = trd.hasStackFrames();
+      if (fg) {
+	 xw.field("STACK",true);
+	 xw.field("FRAMES",trd.getFrameCount());
+       }
+      else xw.field("STACK",false);
     }
    catch (DebugException e) {
       BedrockPlugin.logE("Problem outputing thread",e);
@@ -705,12 +712,6 @@ static void outputThread(IJavaThread trd,IvyXmlWriter xw)
     }
    try {
       xw.field("DAEMON",trd.isDaemon());
-    }
-   catch (DebugException e) {
-      BedrockPlugin.logE("Problem outputing thread",e);
-    }
-   try {
-      xw.field("FRAMES",trd.getFrameCount());
     }
    catch (DebugException e) {
       BedrockPlugin.logE("Problem outputing thread",e);
@@ -1093,7 +1094,7 @@ private static void outputNameDetails(ILocalVariable lcl,IvyXmlWriter xw)
 
 private static void outputNameDetails(IJavaProject ijp,IvyXmlWriter xw)
 {
-   outputSymbol(ijp,"Project",ijp.getElementName(),null,xw);
+   outputSymbol(ijp,"Project",ijp.getElementName(),ijp.getElementName() + "@",xw);
 }
 
 
@@ -1477,13 +1478,15 @@ static String getId(ILaunchConfiguration li)
     }
    catch (CoreException e) { }
 
-   int ivl = System.identityHashCode(li);
    if (atr == null) {
-      atr = launch_ids.get(ivl);
-      if (atr == null) atr = Integer.toString(System.identityHashCode(li));
+      atr = launch_ids.get(li);
+      if (atr == null) {
+	 atr = Integer.toString(random_gen.nextInt(Integer.MAX_VALUE));
+	 launch_ids.put(li,atr);
+       }
     }
    else {
-      launch_ids.put(ivl,atr);
+      launch_ids.put(li,atr);
     }
 
    return atr;
@@ -1607,65 +1610,72 @@ static void outputValue(IValue val,IJavaVariable var,String name,int lvls,IvyXml
       if (stat) xw.field("STATIC",stat);
       xw.field("TYPE",typ);
 
-      if (val instanceof IJavaArray) {
-	 IJavaArray arr = (IJavaArray) val;
-	 int len = arr.getLength();
-	 xw.field("KIND","ARRAY");
-	 xw.field("LENGTH",len);
-	 xw.field("HASVARS",len > 0);
-	 if (len <= 100 && lvls > 0) {
-	    for (int i = 0; i < len; ++i) {
-	       try {
-		  outputValue(arr.getValue(i),null,"[" + i + "]",lvls-1,xw);
+      try {
+	 if (val instanceof IJavaArray) {
+	    IJavaArray arr = (IJavaArray) val;
+	    int len = arr.getLength();
+	    xw.field("KIND","ARRAY");
+	    xw.field("LENGTH",len);
+	    xw.field("HASVARS",len > 0);
+	    if (len <= 100 && lvls > 0) {
+	       for (int i = 0; i < len; ++i) {
+		  try {
+		     outputValue(arr.getValue(i),null,"[" + i + "]",lvls-1,xw);
+		   }
+		  catch (DebugException e) { break; }
 		}
-	       catch (DebugException e) { break; }
 	     }
-	  }
-	 else if (lvls > 0) {
-	    // TODO: Need to handle large arrays
-	    for (int i = 0; i < 100; ++i) {
-	       try {
-		  outputValue(arr.getValue(i),null,"[" + i + "]",lvls-1,xw);
+	    else if (lvls > 0) {
+	       // TODO: Need to handle large arrays
+	       for (int i = 0; i < 100; ++i) {
+		  try {
+		     outputValue(arr.getValue(i),null,"[" + i + "]",lvls-1,xw);
+		   }
+		  catch (DebugException e) { break; }
 		}
-	       catch (DebugException e) { break; }
 	     }
-	  }
 
 
-       }
-      else if (val instanceof IJavaPrimitiveValue) {
-	 xw.field("KIND","PRIMITIVE");
-       }
-      else if (val instanceof IJavaClassObject) {
-	 IJavaClassObject cobj = (IJavaClassObject) val;
-	 IJavaType ctyp = cobj.getInstanceType();
-	 xw.field("KIND","CLASS");
-	 xw.field("TYPENAME",ctyp.getName());
-       }
-      else if (typ.equals("Ljava/lang/String;") || typ.equals("java.lang.String")) {
-	 xw.field("KIND","STRING");
-       }
-      else if (val instanceof IJavaObject) {
-	 IJavaObject obj = (IJavaObject) val;
-	 IVariable [] vars = obj.getVariables();
-	 xw.field("KIND","OBJECT");
-	 // if (obj.getJavaType() != null) xw.field("OBJTYPE",obj.getJavaType().getName());
-	 xw.field("HASVARS",vars.length > 0);
-	 if (lvls > 0) {
-	    for (IVariable nvar : vars) {
-	       if (nvar instanceof IJavaVariable) {
-		  IJavaVariable nvj = (IJavaVariable) nvar;
-		  outputValue(nvj.getValue(),nvj,null,lvls-1,xw);
+	  }
+	 else if (val instanceof IJavaPrimitiveValue) {
+	    xw.field("KIND","PRIMITIVE");
+	  }
+	 else if (val instanceof IJavaClassObject) {
+	    IJavaClassObject cobj = (IJavaClassObject) val;
+	    IJavaType ctyp = cobj.getInstanceType();
+	    xw.field("KIND","CLASS");
+	    xw.field("TYPENAME",ctyp.getName());
+	  }
+	 else if (typ.equals("Ljava/lang/String;") || typ.equals("java.lang.String")) {
+	    xw.field("KIND","STRING");
+	  }
+	 else if (val instanceof IJavaObject) {
+	    IJavaObject obj = (IJavaObject) val;
+	    IVariable [] vars = obj.getVariables();
+	    xw.field("KIND","OBJECT");
+	    // if (obj.getJavaType() != null) xw.field("OBJTYPE",obj.getJavaType().getName());
+	    xw.field("HASVARS",vars.length > 0);
+	    if (lvls > 0) {
+	       for (IVariable nvar : vars) {
+		  try {
+		     if (nvar instanceof IJavaVariable) {
+			IJavaVariable nvj = (IJavaVariable) nvar;
+			outputValue(nvj.getValue(),nvj,null,lvls-1,xw);
+		      }
+		     else outputValue(nvar.getValue(),null,nvar.getName(),lvls-1,xw);
+		   }
+		  catch (DebugException e) { }
 		}
-	       else outputValue(nvar.getValue(),null,nvar.getName(),lvls-1,xw);
 	     }
 	  }
+	 if (txt.length() >= MAX_VALUE_SIZE) {
+	    txt = txt.substring(0,MAX_VALUE_SIZE) + "...";
+	  }
+	 xw.textElement("DESCRIPTION",txt);
        }
-      if (txt.length() >= MAX_VALUE_SIZE) {
-	 txt = txt.substring(0,MAX_VALUE_SIZE) + "...";
+      finally {
+	 xw.end("VALUE");
        }
-      xw.textElement("DESCRIPTION",txt);
-      xw.end("VALUE");
     }
    catch (DebugException e) {
       BedrockPlugin.logE("Problem accessing value: " + e,e);

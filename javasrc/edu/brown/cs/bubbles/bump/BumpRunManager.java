@@ -64,6 +64,7 @@ private ConcurrentMap<String,ProcessData> named_processes;
 private ConcurrentMap<String,ThreadData> active_threads;
 private Map<BumpThread,SwingEventListenerList<BumpThreadFilter>> thread_filters;
 private Map<String,File>	source_map;
+private ConcurrentMap<String,ProcessData> console_processes;
 
 private boolean 	use_debug_server = true;
 private String		server_host;
@@ -141,6 +142,7 @@ BumpRunManager()
    known_configs = new ConcurrentHashMap<String,LaunchConfig>();
    active_launches = new ConcurrentHashMap<String,LaunchData>();
    active_processes = new ConcurrentHashMap<String,ProcessData>();
+   console_processes = new ConcurrentHashMap<String,ProcessData>();
    named_processes = new ConcurrentHashMap<String,ProcessData>();
    active_threads = new ConcurrentHashMap<String,ThreadData>();
    event_handlers = new SwingEventListenerList<BumpRunEventHandler>(BumpRunEventHandler.class);
@@ -400,6 +402,7 @@ void setup()
    for (Element prc : IvyXml.children(xml,"PROCESS")) {
       ProcessData pd = new ProcessData(prc);
       active_processes.put(pd.getId(),pd);
+      console_processes.put(pd.getId(),pd);
     }
 
    BoardSetup bs = BoardSetup.getSetup();
@@ -557,17 +560,28 @@ synchronized void handleRunEvent(Element xml,long when)
 
 void handleConsoleEvent(Element xml)
 {
+   String id = IvyXml.getAttrString(xml,"PID");
    ProcessData bp = findProcess(xml);
+   if (bp == null) {
+      bp = console_processes.get(id);
+    }
+   if (bp == null) return;
+
    String message = IvyXml.getTextElement(xml,"TEXT");
    boolean iserr = IvyXml.getAttrBool(xml,"STDERR");
+   boolean iseof = IvyXml.getAttrBool(xml,"EOF");
 
    for (BumpRunEventHandler reh : event_handlers) {
       try {
-	 reh.handleConsoleMessage(bp,iserr,message);
+	 reh.handleConsoleMessage(bp,iserr,iseof,message);
        }
       catch (Throwable t) {
 	 BoardLog.logE("BUMP","Problem handling console event",t);
        }
+    }
+
+   if (iseof) {
+      console_processes.remove(id);
     }
 }
 
@@ -605,6 +619,7 @@ private void handleProcessEvent(Element xml)
 	    if (pd == null) {
 	       pd = new ProcessData(proc);
 	       active_processes.put(id,pd);
+	       console_processes.put(id,pd);
 	       evt = new ProcessEvent(BumpRunEventType.PROCESS_ADD,pd);
 	     }
 	    else {
@@ -1790,8 +1805,15 @@ private class StepUserFilter implements BumpThreadFilter {
 
       File f = frm.getFile();
       if (f != null && f.exists() && frm.getLineNumber() > 0 && !isTempFile(f)) {
-	 removeThreadFilter(bt,this);
-	 return evt;
+	 String mnm = frm.getMethod();
+	 int idx = mnm.lastIndexOf(".");
+	 if (idx >= 0) mnm = mnm.substring(idx+1);
+	 if (!mnm.contains("$")) {
+	    removeThreadFilter(bt,this);
+	    return evt;
+	 }
+	 else 
+	    System.err.println("SKIPPING OVER " + mnm);
       }
       if (bt.getThreadDetails() == BumpThreadStateDetail.BREAKPOINT) {
 	 removeThreadFilter(bt,this);

@@ -44,7 +44,6 @@ import org.python.pydev.parser.jython.ast.Module;
 import org.python.pydev.parser.jython.ast.Name;
 import org.python.pydev.parser.jython.ast.NameTok;
 import org.python.pydev.parser.jython.ast.keywordType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 
 /**
@@ -167,6 +166,7 @@ public SimpleNode getNameOrNameTokAst()
    if (token_ast instanceof NameTok) return token_ast;
    if (token_ast instanceof Attribute) return ((Attribute) token_ast).attr;
    if (token_ast instanceof FunctionDef) return ((FunctionDef) token_ast).name;
+   if (token_ast instanceof ClassDef) return ((ClassDef) token_ast).name;
    return null;
 }
 

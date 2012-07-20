@@ -538,6 +538,9 @@ BumpStackFrame getFrameForBubble(BudaBubble bb)
 private static boolean sameMethod(String m1,String m2)
 {
    if (m1.equals(m2)) return true;
+   m2 = m2.replace("$",".");
+   m1 = m1.replace("$",".");
+   if (m1.equals(m2)) return true;
    int idx1 = m1.indexOf(".<init>");
    int idx2 = m2.indexOf(".<init>");
    if (idx1 < 0 && idx2 < 0) return false;

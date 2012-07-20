@@ -4,7 +4,6 @@ package edu.brown.cs.bubbles.pybase.symbols;
 import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
 import edu.brown.cs.bubbles.pybase.PybaseMain;
 
-import org.python.pydev.core.ModulesKey;
 import org.python.pydev.core.Tuple;
 
 import java.util.HashSet;

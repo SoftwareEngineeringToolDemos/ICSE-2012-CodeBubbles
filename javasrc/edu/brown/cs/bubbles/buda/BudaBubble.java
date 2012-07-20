@@ -1442,7 +1442,7 @@ private class RemoveAction extends AbstractAction {
 @Override public String toString()
 {
    String  r = "BUBBLE " + getBounds();
-   if (content_pane != null) {
+   if (content_pane != null && getContentPane() != null) {
       r += " :: " + getContentPane().getClass().toString();
     }
    return r;

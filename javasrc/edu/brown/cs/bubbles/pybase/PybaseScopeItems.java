@@ -36,6 +36,7 @@ import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
 import edu.brown.cs.bubbles.pybase.symbols.Found;
 import edu.brown.cs.bubbles.pybase.symbols.Scope;
 import edu.brown.cs.bubbles.pybase.symbols.SourceToken;
+import edu.brown.cs.bubbles.pybase.symbols.NodeUtils;
 
 import org.python.pydev.core.Tuple;
 import org.python.pydev.core.structure.FastStack;
@@ -44,7 +45,6 @@ import org.python.pydev.parser.jython.ast.Attribute;
 import org.python.pydev.parser.jython.ast.FunctionDef;
 import org.python.pydev.parser.jython.ast.TryExcept;
 import org.python.pydev.parser.jython.ast.excepthandlerType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;

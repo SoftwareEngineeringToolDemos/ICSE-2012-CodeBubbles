@@ -569,6 +569,8 @@ private static class HistoryCompare implements Comparator<GraphObject>
 	 long d = t0.getStartTime() - t1.getStartTime();
 	 if (d < 0) return -1;
 	 else if (d > 0) return 1;
+	 else if (t0.getName() == null) return -1;
+	 else if (t1.getName() == null) return 1;
 	 else return t0.getName().compareTo(t1.getName());
        }
       else if (x0 == 0) return -1;

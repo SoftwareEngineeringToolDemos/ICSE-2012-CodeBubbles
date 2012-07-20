@@ -36,7 +36,6 @@ import org.python.pydev.parser.jython.SimpleNode;
 import org.python.pydev.parser.jython.ast.ClassDef;
 import org.python.pydev.parser.jython.ast.FunctionDef;
 import org.python.pydev.parser.jython.ast.decoratorsType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.util.HashMap;
 import java.util.Map;

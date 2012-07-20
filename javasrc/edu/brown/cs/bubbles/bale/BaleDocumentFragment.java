@@ -125,7 +125,7 @@ BaleDocumentFragment(BaleDocumentIde base,BaleFragmentType typ,List<BaleRegion> 
 @Override String getProjectName()	{ return base_document.getProjectName(); }
 
 @Override File getFile()		{ return base_document.getFile(); }
-@Override BoardLanguage getLanguage()   { return base_document.getLanguage(); }
+@Override BoardLanguage getLanguage()	{ return base_document.getLanguage(); }
 
 @Override String getFragmentName()	{ return fragment_name; }
 
@@ -134,6 +134,11 @@ BaleDocumentFragment(BaleDocumentIde base,BaleFragmentType typ,List<BaleRegion> 
 @Override BaleFragmentType getFragmentType()	{ return fragment_type; }
 
 @Override boolean isEditable()		{ return base_document.isEditable(); }
+
+@Override BaleDocument getBaseEditDocument()
+{
+   return base_document.getBaseEditDocument();
+}
 
 
 

@@ -1226,46 +1226,46 @@ private class EditTask implements Runnable {
 
    private void performEdit() {
       if (file_data.getCurrentId(bedrock_id) != null &&
-	     !file_data.getCurrentId(bedrock_id).equals(for_id))
-	 return;
-
+             !file_data.getCurrentId(bedrock_id).equals(for_id))
+         return;
+   
       long delay = getElideDelay(bedrock_id);
-
+   
       if (delay > 0) {
-	 synchronized (this) {
-	    try { wait(delay); }
-	    catch (InterruptedException e) { }
-	  }
+         synchronized (this) {
+            try { wait(delay); }
+            catch (InterruptedException e) { }
+          }
        }
-
+   
       file_data.getEditableUnit(bedrock_id);
       if (file_data.getCurrentId(bedrock_id) != null &&
-	     !file_data.getCurrentId(bedrock_id).equals(for_id))
-	 return;
-
+             !file_data.getCurrentId(bedrock_id).equals(for_id))
+         return;
+   
       // System.err.println("BEDROCK: BUILD AST " + for_id);
       CompilationUnit cu = file_data.getAstRoot(bedrock_id,for_id);
-
+   
       if (file_data.getCurrentId(bedrock_id) != null &&
-	     !file_data.getCurrentId(bedrock_id).equals(for_id))
-	 return;
-
+             !file_data.getCurrentId(bedrock_id).equals(for_id))
+         return;
+   
       if (getAutoElide(bedrock_id) && cu != null) {
-	 // System.err.println("BEDROCK: ELIDE " + for_id);
-	 BedrockElider be = file_data.checkElider(bedrock_id);
-	 if (be != null) {
-	    IvyXmlWriter xw = our_plugin.beginMessage("ELISION",bedrock_id);
-	    xw.field("FILE",file_data.getFileName());
-	    xw.field("ID",for_id);
-	    xw.begin("ELISION");
-	    if (be.computeElision(cu,xw)) {
-	       if (file_data.getCurrentId(bedrock_id) == null ||
-		      file_data.getCurrentId(bedrock_id).equals(for_id)) {
-		  xw.end("ELISION");
-		  our_plugin.finishMessage(xw);
-		}
-	     }
-	  }
+         // System.err.println("BEDROCK: ELIDE " + for_id);
+         BedrockElider be = file_data.checkElider(bedrock_id);
+         if (be != null) {
+            IvyXmlWriter xw = our_plugin.beginMessage("ELISION",bedrock_id);
+            xw.field("FILE",file_data.getFileName());
+            xw.field("ID",for_id);
+            xw.begin("ELISION");
+            if (be.computeElision(cu,xw)) {
+               if (file_data.getCurrentId(bedrock_id) == null ||
+        	      file_data.getCurrentId(bedrock_id).equals(for_id)) {
+        	  xw.end("ELISION");
+        	  our_plugin.finishMessage(xw);
+        	}
+             }
+          }
        }
     }
 
@@ -1323,8 +1323,8 @@ private class FileData implements IBufferChangedListener {
 
    ICompilationUnit getSearchUnit() {
       if (last_ast != null) {
-	 ICompilationUnit icu = getEditableUnit(last_ast);
-	 if (icu != null) return icu;
+         ICompilationUnit icu = getEditableUnit(last_ast);
+         if (icu != null) return icu;
        }
       return comp_unit;
     }
@@ -1343,6 +1343,8 @@ private class FileData implements IBufferChangedListener {
     }
 
    void applyEdit(String sid,TextEdit xe) throws BedrockException {
+      boolean chngfg = hasChanged();
+
       if (sid == null) {
 	 try {
 	    comp_unit.applyTextEdit(xe,null);
@@ -1353,6 +1355,12 @@ private class FileData implements IBufferChangedListener {
        }
       else {
 	 getBuffer(sid).applyEdit(xe);
+       }
+
+      if (!chngfg && hasChanged()) {
+	 IvyXmlWriter xw = our_plugin.beginMessage("FILECHANGE");
+	 xw.field("FILE",file_name);
+	 our_plugin.finishMessage(xw);
        }
     }
 
@@ -1386,7 +1394,7 @@ private class FileData implements IBufferChangedListener {
    void commit(boolean refresh,boolean save) throws JavaModelException {
       // TODO: This needs to be synchronized correctly among buffers
       for (BufferData bd : buffer_map.values()) {
-         bd.commit(refresh,save);
+	 bd.commit(refresh,save);
        }
       default_buffer = comp_unit.getBuffer();
       last_ast = null;
@@ -1411,7 +1419,7 @@ private class FileData implements IBufferChangedListener {
       int len = evt.getLength();
       int off = evt.getOffset();
       String txt = evt.getText();
-      BedrockPlugin.logD("Buffer change " + len + " " + off + " " + (txt == null) + " " +
+      BedrockPlugin.logD("Buffer change " + file_name + " " + len + " " + off + " " + (txt == null) + " " +
 			    (buf == default_buffer));
       if (len == 0 && off == 0 && txt == null && buf == default_buffer) {
 	 BedrockPlugin.logD("Buffer switch occurred for " + file_name);
@@ -1531,6 +1539,7 @@ private class BufferData {
    private CompilationUnit last_ast;
 
    BufferData(FileData fd,String bid,ICompilationUnit base) {
+      BedrockPlugin.logD("Create buffer for " + fd.getFileName() + " " + bid);
       file_data = fd;
       bedrock_id = bid;
       comp_unit = base;
@@ -1544,20 +1553,20 @@ private class BufferData {
    synchronized ICompilationUnit getEditableUnit() {
       if (is_changed) return comp_unit;
       try {
-	 // comp_unit.becomeWorkingCopy(null);
-	 // comp_unit.getSource() being null causes NullPointerException
-	 if (comp_unit.getSource() != null)
-	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
-	 comp_unit.getBuffer().addBufferChangedListener(file_data);
-	 is_changed = true;
+         // comp_unit.becomeWorkingCopy(null);
+         // comp_unit.getSource() being null causes NullPointerException
+         if (comp_unit.getSource() != null)
+            comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+         comp_unit.getBuffer().addBufferChangedListener(file_data);
+         is_changed = true;
        }
       catch (JavaModelException e) {
-	 BedrockPlugin.logE("Problem creating working copy: " + e);
+         BedrockPlugin.logE("Problem creating working copy: " + e);
        }
       catch (Throwable t) {
-	 throw new Error("Problem getting editable unit: " + t,t);
+         throw new Error("Problem getting editable unit: " + t,t);
        }
-
+   
       return comp_unit;
     }
 
@@ -1574,16 +1583,16 @@ private class BufferData {
       ICompilationUnit icu = getEditableUnit();
       CompilationUnit cu = null;
       try {
-	 copy_owner.setId(id);
-	 cu = icu.reconcile(AST.JLS3,true,true,null,null);
-	 if (cu == null) cu = last_ast;
-	 else last_ast = cu;
+         copy_owner.setId(id);
+         cu = icu.reconcile(AST.JLS3,true,true,null,null);
+         if (cu == null) cu = last_ast;
+         else last_ast = cu;
        }
       catch (JavaModelException e) {
-	 BedrockPlugin.logE("Problem getting AST for file " +
-			       file_data.getFileName() + ": " + e);
+         BedrockPlugin.logE("Problem getting AST for file " +
+        		       file_data.getFileName() + ": " + e);
        }
-
+   
       return last_ast;
     }
 
@@ -1636,35 +1645,35 @@ private class BufferData {
 
    synchronized void commit(boolean refresh,boolean save) throws JavaModelException {
       if (comp_unit != null) {
-         if (save) {
-            BedrockPlugin.log("COMMITING " + file_data.getFileName() + " " +
-        			 comp_unit.isWorkingCopy() + " " +
-        			 comp_unit.hasResourceChanged() + " " +
-        			 comp_unit.getElementName() + " " +
-        			 comp_unit.hasUnsavedChanges() + " " +
-        			 comp_unit.isConsistent());
-            if (comp_unit.isWorkingCopy()) {
-               comp_unit.commitWorkingCopy(true,new BedrockProgressMonitor(our_plugin,"Committing"));
-             }
-            comp_unit.save(new BedrockProgressMonitor(our_plugin,"Saving"),false);
-            // try this for now
-            try {
-               comp_unit = comp_unit.getWorkingCopy(
-        	  copy_owner,
-        	  new BedrockProgressMonitor(our_plugin,"Updating"));
-             }
-            catch (Throwable t) {
-               BedrockPlugin.logE("Problem get working copy after a save",t);
-             }
-          }
-         else if (refresh) {
-            BedrockProgressMonitor bpm = new BedrockProgressMonitor(our_plugin,"Refreshing");
-            comp_unit.restore();
-            comp_unit = comp_unit.getPrimary();
-            comp_unit.restore();
-            comp_unit.makeConsistent(bpm);
-            comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
-          }
+	 if (save) {
+	    BedrockPlugin.log("COMMITING " + file_data.getFileName() + " " +
+				 comp_unit.isWorkingCopy() + " " +
+				 comp_unit.hasResourceChanged() + " " +
+				 comp_unit.getElementName() + " " +
+				 comp_unit.hasUnsavedChanges() + " " +
+				 comp_unit.isConsistent());
+	    if (comp_unit.isWorkingCopy()) {
+	       comp_unit.commitWorkingCopy(true,new BedrockProgressMonitor(our_plugin,"Committing"));
+	     }
+	    comp_unit.save(new BedrockProgressMonitor(our_plugin,"Saving"),false);
+	    // try this for now
+	    try {
+	       comp_unit = comp_unit.getWorkingCopy(
+		  copy_owner,
+		  new BedrockProgressMonitor(our_plugin,"Updating"));
+	     }
+	    catch (Throwable t) {
+	       BedrockPlugin.logE("Problem get working copy after a save",t);
+	     }
+	  }
+	 else if (refresh) {
+	    BedrockProgressMonitor bpm = new BedrockProgressMonitor(our_plugin,"Refreshing");
+	    comp_unit.restore();
+	    comp_unit = comp_unit.getPrimary();
+	    comp_unit.restore();
+	    comp_unit.makeConsistent(bpm);
+	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+	  }
        }
     }
 

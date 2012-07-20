@@ -91,6 +91,7 @@ enum BassNameType {
    DEBUG_PROCESS,
    CHAT_BUDDY,
    CHAT_LOGIN,
+   MODULE,
    OTHER
 }
 

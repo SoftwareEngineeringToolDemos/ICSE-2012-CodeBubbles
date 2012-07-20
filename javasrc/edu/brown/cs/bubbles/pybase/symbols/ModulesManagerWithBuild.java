@@ -33,8 +33,6 @@ import edu.brown.cs.bubbles.pybase.PybaseProject;
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.core.DeltaSaver;
 import org.python.pydev.core.IDeltaProcessor;
-import org.python.pydev.core.ModulesKey;
-import org.python.pydev.core.ModulesKeyForZip;
 import org.python.pydev.core.callbacks.ICallback;
 
 import java.io.File;
@@ -88,11 +86,10 @@ protected static ICallback<String, ModulesKey> toFileMethod	  = new ICallback<St
 	    ModulesKey arg)
    {
       StringBuilder buf = new StringBuilder();
-      buf.append(arg.name);
-      if (arg.file != null) {
+      buf.append(arg.getModuleName());
+      if (arg.getModuleFile() != null) {
 	 buf.append("|");
-	 buf.append(arg.file
-		  .toString());
+	 buf.append(arg.getModuleFile().toString());
       }
       return buf
       .toString();
@@ -189,7 +186,7 @@ private void removeModulesWithFile(File file)
 
       for (Iterator<ModulesKey> iter = modulesKeys.keySet().iterator(); iter.hasNext();) {
 	 ModulesKey key = iter.next();
-	 if (key.file != null && key.file.equals(file)) {
+	 if (key.getModuleFile() != null && key.getModuleFile().equals(file)) {
 	    toRem.add(key);
 	 }
       }
@@ -214,8 +211,8 @@ private void removeModulesBelow(File file,PybaseProject project)
    synchronized (modulesKeysLock) {
 
       for (ModulesKey key : modulesKeys.keySet()) {
-	 if (key.file != null
-		  && PybaseFileSystem.getFileAbsolutePath(key.file).startsWith(
+	 if (key.getModuleFile() != null
+		  && PybaseFileSystem.getFileAbsolutePath(key.getModuleFile()).startsWith(
 			   absolutePath)) {
 	    toRem.add(key);
 	 }
@@ -244,7 +241,7 @@ public void rebuildModule(File f,IDocument doc,final PybaseProject project,
 	 Set<ModulesKey> toRemove = new HashSet<ModulesKey>();
 	 for (Iterator<ModulesKey> iter = modulesKeys.keySet().iterator(); iter.hasNext();) {
 	    ModulesKey key = iter.next();
-	    if (key.file != null && key.file.equals(f)) {
+	    if (key.getModuleFile() != null && key.getModuleFile().equals(f)) {
 	       toRemove.add(key);
 	    }
 	 }

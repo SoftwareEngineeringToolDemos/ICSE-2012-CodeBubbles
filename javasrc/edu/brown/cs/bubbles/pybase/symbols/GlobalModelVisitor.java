@@ -45,7 +45,6 @@ import org.python.pydev.parser.jython.ast.Name;
 import org.python.pydev.parser.jython.ast.Str;
 import org.python.pydev.parser.jython.ast.Tuple;
 import org.python.pydev.parser.jython.ast.exprType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;

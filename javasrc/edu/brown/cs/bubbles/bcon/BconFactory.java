@@ -165,16 +165,15 @@ public BudaBubble createPackageBubble(Component source,String proj,String pkg)
 
 @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt)
 {
-   BudaRoot br = BudaRoot.findBudaRoot(bba);
    BudaBubble bb = null;
 
    if (id.equals(BCON_BUTTON)) {
       bb = createOverviewBubble(bba,pt);
     }
 
-   if (bb != null && br != null) {
-      BudaConstraint bc = new BudaConstraint(pt);
-      br.add(bb,bc);
+   if (bb != null && bba != null) {
+      bba.addBubble(bb,null,pt,BudaConstants.PLACEMENT_LOGICAL|BudaConstants.PLACEMENT_MOVETO|
+		       BudaConstants.PLACEMENT_NEW|BudaConstants.PLACEMENT_USER);
     }
 }
 

@@ -237,7 +237,7 @@ private class PerfEventHandler implements BumpRunEventHandler {
 
    @Override public void handleThreadEvent(BumpRunEvent evt)		{ }
 
-   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,String msg)	{ }
+   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg)	{ }
 
 }	// end of inner class PerfEventHandler
 

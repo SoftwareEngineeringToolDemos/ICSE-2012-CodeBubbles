@@ -526,7 +526,7 @@ void removeLink(BudaBubbleLink lnk)
 public void invalidateLinks() { routes_valid = false; }
 
 
-List<BudaBubbleLink> getAllLinks()
+public List<BudaBubbleLink> getAllLinks()
 {
    synchronized (bubble_links) {
       return new ArrayList<BudaBubbleLink>(bubble_links);
@@ -536,7 +536,7 @@ List<BudaBubbleLink> getAllLinks()
 
 
 
-Collection<BudaBubbleLink> getLinks(Set<BudaBubble> bbls)
+public Collection<BudaBubbleLink> getLinks(Collection<BudaBubble> bbls)
 {
    Collection<BudaBubbleLink> rslt = new ArrayList<BudaBubbleLink>();
 

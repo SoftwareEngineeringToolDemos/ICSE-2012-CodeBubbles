@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -67,7 +67,13 @@ private static final long serialVersionUID = 1;
 
 BaleDocumentBase()
 {
-   super(new GapContent(1024));
+   this(new GapContent(1024));
+}
+
+
+protected BaleDocumentBase(AbstractDocument.Content cnt)
+{
+   super(cnt);
 
    // known_positions might be used and hence set in super call
    if (known_positions == null) known_positions = new WeakHashMap<BalePosition,Object>();
@@ -334,6 +340,7 @@ private static class SavePos {
    int getOffset()			{ return char_offset; }
 
 }	// end of inner class SavePos
+
 
 
 

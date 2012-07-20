@@ -141,12 +141,16 @@ private void ensureRunning()
    String cp = System.getProperty("java.class.path");
    for (String s : python_libs) {
       String lib = BoardSetup.getSetup().getLibraryPath(s);
-      if (lib == null) continue; 
+      if (lib == null) continue;
       File f = new File(lib);
       if (f.exists()) cp += File.pathSeparator + lib;
     }
    argl.add("-cp");
    argl.add(cp);
+
+   File f1 = BoardSetup.getSetup().getRootDirectory();
+   File f2 = new File(f1,"pybles");
+   argl.add("-Dedu.brown.cs.bubbles.pybase.ROOT=" + f2.getAbsolutePath());
 
    argl.add(cls);
    if (ws != null) {

@@ -254,7 +254,7 @@ enum TokenType {
    RELATIVE_IMPORT,
    EPYDOC,			// epydoc field
    LOCAL,
-   OBJECT_FOUND_INTERFACE	// token created results as an interface for some object
+   OBJECT_FOUND_INTERFACE,	// token created results as an interface for some object
 }
 
 

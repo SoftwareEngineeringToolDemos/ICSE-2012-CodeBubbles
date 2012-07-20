@@ -33,9 +33,7 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.jython.ast.Name;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.io.File;
 import java.util.EnumMap;
@@ -92,6 +90,20 @@ static void outputSymbol(PybaseProject pp,IFileData file,SimpleNode sn,IvyXmlWri
 }
 
 
+static void outputProjectSymbol(PybaseProject pp,IvyXmlWriter xw)
+{
+   xw.begin("ITEM");
+   xw.field("TYPE","Project");
+   xw.field("NAME",pp.getName());
+   xw.field("PROJECT",pp.getName());
+   xw.field("PATH",pp.getBasePath().getAbsolutePath());
+   xw.field("SOURCE","USERSOURCE");
+   xw.field("KEY",pp.getName() + "@");
+   xw.end("ITEM");
+}
+
+
+
 
 static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,SimpleNode sn,IvyXmlWriter xw)
 {
@@ -111,19 +123,6 @@ static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,Simpl
     if (tok != null) xw.field("NAME",tok.getRepresentation());
     else xw.field("NAME","<clinit>");
 
-    int eline = 0;
-    int ecol = 0;
-    if (tok != null) {
-       int [] lce = tok.getLineColEnd();
-       if (lce != null) {
-	  // would like to eliminate black space here if possible
-	  // should use SimpleNode if possible and get the end of the node
-	  xw.field("ELINE",lce[0]);
-	  xw.field("ECOL",lce[1]);
-	  eline = lce[0];
-	  ecol = lce[1];
-	}
-     }
     SourceToken st = null;
     if (sn == null && tok instanceof SourceToken) {
        st = (SourceToken) tok;
@@ -135,14 +134,10 @@ static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,Simpl
        xw.field("LINE",sn.beginLine);
        xw.field("COL",sn.beginColumn);
        if (st != null) {
-	  xw.field("LINEX",st.getLineEnd(false));
-	  xw.field("COLX",st.getColEnd(false));
-	  xw.field("LINEY",st.getLineEnd(true));
-	  xw.field("COLY",st.getColEnd(true));
-	  if (eline == 0) {
-	     eline = st.getLineEnd(false);
-	     ecol = st.getColEnd(false);
-	   }
+	  // xw.field("LINEX",st.getLineEnd(false));
+	  // xw.field("COLX",st.getColEnd(false));
+	  // xw.field("LINEY",st.getLineEnd(true));
+	  // xw.field("COLY",st.getColEnd(true));
 	  if (st.getAliased() != null) {
 	     xw.field("FUNCTION",st.getAliased().name.toString());
 	   }
@@ -150,13 +145,6 @@ static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,Simpl
        if (file != null) {
 	  File f = file.getFile();
 	  if (f != null) {
-	     int off = PybaseFileManager.getFileManager().getFileOffset(f,sn.beginLine,sn.beginColumn);
-	     xw.field("XSTARTOFFSET",off);
-	     if (eline > 0) {
-		int xoff = PybaseFileManager.getFileManager().getFileOffset(f,eline,ecol);
-		xw.field("XENDOFFSET",xoff);
-		xw.field("XLENGTH",xoff-off);
-	      }
 	     int off1 = file.getStartOffset(sn);
 	     int off2 = file.getEndOffset(sn);
 	     xw.field("STARTOFFSET",off1);
@@ -164,6 +152,7 @@ static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,Simpl
 	     xw.field("LENGTH",off2-off1+1);
 	   }
 	}
+
      }
     else if (tok != null) {
        xw.field("LINE",tok.getLineDefinition());
@@ -174,40 +163,52 @@ static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,Simpl
     String pkg = null;
     if (tok != null) {
        String docs = tok.getDocStr();
-       if (docs != null) {
-	  xw.field("DOC",tok.getDocStr());      // this should be textElement
+       if (docs != null && docs.length() > 0) {
+	  xw.field("DOC",docs);      // this should be textElement
 	}
-       // need to get specials before and after to determine extended position
-       xw.field("ORIG",tok.getOriginalRep());
+       // xw.field("ORIG",tok.getOriginalRep());
        hdl = tok.getRepresentation();
        pkg = tok.getParentPackage();
-       if (sn instanceof Module) {
-	  System.err.println("TOKEN " + hdl + " " + pkg);
-	}
      }
     else if (file != null) {
        pkg = file.getModuleName();
        hdl = "<clinit>";
      }
 
+    // TODO: need to construct full name prefix here
+    String ctx = getContextName(sn);
+
     if (pkg != null && pkg.length() > 0) {
-       hdl = pkg + "." + hdl;
+       hdl = pkg + "." + ctx + hdl;
        xw.field("PACKAGE",pkg);
        xw.field("QNAME",hdl);
      }
+    else {
+       hdl = ctx + hdl;
+    }
+
     if (tok != null) {
        xw.field("IMPORT",tok.isImport());
        xw.field("IMPORTFROM",tok.isImportFrom());
-       xw.field("STRING",tok.isString());
-       xw.field("WILD",tok.isWildImport());
+       // xw.field("STRING",tok.isString());
+       // xw.field("WILD",tok.isWildImport());
      }
-    if (tok == null) hdl = null;
+
+    if (tok == null) {
+       // clear handle here?
+     }
     else {
        switch (tok.getType()) {
 	  case ATTR :
 	     break;
 	  case FUNCTION :
 	     hdl += "()";
+	     break;
+	  case CLASS :
+	     break;
+	  case UNKNOWN :
+	     if (sn != null && sn instanceof Module) break;
+	     hdl = null;
 	     break;
 	  default :
 	     hdl = null;
@@ -219,6 +220,44 @@ static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,Simpl
     xw.end("ITEM");
  }
 
+
+
+public static String getContextName(AbstractToken tok)
+{
+   SimpleNode sn = null;
+
+   if (tok instanceof SourceToken) {
+       SourceToken st = (SourceToken) tok;
+       sn = st.getAst();
+       if (sn instanceof Name && sn.parent != null && sn.parent instanceof Assign) sn = sn.parent;
+     }
+
+   return getContextName(sn);
+}
+
+
+
+public static String getContextName(SimpleNode sn)
+{
+   String pfx = "";
+
+   if (sn != null) sn = sn.parent;
+
+   while (sn != null) {
+      if (sn instanceof ClassDef) {
+	 NameTok ntt = (NameTok) (((ClassDef) sn).name);
+	 pfx = ntt.id + "." + pfx;
+      }
+      else if (sn instanceof FunctionDef) {
+	 NameTok ntt = (NameTok) (((FunctionDef) sn).name);
+	 pfx = ntt.id + "." + pfx;
+      }
+
+      sn = sn.parent;
+   }
+
+   return pfx;
+}
 
 
 
@@ -243,15 +282,17 @@ static void outputSearchMatch(ISemanticData isd,AbstractToken atok,IvyXmlWriter 
 
    int eline = tok.getLineEnd(false);
    int ecol = tok.getColEnd(false);
-   xw.field("LINEX",eline);
-   xw.field("COLX",ecol);
+   // xw.field("LINEX",eline);
+   // xw.field("COLX",ecol);
+
    int [] lce = tok.getLineColEnd();
    if (lce != null) {
       eline = lce[0];
       ecol = lce[1];
-      xw.field("ELINE",lce[0]);
-      xw.field("ECOL",lce[1]);
+      // xw.field("ELINE",lce[0]);
+      // xw.field("ECOL",lce[1]);
     }
+
    if (isd.getFileData() != null) {
       File f = isd.getFileData().getFile();
       if (f != null) {

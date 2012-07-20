@@ -68,25 +68,6 @@ protected void setupPanel(SwingGridPanel pnl)
    StringField sfld = new StringField(BuenoKey.KEY_SIGNATURE);
    pnl.addRawComponent("Signature",sfld);
    sfld.addActionListener(this);
-
-   /****************
-   pnl.addRawComponent("Method Name",new StringField(BuenoKey.KEY_NAME));
-   pnl.addRawComponent("Parameters",new StringField(BuenoKey.KEY_PARAMETERS));
-   pnl.addRawComponent("Returns",new StringField(BuenoKey.KEY_RETURNS));
-
-   JPanel options = new JPanel(new GridLayout(1,4));
-   options.add(new ProtectionButton("public",Modifier.PUBLIC));
-   options.add(new ProtectionButton("protected",Modifier.PROTECTED));
-   options.add(new ProtectionButton("default",0));
-   options.add(new ProtectionButton("private",Modifier.PRIVATE));
-   pnl.addRawComponent("Protection",options);
-
-   options = new JPanel(new FlowLayout(FlowLayout.LEFT));
-   options.add(new ModifierButton("Static",Modifier.STATIC));
-   options.add(new ModifierButton("Abstract",Modifier.ABSTRACT));
-   options.add(new ModifierButton("Synchronized",Modifier.SYNCHRONIZED));
-   pnl.addRawComponent("Properties",options);
-   *****************/
 }
 
 

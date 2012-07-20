@@ -233,9 +233,9 @@ BaleFragmentEditor createClassFragmentEditor(String proj,String cls)
 /*										*/
 /********************************************************************************/
 
-BaleFragmentEditor createFileEditor(String proj,String cls)
+BaleFragmentEditor createFileEditor(String proj,File fil,String cls)
 {
-   List<BumpLocation> locs = bump_client.findCompilationUnit(proj,cls);
+   List<BumpLocation> locs = bump_client.findCompilationUnit(proj,fil,cls);
 
    return getEditorFromLocations(locs,BaleFragmentType.FILE,cls + ".<FILE>");
 }
@@ -566,9 +566,9 @@ public BudaBubble createClassBubble(String proj,String cls)
  *	Return the file code bubble for the given class.
  **/
 
-public BudaBubble createFileBubble(String proj,String cls)
+public BudaBubble createFileBubble(String proj,File fil,String cls)
 {
-   BaleFragmentEditor bfe = createFileEditor(proj,cls);
+   BaleFragmentEditor bfe = createFileEditor(proj,fil,cls);
    if (bfe == null) return null;
 
    return new BaleEditorBubble(bfe);
@@ -1001,7 +1001,7 @@ List<BaleRegion> getFragmentRegions(BaleDocument doc)
 	 locs = bump_client.findClassDefinition(proj,nam);
 	 break;
       case FILE :
-	 locs = bump_client.findCompilationUnit(proj,cnam);
+	 locs = bump_client.findCompilationUnit(proj,fil,cnam);
 	 break;
       case FIELDS :
 	 locs = bump_client.findFields(proj,cnam);

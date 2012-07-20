@@ -25,6 +25,8 @@
 
 package edu.brown.cs.bubbles.banal;
 
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
+
 import java.io.InputStream;
 import java.util.*;
 
@@ -92,7 +94,8 @@ interface BanalPackageNode {
    String getClassName();
    String getPackageName();
    String getProjectName();
-
+   
+   void outputXml(IvyXmlWriter xw);
 }	// end of inner class BanalPackageNode
 
 

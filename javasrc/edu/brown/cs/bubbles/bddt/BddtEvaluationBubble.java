@@ -481,6 +481,7 @@ private class EvalExpr {
 	    current_value = ev.getError();
 	  }
 	 else current_state = EvalState.EXPR_ERROR;
+	 return true;
        }
 
       return false;

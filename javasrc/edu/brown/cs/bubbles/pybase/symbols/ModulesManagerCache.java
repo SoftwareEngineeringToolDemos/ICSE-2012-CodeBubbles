@@ -26,7 +26,6 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import org.python.pydev.core.ModulesKey;
 import org.python.pydev.core.Tuple;
 import org.python.pydev.core.cache.LRUCache;
 

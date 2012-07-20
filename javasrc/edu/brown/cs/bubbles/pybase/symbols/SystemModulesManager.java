@@ -41,7 +41,6 @@ import edu.brown.cs.bubbles.pybase.PybaseSystemNature;
 
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.core.DeltaSaver;
-import org.python.pydev.core.ModulesKey;
 import org.python.pydev.core.Tuple;
 import org.python.pydev.core.cache.LRUCache;
 
@@ -217,8 +216,8 @@ public AbstractModule getBuiltinModule(String name,PybaseNature nature,boolean d
    // with is using predefined modules. Those will
    File predefinedModule = this.interpreter_info.getPredefinedModule(name);
    if (predefinedModule != null && predefinedModule.exists()) {
-      keyForCacheAccess.name = name;
-      keyForCacheAccess.file = predefinedModule;
+      keyForCacheAccess.setModuleName(name);
+      keyForCacheAccess.setModuleFile(predefinedModule);
       n = cache.getObj(keyForCacheAccess, this);
       if ((n instanceof PredefinedSourceModule)) {
 	 PredefinedSourceModule predefinedSourceModule = (PredefinedSourceModule) n;
@@ -285,7 +284,7 @@ public AbstractModule getBuiltinModule(String name,PybaseNature nature,boolean d
 		&& name.charAt(forcedBuiltin.length()) == '.') {
 	    foundStartingWithBuiltin = true;
 
-	    keyForCacheAccess.name = name;
+	    keyForCacheAccess.setModuleName(name);
 	    n = cache.getObj(keyForCacheAccess, this);
 
 	    if (n == null && dontSearchInit == false) {
@@ -295,8 +294,7 @@ public AbstractModule getBuiltinModule(String name,PybaseNature nature,boolean d
 	       else {
 		  buffer.setLength(0);
 		}
-	       keyForCacheAccess.name = buffer.append(name).append(".__init__")
-		  .toString();
+	       keyForCacheAccess.setModuleName(buffer.append(name).append(".__init__").toString());
 	       n = cache.getObj(keyForCacheAccess, this);
 	     }
 
@@ -310,7 +308,7 @@ public AbstractModule getBuiltinModule(String name,PybaseNature nature,boolean d
 	  }
 
 	 if (name.equals(forcedBuiltin)) {
-	    keyForCacheAccess.name = name;
+	    keyForCacheAccess.setModuleName(name);
 	    n = cache.getObj(keyForCacheAccess, this);
 
 	    if (n == null || n instanceof EmptyModule || n instanceof SourceModule) {
@@ -457,8 +455,8 @@ private AbstractModule findLibraryModule(String name,PybaseNature nature)
       File f = new File(p);
       File f1 = new File(f,name + ".py");
       if (f1.exists()) {
-	 keyForCacheAccess.name = name;
-	 keyForCacheAccess.file = f1;
+	 keyForCacheAccess.setModuleName(name);
+	 keyForCacheAccess.setModuleFile(f1);
 	 n = cache.getObj(keyForCacheAccess, this);
 	 if ((n instanceof PredefinedSourceModule)) {
 	    PredefinedSourceModule predefinedSourceModule = (PredefinedSourceModule) n;

@@ -84,6 +84,8 @@ public AbstractToken(String rep,String doc,String args,String parentPackage,Toke
    original_has_rep = originalHasRep;
 }
 
+
+
 public AbstractToken(String rep,String doc,String args,String parentPackage,TokenType type)
 {
    if (rep != null) token_rep = rep;

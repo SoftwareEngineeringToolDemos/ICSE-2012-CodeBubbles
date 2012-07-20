@@ -25,12 +25,15 @@
 
 package edu.brown.cs.bubbles.banal;
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
+import edu.brown.cs.ivy.xml.*;
 
 import edu.brown.cs.bubbles.org.objectweb.asm.Opcodes;
 
+import org.w3c.dom.*;
+
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 class BanalPackageGraph extends BanalDefaultVisitor implements BanalConstants
@@ -47,6 +50,7 @@ private String			project_name;
 private String			package_name;
 private Map<String,ClassData>	class_nodes;
 private Map<String,MethodData>	method_nodes;
+private AtomicInteger		id_counter;
 
 
 
@@ -62,9 +66,60 @@ BanalPackageGraph(String proj,String pkg,boolean usemethods)
    project_name = proj;
    package_name = pkg;
    class_nodes = new HashMap<String,ClassData>();
+   id_counter = new AtomicInteger();
 
    if (usemethods) method_nodes = new HashMap<String,MethodData>();
    else method_nodes = null;
+}
+
+
+BanalPackageGraph(Element xml)
+{
+   project_name = IvyXml.getAttrString(xml,"PROJECT");
+   package_name = IvyXml.getAttrString(xml,"PACKAGE");
+   class_nodes = new HashMap<String,ClassData>();
+   if (IvyXml.getAttrBool(xml,"METHODS"))
+      method_nodes = new HashMap<String,MethodData>();
+   else
+      method_nodes = null;
+
+   HashMap<String,NodeData> idmap = new HashMap<String,NodeData>();
+
+   for (Element e : IvyXml.children(xml,"NODE")) {
+      String typ = IvyXml.getAttrString(e,"TYPE");
+      String nm = IvyXml.getAttrString(e,"NAME");
+      String id = IvyXml.getAttrString(e,"ID");
+      int mod = IvyXml.getAttrInt(e,"MOD");
+      if (typ.equals("CLASS")) {
+	 ClassData cd = new ClassData(nm);
+	 class_nodes.put(nm,cd);
+	 cd.setAccess(mod);
+	 idmap.put(id,cd);
+       }
+      else if (typ.equals("METHOD")) {
+	 MethodData md = new MethodData(nm);
+	 method_nodes.put(nm,md);
+	 md.setAccess(mod);
+	 idmap.put(id,md);
+       }
+    }
+
+   for (Element e : IvyXml.children(xml,"NODE")) {
+      String id = IvyXml.getAttrString(e,"ID");
+      NodeData nd1 = idmap.get(id);
+      if (nd1 == null) continue;
+      for (Element le : IvyXml.children(e,"LINK")) {
+	 String id2 = IvyXml.getAttrString(le,"TOID");
+	 NodeData nd2 = idmap.get(id2);
+	 if (nd2 == null) continue;
+	 LinkData ld = nd1.createLinkTo(nd2);
+	 if (ld == null) continue;
+	 for (PackageRelationType rt : PackageRelationType.values()) {
+	    int ct = IvyXml.getAttrInt(le,rt.toString());
+	    if (ct >= 0) ld.addRelation(rt,ct);
+	  }
+       }
+    }
 }
 
 
@@ -216,21 +271,6 @@ private LinkData findLink(BanalMethod frm,BanalClass to)
 }
 
 
-/****************
-private LinkData findLink(BanalClass frm,BanalMethod to)
-{
-   MethodData tm = findMethod(to);
-   if (tm == null) {
-      return findLink(frm,to.getOwnerClass());
-    }
-   ClassData fc = findClass(frm);
-
-   LinkData ld = fc.createLinkTo(tm);
-
-   return ld;
-}
-*****************/
-
 
 
 /********************************************************************************/
@@ -243,7 +283,7 @@ void outputXml(IvyXmlWriter xw)
 {
    xw.begin("PACKAGE_GRAPH");
    xw.field("PROJECT",project_name);
-   xw.field("PACKAGE",package_name);
+   if (package_name != null) xw.field("PACKAGE",package_name);
    for (ClassData cd : class_nodes.values()) {
       cd.outputXml(xw);
     }
@@ -395,6 +435,7 @@ void outputXml(IvyXmlWriter xw)
 private abstract class NodeData implements BanalPackageNode {
 
    private String node_name;
+   private int node_id;
    private Map<NodeData,LinkData> out_links;
    private Map<NodeData,LinkData> in_links;
    private int class_access;
@@ -406,9 +447,11 @@ private abstract class NodeData implements BanalPackageNode {
       in_links = new HashMap<NodeData,LinkData>();
       class_access = -1;
       class_types = null;
+      if (id_counter != null) node_id = id_counter.incrementAndGet();
     }
 
    @Override public String getName()		{ return node_name; }
+   int getId()					{ return node_id; }
    @Override public int getModifiers()		{ return class_access; }
    @Override public Collection<BanalPackageLink> getInLinks() {
       return new ArrayList<BanalPackageLink>(in_links.values());
@@ -465,14 +508,18 @@ private abstract class NodeData implements BanalPackageNode {
       return ld;
     }
 
-   void outputXml(IvyXmlWriter xw) {
-      xw.begin("CLASS");
+   @Override public void outputXml(IvyXmlWriter xw) {
+      xw.begin("NODE");
       xw.field("NAME",node_name);
+      xw.field("ID",node_id);
+      if (getMethodName() != null) xw.field("TYPE","METHOD");
+      else if (getClassName() != null) xw.field("TYPE","CLASS");
+
       if (class_access != -1) xw.field("MOD",class_access);
       for (LinkData ld : out_links.values()) {
 	 ld.outputXml(xw);
        }
-      xw.end("CLASS");
+      xw.end("NODE");
     }
 
    @Override public String toString() {
@@ -587,10 +634,20 @@ private static class LinkData implements BanalPackageLink {
       type_count.put(rt,idv+1);
     }
 
+   void addRelation(PackageRelationType rt,int ct) {
+      if (ct <= 0) return;
+      Integer id = type_count.get(rt);
+      int idv = ct;
+      if (id != null) idv += id;
+      type_count.put(rt,idv);
+    }
+
    void outputXml(IvyXmlWriter xw) {
       xw.begin("LINK");
       xw.field("FROM",from_class.getName());
+      xw.field("FROMID",from_class.getId());
       xw.field("TO",to_class.getName());
+      xw.field("TOID",to_class.getId());
       for (Map.Entry<PackageRelationType,Integer> ent : type_count.entrySet()) {
 	 PackageRelationType rt = ent.getKey();
 	 int ct = ent.getValue();

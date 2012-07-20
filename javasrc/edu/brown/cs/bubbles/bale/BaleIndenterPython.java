@@ -54,7 +54,7 @@ class BaleIndenterPython extends BaleIndenter implements BaleConstants {
 /********************************************************************************/
 
 private int	indent_space;
-private int     continue_space;
+private int	continue_space;
 private int	paren_indent;
 private int	tab_size;
 
@@ -86,6 +86,12 @@ BaleIndenterPython(BaleDocument bd)
 protected int getTabSize()
 {
    return tab_size;
+}
+
+
+int getUnindentSize()
+{
+   return indent_space;
 }
 
 
@@ -158,11 +164,12 @@ private int findLineIndentation(BaleElement elt)
    boolean eol = elt.isEndOfLine();
 //   BaleElement.Indent ind0 = elt.getIndent();
 //   if (ind0 != null) {
-//      int exd = ind0.getNumExdent();
-//      if (exd > 0) delta = -exd;
+//	int exd = ind0.getNumExdent();
+//	if (exd > 0) delta = -exd;
 //    }
-      
+
    int pct = 0;
+   int lpos = -1;
    BaleElement pelt = elt.getPreviousCharacterElement();
    for ( ; pelt != null; pelt = pelt.getPreviousCharacterElement()) {
       if (!pelt.isEmpty()) lineast = pelt.getAstNode();
@@ -203,21 +210,31 @@ private int findLineIndentation(BaleElement elt)
       BaleElement.Indent ind = pelt.getIndent();
       if (ind != null) {
 	 int frst = ind.getFirstColumn();
-         if (checkRelevantLine(pelt)) {
+	 if (checkRelevantLine(pelt)) {
 	    base = frst-1;
 	    break;
 	  }
        }
       if (pelt.isEndOfLine()) {
 	 if (pct != 0) continuation = true;
+	 else {
+	    int epos = pelt.getEndOffset();
+	    if (epos == lpos) {
+	       base = 0;
+	       break;
+	    }
+	 }
+	 lpos = -1;
 	 eol = true;
        }
-	
-    }	
-   
+      else {
+	 lpos = pelt.getStartOffset();
+      }
+    }
+
    while (startast != null && startast.getNodeType() != BaleAstNodeType.BLOCK)
       startast = startast.getParent();
-   
+
    if (startast != null && lineast != null) {
       int bct = 0;
       for (BaleAstNode n = lineast; n != null; n = n.getParent()) {
@@ -227,23 +244,23 @@ private int findLineIndentation(BaleElement elt)
 	 }
 	 else if (n.getNodeType() == BaleAstNodeType.BLOCK) ++bct;
       }
-      
+
    }
-   
+
    if (continuation) return base + continue_space;
    if (delta >= 0) return base + delta * indent_space;
    if (base == 0 || pelt == null) return 0;
-   
+
    while (delta < 0) {
       pelt = pelt.getPreviousCharacterElement();
       if (pelt == null) return 0;
       BaleElement.Indent ind = pelt.getIndent();
       if (ind != null && checkRelevantLine(pelt)) {
-         int frst = ind.getFirstColumn();
-         if (frst < base) {
-            base = frst - 1;
-            ++delta;
-          }
+	 int frst = ind.getFirstColumn();
+	 if (frst < base) {
+	    base = frst - 1;
+	    ++delta;
+	  }
        }
     }
 
@@ -259,16 +276,16 @@ private boolean checkRelevantLine(BaleElement elt)
    BaleElement pelt = elt.getPreviousCharacterElement();
    if (pelt.isEndOfLine()) pelt = pelt.getPreviousCharacterElement();
    if (pelt.getTokenType() == BaleTokenType.BACKSLASH) return false;
-   
+
    // then check that this line has content
    BaleElement nelt = elt.getNextCharacterElement();
    while (nelt != null && !nelt.isEndOfLine()) {
       if (!nelt.isEmpty()) return true;
     }
-      
+
    return false;
 }
-   
+
 
 
 
@@ -296,8 +313,8 @@ private void loadProperties()
 /********************************************************************************/
 
 /*********************************
- 
-private static final int MIN_DELTA = 1;		// min space difference that is significant
+
+private static final int MIN_DELTA = 1; 	// min space difference that is significant
 
 
 private void computeExdents()
@@ -380,7 +397,7 @@ private void computeExdents()
       e0 = e0.getNextCharacterElement();
     }
 }
-************************/	
+************************/
 
 
 

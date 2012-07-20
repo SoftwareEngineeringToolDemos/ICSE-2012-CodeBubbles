@@ -31,6 +31,7 @@
 package edu.brown.cs.bubbles.bass;
 
 import edu.brown.cs.bubbles.board.BoardThreadPool;
+import edu.brown.cs.bubbles.board.BoardSetup;
 import edu.brown.cs.bubbles.bump.*;
 
 import java.io.File;
@@ -177,7 +178,7 @@ File findActualFile(File f)
 /********************************************************************************/
 
 private void initialize()
-{							
+{					
    synchronized (this) {
       all_names.clear();
       is_ready = false;
@@ -236,7 +237,7 @@ private void addLocation(BumpLocation bl,Map<String,BassNameLocation> fieldmap,
       case INTERFACE :
       case THROWABLE :
 	 all_names.add(bn);
-	 if (!bn.getKey().contains("$")) {
+	 if (showClassFile(bn)) {
 	    BassNameLocation fnm = new BassNameLocation(bl,BassNameType.FILE);
 	    all_names.add(fnm);
 	  }
@@ -245,9 +246,28 @@ private void addLocation(BumpLocation bl,Map<String,BassNameLocation> fieldmap,
       case PROJECT :
 	 // if (all_names.size() != 0) bn = null;
 	 break;
+      case MODULE :
+	 BassNameLocation fnm = new BassNameLocation(bl,BassNameType.MODULE);
+	 all_names.add(fnm);
+	 BassNameLocation inm = new BassNameLocation(bl,BassNameType.HEADER);
+	 all_names.add(inm);
+	 break;
     }
 
    if (bn != null) all_names.add(bn);
+}
+
+
+
+private boolean showClassFile(BassNameLocation bn)
+{
+   if (bn.getKey().contains("$")) return false;
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case PYTHON :
+	 return false;
+    }
+
+   return true;
 }
 
 
@@ -312,12 +332,12 @@ private class Searcher implements Runnable {
    BassFactory.reloadRepository(this);
 }
 
-@Override public void handleProjectOpened(String proj) 
+@Override public void handleProjectOpened(String proj)
 {
    addNamesForFile(proj,null,true);
 }
 
-@Override public void handleFileStarted(String proj,String file)                { }
+@Override public void handleFileStarted(String proj,String file)		{ }
 
 
 private void removeNamesForFile(String proj,String file)
@@ -329,9 +349,9 @@ private void removeNamesForFile(String proj,String file)
       for (Iterator<BassName> it = all_names.iterator(); it.hasNext(); ) {
 	 BassName bn = it.next();
 	 BumpLocation bl = bn.getLocation();
-	 if (bl != null && 
-               (f == null || f.equals(bl.getFile())) &&
-               (proj == null || proj.equals(bl.getProject())))
+	 if (bl != null &&
+	       (f == null || f.equals(bl.getFile())) &&
+	       (proj == null || proj.equals(bl.getProject())))
 	    it.remove();
        }
     }

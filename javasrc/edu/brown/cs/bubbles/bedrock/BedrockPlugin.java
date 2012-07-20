@@ -437,10 +437,11 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    xw.begin("RESULT");
 
    if (cmd.equals("PING")) {
-      if (PlatformUI.isWorkbenchRunning()) xw.text("PONG");
-      else if (doing_exit || shutdown_mint) xw.text("EXIT");
+      if (doing_exit || shutdown_mint) xw.text("EXIT");
+      else if (PlatformUI.isWorkbenchRunning()) xw.text("PONG");
       else xw.text("UNSET");
     }
+   else if (shutdown_mint) throw new BedrockException("Command during exit");
    else if (cmd.equals("PROJECTS")) {
       bedrock_project.listProjects(xw);
     }
@@ -565,7 +566,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("DELETERUNCONFIG")) {
       bedrock_runtime.deleteRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
     }
-   else if (cmd.equals("START") || cmd.equals("RUNPROJECT") || cmd.equals("STARTDEBUG")) {
+   else if (cmd.equals("START")) {
       bedrock_runtime.runProject(IvyXml.getAttrString(xml,"NAME"),
 				    IvyXml.getAttrString(xml,"MODE",ILaunchManager.DEBUG_MODE),
 				    IvyXml.getAttrBool(xml,"BUILD",true),
@@ -958,7 +959,7 @@ private class CommandHandler implements MintHandler {
        }
       catch (Throwable t) {
 	 String xmsg = "BEDROCK: Problem processing command " + cmd + ": " + t + " " +
-	    doing_exit + shutdown_mint + " " +  num_clients;
+	    doing_exit + " " + shutdown_mint + " " +  num_clients;
 	 BedrockPlugin.logE(xmsg);
 	 System.err.println(xmsg);
 	 t.printStackTrace();
@@ -1008,12 +1009,14 @@ static void log(BedrockLogLevel lvl,String msg,Throwable t)
 {
    if (lvl.ordinal() > log_level.ordinal()) return;
 
+   String pfx = "BEDROCK:" + lvl.toString().substring(0,1) + ": ";
+
    if (log_file != null) {
-      log_file.println("BEDROCK: " + msg);
+      log_file.println(pfx + msg);
       if (t != null) t.printStackTrace(log_file);
     }
    if (use_stderr || log_file == null) {
-      System.err.println("BEDROCK: " + msg);
+      System.err.println(pfx + msg);
       if (t != null) t.printStackTrace();
     }
    if (log_file != null) log_file.flush();

@@ -36,7 +36,6 @@ import edu.brown.cs.bubbles.pybase.PybaseNature;
 import org.python.pydev.core.FullRepIterable;
 import org.python.pydev.core.ICompletionCache;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 
 /**
@@ -136,7 +135,7 @@ public Definition(AbstractToken tok,LocalScope scope,AbstractModule module,
    return buffer.toString();
 }
 
-	
+
 
 @Override public boolean equals(Object obj)
 {

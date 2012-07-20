@@ -664,7 +664,8 @@ public static File getWorkspaceMetadataFile(String fileName)
    if (metadata_location == null) {
        try {
 	  File path = PybaseMain.getPybaseMain().getWorkSpaceDirectory();
-	  File pdir = new File(path,".pybase");
+	  File mdir = new File(path,".metadata");
+	  File pdir = new File(mdir,".pybase");
 	  metadata_location = pdir;
 	}
        catch (Exception e) {

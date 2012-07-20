@@ -78,7 +78,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	    bb = bf.createFileBubble(proj,new File(head),null,null,0);
 	    break;
 	 case FILE :
-	    bb = bf.createFileBubble(proj,head);
+	    bb = bf.createFileBubble(proj,file,head);
 	    break;
 	 case METHOD :
 	    if (name != null) bb = bf.createMethodBubble(proj,name);

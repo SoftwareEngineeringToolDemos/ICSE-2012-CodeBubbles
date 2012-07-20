@@ -316,12 +316,12 @@ private static final int BAR_INSET = 3;
 
 private static final Paint [] bar_colors = new Color [] {
    Color.GREEN,
-   new Color(128,255,0),
+   new Color(0,255,255),
    Color.YELLOW,
    Color.GRAY,
    Color.BLACK,
    new Color(255,192,64),
-   new Color(255,128,0),
+   new Color(255,0,255),
    Color.RED
 };
 
@@ -532,6 +532,7 @@ private class ModeAction extends JRadioButtonMenuItem implements ActionListener 
 
    ModeAction(TestMode md) {
       super(md.toString(),(md == current_mode));
+      addActionListener(this);
       test_mode = md;
     }
 
@@ -539,7 +540,7 @@ private class ModeAction extends JRadioButtonMenuItem implements ActionListener 
       BattFactory.getFactory().setTestMode(test_mode);
       current_mode = test_mode;
     }
-
+   
 }	// end of inner class ModeAction
 
 
@@ -550,13 +551,14 @@ private class RunAction extends JRadioButtonMenuItem implements ActionListener {
 
    RunAction(RunType typ) {
       super(typ.toString(),(typ == current_runtype));
+      addActionListener(this);
       run_type = typ;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       current_runtype = run_type;
     }
-
+   
 }	// end of inner class RunAction
 
 

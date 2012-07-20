@@ -102,8 +102,20 @@ private PybaseTest(String [] args)
 
 private class Runner extends Thread {
 
+   Runner() {
+      super("PybaseRunnerThread");
+    }
+
    @Override public void run() {
-      PybaseMain.main(new String [] { "-m", "PYBLESTEST", "-ws", "/home/spr/Pybles/test" });
+      System.err.println("PYBASE: Start run");
+      try {
+	 PybaseMain.main(new String [] { "-m", "PYBLESTEST", "-ws", "/home/spr/Pybles/test" });
+       }
+      catch (Throwable t) {
+	 System.err.println("PYBASE: Error running: " + t);
+	 t.printStackTrace();
+       }
+      System.err.println("PYBASE: Finish run");
     }
 
 }	// end of inner class Runner
@@ -161,6 +173,15 @@ private void runTest()
    sendCommand("FINDREFERENCES",proj,"FILE='/home/spr/Pybles/test/testproject/src/genkml.py' START='635' END='635' EXACT='true' EQUIV='true' WONLY='T'",null);
    sendCommand("FINDDEFINITIONS",proj,"FILE='/home/spr/Pybles/test/testproject/src/genkml.py' START='635' END='635'",null);
    sendCommand("FINDDEFINITIONS",proj,"FILE='/home/spr/Pybles/test/testproject/src/genkml.py' START='650' END='650' IMPLS='T'",null);
+   sendCommand("JAVASEARCH",proj,"PATTERN='Shape.Point.__init__()' DEFS='true' REFS='false' FOR='METHOD'",null);
+   sendCommand("JAVASEARCH",proj,"PATTERN='Shape.Point' DEFS='true' REFS='false' FOR='TYPE'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='Shape.Point' FILE='/home/spr/Pybles/test/testproject/src/Shape.py' COMPUNIT='T'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='Shape' FILE='/home/spr/Pybles/test/testproject/src/Shape.py' COMPUNIT='T'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='Shape.Point' PREFIX='T'",null);
+   sendCommand("JAVASEARCH",proj,"PATTERN='Shape.Point.distanceFromOrigin()' DEFS='true' REFS='false' FOR='METHOD'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='Shape' PREFIX='T'",null);
+   sendCommand("STARTFILE",proj,"FILE='/home/spr/Pybles/test/testproject/src/Shape.py' ID='" + (edit_id++) + "'",null);
+   sendCommand("ELIDESET",proj,"FILE='/home/spr/Pybles/test/testproject/src/Shape.py' COMPUTE='true'","<REGION START='175' END='256' />");
 
    // sendCommand("COMMIT",proj,"SAVE='T'",null);
 }

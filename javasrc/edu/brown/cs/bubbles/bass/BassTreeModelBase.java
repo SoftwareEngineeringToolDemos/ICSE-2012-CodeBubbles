@@ -591,9 +591,9 @@ private static class Branch extends BassTreeImpl {
 	 case THROWABLE :
 	    return BoardImage.getIcon("throw_collapse");
 	 case PACKAGE :
-	    return BoardImage.getIcon("project_collapse");
-	 case PROJECT :
 	    return BoardImage.getIcon("package_collapse");
+	 case PROJECT :
+	    return BoardImage.getIcon("project_collapse");
 	 case INTERFACE :
 	    return BoardImage.getIcon("interface_collapse");
 	 case ENUM :

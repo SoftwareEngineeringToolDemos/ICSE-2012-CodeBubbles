@@ -37,7 +37,6 @@ import org.python.pydev.parser.jython.ast.ClassDef;
 import org.python.pydev.parser.jython.ast.FunctionDef;
 import org.python.pydev.parser.jython.ast.If;
 import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 
 /**
@@ -54,8 +53,8 @@ public class FindScopeVisitor extends AbstractVisitor {
 /********************************************************************************/
 
 private FastStack<SimpleNode> stack_scope = new FastStack<SimpleNode>();
-private LocalScope      for_scope = new LocalScope(new FastStack<SimpleNode>());
-private boolean	is_found = false;
+private LocalScope	for_scope = new LocalScope(new FastStack<SimpleNode>());
+private boolean is_found = false;
 private int		for_line;
 private int		for_col;
 
@@ -81,12 +80,12 @@ public FindScopeVisitor(int line,int col)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-LocalScope getScope()                   { return for_scope; }
+LocalScope getScope()			{ return for_scope; }
 
 
 

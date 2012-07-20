@@ -100,6 +100,22 @@ enum DebugReason {
 
 
 /********************************************************************************/
+/*                                                                              */
+/*      Launch configuration constants                                          */
+/*                                                                              */
+/********************************************************************************/
+
+String CONFIG_FILE = ".launches";
+
+String ATTR_PROJECT = "org.eclipse.jdt.launching.PROJECT_ATTR";
+String ATTR_ARGS = "org.eclipse.jdt.launching.PROGRAM_ARGUMENTS";
+String ATTR_PYTHON_ARGS = "org.eclipse.jdt.launching.VM_ARGUMENTS";
+String ATTR_MODULE = "org.eclipse.jdt.launching.MAIN_TYPE";
+
+
+
+
+/********************************************************************************/
 /*										*/
 /*	Command callback interface						*/
 /*										*/
@@ -110,6 +126,15 @@ interface CommandResponseListener {
    void commandComplete(PybaseDebugCommand cmd);
 
 }	// end of inner interface CommandResponseListener
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Breakpoint constants                                                    */
+/*                                                                              */
+/********************************************************************************/
+
+String BREAKPOINT_FILE = ".breakpoints";
 
 
 }	// end of interface PybaseDebugConstants

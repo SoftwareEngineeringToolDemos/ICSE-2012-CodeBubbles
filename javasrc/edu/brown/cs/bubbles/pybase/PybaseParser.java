@@ -48,13 +48,13 @@ import org.python.pydev.parser.jython.SpecialStr;
 import org.python.pydev.parser.jython.Token;
 import org.python.pydev.parser.jython.TokenMgrError;
 import org.python.pydev.parser.jython.Visitor;
-import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.jython.ast.stmtType;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.awt.Point;
 
 
 
@@ -232,7 +232,9 @@ public ISemanticData parseDocument(boolean semantics)
 	 emsg = createErrorMessage(err);
        }
       catch (BadLocationException e) {
-	 emsg = new PybaseMessage(ErrorType.SYNTAX_ERROR,err.getMessage(),0,0,0,0,for_project.getPreferences());
+	 String msg = err.getMessage();
+	 if (msg == null) msg = "Syntax error";
+	 emsg = new PybaseMessage(ErrorType.SYNTAX_ERROR,msg,0,0,0,0,for_project.getPreferences());
        }
       sd = new SemanticData(for_project,file_data,root_node,emsg);
     }
@@ -309,6 +311,41 @@ private PybaseMessage createErrorMessage(Throwable error) throws BadLocationExce
 
 /********************************************************************************/
 /*										*/
+/*	Position helper routines						*/
+/*										*/
+/********************************************************************************/
+
+private static Point getExtendedStart(SimpleNode n)
+{
+   int bline = n.beginLine;
+   int bcol = n.beginColumn;
+   if (n.specialsBefore != null) {
+      for (Object o : n.specialsBefore) {
+	 if (o instanceof SpecialStr) {
+	    SpecialStr ss = (SpecialStr) o;
+	    if (ss.beginLine < bline || (ss.beginLine == bline && ss.beginCol < bcol)) {
+	       bline = ss.beginLine;
+	       bcol = ss.beginCol;
+	     }
+	  }
+	 else if (o instanceof SimpleNode) {
+	    SimpleNode sn = (SimpleNode) o;
+	    if (sn.beginLine < bline || (sn.beginLine == bline && sn.beginColumn < bcol)) {
+	       bline = sn.beginLine;
+	       bcol = sn.beginColumn;
+	     }
+	  }
+       }
+    }
+   return new Point(bline,bcol);
+}
+
+
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Semantic data holder							*/
 /*										*/
 /********************************************************************************/
@@ -360,7 +397,7 @@ private static class SemanticData implements ISemanticData {
 /*										*/
 /********************************************************************************/
 
-private static class ParentSetter extends Visitor {
+private class ParentSetter extends Visitor {
 
    public Stack<SimpleNode> parent_stack;
    private SimpleNode last_node;
@@ -376,29 +413,17 @@ private static class ParentSetter extends Visitor {
 	    System.err.println("Parent already set for " + n);
 	 }
 	 n.parent = parent_stack.peek();
-	 int bline = n.beginLine;
-	 int bcol = n.beginColumn;
-	 if (n.specialsBefore != null) {
-	    for (Object o : n.specialsBefore) {
-	       if (o instanceof SpecialStr) {
-		  SpecialStr ss = (SpecialStr) o;
-		  if (ss.beginLine < bline || (ss.beginLine == bline && ss.beginCol < bcol)) {
-		     bline = ss.beginLine;
-		     bcol = ss.beginCol;
-		   }
-		}
-	       else if (o instanceof SimpleNode) {
-		  SimpleNode sn = (SimpleNode) o;
-		  if (sn.beginLine < bline || (sn.beginLine == bline && sn.beginColumn < bcol)) {
-		     bline = sn.beginLine;
-		     bcol = sn.beginColumn;
-		  }
-	       }
-	       else {
-		  System.err.println("OTHER SPECIAL " + o);
-		}
-	     }
+
+	 if (n instanceof Print) {		// PRINT not done correctly in parser
+	    fixMissingKey(n,"print");
 	  }
+	 else if (n instanceof Import) {
+	    fixMissingKey(n,"import");
+	  }
+
+	 Point pt = getExtendedStart(n);
+	 int bline = pt.x;
+	 int bcol = pt.y;
 
 	 for (SimpleNode p : parent_stack) {
 	    if (p.beginLine > bline ||
@@ -416,6 +441,32 @@ private static class ParentSetter extends Visitor {
       parent_stack.push(last_node);
       super.traverse(n);
       parent_stack.pop();
+    }
+
+   private void fixMissingKey(SimpleNode n,String key) {
+      if (n.specialsBefore == null) {
+	 try {
+	    int cline = n.beginLine;
+	    int ccol = n.beginColumn;
+	    IDocument d = file_data.getDocument();
+	    int off = d.getLineOffset(cline-1) + ccol-1;
+	    int len = key.length();
+	    while (off > 0) {
+	       if (d.get(off,len).equals(key)) break;
+	       --off;
+	       --ccol;
+	       if (ccol == 0) {
+		  --cline;
+		  ccol = d.getLineLength(cline);
+		}
+	     }
+	    SpecialStr ss = new SpecialStr(key,cline,ccol);
+	    n.addSpecial(ss,false);
+	  }
+	 catch (BadLocationException e) {
+	    PybaseMain.logE("Problem finding missing key",e);
+	  }
+       }
     }
 
 }	// end of inner class ParentSetter
@@ -445,11 +496,14 @@ private class EndSetter extends Visitor {
 
    @Override protected void open_level(SimpleNode n) {
       if (n.beginLine > 0) {
-	 file_data.setStart(n,n.beginLine,n.beginColumn);
+	 Point ps = getExtendedStart(n);
+	 int bline = ps.x;
+	 int bcol = ps.y;
+	 file_data.setStart(n,bline,bcol);
 	 while (!set_stack.isEmpty()) {
 	    SimpleNode sn = set_stack.pop();
 	    try {
-	       int off = file_data.getDocument().getLineOffset(n.beginLine-1) + n.beginColumn-1-1;
+	       int off = file_data.getDocument().getLineOffset(bline-1) + bcol-1-1;
 	       while (off > 0 && Character.isWhitespace(file_data.getDocument().getChar(off))) --off;
 	       file_data.setEnd(sn,off);
 	     }
@@ -479,3 +533,4 @@ private class EndSetter extends Visitor {
 
 
 /* end of PybaseParser.java */
+

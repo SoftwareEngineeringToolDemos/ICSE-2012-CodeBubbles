@@ -38,8 +38,6 @@ import edu.brown.cs.bubbles.pybase.PybaseNature;
 
 import org.python.pydev.core.FullRepIterable;
 import org.python.pydev.core.ICompletionCache;
-import org.python.pydev.core.ModulesKey;
-import org.python.pydev.core.ModulesKeyForZip;
 import org.python.pydev.core.Tuple;
 import org.python.pydev.core.Tuple3;
 import org.python.pydev.core.cache.Cache;
@@ -57,7 +55,6 @@ import org.python.pydev.parser.jython.ast.ImportFrom;
 import org.python.pydev.parser.jython.ast.Module;
 import org.python.pydev.parser.jython.ast.Name;
 import org.python.pydev.parser.jython.ast.Str;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;

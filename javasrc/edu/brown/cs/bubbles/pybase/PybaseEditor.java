@@ -128,22 +128,25 @@ void elisionSetup(String proj,String bid,String file,boolean compute,
    if (fd == null) {
       throw new PybaseException("File " + file + " not available for elision");
     }
-   
+   if (monitor_map.get(fd) == null) {
+      throw new PybaseException("File " + file + " not open");
+    }
+
    FileEditData fed = null;
    for (FileEditData fed1 : monitor_map.get(fd)) {
       if (fed1.getBaseId().equals(bid)) {
-         fed = fed1;
-         break;
+	 fed = fed1;
+	 break;
        }
-    }      
-      
+    }
+
    ISemanticData isd = pp.getParseData(fd);
    if (isd == null) throw new PybaseException("Unable to get AST for file " + file);
 
    PybaseElider be = null;
    if (fed != null) be = fed.getElider();
    else be = new PybaseElider();
-   
+
    if (rgns != null) {
       be.clearElideData();
       for (Element r : rgns) {
@@ -184,7 +187,9 @@ void handleEdit(String proj,String bid,String file,String id,List<IEditData> edi
    if (fd == null) throw new PybaseException("File " + file + " not found");
 
    if (bid == null) bid = "*";
-   
+
+   boolean chngd = fd.hasChanged();
+
    FileEditData fed = lockFile(fd,bid,id);
    try {
       IDocument d = fd.getDocument();
@@ -193,7 +198,7 @@ void handleEdit(String proj,String bid,String file,String id,List<IEditData> edi
 	 int off = ied.getOffset();
 	 String txt = ied.getText();
 	 d.replace(off,len,txt);
-         fd.markChanged();
+	 fd.markChanged();
        }
     }
    catch (BadLocationException e) {
@@ -201,6 +206,12 @@ void handleEdit(String proj,String bid,String file,String id,List<IEditData> edi
     }
    finally {
       unlockFile(fd);
+    }
+
+   if (!chngd && fd.hasChanged()) {
+      IvyXmlWriter mxw = pybase_main.beginMessage("FILECHANGE");
+      mxw.field("FILE",file);
+      pybase_main.finishMessage(mxw);
     }
 
    if (fed != null) {
@@ -223,16 +234,16 @@ private FileEditData lockFile(IFileData fd,String bid,String eid)
        }
       owner_map.put(fd,bid);
     }
-   
+
    FileEditData fed = null;
    for (FileEditData fed1 : monitor_map.get(fd)) {
       if (fed1.getBaseId().equals(bid)) {
-         fed = fed1;
-         break;
+	 fed = fed1;
+	 break;
        }
     }
    if (fed != null && eid != null) fed.setEditId(eid);
-   
+
    return fed;
 }
 
@@ -244,41 +255,41 @@ private void unlockFile(IFileData fd)
       owner_map.notifyAll();
     }
 }
-   
+
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      COMMIT methods                                                          */
-/*                                                                              */
+/*										*/
+/*	COMMIT methods								*/
+/*										*/
 /********************************************************************************/
 
 void handleCommit(String proj,String bid,boolean refresh,boolean save,
       Collection<Element> files,IvyXmlWriter xw) throws PybaseException
 {
    PybaseProject pp = pybase_main.getProjectManager().findProject(proj);
-   
+
    xw.begin("COMMIT");
    if (files == null || files.size() == 0) {
       for (IFileData ifd : handler_map.keySet()) {
-         if (refresh || !save || ifd.hasChanged()) {
-            commitFile(pp,ifd,bid,refresh,save,xw);
-          }
+	 if (refresh || !save || ifd.hasChanged()) {
+	    commitFile(pp,ifd,bid,refresh,save,xw);
+	  }
        }
     }
    else {
       for (Element e : files) {
-         String fnm = IvyXml.getAttrString(e,"NAME");
-         if (fnm == null) fnm = IvyXml.getText(e);
-         IFileData ifd  = PybaseFileManager.getFileManager().getFileData(null,fnm,pp);
-         if (ifd != null) {
-            boolean r = IvyXml.getAttrBool(e,"REFRESH",refresh);
-            boolean s = IvyXml.getAttrBool(e,"SAVE",save);
-            commitFile(pp,ifd,bid,r,s,xw);
-          }
+	 String fnm = IvyXml.getAttrString(e,"NAME");
+	 if (fnm == null) fnm = IvyXml.getText(e);
+	 IFileData ifd	= PybaseFileManager.getFileManager().getFileData(null,fnm,pp);
+	 if (ifd != null) {
+	    boolean r = IvyXml.getAttrBool(e,"REFRESH",refresh);
+	    boolean s = IvyXml.getAttrBool(e,"SAVE",save);
+	    commitFile(pp,ifd,bid,r,s,xw);
+	  }
        }
     }
-   
+
    xw.end("COMMIT");
 }
 
@@ -291,17 +302,17 @@ private void commitFile(PybaseProject pp,IFileData ifd,String bid,boolean refres
       xw.begin("FILE");
       xw.field("NAME",ifd.getFile().getPath());
       try {
-         upd = ifd.commit(refresh,save);
+	 upd = ifd.commit(refresh,save);
        }
       catch (Throwable t) {
-         xw.field("ERROR",t.toString());
+	 xw.field("ERROR",t.toString());
        }
       xw.end("FILE");
     }
    finally {
       unlockFile(ifd);
     }
-   
+
    if (upd && fed != null) {
       AutoCompile ac = new AutoCompile(pp,ifd,null,fed);
       PybaseMain.getPybaseMain().startTask(ac);
@@ -421,12 +432,12 @@ private class FileEditData {
    String getEditId()			{ return edit_id; }
 
    void setEditId(String id)		{ edit_id = id; }
-   
-   void clearElider()                   { edit_elider = null; }
-   PybaseElider checkElider()           { return edit_elider; }
+
+   void clearElider()			{ edit_elider = null; }
+   PybaseElider checkElider()		{ return edit_elider; }
    synchronized PybaseElider getElider() {
       if (edit_elider == null) {
-         edit_elider = new PybaseElider();
+	 edit_elider = new PybaseElider();
        }
       return edit_elider;
     }
@@ -462,10 +473,10 @@ private class AutoCompile implements Runnable {
       int delay = ep.getDelayTime();
       if (delay < 0) return;
       if (delay > 0) {
-         try {
-            Thread.sleep(delay);
-          }
-         catch (InterruptedException e) { }
+	 try {
+	    Thread.sleep(delay);
+	  }
+	 catch (InterruptedException e) { }
        }
       if (!edit_data.getEditId().equals(edit_id)) return;
       ISemanticData isd = for_project.reparseFile(for_file);
@@ -474,35 +485,35 @@ private class AutoCompile implements Runnable {
       if (!edit_data.getEditId().equals(edit_id)) return;
       IvyXmlWriter xw = PybaseMain.getPybaseMain().beginMessage("EDITERROR");
       if (isd.getProject() != null) {
-         xw.field("PROJECT",isd.getProject().getName());
+	 xw.field("PROJECT",isd.getProject().getName());
       }
       xw.field("FILE",for_file.getFile().getPath());
       xw.field("ID",edit_id);
-      xw.begin("MESSAGES");    
+      xw.begin("MESSAGES");
       if (msgs != null && msgs.size() > 0) {
-         for (PybaseMessage pm : msgs) {
-            PybaseUtil.outputProblem(pm,isd,xw);
-          }
+	 for (PybaseMessage pm : msgs) {
+	    PybaseUtil.outputProblem(pm,isd,xw);
+	  }
        }
       xw.end("MESSAGES");
-      
+
       if (!edit_data.getEditId().equals(edit_id)) return;
       PybaseMain.getPybaseMain().finishMessage(xw);
       if (ep.getAutoElide()) {
-         if (!edit_data.getEditId().equals(edit_id)) return;
-         PybaseElider pe = edit_data.checkElider();
-         if (pe != null) {
-             xw = PybaseMain.getPybaseMain().beginMessage("ELISION",edit_data.getBaseId());
-             xw.field("FILE",for_file.getFile().getPath());
-             xw.field("ID",edit_id);
-             xw.begin("ELISION");
-             if (pe.computeElision(isd,xw)) {
-                if (edit_data.getEditId().equals(edit_id)) {
-                   xw.end("ELISION");
-                   PybaseMain.getPybaseMain().finishMessage(xw);
-                 }
-              }
-          }
+	 if (!edit_data.getEditId().equals(edit_id)) return;
+	 PybaseElider pe = edit_data.checkElider();
+	 if (pe != null) {
+	     xw = PybaseMain.getPybaseMain().beginMessage("ELISION",edit_data.getBaseId());
+	     xw.field("FILE",for_file.getFile().getPath());
+	     xw.field("ID",edit_id);
+	     xw.begin("ELISION");
+	     if (pe.computeElision(isd,xw)) {
+		if (edit_data.getEditId().equals(edit_id)) {
+		   xw.end("ELISION");
+		   PybaseMain.getPybaseMain().finishMessage(xw);
+		 }
+	      }
+	  }
        }
     }
 
@@ -546,10 +557,10 @@ private static class EditParameters {
 
    void setParameter(String name,String value) {
       if (name.equals("AUTOELIDE")) {
-         auto_elide = Boolean.parseBoolean(value);
+	 auto_elide = Boolean.parseBoolean(value);
        }
       else if (name.equals("ELIDEDELAY")) {
-         delay_time = Integer.parseInt(value);
+	 delay_time = Integer.parseInt(value);
        }
     }
 

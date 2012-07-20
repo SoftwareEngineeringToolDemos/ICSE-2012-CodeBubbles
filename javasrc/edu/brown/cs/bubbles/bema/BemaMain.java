@@ -109,7 +109,7 @@ private Element 	load_config;
 private String []	java_args;
 private RunMode 	run_mode;
 private String		course_name;
-private BoardLanguage   for_language;
+private BoardLanguage	for_language;
 
 
 
@@ -172,9 +172,9 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-f")) {                   // -force
 	    force_setup = true;
 	  }
-         else if (args[i].startsWith("-py")) {                  // -python
-            for_language = BoardLanguage.PYTHON;
-          }
+	 else if (args[i].startsWith("-py")) {                  // -python
+	    for_language = BoardLanguage.PYTHON;
+	  }
 	 else if (args[i].startsWith("-course") && i+1 < ln) {  // -course <course>
 	    course_name = args[++i];
 	  }
@@ -242,7 +242,7 @@ private void start()
    BoardSetup bs = BoardSetup.getSetup();
 
    if (for_language != null) bs.setLanguage(for_language);
-   
+
    if (skip_setup) bs.setSkipSetup();
    if (force_setup) bs.setForceSetup(true);
    if (force_metrics) bs.setForceMetrics(true);
@@ -253,14 +253,14 @@ private void start()
    if (run_mode != null) bs.setRunMode(run_mode);
    if (course_name != null) bs.setCourseName(course_name);
    bs.setJavaArgs(java_args);
-   
+
    bs.doSetup();
 
    bs.setSplashTask("Setting up Metrics and Logging");
    BoardMetrics.setupMetrics(force_setup);
-   
+
    BoardProperties bp = BoardProperties.getProperties("Bema");
-   
+
    if (use_web) {
       String url = bp.getProperty("Bema.web.url");
       if (url == null) {
@@ -293,14 +293,30 @@ private void start()
 	       BoardLog.logE("BEMA","Unable to read webkey file");
 	       use_web = false;
 	     }
+	    catch (Throwable e) {
+	       BoardLog.logE("BEMA","Problem setting up mint",e);
+	       use_web = false;
+	     }
 	  }
        }
     }
 
    // next start Messaging
    bs.setSplashTask("Setting up messaging");
-   BumpClient bc = BumpClient.getBump();
+   BumpClient bc = null;
 
+   try {
+      bc = BumpClient.getBump();
+    }
+   catch (Error e) { }
+   
+   if (bc == null) {
+      JOptionPane.showMessageDialog(null,"Can't setup messaging environment",
+            "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
+      System.exit(1);
+      return;
+    }
+   
    // next start Eclipse
    bs.setSplashTask("Starting IDE (" + bc.getName() + ") and Updating Projects");
    bc.waitForIDE();

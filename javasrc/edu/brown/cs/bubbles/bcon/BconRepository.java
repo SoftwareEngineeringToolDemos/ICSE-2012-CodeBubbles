@@ -67,25 +67,28 @@ BconRepository()
 {
    active_names = new HashMap<String,BconName>();
    check_names = null;
+   
+   if (BoardSetup.getSetup().getLanguage() == BoardConstants.BoardLanguage.JAVA) {
+      BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
+      for (BassName bn : br.getAllNames()) {
+	 switch (bn.getNameType()) {
+	    case CLASS :
+	    case INTERFACE :
+	    case ENUM :
+	    case THROWABLE :
+	    case MODULE :
+	       break;
+	    default :
+	       continue;
+	 }
 
-   BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
-   for (BassName bn : br.getAllNames()) {
-      switch (bn.getNameType()) {
-	 case CLASS :
-	 case INTERFACE :
-	 case ENUM :
-	 case THROWABLE :
-	    break;
-	 default :
-	    continue;
-       }
-
-      BumpLocation bl = bn.getLocation();
-      if (bl == null) continue;
-      String ky = bl.getKey();
-      if (active_names.containsKey(ky)) continue;
-      BconName bcn = new BconName(bl);
-      active_names.put(ky,bcn);
+	 BumpLocation bl = bn.getLocation();
+	 if (bl == null) continue;
+	 String ky = bl.getKey();
+	 if (active_names.containsKey(ky)) continue;
+	 BconName bcn = new BconName(bl);
+	 active_names.put(ky,bcn);
+       } 
     }
 
    BassFactory.getFactory().addPopupHandler(this);

@@ -86,7 +86,7 @@
 <entry key="visualization.gradient.indication">class</entry>
 <entry key="visualization.gradient.direction">vertical</entry>
 <entry key="Bale.editor.do.gradient">true</entry>
-<entry key="Bale.comment.wrapping">true</entry>
+<entry key="Bale.comment.wrapping">false</entry>
 <entry key="Bale.autocomplete.delay">0</entry>
 <entry key="Bale.autocomplete.nocase">false</entry>
 <entry key="Bale.elide.delay">250</entry>

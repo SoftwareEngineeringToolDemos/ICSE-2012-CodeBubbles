@@ -561,7 +561,7 @@ public static File getBubblesPluginDirectory()
 	 pdir = new File(f2,"edu.brown.cs.bubbles.bedrock");
 	 break;
       case PYTHON :
-	 pdir = new File(wsd,".pybase");
+	 pdir = new File(wsd,".metadata");
 	 break;
     }
 
@@ -676,6 +676,23 @@ public File getClassDirectory()
    f = new File(f,course_name);
 
    if (!f.exists()) return null;
+
+   return f;
+}
+
+
+
+public File getRootDirectory()
+{
+   File f = null;
+
+   if (install_jar && jar_directory != null) {
+      f = new File(jar_directory);
+    }
+   else if (install_path != null) {
+      f = new File(install_path);
+    }
+   else return null;
 
    return f;
 }
@@ -1539,7 +1556,7 @@ private void extractPybles(File pyd,File libd,boolean force)
       catch (IOException e) {
 	 BoardLog.logE("BOARD","Problem setting up pybles library files: " + e);
        }
-    }	
+    }
 }
 
 
@@ -1644,7 +1661,6 @@ private static boolean checkWorkspaceDirectory(File wsd,boolean create)
    if (!wsd.exists() || !wsd.isDirectory()) return false;
 
    File df = new File(wsd,BOARD_ECLIPSE_WS_DATA);
-
    if (!df.exists() || !df.canRead()) return false;
 
    return true;
@@ -2140,7 +2156,6 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
    private boolean ws_changed;
    private JLabel workspace_warning;
 
-
    WorkspaceDialog() {
       SwingGridPanel pnl = new SwingGridPanel();
 
@@ -2263,7 +2278,6 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 private static class WorkspaceDirectoryFilter extends FileFilter {
 
    public boolean accept(File f) {
-      //return checkWorkspaceDirectory(f); //edited by amc6
       return true;
     }
 

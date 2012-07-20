@@ -591,24 +591,7 @@ private class BconPetalArc extends PetalArcDefault {
 	 setStroke(s);
       }
 
-      Color c = null;
-      switch (prt) {
-	 default :
-	    c = Color.CYAN;
-	    break;
-	 case CALLS :
-	    c = Color.MAGENTA;
-	    break;
-	 case SUBCLASS :
-	 case IMPLEMENTED_BY :
-	 case EXTENDED_BY :
-	 case MEMBER_OF :
-	    c = Color.BLACK;
-	    break;
-	 case INNERCLASS :
-	    c = Color.GRAY;
-	    break;
-      }
+      Color c = getArcColor(prt);
       if (c != null) setColor(c);
 
       if (for_arc.useTargetArrow())
@@ -623,6 +606,31 @@ private class BconPetalArc extends PetalArcDefault {
 
 }	// end of inner clas BconPetalArc
 
+
+
+static Color getArcColor(ArcType prt)
+{
+   Color c = null;
+   switch (prt) {
+      default :
+         c = Color.CYAN;
+         break;
+      case CALLS :
+         c = Color.MAGENTA;
+         break;
+      case SUBCLASS :
+      case IMPLEMENTED_BY :
+      case EXTENDED_BY :
+      case MEMBER_OF :
+         c = Color.BLACK;
+         break;
+      case INNERCLASS :
+         c = Color.GRAY;
+         break;
+    }
+   
+   return c;
+}
 
 
 

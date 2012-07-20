@@ -322,6 +322,9 @@ void checkWriteLock()
 
 
 
+BaleDocument getBaseEditDocument()			{ return this; }
+
+
 
 /********************************************************************************/
 /*										*/
@@ -791,7 +794,7 @@ void fixLineIndent(int lno)
 
 
 
-private BaleIndenter getIndenter()
+BaleIndenter getIndenter()
 {
    if (our_indenter == null) {
       switch (getLanguage()) {

@@ -41,7 +41,6 @@ import org.python.pydev.parser.jython.ast.NameTok;
 import org.python.pydev.parser.jython.ast.Str;
 import org.python.pydev.parser.jython.ast.VisitorBase;
 import org.python.pydev.parser.jython.ast.aliasType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -350,7 +349,7 @@ public static GlobalModelVisitor getGlobalModuleVisitorWithTokens(SimpleNode ast
       throw new RuntimeException("Only globals for getting the GlobalModelVisitor");
     }
    GlobalModelVisitor modelVisitor = new GlobalModelVisitor(which,moduleName,
-							       onlyAllowTokensIn__all__); 
+							       onlyAllowTokensIn__all__);
 
    if (ast != null) {
       try {

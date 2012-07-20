@@ -40,8 +40,6 @@ import edu.brown.cs.bubbles.pybase.symbols.ModulesFoundStructure.ZipContents;
 
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.core.FullRepIterable;
-import org.python.pydev.core.ModulesKey;
-import org.python.pydev.core.ModulesKeyForZip;
 import org.python.pydev.core.Tuple;
 import org.python.pydev.parser.jython.SimpleNode;
 import org.python.pydev.parser.jython.ast.Assign;
@@ -50,7 +48,6 @@ import org.python.pydev.parser.jython.ast.Module;
 import org.python.pydev.parser.jython.ast.Name;
 import org.python.pydev.parser.jython.ast.exprType;
 import org.python.pydev.parser.jython.ast.stmtType;
-import org.python.pydev.parser.visitors.NodeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -219,13 +216,12 @@ public void saveToFile(File workspacemetadatafile)
       buf = new StringBuilder(modulesKeys.size() * 50);
       buf.append(MODULES_MANAGER_V1);
 
-      for (Iterator<ModulesKey> iter = this.modulesKeys.keySet().iterator(); iter
-										.hasNext();) {
+      for (Iterator<ModulesKey> iter = this.modulesKeys.keySet().iterator(); iter.hasNext();) {
 	 ModulesKey next = iter.next();
-	 buf.append(next.name);
-	 if (next.file != null) {
+	 buf.append(next.getModuleName());
+	 if (next.getModuleFile() != null) {
 	    buf.append("|");
-	    buf.append(next.file.toString());
+	    buf.append(next.getModuleFile().toString());
 	  }
 	 buf.append('\n');
        }
@@ -276,8 +272,8 @@ throws IOException
       if (key != null) {
 	 // restore with empty modules.
 	 modulesManager.modulesKeys.put(key, key);
-	 if (key.file != null) {
-	    modulesManager.files.add(key.file);
+	 if (key.getModuleFile() != null) {
+	    modulesManager.files.add(key.getModuleFile());
 	  }
        }
     }
@@ -525,7 +521,7 @@ public Set<String> getAllModuleNames(boolean addDependencies,
    synchronized (modulesKeysLock) {
       for (ModulesKey key : modulesKeys.keySet()) {
 	 if (key.hasPartStartingWith(partStartingWithLowerCase)) {
-	    s.add(key.name);
+	    s.add(key.getModuleName());
 	  }
        }
     }
@@ -650,7 +646,7 @@ protected AbstractModule getModule(boolean acceptCompiledModule,String name,
 
    if (!dontSearchInit) {
       if (n == null) {
-	 keyForCacheAccess.name = new StringBuffer(name).append(".__init__").toString();
+	 keyForCacheAccess.setModuleName(name + ".__init__"); 
 	 n = cache.getObj(keyForCacheAccess, this);
 	 if (n != null) {
 	    name += ".__init__";
@@ -658,7 +654,7 @@ protected AbstractModule getModule(boolean acceptCompiledModule,String name,
        }
     }
    if (n == null) {
-      keyForCacheAccess.name = name;
+      keyForCacheAccess.setModuleName(name);
       n = cache.getObj(keyForCacheAccess, this);
     }
 
@@ -680,8 +676,8 @@ protected AbstractModule getModule(boolean acceptCompiledModule,String name,
 
 	 if (!e.getFile().exists()) {
 	    // if the file does not exist anymore, just remove it.
-	    keyForCacheAccess.name = name;
-	    keyForCacheAccess.file = e.getFile();
+	    keyForCacheAccess.setModuleName(name);
+	    keyForCacheAccess.setModuleFile(e.getFile());
 	    doRemoveSingleModule(keyForCacheAccess);
 	    n = null;
 
@@ -739,8 +735,8 @@ protected AbstractModule getModule(boolean acceptCompiledModule,String name,
 		     n = decorateModule(n, nature);
 		   }
 		  catch (IOException exc) {
-		     keyForCacheAccess.name = name;
-		     keyForCacheAccess.file = e.getFile();
+		     keyForCacheAccess.setModuleName(name);
+		     keyForCacheAccess.setModuleFile(e.getFile());
 		     doRemoveSingleModule(keyForCacheAccess);
 		     n = null;
 		   }

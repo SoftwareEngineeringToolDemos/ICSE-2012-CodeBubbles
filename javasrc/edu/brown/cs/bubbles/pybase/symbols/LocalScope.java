@@ -48,7 +48,6 @@ import org.python.pydev.parser.jython.ast.Tuple;
 import org.python.pydev.parser.jython.ast.argumentsType;
 import org.python.pydev.parser.jython.ast.exprType;
 import org.python.pydev.parser.jython.ast.stmtType;
-import org.python.pydev.parser.visitors.NodeUtils;
 import org.python.pydev.parser.visitors.scope.ASTEntry;
 import org.python.pydev.parser.visitors.scope.SequencialASTIteratorVisitor;
 
@@ -329,7 +328,7 @@ public List<AbstractToken> getLocalImportedModules(int line,int col,String modul
 	    stmtType stmt = f.body[i];
 	    if (stmt != null) {
 	       importedModules.addAll(GlobalModelVisitor.getTokens(stmt,
-                     VisitorType.ALIAS_MODULES, moduleName, null, false));
+		     VisitorType.ALIAS_MODULES, moduleName, null, false));
 	    }
 	 }
       }

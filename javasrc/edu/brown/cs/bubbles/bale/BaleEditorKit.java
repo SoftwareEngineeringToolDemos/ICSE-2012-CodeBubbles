@@ -304,6 +304,10 @@ BaleEditorKit(BoardLanguage lang)
        }
     }
 
+   if (language_kit != null) {
+      bale_keymap = language_kit.getKeymap(bale_keymap);
+    }
+
    bale_actions = null;
 }
 
@@ -352,9 +356,7 @@ Action [] getLanguageActions()
 
 void setupKeyMap(JTextComponent tc)
 {
-   Keymap km = bale_keymap;
-   if (language_kit != null) km = language_kit.getKeymap(km);
-   tc.setKeymap(km);
+   tc.setKeymap(bale_keymap);
 }
 
 
@@ -480,7 +482,6 @@ static class FragmentKit extends BaleEditorKit {
     }
 
 }	// end of inner class FragmentKit
-
 
 
 
@@ -1761,7 +1762,7 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       BaleEditorPane target = getBaleEditor(e);
       BaleDocument bd = target.getBaleDocument();
       if (!checkEditor(target)) return;
-   
+
       int spos = target.getSelectionStart();
       int epos = target.getSelectionEnd();
       int slno = bd.findLineNumber(spos);
@@ -1771,48 +1772,48 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       String cnts;
       Point p;
       try {
-         cnts = bd.getText(spos,epos-spos);
-         Rectangle r = target.modelToView(spos);
-         p = new Point(r.x,r.y);
+	 cnts = bd.getText(spos,epos-spos);
+	 Rectangle r = target.modelToView(spos);
+	 p = new Point(r.x,r.y);
        }
       catch (BadLocationException ex) {
-         BoardLog.logE("BALE","Problem getting extract text",ex);
-         return;
+	 BoardLog.logE("BALE","Problem getting extract text",ex);
+	 return;
        }
-   
+
       BudaBubble bbl = BudaRoot.findBudaBubble(target);
       if (bbl == null) return;
-   
+
       String fnm = bd.getFragmentName();
       String aft = null;
       String cls = null;
       switch (bd.getFragmentType()) {
-         case FILE :
-         case NONE :
-            return;
-         case METHOD :
-            aft = fnm;
-            cls = fnm;
-            int idx1 = cls.indexOf("(");
-            if (idx1 >= 0) cls = cls.substring(0,idx1);
-            idx1 = cls.lastIndexOf(".");
-            if (idx1 >= 0) cls = cls.substring(0,idx1);
-            break;
-         case FIELDS :
-         case STATICS :
-         case HEADER :
-            cls = fnm;
-            int idx2 = cls.lastIndexOf(".");
-            cls = cls.substring(0,idx2);
-            break;
+	 case FILE :
+	 case NONE :
+	    return;
+	 case METHOD :
+	    aft = fnm;
+	    cls = fnm;
+	    int idx1 = cls.indexOf("(");
+	    if (idx1 >= 0) cls = cls.substring(0,idx1);
+	    idx1 = cls.lastIndexOf(".");
+	    if (idx1 >= 0) cls = cls.substring(0,idx1);
+	    break;
+	 case FIELDS :
+	 case STATICS :
+	 case HEADER :
+	    cls = fnm;
+	    int idx2 = cls.lastIndexOf(".");
+	    cls = cls.substring(0,idx2);
+	    break;
        }
-   
+
       if (cls == null) return;
-   
+
       BuenoProperties props = new BuenoProperties();
       props.put(BuenoConstants.BuenoKey.KEY_CONTENTS,cnts);
       BuenoLocation loc = BuenoFactory.getFactory().createLocation(bd.getProjectName(),cls,aft,true);
-   
+
       BuenoMethodDialog bmd = new BuenoMethodDialog(bbl,p,props,loc,this);
       bmd.setLabel("Enter Signature of Extracted Method");
       bmd.showDialog();
@@ -2527,7 +2528,7 @@ private static class CommentLocation extends BuenoLocation {
 /*										*/
 /********************************************************************************/
 
-private static class KeyItem {
+static class KeyItem {
 
    private KeyStroke key_stroke;
    private Action key_action;

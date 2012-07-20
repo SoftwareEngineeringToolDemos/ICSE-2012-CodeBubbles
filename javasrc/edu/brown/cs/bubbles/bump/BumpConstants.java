@@ -617,7 +617,8 @@ enum BumpLaunchConfigType {
    UNKNOWN(null),
    JAVA_APP("Java Application"),
    JUNIT_TEST("JUnit"),
-   REMOTE_JAVA("Remote Java Application");
+   REMOTE_JAVA("Remote Java Application"),
+   PYTHON("Python");
 
    private String eclipse_name;
 
@@ -636,7 +637,7 @@ interface BumpRunEventHandler extends EventListener {
    void handleLaunchEvent(BumpRunEvent evt);
    void handleProcessEvent(BumpRunEvent evt);
    void handleThreadEvent(BumpRunEvent evt);
-   void handleConsoleMessage(BumpProcess proc,boolean isstderr,String msg);
+   void handleConsoleMessage(BumpProcess proc,boolean isstderr,boolean iseof,String msg);
 
 }	// end of inner interface BumpRunEventHandler
 

@@ -536,30 +536,3 @@ static void noteElision(Component c)
 
 
 /* end of BaleEditorBubble.java */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -37,6 +37,7 @@ import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bueno.BuenoConstants;
 import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.burp.BurpHistory;
 
 import org.w3c.dom.Element;
 
@@ -285,7 +286,7 @@ private void rename()
 {
    String ntext = rename_field.getText();
 
-   if (for_id == null) return;
+   if (for_id == null || for_document == null) return;
 
    int soff = for_document.mapOffsetToEclipse(for_id.getStartOffset());
    int eoff = for_document.mapOffsetToEclipse(for_id.getEndOffset());
@@ -293,6 +294,7 @@ private void rename()
    BudaRoot br = BudaRoot.findBudaRoot(for_editor);
    if (br != null) br.handleSaveAllRequest();
 
+   BaleEditorPane oed = for_editor;
    BumpClient bc = BumpClient.getBump();
    Element edits = bc.rename(for_document.getProjectName(),for_document.getFile(),soff,eoff,ntext);
 
@@ -300,8 +302,14 @@ private void rename()
 
    if (edits == null) return;
 
-   BaleApplyEdits bae = new BaleApplyEdits();
-   bae.applyEdits(edits);
+   BurpHistory.getHistory().beginEditAction(oed);
+   try {
+      BaleApplyEdits bae = new BaleApplyEdits();
+      bae.applyEdits(edits);
+    }
+   finally {
+      BurpHistory.getHistory().endEditAction(oed);
+    }
 
    if (br != null) br.handleSaveAllRequest();
 }

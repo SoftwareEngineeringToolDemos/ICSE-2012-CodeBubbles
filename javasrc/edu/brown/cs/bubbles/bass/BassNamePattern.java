@@ -220,6 +220,7 @@ int match(BassName bn)
       switch (bn.getNameType()) {
 	 case PACKAGE :
 	 case NONE :
+         case MODULE :
 	    return -1;
 	 case ENUM :
 	 case CLASS :

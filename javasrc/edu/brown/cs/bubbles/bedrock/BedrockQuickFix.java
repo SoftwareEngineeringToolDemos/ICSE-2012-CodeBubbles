@@ -144,26 +144,26 @@ private class WJob extends WorkbenchJob {
 
    @Override public IStatus runInUIThread(IProgressMonitor m) {
       try {
-	 for (IQuickFixProcessor qp : quick_fixes) {
-	    try {
-	       IJavaCompletionProposal [] props = qp.getCorrections(fix_context,problem_contexts);
-	       outputProposals(props,xml_writer);
-	     }
-	    catch (CoreException e) { }
-	  }
-	 for (IQuickAssistProcessor qp : quick_assists) {
-	    try {
-	       IJavaCompletionProposal [] props = qp.getAssists(fix_context,problem_contexts);
-	       outputProposals(props,xml_writer);
-	     }
-	    catch (CoreException e) { }
-	  }
+         for (IQuickFixProcessor qp : quick_fixes) {
+            try {
+               IJavaCompletionProposal [] props = qp.getCorrections(fix_context,problem_contexts);
+               outputProposals(props,xml_writer);
+             }
+            catch (CoreException e) { }
+          }
+         for (IQuickAssistProcessor qp : quick_assists) {
+            try {
+               IJavaCompletionProposal [] props = qp.getAssists(fix_context,problem_contexts);
+               outputProposals(props,xml_writer);
+             }
+            catch (CoreException e) { }
+          }
        }
       catch (Throwable t) {
-	 BedrockPlugin.logE("Problem with quick fix: " + t,t);
-	 return new Status(IStatus.ERROR,"BEDROCK","Problem with quick fix",t);
+         BedrockPlugin.logE("Problem with quick fix: " + t,t);
+         return new Status(IStatus.ERROR,"BEDROCK","Problem with quick fix",t);
        }
-
+   
       return Status.OK_STATUS;
     }
 
@@ -271,7 +271,12 @@ private void outputProposal(IJavaCompletionProposal p,IvyXmlWriter xw)
 
    xw.field("RELEVANCE",p.getRelevance());
    xw.field("DISPLAY",p.getDisplayString());
-   xw.field("INFO",p.getAdditionalProposalInfo());
+
+   try {
+      xw.field("INFO",p.getAdditionalProposalInfo());
+    }
+   catch (Throwable t) { }
+
    xw.field("ID",System.identityHashCode(p));
    IContextInformation ci = p.getContextInformation();
    if (ci != null) {

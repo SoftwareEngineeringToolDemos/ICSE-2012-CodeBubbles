@@ -377,12 +377,13 @@ private class RunEventHandler implements BumpRunEventHandler {
 	    break;
 	 case THREAD_CHANGE :
 	    if (event_handler == null) return;
-	    updateValues();
+	    if (getThread().getThreadState().isStopped())
+	       updateValues();
 	    break;
        }
     }
 
-   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,String msg)	{ }
+   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg)	{ }
 
 }	// end of inner class RunEventHandler
 
@@ -513,6 +514,7 @@ protected abstract class AbstractNode implements ValueTreeNode, TreeNode {
 
    void fixAfterChange()					{ }
    boolean sameNode(AbstractNode an)				{ return false; }
+   boolean matchNode(AbstractNode an)				{ return false; }
    boolean isFrozen()						{ return false; }
 
    protected AbstractNode getBddtParent()			{ return parent_node; }
@@ -537,7 +539,7 @@ protected abstract class AbstractNode implements ValueTreeNode, TreeNode {
     }
 
    @Override public int getChildCount() {
-      if (children_known && getType() == ValueSetType.THREAD && child_nodes.isEmpty()) 
+      if (children_known && getType() == ValueSetType.THREAD && child_nodes.isEmpty())
 	 children_known = false;
       computeChildren();
       return child_nodes.size();
@@ -629,46 +631,46 @@ private static class ValueSorter implements Comparator<AbstractNode> {
 
    @Override public int compare(AbstractNode n1,AbstractNode n2) {
       if (n1.getType() != n2.getType()) {
-         return n1.getType().ordinal() - n2.getType().ordinal();
+	 return n1.getType().ordinal() - n2.getType().ordinal();
        }
       switch (n1.getType()) {
-         default :
-         case THREAD :
-         case STACK :
-            int v = n1.getName().compareTo(n2.getName());
-            if (v != 0) return v;
-            return n1.hashCode() - n2.hashCode();
-         case FRAME :
-            return n1.getFrame().getLevel() - n2.getFrame().getLevel();
-         case VALUE :
-            // locals first
-            if (n1.getRunValue().isLocal() != n2.getRunValue().isLocal()) {
-               if (n1.getRunValue().isLocal()) return -1;
-               return 1;
-             }
-            String nm1 = n1.getName();
-            String nm2 = n2.getName();
-            int idx1 = nm1.lastIndexOf('?');
-            int idx2 = nm2.lastIndexOf('?');
-            if (idx1 >= 0 && idx1 == idx2 && nm2.startsWith(nm1.substring(0,idx1)) &&
-        	   nm1.length() > idx1+1 && nm2.length() > idx2+1 &&
-        	   nm1.charAt(idx1+1) == '[' && nm2.charAt(idx2+1) == '[') {
-               int idx3 = nm1.indexOf("]");
-               int idx4 = nm2.indexOf("]");
-               try {
-        	  int v1 = Integer.parseInt(nm1.substring(idx1+2,idx3));
-        	  int v2 = Integer.parseInt(nm2.substring(idx2+2,idx4));
-        	  if (v1 < v2) return -1;
-        	  if (v1 > v2) return 1;
-        	}
-               catch (NumberFormatException e) { }
-             }
-   
-            // check if inherited and put last if so
-            // put static after class variables
-            v = nm1.compareTo(nm2);
-            if (v != 0) return v;
-            return n1.hashCode() - n2.hashCode();
+	 default :
+	 case THREAD :
+	 case STACK :
+	    int v = n1.getName().compareTo(n2.getName());
+	    if (v != 0) return v;
+	    return n1.hashCode() - n2.hashCode();
+	 case FRAME :
+	    return n1.getFrame().getLevel() - n2.getFrame().getLevel();
+	 case VALUE :
+	    // locals first
+	    if (n1.getRunValue().isLocal() != n2.getRunValue().isLocal()) {
+	       if (n1.getRunValue().isLocal()) return -1;
+	       return 1;
+	     }
+	    String nm1 = n1.getName();
+	    String nm2 = n2.getName();
+	    int idx1 = nm1.lastIndexOf('?');
+	    int idx2 = nm2.lastIndexOf('?');
+	    if (idx1 >= 0 && idx1 == idx2 && nm2.startsWith(nm1.substring(0,idx1)) &&
+		   nm1.length() > idx1+1 && nm2.length() > idx2+1 &&
+		   nm1.charAt(idx1+1) == '[' && nm2.charAt(idx2+1) == '[') {
+	       int idx3 = nm1.indexOf("]",idx1+1);
+	       int idx4 = nm2.indexOf("]",idx2+1);
+	       try {
+		  int v1 = Integer.parseInt(nm1.substring(idx1+2,idx3));
+		  int v2 = Integer.parseInt(nm2.substring(idx2+2,idx4));
+		  if (v1 < v2) return -1;
+		  if (v1 > v2) return 1;
+		}
+	       catch (NumberFormatException e) { }
+	     }
+
+	    // check if inherited and put last if so
+	    // put static after class variables
+	    v = nm1.compareTo(nm2);
+	    if (v != 0) return v;
+	    return n1.hashCode() - n2.hashCode();
        }
     }
 
@@ -750,8 +752,8 @@ private class RootNode extends AbstractNode {
 	    pn = an.getBddtParent();
 	    if (pn == null) return true;
 	  }
-	 AbstractNode nn = replaceNode(pn,an);
-	 if (nn == null) 
+	 AbstractNode nn = replaceNode(pn,an,i);
+	 if (nn == null)
 	    return false;
 	 nl.addFirst(nn);
 	 pn = nn;
@@ -761,7 +763,7 @@ private class RootNode extends AbstractNode {
       return true;
    }
 
-   AbstractNode replaceNode(AbstractNode pn,AbstractNode xn) {
+   AbstractNode replaceNode(AbstractNode pn,AbstractNode xn,int idx) {
       if (pn == null) return null;
       AbstractNode newbase = null;
       int ct = pn.getChildCount();
@@ -770,13 +772,14 @@ private class RootNode extends AbstractNode {
 	 if (cn == xn) return cn;
 	 if (cn.getType() == xn.getType() && cn.sameNode(xn))
 	    newbase = cn;
+	 else if (i == idx && cn.getType() == xn.getType() && cn.matchNode(xn))
+	    newbase = cn;
        }
       if (newbase == null) {
-	 System.err.println("REPLACEMENT NOT FOUND");
+	 System.err.println("REPLACEMENT FOR " + pn + " :: " + xn + " NOT FOUND");
       }
       return newbase;
     }
-
 
 }	// end of inner class RootNode
 
@@ -805,7 +808,7 @@ private class ThreadNode extends AbstractNode {
 	 addChild(new FrameNode(this,stk.getFrame(i)));
        }
     }
-   
+
    @Override String getName()		{ return for_thread.getName(); }
 
    @Override ValueSetType getType()	{ return ValueSetType.THREAD; }
@@ -956,10 +959,21 @@ private class FrameNode extends AbstractNode {
    @Override boolean sameNode(AbstractNode an) {
       if (an instanceof FrameNode) {
 	 FrameNode fn = (FrameNode) an;
-	 return for_frame.getId().equals(fn.for_frame.getId());
+	 if (for_frame.getId().equals(fn.for_frame.getId())) return true;
        }
       return false;
     }
+
+   @Override boolean matchNode(AbstractNode an) {
+      if (an instanceof FrameNode) {
+	 FrameNode fn = (FrameNode) an;
+	 if (for_frame.getId().equals(fn.for_frame.getId())) return true;
+	 if (for_frame.getMethod().equals(fn.for_frame.getMethod())) return true;
+       }
+      return false;
+    }
+
+
 
 }	// end of inner class FrameNode
 

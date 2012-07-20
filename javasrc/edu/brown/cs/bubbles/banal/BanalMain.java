@@ -25,11 +25,9 @@
 
 package edu.brown.cs.bubbles.banal;
 
-import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.BoardConstants;
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
-
-import java.io.IOException;
+import edu.brown.cs.ivy.exec.IvySetup;
 
 
 
@@ -47,9 +45,6 @@ public static void main(String [] args)
 {
    BanalMain bm = new BanalMain(args);
 
-   BoardSetup brd = BoardSetup.getSetup();
-   brd.setSkipSplash();
-
    bm.process();
 }
 
@@ -61,7 +56,8 @@ public static void main(String [] args)
 /*										*/
 /********************************************************************************/
 
-private String		project_name;
+private String          mint_handle;
+private BanalMonitor    the_monitor;
 
 
 
@@ -73,9 +69,12 @@ private String		project_name;
 
 private BanalMain(String [] args)
 {
-   project_name = null;
+   mint_handle = BoardConstants.BOARD_MINT_NAME;
+   the_monitor = null;
 
    scanArgs(args);
+   
+   IvySetup.setup();
 }
 
 
@@ -90,24 +89,23 @@ private void scanArgs(String [] args)
 {
    for (int i = 0; i < args.length; ++i) {
       if (args[i].startsWith("-")) {
-	 if (args[i].startsWith("-p") && i+1 < args.length) {            // -project <project>
-	    project_name = args[++i];
-	  }
-	 else badArgs();
+         if (args[i].startsWith("-m") && i+1 < args.length) {   // -m <mint handle>
+            mint_handle = args[++i];
+          }
+         else if (args[i].startsWith("-S")) ;                   // -SERVER            
+         else badArgs();
        }
       else {
 	 badArgs();
        }
     }
-
-   if (project_name == null) badArgs();
 }
 
 
 
 private void badArgs()
 {
-   System.err.println("BANALMAIN: banalmain -p <project>");
+   System.err.println("BANALMAIN: banalmain [-m <mint_handle>]");
    System.exit(1);
 }
 
@@ -121,26 +119,11 @@ private void badArgs()
 
 private void process()
 {
-   processPackage();
+   the_monitor = new BanalMonitor(this,mint_handle);
+   the_monitor.server();
+   System.exit(0);
 }
 
-
-private void processPackage()
-{
-   BanalProjectManager bpm = new BanalProjectManager();
-   BanalPackageGraph pg = new BanalPackageGraph(project_name,"edu.brown.cs.bubbles.bass",true);
-   BanalStaticLoader bsl = new BanalStaticLoader(bpm,pg);
-   bsl.process();
-
-   try {
-      IvyXmlWriter xw = new IvyXmlWriter("test.out");
-      pg.outputXml(xw);
-      xw.close();
-    }
-   catch (IOException e) {
-      System.err.println("PROBLEM OUTPUTING XML: " + e);
-    }
-}
 
 
 

@@ -105,6 +105,8 @@ private static BumpClient      bump_client = null;
 
 BaleDocumentIde()
 {
+// super(new IdeContent(1024));
+
    synchronized (BaleDocumentIde.class) {
       if (bump_client == null) {
 	 bump_client = BumpClient.getBump();
@@ -1230,6 +1232,178 @@ private class EclipseUpdater implements DocumentListener {
 
 @Override public void handleFileStarted(String proj,String file)	{ }
 @Override public void handleProjectOpened(String proj)			{ }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Smart content manager							*/
+/*										*/
+/********************************************************************************/
+/***************************
+   When we have multiple windows open on the same base file, undo of one
+   tends to mess up undo of another because the offsets stored in events
+   are absolute.  In theory this can be fixed by making the offsets be
+   positions which is what this attempts to do.  This code works for individual
+   edits.
+
+   However, we still need to handle the offsets in DocumentEvents, particularly
+   those created internally to abstract document.
+
+   For now, the fix is to have Burp merge all events for a common base editor
+
+private static class IdeContent extends GapContent {
+
+   private final static long serialVersionUID = 1;
+
+   IdeContent(int len) {
+      super(len);
+    }
+
+   @Override public UndoableEdit insertString(int where,String str) throws BadLocationException {
+      UndoableEdit ed = super.insertString(where,str);
+      return new InsertUndo(ed,where,str.length());
+    }
+
+   @Override public UndoableEdit remove(int where,int nitems) throws BadLocationException {
+      String rem = getString(where,nitems);
+      UndoableEdit ed = super.remove(where,nitems);
+      return new RemoveUndo(ed,where,rem);
+    }
+
+   private class InsertUndo extends AbstractUndoableEdit {
+
+      private UndoableEdit ins_edit;
+      private int ins_offset;
+      private int ins_length;
+      private Position ins_pos;
+      private String ins_string;
+      protected Vector<?> pos_refs;
+      private final static long serialVersionUID = 1;
+
+      InsertUndo(UndoableEdit ed,int offset,int length) {
+	 ins_edit = ed;
+	 ins_offset = offset;
+	 ins_length = length;
+	 try {
+	    ins_pos = createPosition(ins_offset);
+	  }
+	 catch (BadLocationException e) { }
+       }
+
+      @Override public void undo() throws CannotUndoException {
+	 super.undo();
+	 resetPosition();
+	 try {
+	    // Get the Positions in the range being removed.
+	    pos_refs = getPositionsInRange(null, ins_offset, ins_length);
+	    ins_string = getString(ins_offset, ins_length);
+	    remove(ins_offset, ins_length);
+	  }
+	 catch (BadLocationException bl) {
+	    throw new CannotUndoException();
+	  }
+       }
+
+      @Override public void redo() throws CannotRedoException {
+	 super.redo();
+	 resetPosition();
+	 try {
+	    insertString(ins_offset, ins_string);
+	    ins_string = null;
+	    // Update the Positions that were in the range removed.
+	    if (pos_refs != null) {
+	       updateUndoPositions(pos_refs, ins_offset, ins_length);
+	       pos_refs = null;
+	     }
+	    }
+	 catch (BadLocationException bl) {
+	    throw new CannotRedoException();
+	  }
+       }
+
+      private void resetPosition() {
+	 if (ins_pos != null) {
+	    int off = ins_pos.getOffset();
+	    if (off != ins_offset) {
+	       BoardLog.logD("BALE","Document position updated for undo/redo " + off + " " + ins_offset);
+	       ins_offset = off;
+	     }
+	  }
+       }
+
+    }	// end of inner class IdeContent.InsertUndo
+
+   private class RemoveUndo extends AbstractUndoableEdit {
+
+      private UndoableEdit rem_edit;
+      private int rem_offset;
+      private int rem_length;
+      private String rem_string;
+      private Position rem_pos;
+      private Vector<?> pos_refs;
+      private final static long serialVersionUID = 1;
+
+      RemoveUndo(UndoableEdit ed,int offset, String string) {
+	 super();
+	 rem_edit = ed;
+	 rem_offset = offset;
+	 rem_string = string;
+	 rem_length = string.length();
+	 pos_refs = getPositionsInRange(null, rem_offset, rem_length);
+	 try {
+	    rem_pos = createPosition(rem_offset);
+	  }
+	 catch (BadLocationException e) { }
+       }
+
+      @Override public void undo() throws CannotUndoException {
+	 super.undo();
+	 resetPosition();
+	 try {
+	    insertString(rem_offset, rem_string);
+	    // Update the Positions that were in the range removed.
+	    if (pos_refs != null) {
+	       updateUndoPositions(pos_refs, rem_offset, rem_length);
+	       pos_refs = null;
+	     }
+	    rem_string = null;
+	  }
+	 catch (BadLocationException bl) {
+	    throw new CannotUndoException();
+	  }
+       }
+
+      public void redo() throws CannotRedoException {
+	 super.redo();
+	 try {
+	    rem_string = getString(rem_offset, rem_length);
+	    // Get the Positions in the range being removed.
+	    pos_refs = getPositionsInRange(null, rem_offset, rem_length);
+	    remove(rem_offset, rem_length);
+	  }
+	 catch (BadLocationException bl) {
+	    throw new CannotRedoException();
+	  }
+       }
+
+      private void resetPosition() {
+	 if (rem_pos != null) {
+	    int off = rem_pos.getOffset();
+	    if (off != rem_offset) {
+	       BoardLog.logD("BALE","Document position updated for undo/redo " + off + " " + rem_offset);
+	       rem_offset = off;
+	     }
+	  }
+       }
+
+    }	  // end of inner class IdeContent.RemoveUndo
+
+}	// end of inner class IdeContent
+
+
+***********************/
 
 
 

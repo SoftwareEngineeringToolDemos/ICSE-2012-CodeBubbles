@@ -36,10 +36,19 @@
 
 package edu.brown.cs.bubbles.pybase.debug;
 
+import edu.brown.cs.bubbles.pybase.PybaseConstants;
+import edu.brown.cs.bubbles.pybase.PybaseException;
+
+
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.BadLocationException;
+
+
 import java.io.File;
 
 
-public class PybaseDebugBreakpoint implements PybaseDebugConstants {
+public class PybaseDebugBreakpoint implements PybaseDebugConstants, PybaseConstants {
 
 
 
@@ -49,8 +58,8 @@ public class PybaseDebugBreakpoint implements PybaseDebugConstants {
 /*										*/
 /********************************************************************************/
 
-private File		for_file;
-private int		at_line;
+private IFileData       file_data;
+private Position        file_position;
 private String		debug_condition;
 private boolean 	condition_enabled;
 private String		function_name;
@@ -66,10 +75,19 @@ private boolean         is_enabled;
 /*										*/
 /********************************************************************************/
 
-public PybaseDebugBreakpoint(File f,int line)
+public PybaseDebugBreakpoint(IFileData fd,int line) throws PybaseException
 {
-   for_file = f;
-   at_line = line;
+   file_data = fd;
+   IDocument d = fd.getDocument();
+   try {
+      int off = d.getLineOffset(line);
+      file_position = new Position(off);
+      d.addPosition(file_position);
+    }
+   catch (BadLocationException ex) {
+      throw new PybaseException("Bad breakpoint location",ex);
+    }
+   
    debug_condition = null;
    condition_enabled = false;
    function_name = null;
@@ -77,7 +95,7 @@ public PybaseDebugBreakpoint(File f,int line)
    is_enabled = true;
 }
 
-
+ 
 
 /********************************************************************************/
 /*										*/
@@ -85,8 +103,19 @@ public PybaseDebugBreakpoint(File f,int line)
 /*										*/
 /********************************************************************************/
 
-public File getFile()				{ return for_file; }
-public int getLine()				{ return at_line; }
+public File getFile()				{ return file_data.getFile(); }
+
+public int getLine()
+{
+   int off = file_position.getOffset();
+   try {
+      return file_data.getDocument().getLineOfOffset(off);
+    }
+   catch (BadLocationException ex) {
+      return -1;
+    }
+}
+
 public boolean isEnabled()                      { return is_enabled; }
 public String getCondition()			{ return debug_condition; }
 public boolean isConditionEnabled()		{ return condition_enabled; }

@@ -99,8 +99,21 @@ int getCurrentIndentation(int offset)
 }
 
 
+int getCurrentIndentationAtOffset(int offset)
+{
+   bale_document.readLock();
+   try {
+      return getLeadingWhitespaceLengthAtOffset(offset);
+    }
+   finally { bale_document.readUnlock(); }
+}
+
+
 
 abstract int getSplitIndentationDelta(int offset);
+
+abstract int getUnindentSize();
+
 
 
 
@@ -128,6 +141,28 @@ protected int getLeadingWhitespaceLength(int offset)
    int lend = bale_document.findLineOffset(lno+1)-1;
 
    if (lstart < 0) return 0;
+   if (lend >= doc_text.length()) lend = doc_text.length()-1;
+
+   for (int i = lstart; i < lend; ++i) {
+      char ch = doc_text.charAt(i);
+      if (!Character.isWhitespace(ch)) break;
+      indent.append(ch);
+    }
+
+   return computeVisualLength(indent);
+}
+
+
+
+protected int getLeadingWhitespaceLengthAtOffset(int offset)
+{
+   StringBuffer indent = new StringBuffer();
+   int lno = bale_document.findLineNumber(offset);
+   int lstart = bale_document.findLineOffset(lno);
+   int lend = bale_document.findLineOffset(lno+1)-1;
+
+   if (lstart < 0) return 0;
+   if (offset < lend) lend = offset;
    if (lend >= doc_text.length()) lend = doc_text.length()-1;
 
    for (int i = lstart; i < lend; ++i) {

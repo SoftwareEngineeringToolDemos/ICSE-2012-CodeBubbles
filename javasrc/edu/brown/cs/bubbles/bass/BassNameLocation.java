@@ -108,8 +108,8 @@ BassNameLocation(BumpLocation bl)
 	 name_type = BassNameType.STATICS;
 	 break;
       case MODULE :
-         name_type = BassNameType.FILE;
-         break;
+	 name_type = BassNameType.MODULE;
+	 break;
       default :
 	 name_type = BassNameType.NONE;
 	 break;
@@ -205,6 +205,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 return "< PREFIX >";
       case FILE :
 	 return "< FILE >";
+      case MODULE :
+	 return "< MODULE >";
       case CLASS :
       case ENUM :
       case INTERFACE :
@@ -226,6 +228,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case HEADER :
       case FILE :
       case OTHER_CLASS :
+      case MODULE :
 	 String nm = getUserSymbolName();
 	 int idx = nm.indexOf("<");
 	 if (idx > 0) nm = nm.substring(0,idx);
@@ -249,6 +252,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case HEADER :
       case OTHER_CLASS :
       case FILE :
+      case MODULE :
 	 return getNameHead() + ". " + getLocalName();
     }
 
@@ -292,10 +296,13 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 bb = bf.createClassPrefixBubble(getProject(),getNameHead());
 	 break;
       case FILE :
-	 bb = bf.createFileBubble(getProject(),getNameHead());
+	 bb = bf.createFileBubble(getProject(),getFile(),getNameHead());
 	 break;
       case PROJECT :
 	 break;
+      case MODULE :
+	 bb = bf.createFileBubble(getProject(),getFile(),getNameHead());
+	 break; 
       default :
 	 BoardLog.logW("BASS","NO BUBBLE FOR " + getKey());
 	 break;
@@ -312,6 +319,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case PROJECT :
       case PACKAGE :
       case FILE :
+      case MODULE :
       default :
 	 break;
       case CONSTRUCTOR :

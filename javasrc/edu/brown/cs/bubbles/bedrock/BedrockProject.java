@@ -996,9 +996,9 @@ private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolea
 	 for (IClasspathEntry ent : ents) {
 	    addPath(xw,jp,ent,false);
 	  }
-	 xw.end("RAWPATH");
        }
       catch (JavaModelException e) { }
+      xw.end("RAWPATH");
     }
 
    if (fil) {

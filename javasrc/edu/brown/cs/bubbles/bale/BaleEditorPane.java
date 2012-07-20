@@ -136,7 +136,7 @@ protected BaleEditorPane()
 void dispose()
 {
    BurpHistory.getHistory().removeEditor(this);
-   highlight_context.removeEditor(this);
+   if (highlight_context != null) highlight_context.removeEditor(this);
    getBaleDocument().dispose();
 }
 

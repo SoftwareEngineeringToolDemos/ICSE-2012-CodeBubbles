@@ -34,13 +34,13 @@ import edu.brown.cs.bubbles.bump.BumpConstants;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Document;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.event.DocumentEvent;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -230,6 +230,20 @@ public boolean canRedo(JTextComponent be)
 
 
 
+public void beginEditAction(JTextComponent be)
+{
+   BurpEditorData ed = editor_map.get(be);
+   if (ed != null) ed.beginEditAction();
+}
+
+
+public void endEditAction(JTextComponent be)
+{
+   BurpEditorData ed = editor_map.get(be);
+   if (ed != null) ed.endEditAction();
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -251,11 +265,27 @@ public void undo(JTextComponent be)
       if (ed == null) return;
     }
 
+   List<BurpChangeData> deps = null;
+   BurpChangeData c0 = (ed == null ? current_change : ed.getCurrentChange());
+   Document d0 = null;
+   if (c0 != null) d0 = c0.getBaseEditDocument();
+   if (d0 != null) {
+      for (BurpChangeData cd = current_change; cd != null && cd != c0; cd = cd.getPriorChange()) {
+	 Document d1 = cd.getBaseEditDocument();
+	 if (d1 != null && d1 == d0) {
+	    if (deps == null) deps = new ArrayList<BurpChangeData>();
+	    deps.add(cd);
+	  }
+       }
+    }
+   // deps = null;		// remove effect of above code to try new undo mechanism
+
    boolean havesig = false;
    while (!havesig) {
       BurpChangeData cd = (ed == null ? current_change : ed.getCurrentChange());
       if (cd == null) break;
-      cd.addDependencies();
+      cd.addDependencies(deps);
+      deps = null;
       if (!cd.canUndo()) break;
       cd.undo();
       if (cd.isSignificant()) havesig = true;
@@ -279,8 +309,7 @@ public void redo(JTextComponent be)
       if (ed == null) return;
     }
 
-   boolean havesig = false;
-   while (!havesig) {
+   for (int ct = 0; ; ++ct) {
       BurpChangeData cd = (ed == null ? current_change : ed.getCurrentChange());
       if (cd == null) {
 	 if (ed == null) cd = first_change;
@@ -288,9 +317,9 @@ public void redo(JTextComponent be)
        }
       else cd = cd.getNext(ed);
       if (cd == null) break;
+      if (cd.isSignificant() && ct > 0) break;
       if (!cd.canRedo()) break;
       cd.redo();
-      if (cd.isSignificant()) havesig = true;
     }
 }
 
@@ -299,7 +328,7 @@ public void redo(JTextComponent be)
 
 /********************************************************************************/
 /*										*/
-/*	Methods for maintaing the current_change				*/
+/*	Methods for maintaining the current_change				*/
 /*										*/
 /********************************************************************************/
 
@@ -384,13 +413,13 @@ private void removeAll(BurpEditorData ed)
    for (BurpChangeData ncd = cd.getNext(ed); ncd != null; ncd = next) {
       next = ncd.getNext(ed);
       if (ed == null || ncd.removeEditor(ed)) ncd.removeGlobal();
-    }
 }
 **************************/
 
 
+
 private String getEditCommandName(BurpEditorData be,UndoableEdit ed)
-{						
+{
    String rslt = "edit_" + ed.getPresentationName();
    if (be != null) {
       String id = be.getBubbleId();
@@ -401,7 +430,6 @@ private String getEditCommandName(BurpEditorData be,UndoableEdit ed)
       DocumentEvent de = (DocumentEvent) ed;
       rslt += "_" + de.getLength() + "_" + de.getOffset();
     }
-
 
    return rslt;
 }
@@ -464,8 +492,8 @@ private class ChangeHandler implements BumpConstants.BumpChangeHandler {
 
    @Override public void handleFileAdded(String proj,String file)		{ }
    @Override public void handleFileRemoved(String proj,String file)		{ }
-   @Override public void handleFileStarted(String proj,String file)             { }
-   @Override public void handleProjectOpened(String proj)                       { }
+   @Override public void handleFileStarted(String proj,String file)		{ }
+   @Override public void handleProjectOpened(String proj)			{ }
 
    @Override public void handleFileChanged(String proj,String file) {
       noteSave(new File(file));

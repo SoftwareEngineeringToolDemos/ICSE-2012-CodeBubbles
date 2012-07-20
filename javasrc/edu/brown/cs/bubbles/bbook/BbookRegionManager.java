@@ -551,14 +551,14 @@ private class TaskRegion implements BbookRegion
    private void initializeBubbles(BudaBubble b0) {
       active_bubbles = new HashSet<BudaBubble>();
       for (BudaBubble bb : bubble_area.getBubblesInRegion(region_area)) {
-	 if (isBubbleRelevant(bb)) {
-	    if (b0 == null) b0 = bb;
-	    noteBubble(bb);
-	  }
+         if (isBubbleRelevant(bb)) {
+            if (b0 == null) b0 = bb;
+            noteBubble(bb);
+          }
        }
       working_set = null;
       if (b0 != null) {
-	 working_set = bubble_area.findWorkingSetForBubble(b0);
+         working_set = bubble_area.findWorkingSetForBubble(b0);
        }
     }
 

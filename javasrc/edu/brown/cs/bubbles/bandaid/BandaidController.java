@@ -320,6 +320,7 @@ private void setupClassTypes()
    package_map.put("edu.brown.cs.dyvise.dyper.",ClassType.SYSTEM);
    package_map.put("com.ibm.",ClassType.SYSTEM);
    package_map.put("com.sun.",ClassType.SYSTEM);
+   package_map.put("com.apple.",ClassType.SYSTEM);
    package_map.put("org.postgresql.",ClassType.SYSTEM);
    package_map.put("jrockit.",ClassType.SYSTEM);
 

@@ -117,6 +117,10 @@ PybaseProject(PybaseMain pm,String name,File base)
 void setupDefaults()
 {
    python_interpreter = project_manager.findInterpreter(null);
+   if (python_interpreter == null)
+      PybaseMain.logE("No interpreter found");
+   else
+      PybaseMain.logD("Found interpreter " + python_interpreter.getName());
 
    File src = new File(base_directory,"src");
    if (src.isDirectory() || src.mkdir()) {
@@ -157,7 +161,7 @@ ISemanticData getSemanticData(String file)
    for (IFileData ifd : all_files) {
       if (ifd.getFile().getPath().equals(file)) return getParseData(ifd);
     }
-   
+
    return null;
 }
 
@@ -203,9 +207,9 @@ ISemanticData getParseData(IFileData fd)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Editing methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Editing methods 							 */
+/*										*/
 /********************************************************************************/
 
 void editProject(List<Element> opts,List<Element> paths)
@@ -215,48 +219,48 @@ void editProject(List<Element> opts,List<Element> paths)
       String v = IvyXml.getAttrString(oelt,"VALUE");
       pybase_prefs.setProperty(k,v);
     }
-   
+
    Set<IPathSpec> done = new HashSet<IPathSpec>();
    for (Element pelt : paths) {
       File f1 = new File(IvyXml.getAttrString(pelt,"DIRECTORY"));
       boolean fnd = false;
       for (IPathSpec ps : project_paths) {
-         if (done.contains(ps)) continue;
-         File p1 = ps.getOSFile(base_directory);
-         if (f1.equals(p1)) {
-            done.add(ps);
-            fnd = true;
-            // handle changes to ps at this point
-            break;
-          }
+	 if (done.contains(ps)) continue;
+	 File p1 = ps.getOSFile(base_directory);
+	 if (f1.equals(p1)) {
+	    done.add(ps);
+	    fnd = true;
+	    // handle changes to ps at this point
+	    break;
+	  }
        }
       if (!fnd) {
-         String fp1 = f1.getPath();
-         String fp2 = base_directory.getPath();
-         boolean rel = false;
-         if (fp1.startsWith(fp2)) {
-            String fp3 = fp1.substring(fp2.length());
-            StringTokenizer tok = new StringTokenizer(fp3,File.separator);
-            File fd = null;
-            while (tok.hasMoreTokens()) {
-               String nm0 = tok.nextToken();
-               if (fd == null) fd = new File(nm0);
-               else fd = new File(fd,nm0);
-             }
-            f1 = fd;
-            rel = true;
-          }
-         boolean usr = IvyXml.getAttrBool(pelt,"USER");
-         IPathSpec ps = project_manager.createPathSpec(f1,usr,true,rel);
-         done.add(ps);
-         project_paths.add(ps);
+	 String fp1 = f1.getPath();
+	 String fp2 = base_directory.getPath();
+	 boolean rel = false;
+	 if (fp1.startsWith(fp2)) {
+	    String fp3 = fp1.substring(fp2.length());
+	    StringTokenizer tok = new StringTokenizer(fp3,File.separator);
+	    File fd = null;
+	    while (tok.hasMoreTokens()) {
+	       String nm0 = tok.nextToken();
+	       if (fd == null) fd = new File(nm0);
+	       else fd = new File(fd,nm0);
+	     }
+	    f1 = fd;
+	    rel = true;
+	  }
+	 boolean usr = IvyXml.getAttrBool(pelt,"USER");
+	 IPathSpec ps = project_manager.createPathSpec(f1,usr,true,rel);
+	 done.add(ps);
+	 project_paths.add(ps);
        }
     }
    for (Iterator<IPathSpec> it = project_paths.iterator(); it.hasNext(); ) {
       IPathSpec ps = it.next();
       if (!done.contains(ps)) it.remove();
     }
-   
+
    saveProject();
 }
 
@@ -264,9 +268,9 @@ void editProject(List<Element> opts,List<Element> paths)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Create new package                                                          */
-/*                                                                              */
+/*										*/
+/*	Create new package							*/
+/*										*/
 /********************************************************************************/
 
 void createPackage(String name,boolean force,IvyXmlWriter xw)
@@ -278,14 +282,14 @@ void createPackage(String name,boolean force,IvyXmlWriter xw)
       File f = ps.getOSFile(base_directory);
       if (!f.exists()) continue;
       for (int i = 0; i < comps.length-1; ++i) {
-         f = new File(f,comps[i]);
+	 f = new File(f,comps[i]);
        }
       if (f.exists()) {
-         dir = new File(f,comps[comps.length-1]);
-         break;
+	 dir = new File(f,comps[comps.length-1]);
+	 break;
        }
     }
-   
+
    if (dir != null && xw != null) {
       xw.begin("PACKAGE");
       xw.field("NAME",name);
@@ -296,9 +300,9 @@ void createPackage(String name,boolean force,IvyXmlWriter xw)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Create new package                                                          */
-/*                                                                              */
+/*										*/
+/*	Create new package							*/
+/*										*/
 /********************************************************************************/
 
 void findPackage(String name,IvyXmlWriter xw)
@@ -310,14 +314,14 @@ void findPackage(String name,IvyXmlWriter xw)
       File f = ps.getOSFile(base_directory);
       if (!f.exists()) continue;
       for (int i = 0; i < comps.length; ++i) {
-         f = new File(f,comps[i]);
+	 f = new File(f,comps[i]);
        }
       if (f.exists()) {
-         dir = new File(f,comps[comps.length-1]);
-         break;
+	 dir = new File(f,comps[comps.length-1]);
+	 break;
        }
-    } 
-   
+    }
+
    if (dir != null && xw != null) {
       xw.begin("PACKAGE");
       xw.field("NAME",name);
@@ -329,33 +333,15 @@ void findPackage(String name,IvyXmlWriter xw)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Create new module                                                          */
-/*                                                                              */
+/*										*/
+/*	Create new module							*/
+/*										*/
 /********************************************************************************/
 
 void createModule(String name,String cnts,IvyXmlWriter xw) throws PybaseException
 {
-   File dir = null;
-   String [] comps = name.split("\\.");
-   for (IPathSpec ps : project_paths) {
-      if (!ps.isUser()) continue;
-      File f = ps.getOSFile(base_directory);
-      if (!f.exists()) continue;
-      for (int i = 0; i < comps.length-1; ++i) {
-         f = new File(f,comps[i]);
-       }
-      if (f.exists()) {
-         dir = new File(f,comps[comps.length-1]);
-         break;
-       }
-    } 
+   File fil = findModuleFile(name);
    
-   if (dir == null) 
-      throw new PybaseException("Can't find package for new module " + name);
-   
-   if (cnts == null) cnts = "\n";
-   File fil = new File(dir,comps[comps.length-1]);
    try {
       FileWriter fw = new FileWriter(fil);
       fw.write(cnts);
@@ -364,7 +350,7 @@ void createModule(String name,String cnts,IvyXmlWriter xw) throws PybaseExceptio
    catch (IOException e) {
       throw new PybaseException("Problem writing new module code",e);
     }
-   
+
    if (xw != null) {
       xw.begin("FILE");
       xw.field("PATH",fil.getAbsolutePath());
@@ -375,7 +361,30 @@ void createModule(String name,String cnts,IvyXmlWriter xw) throws PybaseExceptio
 
 
 
+File findModuleFile(String name) throws PybaseException
+{
+   File dir = null;
+   String [] comps = name.split("\\.");
+   for (IPathSpec ps : project_paths) {
+      if (!ps.isUser()) continue;
+      File f = ps.getOSFile(base_directory);
+      if (!f.exists()) continue;
+      for (int i = 0; i < comps.length-1; ++i) {
+	 f = new File(f,comps[i]);
+       }
+      if (f.exists()) {
+	 dir = f;
+	 break;
+       }
+    }
 
+   if (dir == null)
+      throw new PybaseException("Can't find package for new module " + name);
+
+   File fil = new File(dir,comps[comps.length-1] + ".py");
+
+   return fil;
+}
 
 
 
@@ -406,7 +415,9 @@ void outputXml(IvyXmlWriter xw)
    xw.begin("PROJECT");
    xw.field("NAME",project_name);
    xw.field("BASE",base_directory.getPath());
-   xw.textElement("EXE",python_interpreter.getExecutable().getPath());
+   if (python_interpreter != null) {
+      xw.textElement("EXE",python_interpreter.getExecutable().getPath());
+    }
    for (IPathSpec ps : project_paths) {
       ps.outputXml(xw);
     }
@@ -428,7 +439,9 @@ void outputProject(boolean files,boolean paths,boolean clss,boolean opts,IvyXmlW
    xw.field("NAME",project_name);
    xw.field("PATH",base_directory.getPath());
    xw.field("WORKSPACE",project_manager.getWorkSpaceDirectory().getPath());
-   xw.textElement("EXE",python_interpreter.getExecutable().getPath());
+   if (python_interpreter != null) {
+      xw.textElement("EXE",python_interpreter.getExecutable().getPath());
+    }
 
    if (paths) {
       for (IPathSpec ps : project_paths) {
@@ -502,9 +515,11 @@ private void loadFiles(String pfx,File dir,boolean reload)
       for (File f : fls) {
 	 if (f.isDirectory()) {
 	    String nm = f.getName();
+	    String opfx = pfx;
 	    if (pfx == null) pfx = nm;
 	    else pfx += "." + nm;
 	    loadFiles(pfx,f,reload);
+	    pfx = opfx;
 	  }
 	 else {
 	    String mnm = f.getName();
@@ -558,7 +573,7 @@ private static class SourceFilter implements FileFilter {
       return false;
     }
 
-}	// end of inner class SourceFilter 
+}	// end of inner class SourceFilter
 
 
 

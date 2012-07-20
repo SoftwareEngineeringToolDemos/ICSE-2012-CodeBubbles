@@ -897,7 +897,7 @@ private class RunEventHandler implements BumpRunEventHandler {
       else setLaunchState(LaunchState.PARTIAL_PAUSE,rct,tct);
     }
 
-   @Override public void handleConsoleMessage(BumpProcess proc,boolean err,String msg) { }
+   @Override public void handleConsoleMessage(BumpProcess proc,boolean err,boolean eof,String msg) { }
 
 }	// end of inner class RunEventHandler
 
@@ -982,7 +982,11 @@ void setActiveFrame(BumpStackFrame frm)
 	 frame_annot = null;
        }
     }
-   else if (active_frame != null && active_frame.match(frm)) ;
+   else if (active_frame != null && active_frame.match(frm)) {
+      for (BddtFrameListener fl : frame_listeners) {
+	 fl.setActiveFrame(frm);
+       }  
+    }
    else {
       if (frame_annot != null) {
 	 BaleFactory.getFactory().removeAnnotation(frame_annot);
@@ -1142,28 +1146,8 @@ String getEvaluationString(BumpStackFrame frm,BumpRunValue rv,String id)
     }
 
    if (rv != null) {
-      switch (rv.getKind()) {
-	 default :
-	 case CLASS :
-	 case UNKNOWN :
-	    break;
-	 case OBJECT :
-	    String s = rv.getDetail();
-	    if (s != null) return IvyXml.xmlSanitize(s);
-	    break;
-	 case ARRAY :
-	    if (rv.getLength() <= 100) {
-	       s = rv.getDetail();
-	       if (s != null) return s;
-	     }
-	    else {
-	       System.err.println("BDDT: Handle large arrays");
-	     }
-	    break;
-	 case PRIMITIVE :
-	 case STRING :
-	    return IvyXml.xmlSanitize(rv.getValue());
-       }
+      String s = formatRunValue(rv);
+      if (s != null) return s;
     }
 
    if (frm == null) {
@@ -1209,6 +1193,38 @@ ExpressionValue evaluateExpression(BumpStackFrame frm,String uexpr)
    EvaluationListener el = new EvaluationListener();
    if (frm.evaluateInternal(expr,el)) {
       return el;
+    }
+
+   return null;
+}
+
+
+
+private static String formatRunValue(BumpRunValue rv)
+{
+   if (rv == null) return null;
+
+   switch (rv.getKind()) {
+      default :
+      case CLASS :
+      case UNKNOWN :
+	 break;
+      case OBJECT :
+	 String s = rv.getDetail();
+	 if (s != null) return IvyXml.xmlSanitize(s);
+	 break;
+      case ARRAY :
+	 if (rv.getLength() <= 100) {
+	    s = rv.getDetail();
+	    if (s != null) return s;
+	  }
+	 else {
+	    System.err.println("BDDT: Handle large arrays");
+	  }
+	 break;
+      case PRIMITIVE :
+      case STRING :
+	 return IvyXml.xmlSanitize(rv.getValue());
     }
 
    return null;
@@ -1351,7 +1367,8 @@ private static class EvaluationListener implements BumpEvaluationHandler, Expres
     }
 
    @Override public String formatResult() {
-      // this should be much more sophisticated
+      String s = formatRunValue(result_value);
+      if (s != null) return s;
       return result_value.getValue();
     }
 

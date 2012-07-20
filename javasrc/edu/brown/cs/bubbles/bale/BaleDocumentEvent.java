@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -33,9 +33,9 @@ package edu.brown.cs.bubbles.bale;
 import edu.brown.cs.bubbles.burp.BurpConstants;
 
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.Document;
-import javax.swing.text.Element;
+import javax.swing.text.*;
 import javax.swing.undo.UndoableEdit;
+import javax.swing.undo.CannotUndoException;
 
 
 
@@ -57,6 +57,8 @@ private int edit_length;
 private EventType event_type;
 private UndoableEdit the_edit;
 private BaleElementEvent element_event;
+private Position doc_position;
+
 
 
 
@@ -74,6 +76,7 @@ BaleDocumentEvent(BaleDocument d,int off,int len,EventType et,UndoableEdit ed,Ba
    event_type = et;
    the_edit = ed;
    element_event = ee;
+   savePosition();
 }
 
 
@@ -92,7 +95,9 @@ BaleDocumentEvent(DocumentEvent e,BaleElementEvent ee)
    else the_edit = null;
 
    element_event = ee;
+   savePosition();
 }
+
 
 
 
@@ -107,6 +112,14 @@ BaleDocumentEvent(DocumentEvent e,BaleElementEvent ee)
 @Override public int getLength()				{ return edit_length; }
 @Override public int getOffset()				{ return doc_offset; }
 @Override public DocumentEvent.EventType getType()		{ return event_type; }
+@Override public Document getBaseEditDocument()
+{
+   if (base_document == null) return null;
+
+   return base_document.getBaseEditDocument();
+}
+
+
 
 UndoableEdit getEdit()
 {
@@ -216,6 +229,7 @@ UndoableEdit getEdit()
 
 @Override public void redo()
 {
+   restorePosition();
    if (the_edit != null) {
       base_document.baleWriteLock();
       try {
@@ -235,13 +249,42 @@ UndoableEdit getEdit()
 
 @Override public void undo()
 {
+   restorePosition();
    if (the_edit != null) {
       base_document.baleWriteLock();
       try {
 	 the_edit.undo();
        }
+      catch (CannotUndoException e) { }
       finally { base_document.baleWriteUnlock(); }
     }
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Position save methods for undo/redo					*/
+/*										*/
+/********************************************************************************/
+
+private void savePosition()
+{
+   doc_position = null;
+//   try {
+//	doc_position = base_document.createPosition(doc_offset);
+//   }
+//   catch (BadLocationException e) { }
+}
+
+private void restorePosition()
+{
+   if (doc_position == null) return;
+//   int off = doc_position.getOffset();
+//   if (off != doc_offset) {
+//	BoardLog.logD("BALE","Document position update " + off + doc_offset);
+//	doc_offset = off;
+//   }
 }
 
 

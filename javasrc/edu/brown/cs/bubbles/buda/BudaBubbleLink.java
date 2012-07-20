@@ -142,8 +142,8 @@ public BudaBubbleLink(BudaBubble frm,LinkPort fpt,BudaBubble to,LinkPort tpt,boo
 /*										*/
 /********************************************************************************/
 
-BudaBubble getSource()				{ return from_bubble; }
-BudaBubble getTarget()				{ return to_bubble; }
+public BudaBubble getSource()			        { return from_bubble; }
+public BudaBubble getTarget()			        { return to_bubble; }
 
 
 boolean usesBubble(BudaBubble b)

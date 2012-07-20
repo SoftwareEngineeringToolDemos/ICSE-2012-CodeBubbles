@@ -24,12 +24,9 @@
 
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.bubbles.pybase.symbols.AbstractInterpreterManager;
-import edu.brown.cs.bubbles.pybase.symbols.Found;
-import edu.brown.cs.bubbles.pybase.symbols.SourceToken;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
 import edu.brown.cs.ivy.exec.IvyExec;
-import edu.brown.cs.ivy.file.IvyFile;
 import edu.brown.cs.ivy.xml.IvyXml;
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
@@ -37,6 +34,7 @@ import org.python.pydev.parser.jython.ast.Assign;
 import org.python.pydev.parser.jython.ast.ClassDef;
 import org.python.pydev.parser.jython.ast.FunctionDef;
 import org.python.pydev.parser.jython.ast.Module;
+import org.python.pydev.parser.jython.ast.Import;
 import org.python.pydev.parser.jython.ast.stmtType;
 import org.w3c.dom.Element;
 
@@ -346,13 +344,20 @@ private void handleAllNames(PybaseProject pp,Set<String> files,NameThread nt,Ivy
 {
    if (pp == null) return;
 
+   int ctr = 0;
    for (IFileData ifd : pp.getAllFiles()) {
       if (files != null && !files.contains(ifd.getFile())) continue;
       ISemanticData sd = pp.getParseData(ifd);
       if (sd != null) {
 	 if (nt != null) nt.addRoot(ifd,pp,sd);
 	 else outputTreeNames(pp,ifd,sd,xw);
-      }
+       }
+      ++ctr;
+    }
+
+   if (ctr == 0) {
+      if (nt == null) PybaseUtil.outputProjectSymbol(pp,xw);
+      else nt.addProject(pp);
     }
 }
 
@@ -375,6 +380,20 @@ private void outputTreeNames(PybaseProject pp,IFileData file,PybaseScopeItems sc
 
    for (Found fnd : scp.getAllSymbols()) {
      PybaseUtil.outputSymbol(pp,file,fnd,xw);
+     AbstractToken tok = fnd.getSingle().getGenerator();
+     if (tok.getType() == TokenType.CLASS) {
+	if (scp.getChildren() != null) {
+	   for (PybaseScopeItems cscp : scp.getChildren()) {
+	      switch (cscp.getScopeType()) {
+		 case CLASS :
+		    outputTreeNames(pp,file,cscp,xw);
+		    break;
+		 default :
+		    break;
+	      }
+	   }
+	}
+      }
     }
 }
 
@@ -396,6 +415,7 @@ private void outputTopDefs(PybaseProject pp,IFileData file,Module root,IvyXmlWri
 	 if (st instanceof Assign) continue;
 	 if (st instanceof FunctionDef) continue;
 	 if (st instanceof ClassDef) continue;
+	 if (st instanceof Import) continue;
 	 PybaseUtil.outputSymbol(pp,file,st,xw);
        }
     }
@@ -410,6 +430,7 @@ private class NameThread extends Thread {
    private String name_id;
    private Map<IFileData,PybaseProject> ifile_project;
    private Map<IFileData,ISemanticData> ifile_data;
+   private List<PybaseProject> project_names;
 
    NameThread(String bid,String nid) {
       super("Bedrock_GetNames");
@@ -417,6 +438,11 @@ private class NameThread extends Thread {
       name_id = nid;
       ifile_project = new HashMap<IFileData,PybaseProject>();
       ifile_data = new HashMap<IFileData,ISemanticData>();
+      project_names = new ArrayList<PybaseProject>();
+    }
+
+   void addProject(PybaseProject pp) {
+      project_names.add(pp);
     }
 
    void addRoot(IFileData ifd,PybaseProject pp,ISemanticData sd) {
@@ -445,6 +471,14 @@ private class NameThread extends Thread {
 	  }
        }
 
+      for (PybaseProject pp : project_names) {
+	 if (xw == null) {
+	    xw = pybase_main.beginMessage("NAMES",bump_id);
+	    xw.field("NID",name_id);
+	  }
+	 PybaseUtil.outputProjectSymbol(pp,xw);
+       }
+
       if (xw != null) {
 	 pybase_main.finishMessageWait(xw);
        }
@@ -470,7 +504,8 @@ private class NameThread extends Thread {
 
 private void loadPythonData()
 {
-   File pf = new File(work_space,".pybase");
+   File mf = new File(work_space,".metadata");
+   File pf = new File(mf,".pybase");
    pf = new File(pf,".pythondata");
    if (pf.exists()) {
       Element xml = IvyXml.loadXmlFromFile(pf);
@@ -484,7 +519,8 @@ private void loadPythonData()
 
 private void storePythonData()
 {
-   File pf = new File(work_space,".pybase");
+   File mf = new File(work_space,".metadata");
+   File pf = new File(mf,".pybase");
    pf = new File(pf,".pythondata");
    try {
       IvyXmlWriter xw = new IvyXmlWriter(pf);
@@ -521,6 +557,8 @@ IInterpreterSpec findInterpreter(File exe)
    if (nis.getPythonVersion() == PybaseVersion.DEFAULT) {
       nis = new InterpreterSpec(exe.getName());
     }
+
+   PybaseMain.logD("Try interpreter " + nis.getPythonVersion());
 
    if (nis.getPythonVersion() == PybaseVersion.DEFAULT) return null;
 
@@ -590,7 +628,7 @@ private void setupPydev(PybaseInterpreterType pt,AbstractInterpreterManager mgr)
 /*										*/
 /********************************************************************************/
 
-private static class InterpreterSpec implements IInterpreterSpec {
+private class InterpreterSpec implements IInterpreterSpec {
 
    private PybaseVersion python_version;
    private PybaseInterpreterType python_type;
@@ -620,10 +658,15 @@ private static class InterpreterSpec implements IInterpreterSpec {
 
    InterpreterSpec(File exe) {
       this();
-      File f1 = IvyFile.expandFile("/research/bubbles/pybase/src/interpreterInfo.py");
+      File f1 = pybase_main.getRootDirectory();
+      File f2 = new File(f1,"PySrc");
+      File f3 = new File(f2,"interpreterInfo.py");
+
       List<String> args = new ArrayList<String>();
       args.add(exe.getPath());
-      args.add(f1.getPath());
+      args.add(f3.getPath());
+      PybaseMain.logD("Run: " + exe.getPath() + " " + f3.getPath());
+
       try {
 	 IvyExec ex = new IvyExec(args,null,null,IvyExec.READ_OUTPUT);
 	 InputStream ins = ex.getInputStream();
@@ -633,12 +676,15 @@ private static class InterpreterSpec implements IInterpreterSpec {
 	 for ( ; ; ) {
 	    String ln = br.readLine();
 	    if (ln == null) break;
+	    PybaseMain.logD("OUTPUT: " + ln);
 	    lines.add(ln);
 	  }
 	 loadInterpreterData(lines);
 	 ex.waitFor();
        }
-      catch (IOException e) { }
+      catch (IOException e) {
+	 PybaseMain.logD("Problem finding interpreter " + exe);
+       }
     }
 
    private InterpreterSpec() {

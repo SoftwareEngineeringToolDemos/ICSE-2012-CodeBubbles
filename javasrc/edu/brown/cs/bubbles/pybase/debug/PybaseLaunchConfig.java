@@ -36,60 +36,168 @@
 
 package edu.brown.cs.bubbles.pybase.debug;
 
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
+
+import org.w3c.dom.Element;
+
 import java.io.File;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.HashMap;
 
 
 
 
 public class PybaseLaunchConfig implements PybaseDebugConstants {
-   
-   
-/********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
-/********************************************************************************/
-
-private String argument_set;
-private File base_file;
-   
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
-public PybaseLaunchConfig()
-{ 
-   argument_set = null;
+private String  config_name;
+private String  config_id;
+private int     config_number;
+private File    base_file;
+private boolean is_saved;
+private Map<String,String> config_attrs;
+
+private static AtomicInteger launch_counter = new AtomicInteger(1);
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Constructors								*/
+/*										*/
+/********************************************************************************/
+
+PybaseLaunchConfig(String nm)
+{
+   config_name = nm;
+   config_number = launch_counter.getAndIncrement();
+   config_id = "LAUNCH_" + Integer.toString(config_number);
+   config_attrs = new HashMap<String,String>();
    base_file = null;
+   is_saved = false;
+}
+
+
+PybaseLaunchConfig(Element xml) 
+{
+   config_name = IvyXml.getAttrString(xml,"NAME");
+   config_number = IvyXml.getAttrInt(xml,"ID");
+   for ( ; ; ) {
+      int iv = launch_counter.get();
+      if (iv > config_number) break;
+      if (launch_counter.compareAndSet(iv,config_number+1)) break;
+    }
+   config_id = "LAUNCH+" + Integer.toString(config_number);
+   config_attrs = new HashMap<String,String>();
+   for (Element ae : IvyXml.children(xml,"ATTR")) {
+      config_attrs.put(IvyXml.getAttrString(ae,"KEY"),IvyXml.getAttrString(ae,"VALUE"));
+    }
+   String fn = IvyXml.getTextElement(xml,"FILE");
+   if (fn == null) base_file = null;
+   else base_file = new File(fn);
+   is_saved = true;
 }
 
 
 
+PybaseLaunchConfig(String nm,PybaseLaunchConfig orig)
+{
+   config_name = nm;
+   config_number = launch_counter.getAndIncrement();
+   config_id = "LAUNCH_" + Integer.toString(config_number);
+   config_attrs = new HashMap<String,String>(orig.config_attrs);
+   base_file = orig.base_file;
+   is_saved = false;
+}
+   
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-public File getFileToRun()                      { return base_file; }
-public void setFileToRun(File f)                { base_file = f; }
+public String getName() 			{ return config_name; }
+String getId()			        	{ return config_id; }
+void setName(String nm)                         { config_name = nm; }
 
-public String getArguments()                    { return argument_set; }
-public void setArguments(String a)              { argument_set = a; }
+public File getFileToRun()			{ return base_file; }
+public void setFileToRun(File f)		{ base_file = f; }
 
-public String [] getEnvironment()               { return null; }
-public File getWorkingDirectory()               { return null; }
-public String getEncoding()                     { return null; }
-public String getPySrcPath()                    { return null; }
+
+void setAttribute(String k,String v)
+{
+   if (k == null) return;
+   if (v == null) config_attrs.remove(k);
+   else config_attrs.put(k,v);
+}
+
+boolean isSaved()                               { return is_saved; }
+void setSaved(boolean fg)                       { is_saved = fg; }
+
+public String [] getEnvironment()		{ return null; }
+public File getWorkingDirectory()		{ return null; }
+public String getEncoding()			{ return null; }
+public String getPySrcPath()			{ return null; }
 
 public String [] getCommandLine()
 {
    return null;
 }
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      OutputMethods                                                           */
+/*                                                                              */
+/********************************************************************************/
+
+void outputSaveXml(IvyXmlWriter xw)
+{
+   xw.begin("CONFIG");
+   xw.field("NAME",config_name);
+   xw.field("ID",config_number);
+   xw.textElement("FILE",base_file);
+   for (Map.Entry<String,String> ent : config_attrs.entrySet()) {
+      xw.begin("ATTR");
+      xw.field("KEY",ent.getKey());
+      xw.field("VALUE",ent.getValue());
+      xw.end("ATTR");
+    }
+   xw.end("CONFIG");
+}
+
+
+void outputBubbles(IvyXmlWriter xw)
+{
+   xw.begin("CONFIGURATION");
+   xw.field("ID",config_id);
+   xw.field("NAME",config_name);
+   xw.field("WORKING",!is_saved);
+   xw.field("DEBUG",true);
+   for (Map.Entry<String,String> ent : config_attrs.entrySet()) {
+      xw.begin("ATTRIBUTE");
+      xw.field("NAME",ent.getKey());
+      xw.field("TYPE","java.lang.String");
+      xw.cdata(ent.getValue());
+      xw.end("ATTRIBUTE");
+    }
+   xw.begin("TYPE");
+   xw.field("NAME","PYTHON");
+   xw.end("TYPE");
+   xw.end("CONFIGURATION");
+}
+   
+   
 
 }	// end of class PybaseLaunchConfig
 

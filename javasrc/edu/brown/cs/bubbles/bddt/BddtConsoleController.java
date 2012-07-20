@@ -36,6 +36,7 @@ import javax.swing.text.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
 
 
 class BddtConsoleController implements BddtConstants {
@@ -52,6 +53,8 @@ private Map<BddtLaunchControl,ConsoleDocument> launch_consoles;
 private Map<String,ConsoleDocument> process_consoles;
 private AttributeSet stdout_attrs;
 private AttributeSet stderr_attrs;
+private LinkedList<ConsoleMessage> message_queue;
+
 
 
 
@@ -65,6 +68,10 @@ BddtConsoleController()
 {
    launch_consoles = new HashMap<BddtLaunchControl,ConsoleDocument>();
    process_consoles = new HashMap<String,ConsoleDocument>();
+   message_queue = new LinkedList<ConsoleMessage>();
+
+   ConsoleThread ct = new ConsoleThread();
+   ct.start();
 
    BumpClient bc = BumpClient.getBump();
    BumpRunModel rm = bc.getRunModel();
@@ -98,6 +105,44 @@ void setupConsole(BddtLaunchControl blc)
 /*	Edit methods								*/
 /*										*/
 /********************************************************************************/
+
+private void queueConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg)
+{
+   ConsoleMessage last = null;
+   synchronized (message_queue) {
+      last = message_queue.peekLast();
+      if (last != null && last.getProcess() == bp && last.isStderr() == err &&
+	    last.isEof() == eof) {
+	 last.merge(msg);
+	 return;
+       }
+      message_queue.add(new ConsoleMessage(bp,msg,err,eof));
+      if (last == null) message_queue.notifyAll();
+    }
+}
+
+
+
+
+private void processConsoleMessage(ConsoleMessage msg)
+{
+   BumpProcess bp = msg.getProcess();
+
+   if (msg.isEof()) {
+      synchronized (launch_consoles) {
+	 if (bp != null)  {
+	    addText(bp,false,"\n [ Process Terminated ]\n");
+	    process_consoles.remove(bp.getId());
+	  }
+       }
+    }
+   else {
+      addText(bp,msg.isStderr(),msg.getText());
+    }
+}
+
+
+
 
 private void addText(BumpProcess process,boolean err,String message)
 {
@@ -207,21 +252,36 @@ private class ConsoleHandler implements BumpConstants.BumpRunEventHandler {
    @Override public void handleLaunchEvent(BumpRunEvent evt)	{ }
 
    @Override public void handleProcessEvent(BumpRunEvent evt) {
-      switch (evt.getEventType()) {
-	 case PROCESS_REMOVE :
-	    BumpProcess bp = evt.getProcess();
-	    synchronized (launch_consoles) {
-	       process_consoles.remove(bp.getId());
-	     }
-	    break;
-       }
+//	switch (evt.getEventType()) {
+//	 case PROCESS_REMOVE :
+//	    BumpProcess bp = evt.getProcess();
+//	    synchronized (launch_consoles) {
+//	       process_consoles.remove(bp.getId());
+//	     }
+//	    break;
+//	 }
     }
 
    @Override public void handleThreadEvent(BumpRunEvent evt)	{ }
 
-   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,String msg) {
-      addText(bp,err,msg);
+   @Override public void handleConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg) {
+      queueConsoleMessage(bp,err,eof,msg);
+
+      // if (eof) {
+	 // synchronized (launch_consoles) {
+	    // if (bp != null) {
+	       // addText(bp,false,"\n [ Process Terminated ]\n");
+	       // process_consoles.remove(bp.getId());
+	    // }
+	 // }
+       // }
+      // else {
+	 // addText(bp,err,msg);
+       // }
    }
+
+
+
 
 }	// end of inner class ConsoleHandler
 
@@ -325,6 +385,62 @@ private class ConsoleDocument extends DefaultStyledDocument {
   // TODO: method to accept input and display in a different style
 
 }	// end of inner class ConsoleDocument
+
+
+
+private static class ConsoleMessage {
+
+   private BumpProcess for_process;
+   private String message_text;
+   private boolean is_stderr;
+   private boolean is_eof;
+
+   ConsoleMessage(BumpProcess bp,String text,boolean stderr,boolean eof) {
+      for_process = bp;
+      message_text = text;
+      is_stderr = stderr;
+      is_eof = eof;
+    }
+
+   boolean isStderr()			{ return is_stderr; }
+   boolean isEof()			{ return is_eof; }
+   String getText()			{ return message_text; }
+   void merge(String t) 		{ message_text += t; }
+   BumpProcess getProcess()		{ return for_process; }
+
+}	// end of inner class ConsoleMessage
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Thread to handle console updates					*/
+/*										*/
+/********************************************************************************/
+
+private class ConsoleThread extends Thread {
+
+   ConsoleThread() {
+      super("BddtConsoleControllerThread");
+    }
+
+   @Override public void run() {
+      for ( ; ; ) {
+	 ConsoleMessage msg;
+	 synchronized (message_queue) {
+	    while (message_queue.isEmpty()) {
+	       try {
+		  message_queue.wait(10000);
+		}
+	       catch (InterruptedException e) { }
+	     }
+	    msg = message_queue.removeFirst();
+	  }
+	 processConsoleMessage(msg);
+       }
+    }
+
+}	// end of inner class ConsoleThread
 
 
 

@@ -350,6 +350,7 @@ private BgtaChat		 bs2ToT1;
 
    Thread.sleep(1000);
    pipeIn.read(errbuf);
+   pipeIn.close();
    HashSet<String> prints = new HashSet<String>();
    String[] arprints = new String(errbuf).trim().split("\\r?\\n");
    prints.add(arprints[0]);

@@ -166,7 +166,9 @@ void addDependencies(List<BurpChangeData> dep0)
        }
     }
 
-   for (BurpChangeData cd = next_global; cd != null && cd != this && !eddeps.isEmpty(); cd = cd.next_global) {
+   for (BurpChangeData cd = next_global; 
+         cd != null && cd != this && !eddeps.isEmpty(); 
+         cd = cd.next_global) {
       Set<BurpEditorData> rem = new HashSet<BurpEditorData>();
       for (BurpEditorData ed : eddeps) {
 	 if (cd.next_editor.containsKey(ed)) rem.add(ed);
@@ -242,11 +244,12 @@ void undo()
 {
    if (depend_upons != null) {
       for (BurpChangeData cd : depend_upons) {
-	 cd.undo();
+	 if (cd.canUndo()) cd.undo();
        }
     }
    
-   base_edit.undo();
+   if (base_edit.canUndo()) base_edit.undo();
+   
    for_history.resetCurrentChange(this,prior_global,false);
    for (Map.Entry<BurpEditorData,BurpChangeData> ent : prior_editor.entrySet()) {
       BurpEditorData ed = ent.getKey();
@@ -270,7 +273,7 @@ void redo()
    if (depend_upons != null) {
       for (int i = depend_upons.size()-1; i >= 0; --i) {
 	 BurpChangeData cd = depend_upons.get(i);
-	 cd.redo();
+	 if (cd.canRedo()) cd.redo();
        }
     }
 }

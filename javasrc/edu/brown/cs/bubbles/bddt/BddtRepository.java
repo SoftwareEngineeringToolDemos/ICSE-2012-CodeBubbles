@@ -235,6 +235,8 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
 	       BassFactory.reloadRepository(BddtRepository.this);
 	    }
 	    break;
+	 default:
+	    break;
        }
     }
 
@@ -253,6 +255,8 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
 	 case PROCESS_PERFORMANCE :
 	 case PROCESS_CHANGE :
 	 case PROCESS_SWING :
+	    break;
+	 default:
 	    break;
        }
     }

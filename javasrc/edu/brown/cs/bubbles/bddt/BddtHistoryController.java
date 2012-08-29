@@ -178,6 +178,8 @@ private class HistoryHandler implements BumpConstants.BumpRunEventHandler {
 	       process_data.remove(bp.getId());
 	     }
 	    break;
+	 default:
+	    break;
        }
     }
 
@@ -202,6 +204,8 @@ private class HistoryHandler implements BumpConstants.BumpRunEventHandler {
 	    hd.add(evt.getThread(),evt.getWhen());
 	    break;
 	 case THREAD_HISTORY :
+	    break;
+	 default:
 	    break;
        }
     }

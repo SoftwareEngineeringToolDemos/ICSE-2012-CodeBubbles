@@ -464,6 +464,8 @@ private class TableUpdater implements Runnable {
 	 case THREAD_TRACE :
 	 case THREAD_HISTORY :
 	    return;
+	 default:
+	    break;
        }
       threads_model.fireTableDataChanged();
     }

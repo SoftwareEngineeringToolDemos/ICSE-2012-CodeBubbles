@@ -150,6 +150,8 @@ BconRegion findRegion(BudaConstants.BudaContentNameType typ,String name)
 	 case REGION_INITIALIZER :
 	    ok = (typ == BudaConstants.BudaContentNameType.CLASS_ITEM);
 	    break;
+	 default:
+	    break;
        }
       if (!ok) continue;
 
@@ -196,6 +198,8 @@ Collection<BconRegion> findRegions(BudaConstants.BudaContentNameType typ,String 
 	 case REGION_INITIALIZER :
 	    ok = (typ == BudaConstants.BudaContentNameType.CLASS_ITEM);
 	    break;
+	 default:
+	    break;
        }
       
       switch (typ) {
@@ -206,6 +210,8 @@ Collection<BconRegion> findRegions(BudaConstants.BudaContentNameType typ,String 
 	 case FILE :
 	    ok = true;
 	    nameok = true;
+	    break;
+	 default:
 	    break;
        }
       

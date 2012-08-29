@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              PybaseRunner.java                                               */
-/*                                                                              */
-/*      Class to run python for debugging                                       */
-/*                                                                              */
+/*										*/
+/*		PybaseRunner.java						*/
+/*										*/
+/*	Class to run python for debugging					*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 /**
  * Copyright (c) 2005-2011 by Appcelerator, Inc. All Rights Reserved.
@@ -40,23 +40,23 @@ public class PybaseRunner implements PybaseDebugConstants
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Static method to launch a run configuration                             */
-/*                                                                              */
+/*										*/
+/*	Static method to launch a run configuration				*/
+/*										*/
 /********************************************************************************/
 
-public static void runDebug(PybaseLaunchConfig config) throws IOException, PybaseException
+public static PybaseDebugger runDebug(PybaseLaunchConfig config) throws IOException, PybaseException
 {
    PybaseDebugger dbg = new PybaseDebugger(config);
    dbg.startConnect();
    Process p = createProcess(config);
-   PybaseDebugTarget tgt = new PybaseDebugTarget();
+   PybaseDebugTarget tgt = new PybaseDebugTarget(dbg,p);
    Socket socket = null;
    try {
-      socket = dbg.waitForConnect(p); 
+      socket = dbg.waitForConnect(p);
       if (socket == null) {
-         dbg.dispose();
-         return;
+	 dbg.dispose();
+	 throw new PybaseException("Debugger not set up");
        }
     }
    catch (Exception ex) {
@@ -67,19 +67,22 @@ public static void runDebug(PybaseLaunchConfig config) throws IOException, Pybas
    tgt.startTransmission(socket);
    tgt.initialize();
    tgt.addConsoleInputListener();
+   dbg.addTarget(tgt); 
+
+   return dbg;
 }
-   
+
 
 /********************************************************************************/
-/*                                                                              */
-/*      Process creation                                                        */
-/*                                                                              */
+/*										*/
+/*	Process creation							*/
+/*										*/
 /********************************************************************************/
 
 private static Process createProcess(PybaseLaunchConfig cfg) throws IOException
 {
    String [] env = cfg.getEnvironment();
-   
+
    String encoding = cfg.getEncoding();
    if (encoding != null && encoding.trim().length() > 0) {
       String [] s = new String[env.length + 3];
@@ -93,12 +96,12 @@ private static Process createProcess(PybaseLaunchConfig cfg) throws IOException
    File wdir = cfg.getWorkingDirectory();
    Runtime rt = Runtime.getRuntime();
    Process p = rt.exec(cmdline,env,wdir);
-   return p; 
+   return p;
 }
 
 
 
-}       // end of class PybaseRunner
+}	// end of class PybaseRunner
 
 
 

@@ -221,7 +221,7 @@ static class EvaluateExpression extends PybaseDebugCommand {
 
    private String var_locator;
    private String var_expression;
-
+   
    private boolean is_error;
    private String result_payload;
    private boolean do_exec;
@@ -243,10 +243,10 @@ static class EvaluateExpression extends PybaseDebugCommand {
 
    public void processOKResponse(int cmdCode, String payload) {
       if (cmdCode == CMD_EVALUATE_EXPRESSION || cmdCode == CMD_EXEC_EXPRESSION)
-	 result_payload = payload;
+         result_payload = payload;
       else {
-	 is_error = true;
-	 PybaseMain.logE("Unexpected response to EvaluateExpression");
+         is_error = true;
+         PybaseMain.logE("Unexpected response to EvaluateExpression");
        }
     }
 

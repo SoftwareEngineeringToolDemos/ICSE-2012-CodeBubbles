@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -25,7 +25,6 @@
 
 package edu.brown.cs.bubbles.bueno;
 
-import edu.brown.cs.bubbles.board.BoardProperties;
 
 import java.io.*;
 
@@ -82,12 +81,12 @@ BuenoCreatorTemplate()
    Reader r = findTemplate("module",props);
    if (r != null) {
       try {
-         expand(r,props,null,buf);
-         return;
+	 expand(r,props,null,buf);
+	 return;
        }
       catch (IOException e) { }
     }
-   
+
    super.moduleText(buf,props);
 }
 
@@ -187,34 +186,6 @@ BuenoCreatorTemplate()
       catch (IOException e) { }
     }
    super.setupJavadocComment(buf,props);
-}
-
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Template finding methods						*/
-/*										*/
-/********************************************************************************/
-
-private Reader findTemplate(String id,BuenoProperties props)
-{
-   if (id == null) return null;
-
-   // try project-specific template first
-   String prj = props.getStringProperty(BuenoKey.KEY_PROJECT);
-   if (prj != null) {
-      String xnm = "templates/" + prj + "/" + id + ".template";
-      InputStream ins = BoardProperties.getLibraryFile(xnm);
-      if (ins != null) return new InputStreamReader(ins);
-    }
-
-   String pnm = "templates/" + id + ".template";
-   InputStream ins = BoardProperties.getLibraryFile(pnm);
-   if (ins == null) return null;
-
-   return new InputStreamReader(ins);
 }
 
 

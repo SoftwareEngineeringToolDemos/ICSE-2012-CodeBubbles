@@ -70,7 +70,7 @@ private EditorPane	editor_pane;
 private BaleViewport	editor_viewport;
 private BaleAnnotationArea annot_area;
 private BaleCrumbBar	crumb_bar;
-private BaleFindBar	find_bar;
+private BaleFinder	find_bar;
 private BaleDocumentIde base_document;
 private BaleFragmentType fragment_type;
 private List<BaleRegion> fragment_regions;
@@ -114,8 +114,8 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
    annot_area = new BaleAnnotationArea(editor_pane);
    editor_viewport = new BaleViewport(editor_pane,annot_area);
 
-   find_bar = new BaleFindBar(editor_pane);
-   find_bar.setVisible(false);
+   find_bar = new BaleFindReplaceBar(editor_pane,false);
+   find_bar.getComponent().setVisible(false);
 
    problem_annotations = new HashMap<BumpProblem,ProblemAnnot>();
    breakpoint_annotations = new HashMap<BumpBreakpoint,BreakpointAnnot>();
@@ -124,7 +124,7 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
    addGBComponent(crumb_bar,0,0,3,1,1,0);
    addGBComponent(editor_viewport,1,1,2,1,10,10);
 
-   setComponentZOrder(find_bar,0);
+   setComponentZOrder(find_bar.getComponent(),0);
 
    editor_pane.addCaretListener(this);
 
@@ -420,14 +420,15 @@ private class EditorPane extends BaleEditorPane implements BaleEditor {
       return new BaleEditorKit.FragmentKit(base_document,fragment_type,fragment_regions);
     }
 
-   @Override public BaleFindBar getFindBar()			{ return find_bar; }
+   @Override public BaleFinder getFindBar()			{ return find_bar; }
    @Override public BaleAnnotationArea getAnnotationArea()	{ return annot_area; }
 
    @Override void toggleFindBar() {
-      BudaBubble bb = BudaRoot.findBudaBubble(find_bar);
-      if (find_bar.isVisible()) {
+      Component finder = find_bar.getComponent();
+      BudaBubble bb = BudaRoot.findBudaBubble(finder);
+      if (finder.isVisible()) {
 	 if (bb != null && bb.isVisible()) {
-	    find_bar.setVisible(false);
+	    finder.setVisible(false);
 	    return;
 	 }
        }
@@ -436,11 +437,11 @@ private class EditorPane extends BaleEditorPane implements BaleEditor {
       BudaBubble bbx = BudaRoot.findBudaBubble(this);
       if (bba == null || bbx == null) return;
       Rectangle bounds = bbx.getBounds();
-      int findwidth = find_bar.getWidth();
+      int findwidth = finder.getWidth();
       bounds.x = bounds.x + (bounds.width/2) - (findwidth/2);
-      bba.add(find_bar, new BudaConstraint(BudaBubblePosition.FIXED, bounds.x, bounds.y+bounds.height));
+      bba.add(finder, new BudaConstraint(BudaBubblePosition.FIXED, bounds.x, bounds.y+bounds.height));
       if (bb != null) bba.setLayer(bb, 1);
-      find_bar.setVisible(true);
+      finder.setVisible(true);
    }
 
 }	// end of inner class EditorPane
@@ -455,20 +456,21 @@ private class EditorPane extends BaleEditorPane implements BaleEditor {
 /********************************************************************************/
 
 void hideFindBar() {
-   if (find_bar.isVisible()) editor_pane.toggleFindBar();
+   if (find_bar.getComponent().isVisible()) editor_pane.toggleFindBar();
 }
 
 
 
 void relocateFindBar()
 {
-   if (find_bar.isVisible()) {
+   Component finder = find_bar.getComponent();
+   if (finder.isVisible()) {
       BudaBubble bb = BudaRoot.findBudaBubble(this);
       if (bb == null) return;
       Rectangle bounds = bb.getBounds();
-      int findwidth = find_bar.getWidth();
+      int findwidth = finder.getWidth();
       bounds.x = bounds.x + (bounds.width/2) - (findwidth/2);
-      BudaBubble findbubble = BudaRoot.findBudaBubble(find_bar);
+      BudaBubble findbubble = BudaRoot.findBudaBubble(finder);
       if (findbubble == null) return;
       findbubble.setLocation(bounds.x, bounds.y + bounds.height);
    }
@@ -640,7 +642,7 @@ private static class ProblemAnnot implements BaleAnnotation {
     }
 
    @Override public String getToolTip() {
-      return IvyXml.xmlSanitize(for_problem.getMessage());
+      return IvyXml.htmlSanitize(for_problem.getMessage());
     }
 
    @Override public Color getLineColor()			{ return null; }

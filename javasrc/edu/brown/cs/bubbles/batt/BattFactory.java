@@ -38,6 +38,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+import java.lang.reflect.Modifier;
 
 
 public class BattFactory implements BattConstants, BudaConstants.ButtonListener,
@@ -107,11 +108,67 @@ public static void initialize(BudaRoot br)
       case SERVER :
 	 bf.startBattServer();
 	 break;
+      default:
+	 break;
     }
 
    BaleFactory.getFactory().addContextListener(new BattContexter(bf));
 }
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Get all test cases for a methods					*/
+/*										*/
+/********************************************************************************/
+
+public List<BattTest> getAllTestCases(BaleContextConfig cfg)
+{
+   List<BattTest> all = new ArrayList<BattTest>();
+
+   String mthd = cfg.getMethodName();
+   if (mthd == null) return null;
+
+   for (BattTestCase btc : batt_model.getAllTests()) {
+      UseMode um = btc.usesMethod(mthd);
+      switch (um) {
+	 case INDIRECT :
+	 case DIRECT :
+	    all.add(btc);
+	    break;
+	 default:
+	    break;
+       }
+    }
+
+   if (all.size() == 0) return null;
+
+   return all;
+}
+
+
+
+
+public BudaBubble createNewTestBubble(BattTestBubbleCallback cbk)
+{
+   BattNewTestBubble ntb = new BattNewTestBubble(cbk);
+
+   BudaBubble bb = ntb.createNewTestBubble();
+
+   return bb;
+}
+
+
+public BattNewTestPanel createNewTestPanel(BattTestBubbleCallback cbk)
+{
+   BattNewTestBubble ntb = new BattNewTestBubble(cbk);
+
+   BattNewTestPanel pnl = ntb.createNewTestPanel();
+
+   return pnl;
+}
 
 
 
@@ -222,10 +279,10 @@ void startBattServer()
       if (server_running) return;
 
       mc.register("<BATT TYPE='_VAR_0' />",batt_model);
-      
+
       long mxmem = Runtime.getRuntime().maxMemory();
       mxmem = Math.min(512*1024*1024L,mxmem);
-      
+
       List<String> args = new ArrayList<String>();
       args.add("java");
       args.add("-Xmx" + Long.toString(mxmem));
@@ -325,6 +382,8 @@ private static class BattContexter implements BaleContextListener {
 	    case INDIRECT :
 	       all.add(btc);
 	       break;
+	    default:
+	       break;
 	  }
 	}
 
@@ -339,21 +398,66 @@ private static class BattContexter implements BaleContextListener {
 	   }
 	}
 
+       Set<String> classes = new TreeSet<String>();
+       if (direct.size() > 0) {
+	  for (BattTestCase bct : direct) {
+	     String cnm = bct.getClassName();
+	     classes.add(cnm);
+	   }
+	}
+
+       String cnm = mthd;
+       int idx1= cnm.indexOf("(");
+       if (idx1 > 0) cnm = cnm.substring(0,idx1);
+       int idx2 = cnm.lastIndexOf(".");
+       if (idx2 > 0) cnm = cnm.substring(0,idx2);
+       int idx3 = cnm.lastIndexOf(".");
+       boolean isinner = false;
+       for ( ; ; ) {
+	  int idx4 = cnm.lastIndexOf("$");
+	  if (idx4 > 0 && idx4 > idx3) cnm = cnm.substring(0,idx4);
+	  else break;
+	  isinner = true;
+	}
+       String tcnm = cnm + "Test";
+       String pnm = cfg.getEditor().getContentProject();
+       List<BumpLocation> locs = BumpClient.getBump().findTypes(pnm,cnm);
+       for (BumpLocation loc : locs) {
+	  String nm = loc.getSymbolName();
+	  if (nm.equals(cnm) && Modifier.isPublic(loc.getModifiers())) {
+	     List<BumpLocation> cntrs = BumpClient.getBump().findMethods(pnm,cnm,false,true,true,false);
+	     boolean cok = false;
+	     if (cntrs.size() == 0) cok = true;
+	     for (BumpLocation cloc : cntrs) {
+		String prms = cloc.getParameters();
+		if (Modifier.isPublic(loc.getModifiers()) && prms.equals("()")) cok = true;
+	      }
+	     if (cok) classes.add(cnm);
+	   }
+	  else if (nm.equals(tcnm) && Modifier.isPublic(loc.getModifiers()) && !isinner) {
+	     List<BumpLocation> mthds = BumpClient.getBump().findMethod(pnm,mthd,false);
+	     boolean fok = false;
+	     for (BumpLocation bl : mthds) {
+		if (Modifier.isPrivate(bl.getModifiers())) fok = false;
+		else fok = true;
+	      }
+	
+	     if (fok) classes.add(cnm);
+	   }
+	}
+
        String mnm = mthd;
        int idx = mnm.indexOf("(");
        if (idx >= 0) mnm = mnm.substring(0,idx);
        idx = mnm.lastIndexOf(".");
        if (idx >= 0) mnm = mnm.substring(idx+1);
 
-       menu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,mnm,cfg.getEditor()));
-
-       /**************
-       JMenu newmenu = new JMenu("Create New Test ...");
-       newmenu.add(new NewTestAction(mthd,NewTestMode.INPUT_OUTPUT,null,cfg.getEditor()));
-       newmenu.add(new NewTestAction(mthd,NewTestMode.CALL_SEQUENCE,null,cfg.getEditor()));
-       newmenu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,null,cfg.getEditor()));
-       menu.add(newmenu);
-       *************/
+       for (String c : classes) {
+	  menu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,mnm,c,false,cfg.getEditor()));
+	}
+       if (!classes.contains(tcnm)) {
+	  menu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,mnm,tcnm,true,cfg.getEditor()));
+	}
     }
 
 }	// end of inner class BattContexter
@@ -399,12 +503,16 @@ private static class NewTestAction extends AbstractAction {
    private JComponent source_area;
    private NewTestMode test_mode;
    private String method_name;
+   private String in_class;
+   private boolean create_class;
 
-   NewTestAction(String mthd,NewTestMode mode,String nm,JComponent src) {
-      super(getButtonName(mode,nm));
+   NewTestAction(String mthd,NewTestMode mode,String nm,String cls,boolean newcls,JComponent src) {
+      super(getButtonName(mode,nm,cls,newcls));
       source_area = src;
       test_mode = mode;
       method_name = mthd;
+      in_class = cls;
+      create_class = newcls;
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
@@ -414,12 +522,12 @@ private static class NewTestAction extends AbstractAction {
       if (locs == null || locs.size() == 0) return;
       BumpLocation loc = null;
       for (BumpLocation bl : locs) {
-	 // check if bl is relvant to the context of the action
+	 // check if bl is relevant to the context of the action
 	 loc = bl;
 	 break;
        }
 
-      BattNewTestBubble ntb = new BattNewTestBubble(method_name,loc,test_mode);
+      BattNewTestBubble ntb = new BattNewTestBubble(method_name,loc,in_class,create_class,test_mode);
       BudaBubble bb = ntb.createNewTestBubble();
       if (bb == null) return;
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_area);
@@ -427,7 +535,7 @@ private static class NewTestAction extends AbstractAction {
       bba.addBubble(bb,source_area,null,PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW);
     }
 
-   private static String getButtonName(NewTestMode mode,String nm) {
+   private static String getButtonName(NewTestMode mode,String nm,String cls,boolean newcls) {
       String typ = null;
       switch (mode) {
 	 case INPUT_OUTPUT :
@@ -440,10 +548,9 @@ private static class NewTestAction extends AbstractAction {
 	    typ = "Test Method";
 	    break;
        }
-      if (nm != null) {
-	 typ = "Create New " + typ;
-	 // typ += " for " + nm;
-       }
+      typ = "Create New " + typ + " in ";
+      if (newcls) typ += " new class ";
+      typ += cls;
 
       return typ;
     }

@@ -1230,6 +1230,8 @@ private boolean useSubEdge(BanalPackageLink lnk)
 	 case IMPLEMENTS :
 	    if (ent.getValue() > 0) return true;
 	    break;
+	 default :
+	    break;
       }
    }
    

@@ -38,7 +38,9 @@ import edu.brown.cs.bubbles.board.BoardConstants.BoardLanguage;
 import edu.brown.cs.bubbles.board.BoardConstants.RunMode;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.BudaRoot;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bueno.BuenoFactory;
 
 import edu.brown.cs.ivy.xml.IvyXml;
 
@@ -309,14 +311,14 @@ private void start()
       bc = BumpClient.getBump();
     }
    catch (Error e) { }
-   
+
    if (bc == null) {
       JOptionPane.showMessageDialog(null,"Can't setup messaging environment",
-            "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
+	    "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
       System.exit(1);
       return;
     }
-   
+
    // next start Eclipse
    bs.setSplashTask("Starting IDE (" + bc.getName() + ") and Updating Projects");
    bc.waitForIDE();
@@ -403,6 +405,13 @@ private void start()
 
    if (bs.getRunMode() == RunMode.SERVER) {
        waitForServerExit(root);
+    }
+
+   BumpClient nbc = BumpClient.getBump();
+   Element xe = nbc.getAllProjects();
+   if (IvyXml.getChild(xe,"PROJECT") == null) {
+      BudaBubble bb = BuenoFactory.getFactory().getCreateProjectBubble();
+      root.add(bb);
     }
 }
 

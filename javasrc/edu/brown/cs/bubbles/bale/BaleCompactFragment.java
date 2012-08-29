@@ -107,6 +107,8 @@ BaleCompactFragment(BaleDocument bd,Collection<BumpLocation> locs,int wd)
 	       // continue;
 	    }
 	    break;
+	 default:
+	    break;
        }
 
       int soff = bd.mapOffsetToJava(bl.getOffset());

@@ -75,6 +75,17 @@ public static Icon getIcon(String id)
 }
 
 
+public static Icon getIcon(String id,int w,int h)
+{
+   Image img = getImage(id);
+   if (img == null) return null;
+   Image img1 = img.getScaledInstance(w,h,Image.SCALE_SMOOTH);
+   return new ImageIcon(img1);
+}
+
+
+
+
 /**
  *	Return the bubbles image with the given name.  Names correspond to filenames
  *	in the bubbles images directory.  Note that images can be returned either as

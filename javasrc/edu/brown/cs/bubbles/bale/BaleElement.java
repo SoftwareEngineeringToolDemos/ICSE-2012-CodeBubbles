@@ -31,6 +31,7 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.text.*;
@@ -66,6 +67,7 @@ private static int	tab_size;
 
 static {
    String v = BALE_PROPERTIES.getProperty("indent.tabluation.size");
+   if (v == null) v = BumpClient.getBump().getOption("org.eclipse.jdt.core.formatter.tabulation.size");
    if (v == null) v = BALE_PROPERTIES.getProperty("Bale.tabsize");
    tab_size = 8;
    try {

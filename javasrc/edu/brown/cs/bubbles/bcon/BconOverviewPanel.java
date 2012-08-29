@@ -325,6 +325,8 @@ private String getClassName(BudaBubble bb)
 	 idx = nm.lastIndexOf(".");
 	 if (idx >= 0) nm = nm.substring(0,idx);
 	 break;
+      default:
+	 break;
     }
 
    idx = nm.indexOf("$");

@@ -636,6 +636,8 @@ synchronized Collection<BattTestCase> findFailingTests()
 	 case FAILURE :
 	    rslt.add(btc);
 	    break;
+	 default:
+	    break;
       }
     }
    return rslt;
@@ -655,10 +657,14 @@ synchronized Collection<BattTestCase> findPendingTests()
 	 case STOPPED :
 	    use = true;
 	    break;
+	 default:
+	    break;
        }
       switch (btc.getStatus()) {
 	 case UNKNOWN :
 	    use = true;
+	    break;
+	 default:
 	    break;
        }
       if (use) rslt.add(btc);

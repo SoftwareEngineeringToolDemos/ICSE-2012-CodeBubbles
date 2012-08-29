@@ -696,6 +696,8 @@ private void handleRemoteAccess()
 	 bc.getRemoteFile(f,"BDOC",null);
 	 // ignore failures -- we'll just load the doc ourselves
 	 break;
+      default:
+	 break;
     }
 }
 

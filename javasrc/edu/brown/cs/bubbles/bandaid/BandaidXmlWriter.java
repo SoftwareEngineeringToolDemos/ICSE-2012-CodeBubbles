@@ -101,6 +101,8 @@ void begin(String elt)
 	 break;
       case CLOSED :
 	 break;
+      default:
+	 break;
     }
 
    indent();
@@ -167,6 +169,8 @@ void xmlText(String t)
 	 print(">");
 	 break;
       case CLOSED :
+	 break;
+      default:
 	 break;
     }
    open_state = OpenState.TEXT;

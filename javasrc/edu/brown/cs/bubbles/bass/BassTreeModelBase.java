@@ -563,6 +563,8 @@ private static class Branch extends BassTreeImpl {
 	 case ENUM :
 	    if(type == BranchNodeType.INTERFACE) branch_type = type;
 	    break;
+	 case NONE:
+	    break;
        }
     }
 
@@ -580,6 +582,8 @@ private static class Branch extends BassTreeImpl {
 	    return BoardImage.getIcon("interface_expand");
 	 case ENUM :
 	    return BoardImage.getIcon("enum_expand");
+	 case NONE:
+	    break;
        }
       return null;
     }
@@ -598,6 +602,8 @@ private static class Branch extends BassTreeImpl {
 	    return BoardImage.getIcon("interface_collapse");
 	 case ENUM :
 	    return BoardImage.getIcon("enum_collapse");
+	 default:
+	    break;
        }
       return null;
     }

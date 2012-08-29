@@ -335,6 +335,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
    </target>
@@ -371,6 +372,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
 	 <fileset dir='${BUBBLES}/pybles' includes='**/*' />
 	 <fileset dir='${BUBBLES}/lib/' includes='pydev.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.text.jar' />
@@ -460,6 +462,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -504,6 +507,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -545,6 +549,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
       </jar>
       <copy file='external/bubbles.jar' tofile='/pro/web/web/people/spr/bubbles.ext/bubbles.jar' />
       <copy file='external/version.xml' tofile='/pro/web/web/people/spr/bubbles.ext/version.xml' />

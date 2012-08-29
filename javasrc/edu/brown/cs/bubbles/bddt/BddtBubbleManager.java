@@ -219,6 +219,8 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 		  ypos = Math.min(ypos,rx.y);
 		}
 	       continue;
+	    default:
+	       break;
 	  }
        }
     }
@@ -340,23 +342,19 @@ BudaBubble createThreadBubble()
        }
     }
 
-   BudaRoot br = BudaRoot.findBudaRoot(launch_control);
-   if (br == null) return null;
+   if (bubble_area == null) return null;
 
    BudaBubble bb = new BddtThreadView(launch_control);
    Rectangle r = launch_control.getBounds();
    int x = r.x;
    int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + 20;
 
-   BudaConstraint bc;
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_THREADS)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
     }
    else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
     }
-
-   br.add(bb,bc);
 
    return bb;
 }
@@ -383,23 +381,19 @@ BudaBubble createConsoleBubble()
        }
     }
 
-   BudaRoot br = BudaRoot.findBudaRoot(launch_control);
-   if (br == null) return null;
+   if (bubble_area == null) return null;
    BudaBubble bb = BddtFactory.getFactory().getConsoleControl().createConsole(launch_control);
 
    Rectangle r = launch_control.getBounds();
    int x = r.x;
    int y = r.y + r.height + 20;
 
-   BudaConstraint bc;
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_CONSOLE)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
     }
    else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
     }
-
-   br.add(bb,bc);
 
    return bb;
 }
@@ -427,23 +421,19 @@ BudaBubble createHistoryBubble()
        }
     }
 
-   BudaRoot br = BudaRoot.findBudaRoot(launch_control);
-   if (br == null) return null;
+   if (bubble_area == null) return null;
    BudaBubble bb = BddtFactory.getFactory().getHistoryControl().createHistory(launch_control);
 
    Rectangle r = launch_control.getBounds();
    int x = r.x;
    int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + BDDT_STACK_HEIGHT + 20 + 20;
 
-   BudaConstraint bc;
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_HISTORY)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
     }
    else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
     }
-
-   br.add(bb,bc);
 
    return bb;
 }
@@ -471,23 +461,19 @@ BudaBubble createSwingBubble()
        }
     }
 
-   BudaRoot br = BudaRoot.findBudaRoot(launch_control);
-   if (br == null) return null;
+   if (bubble_area == null) return null;
    BudaBubble bb = new BddtSwingPanel(launch_control);
 
    Rectangle r = launch_control.getBounds();
    int x = r.x + r.width + 20;
    int y = r.y;
 
-   BudaConstraint bc;
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_SWING)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
     }
    else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
+      bubble_area.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
     }
-
-   br.add(bb,bc);
 
    return bb;
 }
@@ -668,6 +654,8 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
 	    case STOP_TRACE :
 	    case EVAL :
 	       continue;
+	    default:
+	       break;
 	  }
 	 if (bd.getBubble().isFixed()) continue;
 	 if (best == null) {

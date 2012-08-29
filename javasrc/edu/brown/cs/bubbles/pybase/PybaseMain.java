@@ -252,6 +252,17 @@ private void badArgs()
 
 PybaseProjectManager getProjectManager()		{ return project_manager; }
 
+public PybaseProject getProject(String p) throws PybaseException
+{
+   return project_manager.findProject(p);
+}
+
+public IFileData getFileData(String fnm,PybaseProject pp)
+{
+   PybaseFileManager pfm = PybaseFileManager.getFileManager();
+   return pfm.getFileData(null,fnm,pp);
+}
+
 PybasePreferences getSystemPreferences()		{ return system_prefs; }
 
 
@@ -428,7 +439,6 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
    else if (cmd.equals("LOGLEVEL")) {
       log_level = IvyXml.getAttrEnum(xml,"LEVEL",PybaseLogLevel.ERROR);
     }
-   else if (cmd.equals("GETALLBREAKPOINTS")) { }
    else if (cmd.equals("GETALLNAMES")) {
       project_manager.handleGetAllNames(proj,IvyXml.getAttrString(xml,"BID","*"),
 					   getSet(xml,"FILE"),
@@ -479,19 +489,64 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
       pybase_debug.clearLineBreakpoints(proj,IvyXml.getAttrString(xml,"FILE"),
 	    IvyXml.getAttrInt(xml,"LINE"));
     }
+   else if (cmd.equals("START")) {
+      pybase_debug.runProject(IvyXml.getAttrString(xml,"NAME"),xw);
+    }
+   else if (cmd.equals("DEBUGACTION")) {
+      pybase_debug.debugAction(IvyXml.getAttrString(xml,"LAUNCH"),
+            IvyXml.getAttrString(xml,"TARGET"),
+            IvyXml.getAttrString(xml,"PROCESS"),
+            IvyXml.getAttrString(xml,"THREAD"),
+            IvyXml.getAttrString(xml,"FRAME"),
+            IvyXml.getAttrEnum(xml,"ACTION",PybaseDebugAction.NONE),xw);
+    }
+   else if (cmd.equals("CONSOLEINPUT")) {
+      pybase_debug.consoleInput(IvyXml.getAttrString(xml,"LAUNCH"),
+            IvyXml.getTextElement(xml,"INPUT"));
+    }
+   else if (cmd.equals("GETSTACKFRAMES")) {
+      pybase_debug.getStackFrames(IvyXml.getAttrString(xml,"LAUNCH"),
+            IvyXml.getAttrString(xml,"THREAD"),
+            IvyXml.getAttrInt(xml,"COUNT",-1),
+            IvyXml.getAttrInt(xml,"DEPTH",0),xw);
+    }
+   else if(cmd.equals("VARVAL")) {
+      pybase_debug.getVariableValue(IvyXml.getAttrString(xml,"THREAD"),
+            IvyXml.getAttrString(xml,"FRAME"),
+            IvyXml.getTextElement(xml,"VAR"),
+            IvyXml.getAttrInt(xml,"DEPTH",1),xw);
+    }
+   else if(cmd.equals("VARDETAIL")) {
+      pybase_debug.getVariableValue(IvyXml.getAttrString(xml,"THREAD"),
+            IvyXml.getAttrString(xml,"FRAME"),
+            IvyXml.getTextElement(xml,"VAR"),-1,xw);
+    }
+   else if (cmd.equals("EVALUATE")) {
+      pybase_debug.evaluateExpression(proj,IvyXml.getAttrString(xml,"BID","*"),
+            IvyXml.getTextElement(xml,"EXPR"),
+            IvyXml.getAttrString(xml,"THREAD"),
+            IvyXml.getAttrString(xml,"FRAME"),
+            IvyXml.getAttrBool(xml,"IMPLICIT",false),
+            IvyXml.getAttrBool(xml,"BREAK",true),
+            IvyXml.getAttrString(xml,"REPLYID"),xw);
+    }
    else if (cmd.equals("MONITOR")) { }
    else if (cmd.equals("PREFERENCES")) { }
    else if (cmd.equals("GETHOST")) {
       handleGetHost(xw);
     }
    else {
+      xw.close();
       throw new PybaseException("Unknown PYBASE command " + cmd);
     }
 
    xw.end("RESULT");
 
    PybaseMain.logD("Result = " + xw.toString());
-   return xw.toString();
+   String rslt = xw.toString();
+   
+   xw.close();
+   return rslt;
 }
 
 

@@ -289,6 +289,8 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
 	 case LAUNCH_REMOVE :
 	    active_configs.remove(evt.getLaunchConfiguration());
 	    break;
+	 default:
+	    break;
        }
       config_model.fireTableDataChanged();
     }

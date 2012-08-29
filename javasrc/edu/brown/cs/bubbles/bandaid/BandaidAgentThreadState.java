@@ -221,6 +221,8 @@ private class ThreadData {
 	    case TIMED_WAITING :
 	       st = State.STOPPED_TIMED;
 	       break;
+	    default:
+	       break;
 	 }
       }
 
@@ -243,6 +245,8 @@ private class ThreadData {
 	 case WAITING :
 	 case TIMED_WAITING :
 	    rpt = true;
+	    break;
+	 default:
 	    break;
       }
 

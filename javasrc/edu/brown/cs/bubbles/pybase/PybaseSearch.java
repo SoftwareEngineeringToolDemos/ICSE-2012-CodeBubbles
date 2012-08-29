@@ -141,6 +141,8 @@ private List<SourceToken> getMatches(ISemanticData sd,PybaseScopeItems scp,Searc
 		  case FIELD :
 		     if (!(sgn instanceof Name) || sgn.parent == null || !(sgn.parent instanceof Assign)) isok = false;
 		     break;
+		  default :
+		     break;
 		}
 	       if (isok) {
 		  rslt.add(sg);

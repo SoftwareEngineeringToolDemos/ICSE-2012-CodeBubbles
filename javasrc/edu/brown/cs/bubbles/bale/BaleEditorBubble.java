@@ -106,6 +106,12 @@ BaleEditorBubble(BaleFragmentEditor bfe)
 	 maxwd = bp.getIntOption("Bale.initial.width.prefix",maxwd);
 	 maxht = bp.getIntOption("Bale.initial.height.prefix",maxht);
 	 break;
+      case ROFILE:
+	 break;
+      case ROMETHOD:
+	 break;
+      default:
+	 break;
     }
    int maxbht = Math.max(maxht,BALE_MAX_INITIAL_BUBBLE_HEIGHT);
 
@@ -227,6 +233,12 @@ BaleEditorBubble(BaleFragmentEditor bfe)
       case STATICS :
       case HEADER :
 	 nty = BudaContentNameType.CLASS_ITEM;
+	 break;
+      case ROFILE:
+	 break;
+      case ROMETHOD:
+	 break;
+      default:
 	 break;
     }
 

@@ -462,6 +462,8 @@ private Component getDisplayComponent(BconGraphNode gn)
       case PACKAGE :
 	 ncol = Color.BLUE;
 	 break;
+      default:
+	 break;
    }
    if (show_labels) ncol = ncol.darker();
    comp.setForeground(ncol);

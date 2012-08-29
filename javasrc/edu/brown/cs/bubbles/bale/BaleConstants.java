@@ -938,7 +938,7 @@ interface BaleEditor {
 /**
  *	Return the find bar widget associated with the editor
  **/
-   BaleFindBar getFindBar();
+   BaleFinder getFindBar();
 
 /**
  *	Return the annotation area widget associated with the editor
@@ -1280,6 +1280,24 @@ interface BaleLanguageKit {
 
 
 }	// end of inner class BaleLanguageKit
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Generic find bar							*/
+/*										*/
+/********************************************************************************/
+
+interface BaleFinder {
+
+   Component getComponent();
+
+   void setReplace(boolean fg);
+
+   void find(int dir,boolean next);
+
+}
 
 
 

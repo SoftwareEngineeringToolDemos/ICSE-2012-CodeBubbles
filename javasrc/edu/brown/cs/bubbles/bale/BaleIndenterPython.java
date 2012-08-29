@@ -155,6 +155,8 @@ private int findLineIndentation(BaleElement elt)
 	    case ELSE : 			// includes elif
 	       delta = -1;
 	       break;
+	    default:
+	       break;
 	  }
 	 break;
        }
@@ -181,6 +183,8 @@ private int findLineIndentation(BaleElement elt)
 	    case COLON :
 	       delta += 1;
 	       break;
+	    default:
+	       break;
 	  }
        }
       switch (pelt.getTokenType()) {
@@ -204,6 +208,8 @@ private int findLineIndentation(BaleElement elt)
 	 case CLASS :
 	 case ELSE :
 	 // anything that can start a statement here
+	    break;
+	 default:
 	    break;
        }
       // check for INDENT element, get information from it if so
@@ -301,7 +307,7 @@ private void loadProperties()
     continue_space = BALE_PROPERTIES.getInt("Bale.python.continue.indent",4);
     // use_tabs = BALE_PROPERTIES.getBoolean("Bale.python.use_tabs",false);
     paren_indent = BALE_PROPERTIES.getInt("Bale.python.paren_indent",2);
-    tab_size = BALE_PROPERTIES.getInt("Bale.tabsize",8);
+    tab_size = BALE_PROPERTIES.getInt("Bale.python.tabsize",8);
 }
 
 

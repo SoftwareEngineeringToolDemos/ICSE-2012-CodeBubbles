@@ -38,12 +38,17 @@ package edu.brown.cs.bubbles.pybase.debug;
 
 import edu.brown.cs.bubbles.pybase.PybaseConstants;
 import edu.brown.cs.bubbles.pybase.PybaseException;
+import edu.brown.cs.bubbles.pybase.PybaseMain;
+
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.BadLocationException;
 
+import org.w3c.dom.Element;
 
 import java.io.File;
 
@@ -65,6 +70,11 @@ private boolean 	condition_enabled;
 private String		function_name;
 private long		last_modified;
 private boolean         is_enabled;
+private String          break_id;
+private int             break_number;
+private boolean         is_tracepoint;
+
+private static IdCounter break_counter = new IdCounter();
 
 
 
@@ -88,12 +98,45 @@ public PybaseDebugBreakpoint(IFileData fd,int line) throws PybaseException
       throw new PybaseException("Bad breakpoint location",ex);
     }
    
+   break_number = break_counter.nextValue();
+   break_id = "BREAK_" + Integer.toString(break_number);
    debug_condition = null;
    condition_enabled = false;
    function_name = null;
    last_modified = 0;
    is_enabled = true;
+   is_tracepoint = false;
 }
+
+
+PybaseDebugBreakpoint(PybaseMain pm,Element xml) throws PybaseException
+{
+   break_number = IvyXml.getAttrInt(xml,"ID");
+   break_counter.noteValue(break_number);
+   break_id = "BREAK_" + Integer.toString(break_number);
+   
+   break_id = IvyXml.getAttrString(xml,"ID");
+   String fnm = IvyXml.getTextElement(xml,"FILE");
+   file_data = pm.getFileData(fnm,null);
+   int line = IvyXml.getAttrInt(xml,"LINE");
+   IDocument d = file_data.getDocument();
+   try {
+      int off = d.getLineOffset(line);
+      file_position = new Position(off);
+      d.addPosition(file_position);
+    }
+   catch (BadLocationException ex) {
+      throw new PybaseException("Bad breakpoint location",ex);
+    }
+   
+   debug_condition = IvyXml.getTextElement(xml,"CONDITION");
+   condition_enabled = IvyXml.getAttrBool(xml,"CONDENABLED");;
+   function_name = null;
+   last_modified = 0;
+   is_enabled = IvyXml.getAttrBool(xml,"ENABLED");      
+   is_tracepoint = IvyXml.getAttrBool(xml,"TRACEPOINT");
+}
+
 
  
 
@@ -102,6 +145,8 @@ public PybaseDebugBreakpoint(IFileData fd,int line) throws PybaseException
 /*	Access methods								*/
 /*										*/
 /********************************************************************************/
+
+String getId()                                  { return break_id; }
 
 public File getFile()				{ return file_data.getFile(); }
 
@@ -126,6 +171,20 @@ public void setCondition(String c)
    if (c != null && c.trim().length() == 0) c = null;
    debug_condition = c;
 }
+
+void setProperty(String p,String v)
+{
+   if (p == null) return;
+   if (p.equals("ENABLE") || p.equals("ENABLED")) {
+      if (v == null) is_enabled = true;
+      else is_enabled = Boolean.parseBoolean(v);
+    }
+   else if (p.equals("DISABLE") || p.equals("DISABLED")) {
+      is_enabled = false;
+    }
+}
+
+
 
 public String getFunctionName()
 {
@@ -209,6 +268,47 @@ public String getFunctionName()
 }
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Output Methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+void outputXml(IvyXmlWriter xw) 
+{
+   xw.begin("BREAKPOINT");
+   xw.field("ID",break_number);
+   xw.field("FILE",file_data.getFile());
+   xw.field("FUNCTION",getFunctionName());
+   xw.field("LINE",getLine());
+   xw.field("OFFSET",file_position.getOffset());
+   xw.field("ENABLED",is_enabled);
+   xw.field("CONDENABLED",condition_enabled);
+   xw.field("TRACEPOINT",is_tracepoint);
+   if (debug_condition != null) xw.cdataElement("CONDITION",debug_condition);
+   xw.end("BREAKPOINT");
+}
+
+
+
+void outputBubbles(IvyXmlWriter xw)
+{
+   xw.begin("BREAKPOINT");
+   xw.field("ENABLED",is_enabled);
+   xw.field("ID",break_id);
+   xw.field("LINE",getLine());
+   xw.field("STARTPOS",file_position.getOffset());
+   xw.field("ENDPOS",file_position.getOffset() + file_position.getLength());
+   xw.field("TRACEPOINT",is_tracepoint);
+   if (debug_condition != null) {
+      xw.begin("CONDITION");
+      xw.field("ENABLED",condition_enabled);
+      xw.text(debug_condition);
+      xw.end("CONDITION");
+    }
+   xw.end("BREAKPOINT");
+}
 
 
 }	// end of class PybaseDebugBreakpoint

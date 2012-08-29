@@ -98,6 +98,8 @@ void handleThreadStack(long now,ThreadInfo ti,StackTraceElement [] trc)
 	    thread_blocks.put(ti,ln);
 	  }
 	 break;
+      default:
+	 break;
     }
 }
 

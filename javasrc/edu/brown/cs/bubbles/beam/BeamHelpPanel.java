@@ -72,7 +72,7 @@ void addPanel()
    mbar.setBackground(BUDA_BUTTON_PANEL_COLOR);
    mbar.setMargin(new Insets(0,0,0,0));
    mbar.setOpaque(false);
-   
+
    JMenu btn = new JMenu("<html><center>HELP</center></html>");
    btn.setHorizontalTextPosition(AbstractButton.LEADING);
    Font ft = btn.getFont();
@@ -86,7 +86,8 @@ void addPanel()
    btn.add(new HelpWikiAction());
    btn.add(new HelpTutorialAction());
    btn.add(new HelpKeyAction());
-   
+   btn.add(new HelpMouseAction());
+
    mbar.add(btn);
 
    btn.setToolTipText("Get help on Code Bubbles");
@@ -227,6 +228,28 @@ private class HelpKeyAction extends AbstractAction {
     }
 
 }	// end of inner class HelpKeyAction
+
+
+
+
+private class HelpMouseAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   HelpMouseAction() {
+      super("Show Mouse Usage Help");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      if (for_root == null) return;
+      BudaBubble bb = new BeamMouseBubble();
+      BudaBubbleArea bba = for_root.getCurrentBubbleArea();
+      if (bba == null) return;
+      bba.addBubble(bb,null,null,BudaConstants.PLACEMENT_USER|PLACEMENT_MOVETO);
+      bb.grabFocus();
+    }
+
+}	// end of inner class HelpMouseAction
 
 
 

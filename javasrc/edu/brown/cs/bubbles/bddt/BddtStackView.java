@@ -481,6 +481,8 @@ private class RunEventHandler implements BumpRunEventHandler {
 	 case THREAD_REMOVE :
 	    makeExtinct();
 	    break;
+	 default:
+	    break;
        }
     }
 
@@ -531,7 +533,7 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
     }
 
    @Override protected void paintComponent(Graphics g) {
-      if (!is_frozen && !is_extinct && value_model.hasBeenFrozen()) 
+      if (!is_frozen && !is_extinct && value_model.hasBeenFrozen())
 	 is_frozen = true;
 
       Dimension sz = getSize();
@@ -586,11 +588,11 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
 	 if (vobj == null) return what;
 	 buf.append(what);
 	 buf.append(" = ");
-	 buf.append(IvyXml.xmlSanitize(vobj.toString()));
+	 buf.append(IvyXml.htmlSanitize(vobj.toString()));
 	 String evl = launch_control.getEvaluationString(tn.getFrame(),tn.getRunValue(),what);
 	 if (evl != null) {
 	    buf.append("<hr>");
-	    buf.append(IvyXml.xmlSanitize(evl));
+	    buf.append(IvyXml.htmlSanitize(evl));
 	  }
 	 return buf.toString();
        }

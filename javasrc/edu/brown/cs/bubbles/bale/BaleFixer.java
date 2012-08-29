@@ -94,8 +94,8 @@ BaleFixer(BumpProblem bp,BumpFix bf)
 	 using_code = new NewMethodFixup(this,bf);
 	 break;
       case EDIT_FIX :
-         using_code = new EditBasedFixup(this,bf);
-         break;
+	 using_code = new EditBasedFixup(this,bf);
+	 break;
     }
 
    if (using_code != null) {
@@ -149,7 +149,7 @@ int getStartPosition()			{ return for_problem.getStart(); }
 int getEndPosition()			{ return for_problem.getEnd(); }
 File getFile()				{ return for_problem.getFile(); }
 
-@Override public String toString() 
+@Override public String toString()
 {
    return using_code.getLabel();
 }
@@ -166,8 +166,10 @@ File getFile()				{ return for_problem.getFile(); }
 @Override public void actionPerformed(ActionEvent evt)
 {
    BoardLog.logD("BALE","DOING QUICK FIX " + getValue(Action.NAME));
-
-   if (using_code != null) using_code.perform(evt);
+   
+   if (using_code != null) {
+      using_code.perform(evt);
+   }
 }
 
 
@@ -229,7 +231,7 @@ private static class NewMethodFixup implements Fixup {
 	 proj = doc.getProjectName();
 	 // TODO: if class is same as that of bep, then set after to current method
 	 //    and set mods to private.  If class is not in same project, set mods
-	 //    to private
+	 //    to public
        }
 
       String params = param_types;
@@ -259,19 +261,19 @@ private static class NewMethodFixup implements Fixup {
 
 
 private static class EditBasedFixup implements Fixup {
-   
+
    private BaleFixer for_fix;
    private BumpFix edit_fix;
-   
+
    EditBasedFixup(BaleFixer fix,BumpFix bf) {
-      for_fix = fix; 
+      for_fix = fix;
       edit_fix = bf;
     }
-   
+
    @Override public String getLabel() {
       return edit_fix.getParameter("DISPLAY");
     }
-   
+
    @Override public void perform(ActionEvent evt) {
       String proj = for_fix.getProject();
       File file = for_fix.getFile();
@@ -280,8 +282,11 @@ private static class EditBasedFixup implements Fixup {
       BaleApplyEdits app = new BaleApplyEdits(bd);
       app.applyEdits(edit_fix.getEdits());
     }
-   
-}	// end of inner class TryImportFixup
+
+}	// end of inner class EditBasedFixup
+
+
+
 
 }	// end of class BaleFixer
 

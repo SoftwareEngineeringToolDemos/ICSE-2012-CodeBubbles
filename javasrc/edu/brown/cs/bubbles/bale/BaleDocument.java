@@ -681,6 +681,8 @@ void redoElision()
       case ELIDE_NONE :
 	 elide_mode = BaleElideMode.ELIDE_CHECK_ONCE;
 	 break;
+      default:
+	 break;
     }
 }
 

@@ -102,6 +102,7 @@ BussBubble(Collection<BussEntry> ents, int contentWidth)
    BussViewport vp = new BussViewport(stack_box, layered_pane);
 
    default_dim = (Dimension)stack_box.getPreferredSize().clone();
+   stack_box.setSize(stack_box.getPreferredSize());
 
    view_port = vp.getViewport();
 

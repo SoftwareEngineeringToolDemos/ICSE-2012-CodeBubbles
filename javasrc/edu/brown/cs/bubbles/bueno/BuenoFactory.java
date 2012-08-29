@@ -27,6 +27,7 @@ package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
@@ -95,6 +96,10 @@ private BuenoFactory()
 
 public static void setup()
 {
+   new BuenoProjectMakerNew();		// default
+   new BuenoProjectMakerSource();
+   new BuenoProjectMakerTemplate();
+   // new BuenoProjectMakerAnt();
 }
 
 
@@ -171,7 +176,7 @@ public void createNew(BuenoType what,BuenoLocation where,BuenoProperties props)
 	 case NEW_INTERFACE :
 	 case NEW_ENUM :
 	 case NEW_ANNOTATION :
-         case NEW_MODULE :
+	 case NEW_MODULE :
 	    break;
 	 default :
 	    props.put(BuenoKey.KEY_FILE,where.getFile().getPath());
@@ -185,8 +190,8 @@ public void createNew(BuenoType what,BuenoLocation where,BuenoProperties props)
 	 cur_creator.createPackage(where,props);
 	 break;
       case NEW_MODULE :
-         cur_creator.createModule(where,props); 
-         break;
+	 cur_creator.createModule(where,props);
+	 break;
       case NEW_TYPE :
       case NEW_CLASS :
       case NEW_INTERFACE :
@@ -234,6 +239,19 @@ boolean insertText(BuenoLocation loc,String text)
     }
 
    return false;
+}
+
+
+/********************************************************************************/
+/*										*/
+/*	Methods for doing create project					*/
+/*										*/
+/********************************************************************************/
+
+public BudaBubble getCreateProjectBubble()
+{
+   BuenoProjectCreator bpc = new BuenoProjectCreator();
+   return bpc.createProjectCreationBubble();
 }
 
 

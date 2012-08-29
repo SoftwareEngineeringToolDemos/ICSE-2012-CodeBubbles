@@ -120,6 +120,7 @@ private BvcrUpload()
 /*										*/
 /********************************************************************************/
 
+@SuppressWarnings("resource") 
 private void processUpload(String data,String uid,String rid,SecretKey key) throws IOException
 {
    String url = getRepoUrl() + "savebvcr.php";
@@ -157,6 +158,7 @@ private void processUpload(String data,String uid,String rid,SecretKey key) thro
    setParameter("U",uid);
    setParameter("R",rid);
    setParameter("file","/tmp/" + uid + "_" + rid + ".bvcr",is);
+   is.close();
    InputStream ins = post();
 
    BufferedReader in = new BufferedReader(new InputStreamReader(ins));

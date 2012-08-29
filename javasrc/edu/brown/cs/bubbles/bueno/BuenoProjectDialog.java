@@ -57,8 +57,10 @@ public class BuenoProjectDialog implements BuenoConstants
 /********************************************************************************/
 
 private String			project_name;
+private File			project_dir;
 private List<String>		ref_projects;
 private SwingListSet<PathEntry> library_paths;
+private Set<PathEntry>		source_paths;
 private Set<PathEntry>		initial_paths;
 private Map<String,String>	option_elements;
 private Map<String,String>	start_options;
@@ -66,7 +68,9 @@ private File			last_directory;
 private Map<String,Map<String,String>> option_sets;
 private boolean 		optional_error;
 private String			current_optionset;
+private Set<PrefEntry>		pref_entries;
 private ProblemPanel		problem_panel;
+private ContractPanel		contract_panel;
 
 
 
@@ -82,6 +86,12 @@ private static final String SOURCE_OPTION = "org.eclipse.jdt.core.compiler.sourc
 private static final String TARGET_OPTION = "org.eclipse.jdt.core.compiler.codegen.targetPlatform";
 private static final String COMPLIANCE_OPTION = "org.eclipse.jdt.core.compiler.compliance";
 private static final String ERROR_OPTION = "org.eclipse.jdt.core.compiler.problem.fatalOptionalError";
+private static final String COFOJA_OPTION = "edu.brown.cs.bubbles.bedrock.useContractsForJava";
+private static final String JUNIT_OPTION = "edu.brown.cs.bubbles.bedrock.useJunit";
+private static final String ASSERT_OPTION = "edu.brown.cs.bubbles.bedrock.useAssertions";
+private static final String ANNOT_OPTION = "org.eclipse.jdt.core.compiler.processAnnotations";
+
+
 
 
 
@@ -105,10 +115,12 @@ public BuenoProjectDialog(String proj)
    project_name = proj;
    ref_projects = new ArrayList<String>();
    library_paths = new SwingListSet<PathEntry>(true);
+   source_paths = new HashSet<PathEntry>();
    option_elements = new HashMap<String,String>();
    last_directory = null;
    option_sets = new HashMap<String,Map<String,String>>();
    initial_paths = new HashSet<PathEntry>();
+   pref_entries = new HashSet<PrefEntry>();
 
    BoardProperties bp = BoardProperties.getProperties("Bueno");
 
@@ -118,6 +130,8 @@ public BuenoProjectDialog(String proj)
    BumpClient bc = BumpClient.getBump();
    Element xml = bc.getProjectData(proj);
    if (xml == null) return;
+   String dir = IvyXml.getAttrString(xml,"PATH");
+   if (dir != null) project_dir = new File(dir);
 
    for (Element e : IvyXml.children(xml,"REFERENCES")) {
       String ref = IvyXml.getText(e);
@@ -129,6 +143,12 @@ public BuenoProjectDialog(String proj)
       String v = IvyXml.getAttrString(e,"VALUE");
       option_elements.put(k,v);
     }
+   for (Element e : IvyXml.children(xml,"PROPERTY")) {
+      String q = IvyXml.getAttrString(e,"QUAL");
+      String n = IvyXml.getAttrString(e,"NAME");
+      String v = IvyXml.getAttrString(e,"VALUE");
+      option_elements.put(q + "." + n,v);
+    }
    start_options = new HashMap<String,String>(option_elements);
 
    Element cxml = IvyXml.getChild(xml,"RAWPATH");
@@ -136,6 +156,10 @@ public BuenoProjectDialog(String proj)
       PathEntry pe = new PathEntry(e);
       if (!pe.isNested() && pe.getPathType() == PathType.LIBRARY) {
 	 library_paths.addElement(pe);
+	 initial_paths.add(pe);
+       }
+      else if (!pe.isNested() && pe.getPathType() == PathType.SOURCE) {
+	 source_paths.add(pe);
 	 initial_paths.add(pe);
        }
     }
@@ -163,7 +187,10 @@ public BudaBubble createProjectEditor()
    tbp.addTab("Libraries",new PathPanel());
    problem_panel = new ProblemPanel();
    tbp.addTab("Compiler",problem_panel);
+   contract_panel = new ContractPanel();
+   tbp.addTab("Contracts",contract_panel);
    pnl.addGBComponent(tbp,0,1,0,1,1,1);
+
 
    Box bx = Box.createHorizontalBox();
    bx.add(Box.createHorizontalGlue());
@@ -387,6 +414,8 @@ private static class EditPathEntryBubble extends BudaBubble implements ActionLis
 	    pnl.addFileField("Source Attachment",for_path.getSourcePath(),0,this,null);
 	    pnl.addFileField("Java Doc Attachment",for_path.getJavadocPath(),0,this,null);
 	    break;
+	 default:
+	    break;
        }
       pnl.addBoolean("Exported",for_path.isExported(),this);
       pnl.addBoolean("Optional",for_path.isOptional(),this);
@@ -460,7 +489,7 @@ private static class PathEntry implements Comparable<PathEntry> {
       path_type = PathType.LIBRARY;
       source_path = null;
       output_path = null;
-      binary_path = f.getPath();
+      binary_path = (f == null ? null : f.getPath());
       is_exported = false;
       is_optional = false;
       is_nested = false;
@@ -539,6 +568,8 @@ private static class PathEntry implements Comparable<PathEntry> {
 	       return f.getName() + " (SOURCE)";
 	     }
 	    break;
+	 default:
+	    break;
        }
       return path_type.toString() + " " + source_path + " " + output_path + " " + binary_path;
     }
@@ -550,6 +581,35 @@ private static class PathEntry implements Comparable<PathEntry> {
 }	// end of inner class PathEntry
 
 
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle preference setting request							   */
+/*										*/
+/********************************************************************************/
+
+private static class PrefEntry {
+
+    private String qual_name;
+    private String item_name;
+    private String pref_value;
+
+    PrefEntry(String q,String n,String v) {
+       qual_name = q;
+       item_name = n;
+       pref_value = v;
+     }
+
+    void outputXml(IvyXmlWriter xw) {
+	xw.begin("XPREF");
+	xw.field("NODE",qual_name);
+	xw.field("KEY",item_name);
+	xw.field("VALUE",pref_value);
+	xw.end("XPREF");
+     }
+
+}	// end of inner class PrefEntry
 
 /********************************************************************************/
 /*										*/
@@ -706,20 +766,132 @@ private class ProblemPanel extends SwingGridPanel implements ActionListener {
       else BoardLog.logE("BUENO","Unknown problem panel command " + cmd);
     }
 
-   void outputXml(IvyXmlWriter xw) {
-      for (Map.Entry<String,String> ent : option_elements.entrySet()) {
-	 String k = ent.getKey();
-	 String v = ent.getValue();
-	 String ov = start_options.get(k);
-	 if (v.equals(ov)) continue;
-	 xw.begin("OPTION");
-	 xw.field("NAME",k);
-	 xw.field("VALUE",v);
-	 xw.end("OPTION");
+
+
+}	// end of inner class ProblemPanel
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle contract setup							*/
+/*										*/
+/********************************************************************************/
+
+private void setupContractsForJava()
+{
+   BoardSetup bs = BoardSetup.getSetup();
+   String path = bs.getLibraryPath("cofoja.jar");
+   File p1 = new File(project_dir,".apt_generated");
+   String anm = p1.getAbsolutePath();
+
+   String snm = null;
+   boolean fnd = false;
+   boolean sfnd = false;
+   for (PathEntry pe : initial_paths) {
+      if (pe.getSourcePath() != null && !pe.isOptional() && snm == null) snm = pe.getSourcePath();
+      if (pe.getBinaryPath() != null && pe.getBinaryPath().equals(path)) fnd = true;
+      if (pe.getSourcePath() != null && pe.getSourcePath().equals(anm)) sfnd = true;
+    }
+   if (!fnd) {
+      PathEntry pe = new PathEntry(new File(path));
+      library_paths.addElement(pe);
+    }
+   if (!sfnd) {
+      PathEntry pe = new PathEntry((File) null);
+      pe.setSourcePath(anm);
+      pe.setOptional(true);
+      library_paths.addElement(pe);
+    }
+
+   option_elements.put(ANNOT_OPTION,"enabled");
+
+   PrefEntry pe = new PrefEntry("org.eclispe.jdt.apt.core","org.eclipse.jdt.apt.reconcileEnabled","true");
+   pref_entries.add(pe);
+   pe = new PrefEntry("org.eclipse.jdt.apt.core","org.eclipse.jdt.apt.aptEnabled","true");
+   pref_entries.add(pe);
+   pe = new PrefEntry("org.eclipse.jdt.apt.core","org.eclipse.jdt.apt.genSrcDir",".apt_generated");
+   pref_entries.add(pe);
+   pe = new PrefEntry("org.eclipse.jdt.apt.processorOptions","com.google.java.contract.classoutput",snm);
+   pref_entries.add(pe);
+   pe = new PrefEntry("org.eclipse.jdt.apt.processorOptions","com.google.java.contract.classpath",path);
+   pref_entries.add(pe);
+
+   option_elements.put(COFOJA_OPTION,"true");
+}
+
+
+
+private void setupJunit()
+{
+   BoardSetup bs = BoardSetup.getSetup();
+   String path = bs.getLibraryPath("junit.jar");
+   
+   boolean fnd = false;
+   for (PathEntry pe : initial_paths) {
+      if (pe.getBinaryPath() != null && pe.getBinaryPath().contains("junit")) fnd = true;
+    }
+   if (!fnd) {
+      PathEntry pe = new PathEntry(new File(path));
+      library_paths.addElement(pe);
+    }
+   
+   option_elements.put(JUNIT_OPTION,"true");
+}
+
+
+
+
+
+
+private class ContractPanel extends SwingGridPanel implements ActionListener {
+
+   private JButton cofoja_button;
+   private JButton junit_button;
+   private JCheckBox assert_button;
+   private boolean setup_cofoja;
+   private boolean setup_junit;
+
+   ContractPanel() {
+      setup_cofoja = false;
+      setup_junit = false;
+      beginLayout();
+      addBannerLabel("Contract Checking");
+      cofoja_button = new JButton("Enable Contracts For Java");
+      cofoja_button.setEnabled(!option_elements.containsKey(COFOJA_OPTION));
+      cofoja_button.addActionListener(this);
+      addLabellessRawComponent("COFOJA",cofoja_button,true,false);
+      junit_button = new JButton("Enable JUNIT Testing");
+      junit_button.setEnabled(!option_elements.containsKey(JUNIT_OPTION));
+      junit_button.addActionListener(this);
+      addLabellessRawComponent("JUNIT",junit_button,true,false);
+      assert_button = new JCheckBox("Enable Assertions");
+      assert_button.setSelected(option_elements.containsKey(ASSERT_OPTION));
+      assert_button.addActionListener(this);
+      addLabellessRawComponent("ASSERT",assert_button,true,false);
+      addExpander();
+    }
+
+   boolean setupCofoja()		{ return setup_cofoja; }
+   boolean setupJunit()                 { return setup_junit; }
+   boolean enableAssertions()           { return assert_button.isSelected(); }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      if (evt.getSource() == cofoja_button) {
+	 cofoja_button.setEnabled(false);
+	 setup_cofoja = true;
+       }
+      else if (evt.getSource() == junit_button) {
+	 junit_button.setEnabled(false);
+	 setup_junit = true;
+       }
+      else if (evt.getSource() == assert_button) {
+	 // no need to do anything
        }
     }
 
-}	// end of inner class ProblemPanel
+}	// end of inner class ContractPanel
+
 
 
 
@@ -745,26 +917,53 @@ private class ProjectEditor implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
       Set<PathEntry> dels = new HashSet<PathEntry>(initial_paths);
-
+      dels.removeAll(source_paths);
+      boolean chng = false;
+   
+      if (contract_panel.setupCofoja()) {
+         setupContractsForJava();
+       }
+      if (contract_panel.setupJunit()) {
+         setupJunit();
+       }
+      option_elements.put(ASSERT_OPTION,Boolean.toString(contract_panel.enableAssertions()));
+   
       IvyXmlWriter xw = new IvyXmlWriter();
       xw.begin("PROJECT");
       xw.field("NAME",project_name);
       for (PathEntry pe : library_paths) {
-	 pe.outputXml(xw,false);
-	 dels.remove(pe);
+         pe.outputXml(xw,false);
+         dels.remove(pe);
        }
       for (PathEntry pe : dels) {
-	 pe.outputXml(xw,true);
+         pe.outputXml(xw,true);
        }
-      problem_panel.outputXml(xw);
+   
+      for (Map.Entry<String,String> ent : option_elements.entrySet()) {
+         String k = ent.getKey();
+         String v = ent.getValue();
+         String ov = start_options.get(k);
+         if (v.equals(ov)) continue;
+         chng = true;
+         xw.begin("OPTION");
+         xw.field("NAME",k);
+         xw.field("VALUE",v);
+         xw.end("OPTION");
+       }
+   
+      for (PrefEntry pe : pref_entries) {
+          pe.outputXml(xw);
+          chng = true;
+       }
+   
       xw.end("PROJECT");
-
+   
       closeWindow(problem_panel);
-
+   
       BumpClient bc = BumpClient.getBump();
-
-      if (anythingChanged())
-	 bc.editProject(project_name,xw.toString());
+   
+      if (chng || anythingChanged())
+         bc.editProject(project_name,xw.toString());
     }
 
 }	// end of inner class ProjectEditor

@@ -91,7 +91,7 @@ private static final float [] DASH_ARRAY = new float [] { 10f, 5f };
 
 public BudaBubbleLink(BudaBubble frm,LinkPort fpt,BudaBubble to,LinkPort tpt)
 {
-   this(frm,fpt,to,tpt,true, BudaLinkStyle.STYLE_SOLID);
+   this(frm,fpt,to,tpt,true,BudaLinkStyle.STYLE_SOLID);
 }
 
 
@@ -104,7 +104,7 @@ public BudaBubbleLink(BudaBubble frm,LinkPort fpt,BudaBubble to,LinkPort tpt)
 
 public BudaBubbleLink(BudaBubble frm,LinkPort fpt,BudaBubble to,LinkPort tpt,boolean rect)
 {
-   this(frm,fpt,to,tpt,true,BudaLinkStyle.STYLE_SOLID);
+   this(frm,fpt,to,tpt,rect,BudaLinkStyle.STYLE_SOLID);
 }
 
 
@@ -142,8 +142,8 @@ public BudaBubbleLink(BudaBubble frm,LinkPort fpt,BudaBubble to,LinkPort tpt,boo
 /*										*/
 /********************************************************************************/
 
-public BudaBubble getSource()			        { return from_bubble; }
-public BudaBubble getTarget()			        { return to_bubble; }
+public BudaBubble getSource()				{ return from_bubble; }
+public BudaBubble getTarget()				{ return to_bubble; }
 
 
 boolean usesBubble(BudaBubble b)
@@ -187,6 +187,8 @@ public void setStyle(float w,BudaLinkStyle sty)
 	 link_stroke = new BasicStroke(w,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND);//DoubleStroke(w);
 	 finish_type = BudaPortEndType.END_TRIANGLE_FILLED;
 	 //TODO: make more different somehow...
+	 break;
+      default:
 	 break;
     }
 }

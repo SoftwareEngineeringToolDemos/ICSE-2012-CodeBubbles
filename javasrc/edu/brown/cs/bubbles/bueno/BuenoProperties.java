@@ -137,6 +137,38 @@ String [] getArrayProperty(BuenoKey k)
 
 
 
+void addToArrayProperty(BuenoKey k,String v)
+{
+   List<String> rslt = null;
+   Object ov = get(k);
+   if (ov == null) {
+      rslt = new ArrayList<String>();
+    }
+   else if (ov instanceof String []) {
+      rslt = new ArrayList<String>();
+      String [] xv = (String []) ov;
+      for (String s : xv) rslt.add(s);
+    }
+   else if (ov instanceof String) {
+      rslt = new ArrayList<String>();
+      StringTokenizer tok = new StringTokenizer((String) ov,",");
+      while (tok.hasMoreTokens()) {
+	 rslt.add(tok.nextToken());
+       }
+    }
+   else if (ov instanceof List) {
+      @SuppressWarnings("unchecked") List<String> l = (List<String>) ov;
+      l.add(v);
+    }
+   if (rslt != null) {
+      rslt.add(v);
+      put(k,v);
+    }
+}
+
+
+
+
 String getIndentString()		{ return getIndentProperty(BuenoKey.KEY_INDENT,-1); }
 String getInitialIndentString() 	{ return getIndentProperty(BuenoKey.KEY_INITIAL_INDENT,0); }
 

@@ -290,7 +290,7 @@ private int fixIncreaseDelta(BaleDocument bd,BaleElement be)
 /*										*/
 /********************************************************************************/
 
-@Override abstract public BaleFindBar getFindBar();
+@Override abstract public BaleFinder getFindBar();
 @Override abstract public BaleAnnotationArea getAnnotationArea();
 
 void toggleFindBar() {}
@@ -384,15 +384,15 @@ private class ContextMenuHandler implements ActionListener {
       String cmd = e.getActionCommand();
       String acmd = context_names.get(cmd);
       if (acmd != null) {
-         ActionEvent nevt = new ActionEvent(BaleEditorPane.this,e.getID(),acmd,e.getWhen(),e.getModifiers());
-         Action a = BaleEditorKit.findAction(acmd);
-         if (a != null) {
-            a.actionPerformed(nevt);
-            BoardMetrics.noteCommand("BALE","CONTEXT_" + cmd);
-          }
+	 ActionEvent nevt = new ActionEvent(BaleEditorPane.this,e.getID(),acmd,e.getWhen(),e.getModifiers());
+	 Action a = BaleEditorKit.findAction(acmd);
+	 if (a != null) {
+	    a.actionPerformed(nevt);
+	    BoardMetrics.noteCommand("BALE","CONTEXT_" + cmd);
+	  }
        }
       else {
-         BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
+	 BoardLog.logE("BALE","CONTEXT MENU UNKOWN COMMAND " + cmd);
        }
     }
 
@@ -896,7 +896,7 @@ private String getHoverText(MouseEvent e)
       int eoff = be.getEndOffset();
       try {
 	 txt = bd.getText(soff,eoff-soff);
-	 txt = IvyXml.xmlSanitize(txt,false);
+	 txt = IvyXml.xmlSanitize(txt,false,true);
 	 txt = "<html><pre>" + txt + "</pre></html>";
        }
       catch (BadLocationException ex) { }

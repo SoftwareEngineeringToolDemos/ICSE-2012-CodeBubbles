@@ -277,8 +277,13 @@ private int findReferencePosition(int offset)
 	       case WHILE :
 		  bracelessblockstart = true;
 		  break;
+	       default:
+		  break;
 	     }
 	  }
+	 break;
+      default:
+	 break;
     }
 
    if (elt != null && elt.isComment()) return findCommentPosition();
@@ -310,6 +315,8 @@ private int findReferencePosition(int offset)
 	 break;
       case RPAREN :
 	 matchparen = true;
+	 break;
+      default:
 	 break;
     }
 
@@ -711,6 +718,8 @@ private int skipToPreviousListItemOrListStart()
 	 case EOF :
 	 case NONE :
 	    return 0;
+	 default:
+	    break;
        }
     }
 }
@@ -754,10 +763,12 @@ private boolean skipScope()
 	    case IDENTIFIER :
 	       if (!isGenericStarter(getTokenContent())) break;
 	       // fall through
-	 case QUESTIONMARK :
+	    case QUESTIONMARK :
 	    case RANGLE :
 	       if (skipScope(BaleTokenType.LANGLE,BaleTokenType.RANGLE))
 		  return true;
+	    default:
+	       break;
 	  }
 	 // <> are harder to detect - restore the position if we fail
 	 setCurrent(stored);
@@ -800,6 +811,8 @@ private boolean skipNextIF()
 	 case EOF :
 	 case NONE :
 	    return false;
+	 default:
+	    break;
        }
     }
 }
@@ -847,6 +860,8 @@ private int skipToStatementStart(boolean danglingelse,boolean isinblock)
 	    case SWITCH:
 	       cur_indent = pref_case_indent;
 	       return cur_offset;
+	    default:
+	       break;
 	  }
        }
 
@@ -999,6 +1014,8 @@ private boolean hasMatchingDo()
       case SEMICOLON :
 	 skipToStatementStart(false,false);
 	 return cur_token == BaleTokenType.DO;
+      default:
+	 break;
     }
 
    return false;

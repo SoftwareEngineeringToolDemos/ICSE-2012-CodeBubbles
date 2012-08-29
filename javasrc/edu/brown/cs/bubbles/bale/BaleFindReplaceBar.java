@@ -1,11 +1,12 @@
 /********************************************************************************/
 /*										*/
-/*		BaleFindBar.java						*/
+/*		BaleFindReplaceBar.java 					*/
 /*										*/
 /*	Bubble Annotated Language Editor Fragment editor find bar		*/
 /*										*/
 /********************************************************************************/
-/*	Copyright 2009 Brown University -- Arman Uguray 		      */
+/*	Copyright 2010 Brown University -- Arman Uguray 		      */
+/*	Copyright 2012 Brown University -- Steven Reiss 		      */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.				 *
  *										 *
@@ -34,6 +35,9 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.burp.BurpHistory;
+
+import edu.brown.cs.ivy.swing.*;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -43,10 +47,12 @@ import javax.swing.text.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Vector;
+import java.util.*;
+import java.util.List;
 
 
-class BaleFindBar extends JPanel implements BaleConstants, ActionListener, CaretListener, ItemListener//, BudaConstants.NoBubble
+class BaleFindReplaceBar extends SwingGridPanel implements BaleConstants, BaleConstants.BaleFinder,
+	ActionListener, CaretListener, ItemListener
 {
 
 
@@ -59,26 +65,36 @@ class BaleFindBar extends JPanel implements BaleConstants, ActionListener, Caret
 private BaleEditorPane editor_pane;
 private BaleDocument for_document;
 private JTextField text_field;
+private JTextField replace_field;
 private JCheckBox is_case_sensitive; // toggles whether the search should be case sensitive
 private JLabel number_label; // shows how many occurences of the search text have been found
+
 private String	search_for;
 private String searched_for; // stores the most recent search text. used to determine whether it is necessary to run a new search
-private java.util.List<Position> _occurrences; // stores the locations of occurrences of the search text.
+private List<Position> occurrences_set; // stores the locations of occurrences of the search text.
 private int current_index; // stores which occurrence was last highlighted - used to facilitate the arrow functions
 private int current_caret_position;
-private Highlighter _highlighter;
+private Highlighter my_highlighter;
 private Object my_highlight_tag;
 private int last_dir;
 
-private static Image cancel_image, next_image, prev_image;
+private JPanel replace_panel;
+private Dimension find_size;
+private Dimension replace_size;
+
+
+private static Icon cancel_icon;
+private static Icon next_icon;
+private static Icon prev_icon;
+private static Icon repl_icon;
+private static Icon replall_icon;
 
 static {
-   cancel_image = BoardImage.getImage("button_cancel");
-   cancel_image = cancel_image.getScaledInstance(10,10,Image.SCALE_SMOOTH);
-   next_image = BoardImage.getImage("2dowarrow");
-   next_image = next_image.getScaledInstance(10,10,Image.SCALE_SMOOTH);
-   prev_image = BoardImage.getImage("2uparrow");
-   prev_image = prev_image.getScaledInstance(10,10,Image.SCALE_SMOOTH);
+   cancel_icon = BoardImage.getIcon("button_cancel",10,10);
+   next_icon = BoardImage.getIcon("2dowarrow",10,10);
+   prev_icon = BoardImage.getIcon("2uparrow",10,10);
+   repl_icon = BoardImage.getIcon("replace",10,10);
+   replall_icon = BoardImage.getIcon("replaceall",10,10);
 }
 
 private static final long serialVersionUID = 1;
@@ -91,88 +107,42 @@ private static final long serialVersionUID = 1;
 /*										*/
 /********************************************************************************/
 
-BaleFindBar(BaleEditorPane edt)
+BaleFindReplaceBar(BaleEditorPane edt,boolean dorep)
 {
-   super(new BorderLayout());
-
    setOpaque(true);
    setBackground(new Color(0,0,0,0));
    setBorder(new LineBorder(Color.darkGray, 1, true));
+   setInsets(0);
 
    editor_pane = edt;
    for_document = (BaleDocument) edt.getDocument();
    search_for = null;
    searched_for = null;
-   _occurrences = null;
+   occurrences_set = null;
    current_index = 0;
    last_dir = 1;
    current_caret_position = edt.getCaretPosition();
 
    editor_pane.addCaretListener(new HighlightCanceler());
 
-   Box topbox = new Box(BoxLayout.X_AXIS);
-   topbox.add(Box.createHorizontalStrut(3));
+   SwingGridPanel topbox = new SwingGridPanel();
 
-   Dimension bdim = new Dimension(12,10);
-
-   JButton b1 = new JButton(new ImageIcon(cancel_image));//BoardImage.getIcon("button_cancel"));
-   b1.setActionCommand("DONE");
-   b1.addActionListener(this);
-   b1.setMaximumSize(bdim);
-   b1.setPreferredSize(bdim);
-   b1.setSize(bdim);
-   b1.setFocusPainted(false);
-   b1.setContentAreaFilled(false);
-   b1.setBorderPainted(false);
-   //topbox.add(b1);
-
-   JButton b2 = new JButton("Prev", new ImageIcon(prev_image));
-   b2.setActionCommand("LAST");
-   b2.addActionListener(this);
-   b2.setBorder(null);
-   //b2.setMaximumSize(bdim);
-   //b2.setPreferredSize(bdim);
-   //b2.setSize(bdim);
-   b2.setFocusPainted(false);
-   b2.setContentAreaFilled(false);
-   b2.setBorderPainted(false);
-   //topbox.add(b2);
-
-   JButton b3 = new JButton("Next", new ImageIcon(next_image));
-   b3.setActionCommand("NEXT");
-   b3.addActionListener(this);
-   b3.setBorder(null);
-   //b3.setMaximumSize(bdim);
-   // b3.setPreferredSize(bdim);
-   //b3.setSize(bdim);
-   b3.setFocusPainted(false);
-   b3.setContentAreaFilled(false);
-   b3.setBorderPainted(false);
-   //topbox.add(b3);
-
-   //topbox.add(Box.createHorizontalStrut(2));
-
-   text_field = new JTextField(10);
-   text_field.setFont(BALE_PROPERTIES.getFont(BALE_CRUMB_FONT));
-   text_field.addCaretListener(this);
+   text_field = createTextField(10);
    text_field.setAction(new SearchAction());
-   text_field.addKeyListener(new CloseListener());
-   Dimension sz = text_field.getPreferredSize();
-   text_field.setMaximumSize(sz);
-   text_field.setPreferredSize(sz);
-   topbox.add(text_field);
+   topbox.addGBComponent(text_field,0,0,1,1,10,0);
 
-   topbox.add(b3);
-   topbox.add(Box.createHorizontalStrut(2));
-   topbox.add(b2);
-   topbox.add(Box.createHorizontalStrut(2));
-   topbox.add(b1);
-   //topbox.add(new JSeparator(SwingConstants.VERTICAL));
+   JButton b2 = createButton("Prev",prev_icon,"LAST");
+   topbox.addGBComponent(b2,1,0,1,1,0,0);
 
-   add(topbox, BorderLayout.NORTH);
+   JButton b3 = createButton("Next",next_icon,"NEXT");
+   topbox.addGBComponent(b3,2,0,1,1,0,0);
 
-   Box bottombox = new Box(BoxLayout.X_AXIS);
-   bottombox.add(Box.createHorizontalGlue());
+   JButton b1 = createButton(null,cancel_icon,"DONE");
+   topbox.addGBComponent(b1,3,0,1,1,0,0);
+
+   addGBComponent(topbox,0,0,0,1,10,0);
+
+   SwingGridPanel bottombox = new SwingGridPanel();
 
    is_case_sensitive = new JCheckBox("Case Sensitive?");
    is_case_sensitive.addItemListener(this);
@@ -180,37 +150,83 @@ BaleFindBar(BaleEditorPane edt)
    is_case_sensitive.setHorizontalTextPosition(SwingConstants.LEFT);
    is_case_sensitive.setBackground(new Color(0,0,0,0));
    is_case_sensitive.setBorder(null);
-   bottombox.add(is_case_sensitive);
+   is_case_sensitive.setFocusPainted(false);
+   is_case_sensitive.setRolloverEnabled(false);
+   bottombox.addGBComponent(is_case_sensitive,0,0,1,1,0,0);
 
-   bottombox.add(Box.createHorizontalStrut(3));
+   JLabel spacer = new JLabel();
+   bottombox.addGBComponent(spacer,1,0,1,1,10,0);
 
-   number_label = new JLabel("Matches:  ");
+   number_label = new JLabel("Matches: ??");
    number_label.setBackground(new Color(0,0,0,0));
-   bottombox.add(number_label);
+   bottombox.addGBComponent(number_label,2,0,1,1,0,0);
 
-   bottombox.add(Box.createHorizontalGlue());
+   addGBComponent(bottombox,0,1,0,1,10,0);
 
-   add(bottombox, BorderLayout.CENTER);
+   SwingGridPanel replacebox = new SwingGridPanel();
 
-   // topbox.add(Box.createHorizontalStrut(2));
-   //topbox.add(is_case_sensitive);
-   //topbox.add(Box.createHorizontalStrut(2));
-   //topbox.add(number_label);
-   //add(topbox, BorderLayout.CENTER);
+   replace_field = createTextField(10);
+   replace_field.setAction(new ReplaceAction());
+   replacebox.addGBComponent(replace_field,0,0,1,1,10,0);
 
-   _highlighter = editor_pane.getHighlighter();
+   JButton b4 = createButton("Repl",repl_icon,"REPL");
+   replacebox.addGBComponent(b4,1,0,1,1,0,0);
+
+   JButton b5 = createButton("ReplAll",replall_icon,"REPLALL");
+   replacebox.addGBComponent(b5,2,0,1,1,0,0);
+
+   addGBComponent(replacebox,0,2,0,1,10,0);
+   replace_panel = replacebox;
+
+   replace_size = getPreferredSize();
+   replace_panel.setVisible(false);
+   find_size = getPreferredSize();
+
+   my_highlighter = editor_pane.getHighlighter();
    try {
-      my_highlight_tag = _highlighter.addHighlight(0, 0, BaleHighlightContext.getPainter(BaleHighlightType.FIND));
+      my_highlight_tag = my_highlighter.addHighlight(0, 0, BaleHighlightContext.getPainter(BaleHighlightType.FIND));
     }
    catch (BadLocationException e) {
       my_highlight_tag = new Object();
     }
 
-   Dimension xdim = getPreferredSize();
-   setMaximumSize(xdim);
-   setMinimumSize(xdim);
-   setPreferredSize(xdim);
-   setSize(xdim);
+   setReplace(dorep);
+}
+
+
+
+private JButton createButton(String txt,Icon icn,String cmd)
+{
+   JButton btn = new JButton(txt,icn);
+   btn.setActionCommand(cmd);
+   btn.addActionListener(this);
+   btn.setBorder(null);
+   btn.setFocusPainted(false);
+   btn.setContentAreaFilled(false);
+
+   if (txt == null) {
+      Dimension dim = new Dimension(icn.getIconWidth() + 2,icn.getIconHeight());
+      btn.setSize(dim);
+      btn.setPreferredSize(dim);
+      btn.setMaximumSize(dim);
+    }
+
+   return btn;
+}
+
+
+
+private JTextField createTextField(int ln)
+{
+   JTextField tfld = new JTextField(ln);
+   tfld.setFont(BALE_PROPERTIES.getFont(BALE_CRUMB_FONT));
+   tfld.addCaretListener(this);
+   tfld.addKeyListener(new CloseListener());
+   // Dimension sz = tfld.getPreferredSize();
+   // tfld.setMaximumSize(sz);
+   // tfld.setPreferredSize(sz);
+
+   return tfld;
 }
 
 
@@ -221,6 +237,9 @@ BaleFindBar(BaleEditorPane edt)
 /*	Activate methods							*/
 /*										*/
 /********************************************************************************/
+
+@Override public Component getComponent()		{ return this; }
+
 
 @Override public void setVisible(boolean fg)
 {
@@ -236,6 +255,18 @@ BaleFindBar(BaleEditorPane edt)
 }
 
 
+@Override public void setReplace(boolean fg)
+{
+   replace_panel.setVisible(fg);
+
+   Dimension sz = (fg ? replace_size : find_size);
+   setMaximumSize(sz);
+   setMinimumSize(sz);
+   setPreferredSize(sz);
+   setSize(sz);
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -243,7 +274,7 @@ BaleFindBar(BaleEditorPane edt)
 /*										*/
 /********************************************************************************/
 
-void find(int dir,boolean next)
+@Override public void find(int dir,boolean next)
 {
    if (BudaRoot.findBudaBubble(editor_pane) == null) {
       BudaBubble my_bub = BudaRoot.findBudaBubble(this);
@@ -269,10 +300,10 @@ void find(int dir,boolean next)
 	 searched_for = search_for;
 	 // find and store the indices of all the occurrences so that going back and forth doesn't require a new search
 	 findAllOccurences(search_for, dir);
-	 number_label.setText("Matches: "+_occurrences.size());
+	 number_label.setText("Matches: " + occurrences_set.size());
 	 //current_index = -1;
        }
-      if (_occurrences == null || _occurrences.size() == 0) {
+      if (occurrences_set == null || occurrences_set.size() == 0) {
 	 clearHighlights();
 	 return;
        }
@@ -282,23 +313,23 @@ void find(int dir,boolean next)
       int found = 0;
       if (dir > 0) {
 	 current_index++;
-	 if (current_index >= _occurrences.size()) current_index = 0;
+	 if (current_index >= occurrences_set.size()) current_index = 0;
        }
       else if (dir < 0) {
 	 current_index--;
-	 if (current_index < 0) current_index = _occurrences.size() - 1;
+	 if (current_index < 0) current_index = occurrences_set.size() - 1;
        }
       else if (dir == 0) {
 	 current_index = 0;
        }
-      found = _occurrences.get(current_index).getOffset();
+      found = occurrences_set.get(current_index).getOffset();
       int len = search_for.length();
 
       try {
 	 current_caret_position = found+len;
 	 editor_pane.setCaretPosition(found);
 	 editor_pane.moveCaretPosition(found+len);
-	 _highlighter.changeHighlight(my_highlight_tag,found,found+len);
+	 my_highlighter.changeHighlight(my_highlight_tag,found,found+len);
 	 editor_pane.scrollRectToVisible(editor_pane.modelToView(found+len));
 	 currentelement = for_document.getCharacterElement(found);
 	 if (currentelement == null) return;
@@ -329,7 +360,7 @@ private void findAllOccurences(String text, int dir)
       int soff = 0;
       int eoff = for_document.getLength();
       int len = text.length();
-      java.util.List<Position> occurrences = new Vector<Position>();
+      List<Position> occurrences = new ArrayList<Position>();
       int tlen = eoff-soff;
       try {
 	 boolean search = true;
@@ -373,10 +404,10 @@ private void findAllOccurences(String text, int dir)
 		}
 	     }
 	  }
-	 _occurrences = occurrences;
+	 occurrences_set = occurrences;
 	 if (dir == 0 || bestfound.getOffset() == 0)  current_index = -1;
-	 else if (dir > 0) current_index = _occurrences.indexOf(bestfound)-1;
-	 else current_index = _occurrences.indexOf(bestfound)+1;
+	 else if (dir > 0) current_index = occurrences_set.indexOf(bestfound)-1;
+	 else current_index = occurrences_set.indexOf(bestfound)+1;
        }
       catch (BadLocationException e) {
 	 BoardLog.logE("BALE","Problem with search: " + e);
@@ -386,14 +417,83 @@ private void findAllOccurences(String text, int dir)
 }
 
 
+private void replace()
+{
+   if (occurrences_set == null || occurrences_set.isEmpty()) return;
+   if (current_index < 0 || current_index >= occurrences_set.size()) return;
+   if (search_for == null) return;
+
+   String s = replace_field.getText();
+   if (s == null) s = "";
+
+   Position p = occurrences_set.remove(current_index);
+   clearHighlights();
+   int ln = search_for.length();
+   BurpHistory bh = BurpHistory.getHistory();
+
+   for_document.baleWriteLock();
+   try {
+      bh.beginEditAction(editor_pane);
+      for_document.replace(p.getOffset(),ln,s,null);
+    }
+   catch (BadLocationException e) {
+      BoardLog.logE("BALE","Problem with replace",e);
+      return;
+    }
+   finally {
+      bh.endEditAction(editor_pane);
+      for_document.baleWriteUnlock();
+    }
+
+   --current_index;
+   find(1,true);
+
+}
+
+
+private void replaceAll()
+{
+   if (occurrences_set == null || occurrences_set.isEmpty()) return;
+   if (current_index < 0 || current_index >= occurrences_set.size()) return;
+   if (search_for == null) return;
+
+   String s = replace_field.getText();
+   if (s == null) s = "";
+
+   clearHighlights();
+   int ln = search_for.length();
+
+   BurpHistory bh = BurpHistory.getHistory();
+   for_document.baleWriteLock();
+   try {
+      bh.beginEditAction(editor_pane);
+      while (!occurrences_set.isEmpty()) {
+	 int idx = occurrences_set.size();
+	 Position p = occurrences_set.remove(idx-1);
+	 try {
+	    for_document.replace(p.getOffset(),ln,s,null);
+	  }
+	 catch (BadLocationException e) {
+	    BoardLog.logE("BALE","Problem with replaceall",e);
+	  }
+       }
+    }
+   finally {
+      bh.endEditAction(editor_pane);
+      for_document.baleWriteUnlock();
+    }
+
+}
+
 
 private void clearHighlights()
 {
    try {
-      _highlighter.changeHighlight(my_highlight_tag, 0, 0);
+      my_highlighter.changeHighlight(my_highlight_tag, 0, 0);
     }
    catch (BadLocationException ble) {}
 }
+
 
 
 /********************************************************************************/
@@ -408,7 +508,7 @@ private void clearHighlights()
 
    if (cmd.equals("DONE")) {
       try {
-	 _highlighter.changeHighlight(my_highlight_tag, 0, 0);
+	 my_highlighter.changeHighlight(my_highlight_tag, 0, 0);
        } catch (BadLocationException ble) {}
 	 setVisible(false);
     }
@@ -420,6 +520,12 @@ private void clearHighlights()
       find(-1,true);
       text_field.grabFocus();
     }
+   else if (cmd.equals("REPL")) {
+      replace();
+   }
+   else if (cmd.equals("REPLALL")) {
+      replaceAll();
+   }
    else BoardLog.logD("BALE","SEARCH ACTION: " + cmd);
 }
 
@@ -429,14 +535,16 @@ private void clearHighlights()
 @Override public void caretUpdate(CaretEvent e)
 {
    JTextField tfld = (JTextField) e.getSource();
-
-   String txt = tfld.getText();
-   if (txt.equals(search_for)) return;
-
-   search_for = txt;
-
-   //find(last_direction,false);
+  
+   if (tfld == text_field) {
+      String txt = tfld.getText();
+      if (txt.equals(search_for)) return;
+      search_for = txt;
+      //find(last_direction,false);
+    }
 }
+
+
 
 @Override public void itemStateChanged(ItemEvent e) {
    Object source = e.getItemSelectable();
@@ -461,7 +569,6 @@ private class SearchAction extends AbstractAction {
 
    private static final long serialVersionUID = 1;
 
-
    SearchAction() {
       super("SearchAction");
     }
@@ -471,6 +578,22 @@ private class SearchAction extends AbstractAction {
     }
 
 }	// end of inner class SearchAction
+
+
+
+private class ReplaceAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   ReplaceAction() {
+      super("ReplaceAction");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      replace();
+    }
+
+}	// end of inner class ReplaceAction
 
 
 
@@ -492,7 +615,9 @@ private class CloseListener extends KeyAdapter {
     }
 
    @Override public void keyReleased(KeyEvent e) {
-      if (!KeyEvent.getKeyText(e.getKeyCode()).equals("Enter")) find(0, true);
+      if (e.getSource() == text_field) {
+	 if (!KeyEvent.getKeyText(e.getKeyCode()).equals("Enter")) find(0, true);
+      }
     }
 
 }	// end of inner class CloseListener
@@ -510,10 +635,10 @@ private class HighlightCanceler implements CaretListener {
 
 
 
-}	// end of class BaleFindBar
+}	// end of class BaleFindReplaceBar
 
 
 
 
 
-/* end of BaleFindBar.java */
+/* end of BaleFindReplaceBar.java */

@@ -37,6 +37,7 @@
 package edu.brown.cs.bubbles.pybase.debug;
 
 import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
@@ -57,13 +58,17 @@ public class PybaseDebugThread implements PybaseDebugConstants {
 
 private PybaseDebugTarget debug_target;
 private String thread_name;
+private String remote_id;
 private String thread_id;
+
 
 private boolean is_pydev_thread;
 
 private boolean is_suspended;
 private boolean is_stepping;
 private List<PybaseDebugStackFrame> cur_stack;
+
+private static IdCounter thread_counter = new IdCounter();
 
 
 
@@ -77,7 +82,7 @@ PybaseDebugThread(PybaseDebugTarget target,String name,String id)
 {
    debug_target = target;
    thread_name = name;
-   thread_id = id;
+   remote_id = id;
    setup();
 }
 
@@ -87,7 +92,7 @@ PybaseDebugThread(PybaseDebugTarget tgt,Element xml)
 {
    debug_target = tgt;
    thread_name = IvyXml.getAttrString(xml,"name");
-   thread_id = IvyXml.getAttrString(xml,"id");
+   remote_id = IvyXml.getAttrString(xml,"id");
    setup();
 }
 
@@ -110,7 +115,8 @@ static List<PybaseDebugThread> getThreadsFromXml(PybaseDebugTarget tgt,String tx
 
 private void setup()
 {
-   is_pydev_thread = thread_id.equals("-1");    // use a special id for pydev threads
+   is_pydev_thread = remote_id.equals("-1");    // use a special id for pydev threads
+   thread_id = "THREAD_" + Integer.toString(thread_counter.nextValue());
    is_suspended = false;
    is_stepping = false;
    cur_stack = null;
@@ -130,9 +136,10 @@ public void setSuspended(boolean state,List<PybaseDebugStackFrame> stack)
 }
 
 
-public String getName() 			{ return thread_name + " - " + getId(); }
+public String getName() 			{ return thread_name + " - " + getRemoteId(); }
 
-public String getId()				{ return thread_id; }
+public String getRemoteId()			{ return remote_id; }
+public String getLocalId()                      { return thread_id; }
 
 public boolean isPydevThread()			{ return is_pydev_thread; }
 
@@ -166,7 +173,7 @@ public void resume()
    if (!is_pydev_thread) {
       cur_stack = null;
       is_stepping = false;
-      debug_target.postCommand(new PybaseDebugCommand.ThreadRun(debug_target,thread_id));
+      debug_target.postCommand(new PybaseDebugCommand.ThreadRun(debug_target,remote_id));
     }
 }
 
@@ -175,7 +182,7 @@ public void suspend()
 {
    if (!is_pydev_thread) {
       cur_stack = null;
-      debug_target.postCommand(new PybaseDebugCommand.ThreadSuspend(debug_target,thread_id));
+      debug_target.postCommand(new PybaseDebugCommand.ThreadSuspend(debug_target,remote_id));
     }
 }
 
@@ -191,7 +198,7 @@ public void stepInto()
 {
    if (!is_pydev_thread) {
       is_stepping = true;
-      debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_INTO,thread_id));
+      debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_INTO,remote_id));
     }	
 }
 
@@ -199,7 +206,7 @@ public void stepOver()
 {
    if (!is_pydev_thread) {
       is_stepping = true;
-      debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_OVER,thread_id));
+      debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_OVER,remote_id));
     }	
 }
 
@@ -207,21 +214,21 @@ public void stepReturn()
 {
    if (!is_pydev_thread) {
       is_stepping = true;
-      debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_RETURN,thread_id));
+      debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_RETURN,remote_id));
     }	
 }
 
 public void runToLine(int line, String funcName)
 {
    is_stepping = true;
-   debug_target.postCommand(new PybaseDebugCommand.RunToLine(debug_target,CMD_RUN_TO_LINE,thread_id, line, funcName));
+   debug_target.postCommand(new PybaseDebugCommand.RunToLine(debug_target,CMD_RUN_TO_LINE,remote_id, line, funcName));
 }
 
 
 public void setNextStatement(int line, String funcName)
 {
    is_stepping = true;
-   debug_target.postCommand(new PybaseDebugCommand.SetNext(debug_target,CMD_SET_NEXT_STATEMENT,thread_id, line, funcName));
+   debug_target.postCommand(new PybaseDebugCommand.SetNext(debug_target,CMD_SET_NEXT_STATEMENT,remote_id, line, funcName));
 }
 
 
@@ -263,6 +270,29 @@ public PybaseDebugBreakpoint[] getBreakpoints()
    // not implementing this seems to cause no harm
    PybaseDebugBreakpoint[] breaks = new PybaseDebugBreakpoint[0];
    return breaks;
+}
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Output methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+void outputXml(IvyXmlWriter xw)
+{
+   xw.begin("THREAD");
+   xw.field("ID",thread_id);
+   xw.field("NAME",thread_name);
+   xw.field("SYSTEM",is_pydev_thread);
+   xw.field("SUSPENDED",is_suspended);
+   xw.field("TERMINATED",isTerminated());
+   if (is_suspended && hasStackFrames()) {
+      xw.field("STACK",true);
+      xw.field("FRAMES",cur_stack.size());
+    }
+   xw.end("THREAD");
 }
 
 

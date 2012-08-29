@@ -376,6 +376,8 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
       case MODULE :
          // fed = createFileEditor(bl.getSymbolProject(),null,bl.getFile());
          break;
+      default:
+	 break;
     }
 
    if (fed == null) return null;

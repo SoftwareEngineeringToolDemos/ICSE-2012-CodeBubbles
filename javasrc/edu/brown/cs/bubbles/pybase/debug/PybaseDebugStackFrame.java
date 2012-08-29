@@ -77,9 +77,9 @@ PybaseDebugStackFrame(PybaseDebugThread thread,String id,String name,File file,i
    frame_file = file;
    frame_line = line;
    frame_thread = thread;
-   locals_locator = frame_thread.getId() + "\t" + id + "\tLOCAL";
-   frame_locator = frame_thread.getId() + "\t" + id + "\tFRAME";
-   globals_locator = frame_thread.getId() + "\t" + id + "\tGLOBAL";
+   locals_locator = frame_thread.getRemoteId() + "\t" + id + "\tLOCAL";
+   frame_locator = frame_thread.getRemoteId() + "\t" + id + "\tFRAME";
+   globals_locator = frame_thread.getRemoteId() + "\t" + id + "\tGLOBAL";
    debug_target = target;
 }
 
@@ -93,7 +93,7 @@ PybaseDebugStackFrame(PybaseDebugThread thread,String id,String name,File file,i
 
 public PybaseDebugTarget getTarget()			{ return debug_target; }
 public String getId()					{ return frame_id; }
-public String getThreadId()				{ return frame_thread.getId(); }
+public String getThreadRemoteId()				{ return frame_thread.getRemoteId(); }
 public String getLocalsLocator()			{ return locals_locator; }
 public String getFrameLocator() 			{ return frame_locator; }
 public String getGlobalLocator()			{ return globals_locator; }

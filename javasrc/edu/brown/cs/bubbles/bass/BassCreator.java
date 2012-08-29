@@ -306,7 +306,7 @@ private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBub
       BoardMetrics.noteCommand("BASS","NewType");
       BudaRoot.hideSearchBubble(e);
       BuenoClassDialog bcd = new BuenoClassDialog(search_bubble,access_point,create_type,
-						     property_set,for_location,this);
+        					     property_set,for_location,this);
       bcd.showDialog();
     }
 

@@ -76,8 +76,7 @@ BeamFeedbackReport(BudaRoot br)
 
 void addPanel()
 {
-   Icon chevron = BoardImage.getIcon("dropdown_chevron");
-   chevron = BoardImage.resizeIcon(((ImageIcon)chevron).getImage(), BUDA_BUTTON_RESIZE_WIDTH, BUDA_BUTTON_RESIZE_HEIGHT);
+   Icon chevron = BoardImage.getIcon("dropdown_chevron",BUDA_BUTTON_RESIZE_WIDTH,BUDA_BUTTON_RESIZE_HEIGHT);
 
    JButton btn = new JButton("<html><center>Feedback</center></html>", chevron);
    btn.setHorizontalTextPosition(AbstractButton.LEADING);

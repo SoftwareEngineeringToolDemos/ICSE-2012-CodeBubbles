@@ -1360,13 +1360,13 @@ private static boolean checkInstallDirectory(File ind)
    for (String s : BOARD_LIBRARY_FILES) {
       inf = new File(libb,s);
       if (!inf.exists() || !inf.canRead()) {
-	 BoardLog.logX("BOARD","Missing library file " + s);
+	 BoardLog.logX("BOARD","Missing library file " + inf);
        }
     }
    for (String s : BOARD_LIBRARY_EXTRAS) {
       inf = new File(libb,s);
       if (!inf.exists() || !inf.canRead()) {
-	 BoardLog.logX("BOARD","Missing library file " + s);
+	 BoardLog.logX("BOARD","Missing library file " + inf);
        }
     }
 

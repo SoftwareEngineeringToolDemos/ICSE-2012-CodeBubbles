@@ -70,9 +70,8 @@
 	 <TAB NAME="System Options"/>
 	 <WARNING TEXT="Requires restart"/>
       </OPT>
-      <OPT NAME="edu.brown.cs.bubbles.vmsize" DESCRIPTION="Maximum memory size for the java VM to use" TYPE="INTEGER" MIN="256" MAX="4000" SLIDER="TRUE" NEGATIVEALLOWED="FALSE">
+      <OPT NAME="edu.brown.cs.bubbles.auto_update" DESCRIPTION="Automatically update bubbles" TYPE="BOOLEAN">
 	 <TAB NAME="System Options"/>
-	 <EXAMPLE TEXT="Size in MB"/>
 	 <WARNING TEXT="Requires restart"/>
       </OPT>
       <OPT NAME="edu.brown.cs.bubbles.ask_workspace" DESCRIPTION="Always ask what workspace to open on Startup" TYPE="BOOLEAN">

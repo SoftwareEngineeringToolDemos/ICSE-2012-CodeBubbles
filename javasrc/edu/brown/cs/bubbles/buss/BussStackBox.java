@@ -108,8 +108,6 @@ BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussBubble)
    tui.setLeftChildIndent(BUSS_TREE_INDENT);
    tui.setRightChildIndent(BUSS_TREE_INDENT);
 
-   // new Hoverer(this);
-
    expandAll();
 }
 

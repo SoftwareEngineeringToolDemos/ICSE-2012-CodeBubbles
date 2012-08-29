@@ -157,6 +157,8 @@ BumpRunManager()
       case SERVER :
 	 use_debug_server = false;
 	 break;
+      default:
+	 break;
     }
 }
 
@@ -717,6 +719,8 @@ private void handleThreadEvent(Element xml,long when)
 	    case NEW :
 	       td.setThreadState(BumpThreadState.RUNNING);
 	       break;
+	    default:
+	       break;
 	  }
 	 break;
       case CHANGE :
@@ -867,6 +871,8 @@ private void handleTargetEvent(Element xml,long when)
 	 case TERMINATE :
 	    handleTargetThreadState(td,BumpThreadState.DEAD,dtl,when);
 	    break;
+	 default:
+	    break;
        }
     }
 }
@@ -960,6 +966,8 @@ private class LaunchConfig implements BumpLaunchConfig {
    private int	  remote_port;
    private boolean is_working;
    private boolean stop_in_main;
+   private boolean use_contracts;
+   private boolean use_assertions;
 
    LaunchConfig(Element xml) {
       launch_id = IvyXml.getAttrString(xml,"ID");
@@ -969,11 +977,11 @@ private class LaunchConfig implements BumpLaunchConfig {
    void update(Element xml) {
       Element type = IvyXml.getChild(xml,"TYPE");
       if (type != null) {
-	 String ctyp = IvyXml.getAttrString(type,"NAME");
-	 config_type = BumpLaunchConfigType.UNKNOWN;
-	 for (BumpLaunchConfigType bclt : BumpLaunchConfigType.values()) {
-	    if (ctyp.equals(bclt.getEclipseName())) config_type = bclt;
-	  }
+         String ctyp = IvyXml.getAttrString(type,"NAME");
+         config_type = BumpLaunchConfigType.UNKNOWN;
+         for (BumpLaunchConfigType bclt : BumpLaunchConfigType.values()) {
+            if (ctyp.equals(bclt.getEclipseName())) config_type = bclt;
+          }
        }
       config_name = IvyXml.getAttrString(xml,"NAME");
       is_working = IvyXml.getAttrBool(xml,"WORKING");
@@ -982,16 +990,18 @@ private class LaunchConfig implements BumpLaunchConfig {
       program_args = getAttribute(xml,"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS");
       java_args = getAttribute(xml,"org.eclipse.jdt.launching.VM_ARGUMENTS");
       test_case = getAttribute(xml,"org.eclipse.jdt.junit.TESTNAME");
+      use_contracts = getBoolean(xml,"edu.brown.cs.bubbles.bedrock.CONTRACTS",true);
+      use_assertions = getBoolean(xml,"edu.brown.cs.bubbles.bedrock.ASSERTIONS",true);
       remote_host = "localhost";
       remote_port = 8000;
       String hmap = IvyXml.getAttrString(xml,"org.eclipse.jdt.launching.CONNECT_MAP");
       if (hmap != null) {
-	 Matcher m1 = HOST_PATTERN.matcher(hmap);
-	 Matcher m2 = PORT_PATTERN.matcher(hmap);
-	 if (m1.find() && m2.find()) {
-	    remote_host = m1.group(1);
-	    remote_port = Integer.parseInt(m2.group(1));
-	  }
+         Matcher m1 = HOST_PATTERN.matcher(hmap);
+         Matcher m2 = PORT_PATTERN.matcher(hmap);
+         if (m1.find() && m2.find()) {
+            remote_host = m1.group(1);
+            remote_port = Integer.parseInt(m2.group(1));
+          }
        }
       String sim = getAttribute(xml,"org.eclipse.jdt.launching.STOP_IN_MAIN");
       if (sim == null || sim.length() == 0) stop_in_main = false;
@@ -1011,6 +1021,23 @@ private class LaunchConfig implements BumpLaunchConfig {
    @Override public int getRemotePort() 		{ return remote_port; }
    @Override public boolean isWorkingCopy()		{ return is_working; }
    @Override public boolean getStopInMain()		{ return stop_in_main; }
+   
+   @Override public String getContractArgs() {
+      String args = null;
+      
+      BumpContractType bct = bump_client.getContractType(project_name);
+      if (use_contracts && bct.useContractsForJava()) {
+         String libf = BoardSetup.getSetup().getLibraryPath("cofoja.jar");
+         args = "-javaagent:" + libf;
+       }
+      
+      if (use_assertions && bct.enableAssertions()) {
+         if (args == null) args = "-ea";
+         else args += " -ea";
+       }
+   
+      return null;
+    }
 
    @Override public BumpLaunchConfig clone(String name) {
       Element x = bump_client.getNewRunConfiguration(name,getId(),getConfigType());
@@ -1088,12 +1115,19 @@ private class LaunchConfig implements BumpLaunchConfig {
 
    private String getAttribute(Element xml,String id) {
       for (Element ae : IvyXml.children(xml,"ATTRIBUTE")) {
-	 String anm = IvyXml.getAttrString(ae,"NAME");
-	 if (id.equals(anm)) {
-	    return IvyXml.getText(ae);
-	  }
+         String anm = IvyXml.getAttrString(ae,"NAME");
+         if (id.equals(anm)) {
+            return IvyXml.getText(ae);
+          }
        }
       return null;
+    }
+   
+   private boolean getBoolean(Element xml,String id,boolean dflt) {
+      String s = getAttribute(xml,id);
+      if (s == null || s.length() == 0) return dflt;
+      if ("tT1yY".indexOf(s.charAt(0)) >= 0) return true;
+      return false;
     }
 
 }	// end of inner class LanuchConfig
@@ -1812,7 +1846,7 @@ private class StepUserFilter implements BumpThreadFilter {
 	    removeThreadFilter(bt,this);
 	    return evt;
 	 }
-	 else 
+	 else
 	    System.err.println("SKIPPING OVER " + mnm);
       }
       if (bt.getThreadDetails() == BumpThreadStateDetail.BREAKPOINT) {

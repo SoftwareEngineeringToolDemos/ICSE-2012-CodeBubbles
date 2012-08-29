@@ -25,7 +25,9 @@
 package edu.brown.cs.bubbles.batt;
 
 
+import edu.brown.cs.bubbles.bump.BumpLocation;
 import java.util.*;
+import javax.swing.JPanel;
 
 
 public interface BattConstants {
@@ -187,6 +189,59 @@ enum NewStatus {
 }
 
 
+
+/********************************************************************************/
+/*										*/
+/*	External view of a test case						*/
+/*										*/
+/********************************************************************************/
+
+interface BattTest {
+
+}
+
+
+interface BattCallTest {
+   
+   String getTestInput();
+   String getTestOutput();
+   String getTestOp();
+   
+}       // end of interface BattCallTest
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Definitions for new test bubbles                                        */
+/*                                                                              */
+/********************************************************************************/
+
+interface StatusUpdate {
+   void itemUpdated();
+}
+
+interface BattTestBubbleCallback extends StatusUpdate {
+   
+   String getButtonName();
+   BumpLocation getLocation();
+   NewTestMode getTestMode();
+   String getClassName();
+   boolean getCreateClass();
+   
+   void itemUpdated();
+   boolean handleTestCases(List<BattCallTest> tests);
+   void handleTestCases(String code);
+   
+}
+
+interface BattNewTestPanel {
+   
+   JPanel getPanel();
+   boolean validate();
+   List<BattCallTest> getActiveTests();
+   
+}
+   
 
 
 

@@ -232,6 +232,8 @@ private class PerfEventHandler implements BumpRunEventHandler {
 	       pn.update(itm);
 	     }
 	    break;
+	 default:
+	    break;
        }
     }
 

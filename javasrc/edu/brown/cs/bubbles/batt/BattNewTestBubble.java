@@ -54,13 +54,13 @@ class BattNewTestBubble implements BattConstants, BuenoConstants
 private NewTestMode		test_mode;
 private String			method_name;
 private BumpLocation		method_data;
+private BattTestBubbleCallback  user_callback;
+private String                  button_name;
+private String			in_class;
+private boolean			create_class;
 
 
-private interface StatusUpdate {
 
-   void itemUpdated();
-
-}
 
 
 
@@ -70,11 +70,31 @@ private interface StatusUpdate {
 /*										*/
 /********************************************************************************/
 
-BattNewTestBubble(String mthd,BumpLocation loc,NewTestMode md)
+BattNewTestBubble(String mthd,BumpLocation loc,String incls,boolean newcls,NewTestMode md)
 {
    test_mode = md;
    method_name = mthd;
    method_data = loc;
+   user_callback = null;
+   button_name = "Generate";
+   in_class = incls;
+   create_class = newcls;
+}
+
+
+BattNewTestBubble(BattTestBubbleCallback cbk)
+{
+   test_mode = cbk.getTestMode();
+   method_data = cbk.getLocation();
+   button_name = cbk.getButtonName();
+   in_class = cbk.getClassName();
+   create_class = cbk.getCreateClass();
+   
+   String nm = method_data.getSymbolName();
+   int idx = nm.lastIndexOf(".");
+   if (idx >= 0) nm = nm.substring(idx+1);
+   method_name = nm;
+   user_callback = cbk;
 }
 
 
@@ -102,7 +122,7 @@ BudaBubble createNewTestBubble()
       default :
       case USER_CODE :
 	 String nm = getTestMethodName();
-	 createNewTestMethod(fnm,nm,null);
+	 createNewTestMethod(fnm,nm,in_class,create_class,null);
 	 bb = BaleFactory.getFactory().createMethodBubble(null,nm);
 	 break;
       case INPUT_OUTPUT :
@@ -113,6 +133,17 @@ BudaBubble createNewTestBubble()
 
    return bb;
 }
+
+
+BattNewTestPanel createNewTestPanel()
+{
+   NewTestArea nta = new NewTestArea(user_callback);
+   for (int i = 0; i < 3; ++i) nta.addTestCase();
+   return nta;
+}
+   
+         
+         
 
 
 
@@ -150,13 +181,42 @@ private String getTestMethodName()
 /*										*/
 /********************************************************************************/
 
-private void createNewTestMethod(String fnm,String nm,String cnts)
+private void createNewTestMethod(String fnm,String nm,String icnm,boolean newcls,String cnts)
 {
    int idx = nm.lastIndexOf(".");
    String cnm = nm.substring(0,idx);
    String mnm = nm.substring(idx+1);
    if (cnts == null) cnts = "// insert test code here";
-
+   if (icnm != null) cnm = icnm;
+   
+   if (newcls) {
+      String xnm = null;
+      if (cnm.endsWith("Test")) {
+	 xnm = cnm;
+	 int ln = xnm.length();
+	 xnm = xnm.substring(0,ln-4);
+       }
+      BuenoProperties props = new BuenoProperties();
+      props.put(BuenoKey.KEY_ADD_COMMENT,Boolean.TRUE);
+      if (xnm != null) props.put(BuenoKey.KEY_COMMENT,"Test class for " + xnm);
+      else props.put(BuenoKey.KEY_COMMENT,"Test Class");
+      props.put(BuenoKey.KEY_NAME,cnm);
+      props.put(BuenoKey.KEY_MODIFIERS,Modifier.PUBLIC);
+      String cnnm = cnm;
+      String pkg = cnnm;
+      int idx1 = cnnm.lastIndexOf(".");
+      if (idx1 < 0) pkg = null;
+      else {
+	 pkg = cnnm.substring(0,idx1);
+	 cnnm = cnnm.substring(idx1+1);
+	 props.put(BuenoKey.KEY_PACKAGE, pkg);
+	 props.put(BuenoKey.KEY_NAME, cnnm);
+      }
+      BuenoLocation loc = BuenoFactory.getFactory().createLocation(null,cnm,pkg,false);
+      BuenoFactory.getFactory().createNew(BuenoType.NEW_CLASS, loc, props);
+  } 
+      
+      
    String anm = null;
    // anm should be last test in class, or null if there are none
    BuenoLocation loc = BuenoFactory.getFactory().createLocation(null,cnm,anm,true);
@@ -189,20 +249,20 @@ private class CallMethodBubble extends BudaBubble implements ActionListener, Sta
    CallMethodBubble(String fnm) {
       test_area = new NewTestArea(this);
       for (int i = 0; i < 3; ++i) {		   // initial test cases
-	 test_area.addTestCase();
+         test_area.addTestCase();
        }
-
+   
       JPanel pnl = new JPanel(new BorderLayout());
       pnl.setOpaque(false);
       pnl.add(test_area.getPanel(),BorderLayout.CENTER);
-
+   
       JLabel top = new JLabel("Test Cases for " + fnm);
       top.setOpaque(false);
-
+   
       top.setHorizontalAlignment(JLabel.CENTER);
       pnl.add(top,BorderLayout.NORTH);
-
-      generate_button = new JButton("Generate");
+   
+      generate_button = new JButton(button_name);
       generate_button.addActionListener(this);
       generate_button.setEnabled(false);
       Box bx = Box.createHorizontalBox();
@@ -210,9 +270,9 @@ private class CallMethodBubble extends BudaBubble implements ActionListener, Sta
       bx.add(generate_button);
       bx.add(Box.createHorizontalGlue());
       pnl.add(bx,BorderLayout.SOUTH);
-
+   
       setInteriorColor(new Color(0xf0d0a0));
-
+   
       setContentPane(pnl);
     }
 
@@ -225,23 +285,24 @@ private class CallMethodBubble extends BudaBubble implements ActionListener, Sta
       setVisible(false);
       if (mnm == null) return;
       BattNewTestChecker ckr = new BattNewTestChecker();
-      List<NewTestCase> cases = test_area.getActiveTests();
+      List<BattCallTest> cases = new ArrayList<BattCallTest>(test_area.getActiveTests());
       int sz = cases.size();
       if (sz == 0) return;
-      String [][] tests = new String[sz][2];
-      for (int i = 0; i < cases.size(); ++i) {
-         NewTestCase ntc = cases.get(i);
-         tests[i][0] = ntc.getTestInput();
-         tests[i][1] = ntc.getTestOutput();
-       }
-      String rslt = ckr.generateCallTestCode(tests);
+      
+      if (user_callback.handleTestCases(cases)) return;
+      
+      String rslt = ckr.generateCallTestCode(cases);
       if (rslt == null) return;
+      
+      if (user_callback != null) {
+         user_callback.handleTestCases(rslt);
+       }
       // create new method
       // bring up bubble on that method
     }
 
    @Override public void itemUpdated() {
-      generate_button.setEnabled(test_area.validate());
+      if (generate_button != null) generate_button.setEnabled(test_area.validate());
     }
 
 }	// end of inner class CallMethodBubble
@@ -254,7 +315,7 @@ private class CallMethodBubble extends BudaBubble implements ActionListener, Sta
 /*										*/
 /********************************************************************************/
 
-private class NewTestArea {
+private class NewTestArea implements BattNewTestPanel {
 
    private SwingGridPanel test_panel;
    private List<NewTestCase> test_cases;
@@ -268,7 +329,7 @@ private class NewTestArea {
       test_panel.setInsets(2);
     }
 
-   JPanel getPanel()				{ return test_panel; }
+   @Override public JPanel getPanel()		{ return test_panel; }
 
    int getTestRow(NewTestCase tc)		{ return test_cases.indexOf(tc); }
 
@@ -290,8 +351,13 @@ private class NewTestArea {
       int idx = test_cases.size()-1;
       if (idx < 0) needtest = true;
       else if (!test_cases.get(idx).isEmpty()) needtest = true;
-
-      if (needtest) addTestCase();
+   
+      if (needtest) {
+         addTestCase();
+         BudaBubble bb = BudaRoot.findBudaBubble(test_panel);
+         Dimension sz = bb.getPreferredSize();
+         bb.setSize(sz);
+       }
     }
 
    void addTestCase() {
@@ -303,6 +369,8 @@ private class NewTestArea {
          case CALL_SEQUENCE :
             ntc = null;
             break;
+	 case USER_CODE:
+	    break;
        }
       if (ntc != null) {
          test_cases.add(ntc);
@@ -310,21 +378,21 @@ private class NewTestArea {
        }
     }
 
-   boolean validate() {
+   @Override public boolean validate() {
       BattNewTestChecker bc = new BattNewTestChecker();
       int ntest = 0;
       boolean valid = true;
       for (NewTestCase tc : test_cases) {
-	 if (tc.isEmpty()) continue;
-	 if (!tc.validate(bc)) valid = false;
-	 else ++ntest;
+         if (tc.isEmpty()) continue;
+         if (!tc.validate(bc)) valid = false;
+         else ++ntest;
        }
       if (ntest == 0) valid = false;
       return valid;
     }
    
-   List<NewTestCase> getActiveTests() {
-      List<NewTestCase> ltc = new ArrayList<NewTestCase>();
+   @Override public List<BattCallTest> getActiveTests() {
+      List<BattCallTest> ltc = new ArrayList<BattCallTest>();
       BattNewTestChecker bc = new BattNewTestChecker();
       for (NewTestCase tc : test_cases) {
          if (!tc.isEmpty() && tc.validate(bc)) ltc.add(tc);
@@ -342,7 +410,7 @@ private class NewTestArea {
 /*										*/
 /********************************************************************************/
 
-private abstract class NewTestCase implements CaretListener, ActionListener, FocusListener {
+private abstract class NewTestCase implements BattCallTest, CaretListener, ActionListener, FocusListener {
 
    protected NewTestArea test_area;
    private String last_error;
@@ -357,20 +425,24 @@ private abstract class NewTestCase implements CaretListener, ActionListener, Foc
       is_checked = false;
     }
 
-   String getTestOutput() {
+   @Override public String getTestOutput() {
       if (test_result == null) return null;
       return test_result.getText().trim();
     }
 
-   String getTestInput() {
+   @Override public String getTestInput() {
       if (test_args == null) return null;
       return test_args.getText().trim();
     }
 
+   @Override public String getTestOp() {
+      return test_op.getSelectedItem().toString();
+    }
+   
    boolean isEmpty() {
       String ta = getTestInput();
       String tb = getTestOutput();
-      if (ta != null && !ta.equals("")) return false;
+      if (ta != null && !ta.equals("") && !ta.equals("void")) return false;
       if (tb != null && !tb.equals("")) return false;
       return true;
     }
@@ -451,7 +523,7 @@ private class CallTestCase extends NewTestCase {
       JLabel l1 = new JLabel("(");
       l1.setOpaque(false);
       bx.add(l1);
-      test_args = createTextField(20);
+      test_args = createTextField(12);
       if (no_args) {
 	 test_args.setEditable(false);
 	 test_args.setText("void");
@@ -462,7 +534,7 @@ private class CallTestCase extends NewTestCase {
       bx.add(l1);
       test_area.addTestCell(this,bx,0,1);
 
-      test_result = createTextField(15);
+      test_result = createTextField(12);
       test_area.addTestCell(this,test_result,2,1);
 
       if (no_return) {

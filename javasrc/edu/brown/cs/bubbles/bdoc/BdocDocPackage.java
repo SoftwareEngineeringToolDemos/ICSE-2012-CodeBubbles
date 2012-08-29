@@ -102,6 +102,8 @@ protected void handleStartDocument()
       case DESCRIPTION :
 	 addDescriptionComment(s);
 	 break;
+      default:
+	 break;
     }
 }
 
@@ -144,6 +146,8 @@ protected void handleStartDocument()
       case ITEM_TYPE :
 	 if (tv == HTML.Tag.B) parse_state = ParseState.ITEM_TYPENAME;
 	 break;
+      default:
+	 break;
     }
 }
 
@@ -173,6 +177,8 @@ protected void handleStartDocument()
 	 break;
       case DESCRIPTION :
 	 addDescriptionEndTag(tv);
+	 break;
+      default:
 	 break;
     }
 }
@@ -219,6 +225,8 @@ protected void handleStartDocument()
 	 break;
       case DESCRIPTION :
 	 addDescription(new String(data));
+	 break;
+      default:
 	 break;
     }
 }

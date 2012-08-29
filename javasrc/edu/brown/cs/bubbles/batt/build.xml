@@ -51,6 +51,17 @@
       </java>
    </target>
 
+   <target name='test00v' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.batt.BattMain' fork='true' dir='test'>
+	 <classpath refid='test.classpath' />
+	 <arg value="-L" />
+	 <arg value="-b" />
+	 <arg value="${BUBBLES}/lib" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr_vhr" />
+      </java>
+   </target>
+
    <target name='test01' depends='compile'>
       <java classname='edu.brown.cs.bubbles.batt.BattMain' fork='true' dir='test'>
 	 <classpath refid='test.classpath' />

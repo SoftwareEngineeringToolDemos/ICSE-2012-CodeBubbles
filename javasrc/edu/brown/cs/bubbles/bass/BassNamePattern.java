@@ -238,6 +238,8 @@ int match(BassName bn)
 	 case STATICS :
 	    if (is_type || is_interface || is_field) return -1;
 	    break;
+	 default:
+	    break;
        }
     }
 

@@ -380,6 +380,8 @@ private class RunEventHandler implements BumpRunEventHandler {
 	    if (getThread().getThreadState().isStopped())
 	       updateValues();
 	    break;
+	 default:
+	    break;
        }
     }
 

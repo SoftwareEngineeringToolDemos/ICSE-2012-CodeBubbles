@@ -95,6 +95,10 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	 case CLASS :
 	    bb = bf.createClassBubble(proj,name);
 	    break;
+	 case ROMETHOD:
+	    break;
+	 default:
+	    break;
        }
     }
 

@@ -98,7 +98,6 @@ enum TabName {
 /**
  * Name of preferences xml
  */
-String	  PREFERENCES_XML_FILENAME	= "preferences.xml";
 String	  PREFERENCES_XML_FILENAME_NEW	= "preferences.new.xml";
 
 
@@ -437,7 +436,7 @@ interface BoppOptionNew {
    Collection<String> getOptionTabs();
 
    void addButton(SwingGridPanel pnl);
-   
+
    boolean search(Pattern [] pat);
 
 }	// end of inner interface BoppOptionNew

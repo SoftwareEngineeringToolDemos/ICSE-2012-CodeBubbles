@@ -441,7 +441,10 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       else if (PlatformUI.isWorkbenchRunning()) xw.text("PONG");
       else xw.text("UNSET");
     }
-   else if (shutdown_mint) throw new BedrockException("Command during exit");
+   else if (shutdown_mint) {
+      xw.close();
+      throw new BedrockException("Command during exit");
+    }
    else if (cmd.equals("PROJECTS")) {
       bedrock_project.listProjects(xw);
     }
@@ -463,6 +466,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 	 bedrock_project.importExistingProject(proj);
        }
       catch(Throwable t) {
+         xw.close();
 	 throw new BedrockException("Exception constructing project: " + t.getMessage());
        }
     }
@@ -617,6 +621,10 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				     IvyXml.getAttrString(xml,"THREAD"),
 				     IvyXml.getAttrString(xml,"FRAME"),
 				     IvyXml.getAttrEnum(xml,"ACTION",BedrockDebugAction.NONE),xw);
+    }
+   else if (cmd.equals("CONSOLEINPUT")) {
+      bedrock_runtime.consoleInput(IvyXml.getAttrString(xml,"LAUNCH"),
+				      IvyXml.getTextElement(xml,"INPUT"));
     }
    else if (cmd.equals("GETSTACKFRAMES")) {
       bedrock_runtime.getStackFrames(IvyXml.getAttrString(xml,"LAUNCH"),
@@ -794,6 +802,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
        }
     }
    else {
+      xw.close();
       throw new BedrockException("Unknown plugin command " + cmd);
     }
 

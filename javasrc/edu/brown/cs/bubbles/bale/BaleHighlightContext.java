@@ -130,6 +130,8 @@ static Highlighter.HighlightPainter getPainter(BaleHighlightType typ)
 	 return new BracketPainter();
       case FIND :
 	 return new FindPainter();
+      default :
+	 break;
     }
 
    return null;
@@ -314,6 +316,8 @@ private void startHighlight(CaretEvent start)
 		  break;
                case MODULE :
                   break;
+               default :
+        	  break;
 	     }
 	  }
 	 else {
@@ -482,6 +486,8 @@ private BaleElement.Leaf findNextMatch(BaleElement open)
       case LANGLE :
 	 rtyp = BaleTokenType.RANGLE;
 	 break;
+      default :
+	 break;
     }
 
    int lvl = 0;
@@ -528,6 +534,8 @@ private BaleElement.Leaf findPriorMatch(BaleElement open)
 	 break;
       case RANGLE :
 	 rtyp = BaleTokenType.LANGLE;
+	 break;
+      default :
 	 break;
     }
 

@@ -53,8 +53,11 @@ private Map<BddtLaunchControl,ConsoleDocument> launch_consoles;
 private Map<String,ConsoleDocument> process_consoles;
 private AttributeSet stdout_attrs;
 private AttributeSet stderr_attrs;
+private AttributeSet stdin_attrs;
 private LinkedList<ConsoleMessage> message_queue;
 
+
+enum TextMode { STDOUT, STDERR, STDIN };
 
 
 
@@ -81,7 +84,7 @@ BddtConsoleController()
    BoardAttributes atts = new BoardAttributes("Bddt");
    stdout_attrs = atts.getAttributes("StdOut");
    stderr_attrs = atts.getAttributes("StdErr");
-   // stdin_attrs = atts.getAttributes("StdIn");
+   stdin_attrs = atts.getAttributes("StdIn");
 }
 
 
@@ -106,17 +109,17 @@ void setupConsole(BddtLaunchControl blc)
 /*										*/
 /********************************************************************************/
 
-private void queueConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg)
+private void queueConsoleMessage(BumpProcess bp,TextMode mode,boolean eof,String msg)
 {
    ConsoleMessage last = null;
    synchronized (message_queue) {
       last = message_queue.peekLast();
-      if (last != null && last.getProcess() == bp && last.isStderr() == err &&
+      if (last != null && last.getProcess() == bp && last.getTextMode() == mode &&
 	    last.isEof() == eof) {
 	 last.merge(msg);
 	 return;
        }
-      message_queue.add(new ConsoleMessage(bp,msg,err,eof));
+      message_queue.add(new ConsoleMessage(bp,msg,mode,eof));
       if (last == null) message_queue.notifyAll();
     }
 }
@@ -131,31 +134,36 @@ private void processConsoleMessage(ConsoleMessage msg)
    if (msg.isEof()) {
       synchronized (launch_consoles) {
 	 if (bp != null)  {
-	    addText(bp,false,"\n [ Process Terminated ]\n");
+	    addText(bp,TextMode.STDOUT,"\n [ Process Terminated ]\n");
 	    process_consoles.remove(bp.getId());
 	  }
        }
     }
    else {
-      addText(bp,msg.isStderr(),msg.getText());
+      addText(bp,msg.getTextMode(),msg.getText());
     }
 }
 
 
 
 
-private void addText(BumpProcess process,boolean err,String message)
+private void addText(BumpProcess process,TextMode mode,String message)
 {
    String pid = (process == null ? "*" : process.getId());
 
    ConsoleDocument doc = getDocument(pid,false);
 
    if (doc != null && message != null) {
-      doc.addText(err,message);
+      doc.addText(mode,message);
     }
 }
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Input methods                                                           */
+/*                                                                              */
+/********************************************************************************/
 
 void clearConsole(BumpProcess bp)
 {
@@ -169,6 +177,36 @@ void clearConsole(BumpProcess bp)
       BoardLog.logD("BDDT","No console found for process " + pid);
    }
 }
+
+
+void handleInput(Document d,String input)
+{
+   BumpProcess bp = null;
+   BddtLaunchControl blc = null;
+   synchronized (launch_consoles) {
+      for (Map.Entry<BddtLaunchControl,ConsoleDocument> ent : launch_consoles.entrySet()) {
+         if (ent.getValue() == d) {
+            blc = ent.getKey();
+            bp = blc.getProcess();
+            break;
+          }
+       }
+    }
+   if (bp == null) return; 
+   
+   BumpClient bc = BumpClient.getBump();
+   bc.consoleInput(bp.getLaunch(),input);
+   queueConsoleMessage(bp,TextMode.STDIN,false,input);
+}
+      
+   
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Creation methods                                                        */
+/*                                                                              */
+/********************************************************************************/
 
 
 private ConsoleDocument getDocument(BddtLaunchControl ctrl)
@@ -221,7 +259,7 @@ BddtConsoleBubble createConsole(BddtLaunchControl blc)
 {
    ConsoleDocument doc = getDocument(blc);
 
-   BddtConsoleBubble b = new BddtConsoleBubble(blc,doc);
+   BddtConsoleBubble b = new BddtConsoleBubble(this,doc);
 
    return b;
 }
@@ -233,7 +271,7 @@ BddtConsoleBubble createConsole(BumpProcess bp)
 {
    ConsoleDocument doc = getDocument(bp.getId(),true);
 
-   BddtConsoleBubble b = new BddtConsoleBubble(bp,doc);
+   BddtConsoleBubble b = new BddtConsoleBubble(this,doc);
 
    return b;
 }
@@ -251,37 +289,14 @@ private class ConsoleHandler implements BumpConstants.BumpRunEventHandler {
 
    @Override public void handleLaunchEvent(BumpRunEvent evt)	{ }
 
-   @Override public void handleProcessEvent(BumpRunEvent evt) {
-//	switch (evt.getEventType()) {
-//	 case PROCESS_REMOVE :
-//	    BumpProcess bp = evt.getProcess();
-//	    synchronized (launch_consoles) {
-//	       process_consoles.remove(bp.getId());
-//	     }
-//	    break;
-//	 }
-    }
+   @Override public void handleProcessEvent(BumpRunEvent evt)	{ }
 
    @Override public void handleThreadEvent(BumpRunEvent evt)	{ }
 
    @Override public void handleConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg) {
-      queueConsoleMessage(bp,err,eof,msg);
-
-      // if (eof) {
-	 // synchronized (launch_consoles) {
-	    // if (bp != null) {
-	       // addText(bp,false,"\n [ Process Terminated ]\n");
-	       // process_consoles.remove(bp.getId());
-	    // }
-	 // }
-       // }
-      // else {
-	 // addText(bp,err,msg);
-       // }
+      TextMode md = (err ? TextMode.STDERR : TextMode.STDOUT);
+      queueConsoleMessage(bp,md,eof,msg);
    }
-
-
-
 
 }	// end of inner class ConsoleHandler
 
@@ -320,7 +335,7 @@ private class ConsoleDocument extends DefaultStyledDocument {
       finally { writeUnlock(); }
     }
 
-   synchronized void addText(boolean err,String txt) {
+   synchronized void addText(TextMode mode,String txt) {
       int lns = countLines(txt);
       writeLock();
       try {
@@ -354,7 +369,20 @@ private class ConsoleDocument extends DefaultStyledDocument {
 	  }
 
 	 try {
-	    insertString(getLength(),txt,(err ? stderr_attrs : stdout_attrs));
+	    AttributeSet attrs = null;
+	    switch (mode) {
+	       case STDERR :
+		  attrs = stderr_attrs;
+		  break;
+	       default :
+	       case STDOUT :
+		  attrs = stdout_attrs;
+		  break;
+	       case STDIN :
+		  attrs = stdin_attrs;
+		  break;
+	     }
+	    insertString(getLength(),txt,attrs);
 	    line_count += lns;
 	    if (txt.length() > max_length) max_length = txt.length();
 	  }
@@ -388,21 +416,23 @@ private class ConsoleDocument extends DefaultStyledDocument {
 
 
 
+
+
 private static class ConsoleMessage {
 
    private BumpProcess for_process;
    private String message_text;
-   private boolean is_stderr;
+   private TextMode text_mode;
    private boolean is_eof;
 
-   ConsoleMessage(BumpProcess bp,String text,boolean stderr,boolean eof) {
+   ConsoleMessage(BumpProcess bp,String text,TextMode mode,boolean eof) {
       for_process = bp;
       message_text = text;
-      is_stderr = stderr;
+      text_mode = mode;
       is_eof = eof;
     }
 
-   boolean isStderr()			{ return is_stderr; }
+   TextMode getTextMode()		{ return text_mode; }
    boolean isEof()			{ return is_eof; }
    String getText()			{ return message_text; }
    void merge(String t) 		{ message_text += t; }

@@ -397,7 +397,7 @@ String [] BOARD_LIBRARY_FILES = new String [] {
    "bubblesasm.jar",
    "ColorPicker.jar",
    "wikitextcore.jar", "wikitexttrac.jar",
-   "derby.jar", "derbyclient.jar", "derbynet.jar", "mysql.jar", "postgresql.jar"
+   "derby.jar", "derbyclient.jar", "derbynet.jar", "mysql.jar", "postgresql.jar",
 };
 
 
@@ -411,7 +411,8 @@ String [] BOARD_LIBRARY_EXTRAS = new String [] {
    "LagHunterBootClasses_4.jar",
    "LiLaConfiguration.ini",
    "bbookbkg.gif",
-   "keybindings.csv"
+   "keybindings.csv",
+   "cofoja.jar",
 };
 
 

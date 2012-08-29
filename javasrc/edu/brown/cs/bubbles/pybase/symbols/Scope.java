@@ -81,6 +81,8 @@ public static String getScopeTypeStr(ScopeType scopetype)
 	 return "Lambda Scope";
       case LIST_COMP:
 	 return "List Comp Scope";
+      default:
+	 break;
    }
    return null;
 }

@@ -511,25 +511,25 @@ static BassTreeModelBase getModelBase(BassRepository br)
 private static class ProjectProps implements BassPopupHandler {
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,
-				       String fullname,BassName bn) {
+        			       String fullname,BassName bn) {
       if (bn != null) return;
       if (fullname.startsWith("@")) return;
-
+   
       int idx = fullname.indexOf(":");
       if (idx <= 0) return;
       String proj = fullname.substring(0,idx);
-
+   
       switch (BoardSetup.getSetup().getLanguage()) {
-	 case JAVA :
-	    menu.add(new EclipseProjectAction(proj));
-	    menu.add(new ProjectAction(proj,bb,where));
-	    menu.add(new NewProjectAction(bb,where));
-	    menu.add(new BassImportProjectAction());
-	    break;
-	 case PYTHON :
-	    menu.add(new PythonProjectAction(proj,bb,where));
-	    menu.add(new NewPythonProjectAction(bb,where));
-	    break;
+         case JAVA :
+            // menu.add(new EclipseProjectAction(proj));
+            menu.add(new ProjectAction(proj,bb,where));
+            menu.add(new NewProjectAction(bb,where));
+            menu.add(new BassImportProjectAction());
+            break;
+         case PYTHON :
+            menu.add(new PythonProjectAction(proj,bb,where));
+            menu.add(new NewPythonProjectAction(bb,where));
+            break;
        }
     }
 
@@ -537,6 +537,7 @@ private static class ProjectProps implements BassPopupHandler {
 
 
 
+@SuppressWarnings("unused")
 private static class EclipseProjectAction extends AbstractAction {
 
    private String for_project;
@@ -619,17 +620,26 @@ private static class PythonProjectAction extends AbstractAction {
 
 private static class NewProjectAction extends AbstractAction {
 
+   private BudaBubble rel_bubble;
+   private Point rel_point;
+   
    private static final long serialVersionUID = 1;
 
    NewProjectAction(BudaBubble bb,Point pt) {
       super("Create New Project");
+      rel_bubble = bb;
+      rel_point = pt;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","CreateProject");
       BudaRoot.hideSearchBubble(e);
-      BumpClient bc = BumpClient.getBump();
-      bc.createProject();
+      BuenoProjectCreator bpc = new BuenoProjectCreator();
+      BudaBubble bbl = bpc.createProjectCreationBubble();
+      if (bbl == null) return;
+      BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bbl);
+      // BumpClient bc = BumpClient.getBump();
+      // bc.createProject();
     }
 
 }	// end of inner class ProjectAction

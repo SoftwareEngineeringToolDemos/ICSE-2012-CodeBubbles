@@ -2327,6 +2327,8 @@ private class BubbleResizeContext extends MouseContext {
 	     }
 	    new_bounds.y = initial_bounds.y + dy;
 	    break;
+	 default:
+	    break;
        }
       switch (border_region) {
 	 case BORDER_W :
@@ -2344,6 +2346,8 @@ private class BubbleResizeContext extends MouseContext {
 	 case BORDER_NE :
 	    new_bounds.width = initial_bounds.width + dx;
 	    if (new_bounds.width < min_width) new_bounds.width = min_width;
+	    break;
+	 default:
 	    break;
        }
       for_bubble.setBounds(new_bounds);

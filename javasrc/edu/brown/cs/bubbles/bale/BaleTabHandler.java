@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -30,6 +30,7 @@
 
 package edu.brown.cs.bubbles.bale;
 
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import javax.swing.text.StyleContext;
 import javax.swing.text.TabExpander;
@@ -58,8 +59,21 @@ private Font last_font;
 private int font_width;
 private int font_height;
 
+private static int base_tab_size;
+
+
 private static final float	rounding_value = 0.95f; 	// matches AWT
 
+static {
+   String v = BALE_PROPERTIES.getProperty("indent.tabulation.size");
+   if (v == null) v = BumpClient.getBump().getOption("org.eclipse.jdt.core.formatter.tabulation.size");
+   if (v == null) v = BALE_PROPERTIES.getProperty("Bale.tabsize");
+   base_tab_size = 8;
+   try {
+      if (v != null) base_tab_size = Integer.parseInt(v);
+    }
+   catch (NumberFormatException e) { }
+}
 
 
 
@@ -71,7 +85,7 @@ private static final float	rounding_value = 0.95f; 	// matches AWT
 
 BaleTabHandler()
 {
-   tab_size = 8;
+   tab_size = base_tab_size;
    last_font = null;
    font_width = 0;
    cur_element = null;
@@ -167,10 +181,10 @@ private void setFont() {
       font_width = (int) r.getWidth();
       font_height = ht;
       last_font = fn;
-      Integer ivl = (Integer)(cur_element.getAttributes().getAttribute(BOARD_ATTR_TAB_SIZE));
-      if (ivl == null) tab_size = 0;
-      else tab_size = ivl;
-      if (tab_size <= 0) tab_size = 8;
+      // Integer ivl = (Integer)(cur_element.getAttributes().getAttribute(BOARD_ATTR_TAB_SIZE));
+      // if (ivl == null) tab_size = 0;
+      // else tab_size = ivl;
+      if (tab_size <= 0) tab_size = base_tab_size;
     }
 }
 

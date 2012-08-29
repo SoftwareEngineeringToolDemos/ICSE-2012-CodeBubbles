@@ -343,6 +343,8 @@ private class EvaluationTableRenderer implements TableCellRenderer {
       if (vx != null) {
 	 EvalExpr ee = (EvalExpr) vx;
 	 switch (ee.getState()) {
+	    default:
+	       break;
 	    // different colors based on states
 	 }
       }

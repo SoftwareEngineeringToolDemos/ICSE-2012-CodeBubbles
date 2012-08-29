@@ -254,6 +254,8 @@ private boolean checkDisplay(BattTestCase btc)
 	 case CANT_RUN :
 	 case STOPPED :
 	    return true;
+	 default:
+	    break;
        }
     }
 
@@ -263,6 +265,8 @@ private boolean checkDisplay(BattTestCase btc)
 	 case RUNNING :
 	 case STOPPED :
 	    return true;
+	 default:
+	    break;
        }
     }
 

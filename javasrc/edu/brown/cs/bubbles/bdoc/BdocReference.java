@@ -287,6 +287,8 @@ private void setName(String lcl,String inside,String ref) throws BdocException
 	    lcl = lcl.substring(idx+1);
 	  }
 	 break;
+      default:
+	 break;
     }
 
    idx = ref.lastIndexOf("#");
@@ -346,6 +348,8 @@ private void setName(String lcl,String inside,String ref) throws BdocException
 	 return " (package)";
       case THROWABLE :
 	 return " (throwable)";
+      default:
+	 break;
     }
 
    return super.getLocalName();
@@ -365,6 +369,8 @@ private void setName(String lcl,String inside,String ref) throws BdocException
 	 int idx = nm.indexOf("<");
 	 if (idx > 0) nm = nm.substring(0,idx);
 	 return nm;
+      default:
+	 break;
     }
 
    return super.getNameHead();

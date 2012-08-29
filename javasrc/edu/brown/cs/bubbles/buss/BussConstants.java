@@ -131,11 +131,7 @@ interface BussEntry {
  **/
    Component getCompactComponent();
 
-/**
- *	Return the text to be used for a compact display.  This is only called if
- *	getCompactComponent returns null.
- **/
-   String getCompactText();
+
 
 /**
  *	Return the component to be used as an exapnded display.  If this returns null,
@@ -149,11 +145,6 @@ interface BussEntry {
  *	gbetExpandComponent returns null.
  **/
    String getExpandText();
-
-/**
- *	Return a component to be viewed if the user hovers over the entry.
- **/
-   Component getHoverComponent();
 
 /**
  *	Create and return a new bubble for this entry.

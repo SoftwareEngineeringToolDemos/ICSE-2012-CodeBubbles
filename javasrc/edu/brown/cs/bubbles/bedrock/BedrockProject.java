@@ -39,6 +39,8 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.preferences.IPreferencesService;
+import org.osgi.service.prefs.Preferences;
 import org.eclipse.jdt.core.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.IShellProvider;
@@ -111,7 +113,8 @@ void initialize()
 {
    if (projects_inited) return;
 
-   new IvyXmlWriter();			// force loading
+   IvyXmlWriter xw = new IvyXmlWriter();                // force loading
+   xw.close();
 
    IWorkspace ws = ResourcesPlugin.getWorkspace();
    IWorkspaceRoot wr = ws.getRoot();
@@ -220,6 +223,7 @@ void listProjects(IvyXmlWriter xw)
       for (int j = 0; j < up.length; ++j) {
 	 xw.textElement("USEDBY",up[j].getName());
        }
+
       xw.end("PROJECT");
     }
 }
@@ -321,7 +325,27 @@ void localEditProject(Element pxml,IvyXmlWriter xw) throws BedrockException
       for (Element oe : IvyXml.children(pxml,"OPTION")) {
 	 String k = IvyXml.getAttrString(oe,"NAME");
 	 String v = IvyXml.getAttrString(oe,"VALUE");
-	 ijp.setOption(k,v);
+	 if (k.startsWith("edu.brown.cs.bubbles.bedrock.")) {
+	    String sfx = k.substring(29);
+	    QualifiedName qn = new QualifiedName("edu.brown.cs.bubbles.bedrock",sfx);
+	    try {
+	       ip.setPersistentProperty(qn,v);
+	     }
+	    catch (CoreException e) {
+	       BedrockPlugin.logD("Problem setting property " + qn + ": " + e);
+	     }
+	  }
+	 else ijp.setOption(k,v);
+       }
+
+      for (Element xe : IvyXml.children(pxml,"XPREF")) {
+	  String q = IvyXml.getAttrString(xe,"NODE");
+	  String k = IvyXml.getAttrString(xe,"KEY");
+	  String v = IvyXml.getAttrString(xe,"VALUE");
+	  IPreferencesService ps = Platform.getPreferencesService();
+	  Preferences rn = ps.getRootNode();
+	  Preferences qn = rn.node(q);
+	  qn.put(k,v);
        }
 
       for (IClasspathEntry cpe : ijp.getRawClasspath()) ents.add(cpe);
@@ -331,6 +355,7 @@ void localEditProject(Element pxml,IvyXmlWriter xw) throws BedrockException
       IClasspathEntry [] enta = new IClasspathEntry[ents.size()];
       enta = ents.toArray(enta);
       ijp.setRawClasspath(enta,new BedrockProgressMonitor(our_plugin,"Update Paths"));
+      ijp.save(null,false);
     }
    catch (CoreException e) {
       throw new BedrockException("Problem editing project",e);
@@ -396,7 +421,11 @@ private void updatePathElement(List<IClasspathEntry> ents,Element xml)
 	    xatts = els.toArray(xatts);
 	  }
 
-	 IClasspathEntry nent = JavaCore.newLibraryEntry(bin,src,null,rls,xatts,export);
+	 IClasspathEntry nent = null;
+	 if (bin != null)
+	    nent = JavaCore.newLibraryEntry(bin,src,null,rls,xatts,export);
+	 else
+	    nent = JavaCore.newSourceEntry(src,null,null,null,xatts);
 
 	 if (IvyXml.getAttrBool(xml,"MODIFIED") && oent != null) {
 	    int idx = ents.indexOf(oent);
@@ -747,23 +776,6 @@ IPackageFragment findPackageFragment(String proj,String pkg)
 /*										*/
 /********************************************************************************/
 
-private static final Map<String,String> pref_types;
-
-static {
-   pref_types = new HashMap<String,String>();
-   pref_types.put("currentLine","B");
-   pref_types.put("currentLineColor","S");
-   pref_types.put("disable_overwrite_mode","B");
-   pref_types.put("spacesForTabs","B");
-   pref_types.put("tabWidth","I");
-   pref_types.put("textDragAndDropEnabled","B");
-   pref_types.put("org.eclipse.debug.ui.build_before_launch","B");
-   pref_types.put("line.separator","S");
-   pref_types.put("org.eclipse.jface.textfont","S");
-}
-
-
-
 void handlePreferences(String proj,IvyXmlWriter xw)
 {
    xw.begin("PREFERENCES");
@@ -794,15 +806,6 @@ void handlePreferences(String proj,IvyXmlWriter xw)
     }
 
    xw.end("PREFERENCES");
-
-//   try {
-//	String key = "org.eclipse.debug.ui.cancel_launch_with_compile_errors";
-//	IPreferenceStore ips = DebugUITools.getPreferenceStore();
-//	if (ips != null) ips.setValue(key,"always");
-//    }
-//   catch (Throwable t) {
-//	BedrockPlugin.logD("Problem setting compiler preference: " + t);
-//    }
 }
 
 
@@ -1044,6 +1047,18 @@ private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolea
 	 xw.field("VALUE",ent.getValue().toString());
 	 xw.end("OPTION");
        }
+      try {
+	 Map<?,?> pm = p.getPersistentProperties();
+	 for (Map.Entry<?,?> ent : pm.entrySet()) {
+	    QualifiedName qn = (QualifiedName) ent.getKey();
+	    xw.begin("PROPERTY");
+	    xw.field("QUAL",qn.getQualifier());
+	    xw.field("NAME",qn.getLocalName());
+	    xw.field("VALUE",ent.getValue().toString());
+	    xw.end("PROPERTY");
+	  }
+       }
+      catch (CoreException e) { }
     }
 
    xw.end("PROJECT");

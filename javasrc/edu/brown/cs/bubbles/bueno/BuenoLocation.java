@@ -140,6 +140,8 @@ public String getTitle(BuenoType typ)
       case NEW_MODULE :
 	 ttl = "Create New Module in Project " + getProject();
 	 break;
+      default:
+	 break;
     }
 
    return ttl;
@@ -162,6 +164,8 @@ public String getTitleLocation(BuenoType typ)
       case NEW_ENUM :
       case NEW_TYPE :
 	 ttl = getClassWhere();
+	 break;
+      default:
 	 break;
     }
 

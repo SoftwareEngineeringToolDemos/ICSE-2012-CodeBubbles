@@ -708,11 +708,13 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
       IProject ip = our_plugin.getProjectManager().findProjectForFile(proj,null);
       IType ityp = null;
       IJavaProject ijp = JavaCore.create(ip);
+      String bcls = baseClassName(cls);
       try {
-	 if (ijp != null) ityp = ijp.findType(cls);
+	 if (ijp != null) ityp = ijp.findType(bcls);
        }
       catch (JavaModelException ex) { }
-      if (ityp == null) throw new BedrockException("Class " + cls + " not defined in project " + proj);
+      if (ityp == null)
+	 throw new BedrockException("Class " + cls + " " + bcls + " not defined in project " + proj);
 
       ICompilationUnit icu = ityp.getCompilationUnit();
       File f = BedrockUtil.getFileForPath(icu.getPath(),ip);
@@ -906,6 +908,26 @@ private AbstractTypeDeclaration findTypeDecl(String cls,List<?> typs)
    return atd;
 }
 
+
+
+private String baseClassName(String s)
+{
+   if (s == null) return null;
+
+   int idx = s.indexOf("<");
+   if (idx < 0) return s;
+
+   StringBuffer buf = new StringBuffer();
+   int depth = 0;
+   for (int i = 0; i < s.length(); ++i) {
+      char c = s.charAt(i);
+      if (c == '<') ++depth;
+      else if (c == '>') --depth;
+      else if (depth == 0) buf.append(c);
+    }
+
+   return buf.toString();
+}
 
 
 /********************************************************************************/
@@ -1226,46 +1248,46 @@ private class EditTask implements Runnable {
 
    private void performEdit() {
       if (file_data.getCurrentId(bedrock_id) != null &&
-             !file_data.getCurrentId(bedrock_id).equals(for_id))
-         return;
-   
+	     !file_data.getCurrentId(bedrock_id).equals(for_id))
+	 return;
+
       long delay = getElideDelay(bedrock_id);
-   
+
       if (delay > 0) {
-         synchronized (this) {
-            try { wait(delay); }
-            catch (InterruptedException e) { }
-          }
+	 synchronized (this) {
+	    try { wait(delay); }
+	    catch (InterruptedException e) { }
+	  }
        }
-   
+
       file_data.getEditableUnit(bedrock_id);
       if (file_data.getCurrentId(bedrock_id) != null &&
-             !file_data.getCurrentId(bedrock_id).equals(for_id))
-         return;
-   
+	     !file_data.getCurrentId(bedrock_id).equals(for_id))
+	 return;
+
       // System.err.println("BEDROCK: BUILD AST " + for_id);
       CompilationUnit cu = file_data.getAstRoot(bedrock_id,for_id);
-   
+
       if (file_data.getCurrentId(bedrock_id) != null &&
-             !file_data.getCurrentId(bedrock_id).equals(for_id))
-         return;
-   
+	     !file_data.getCurrentId(bedrock_id).equals(for_id))
+	 return;
+
       if (getAutoElide(bedrock_id) && cu != null) {
-         // System.err.println("BEDROCK: ELIDE " + for_id);
-         BedrockElider be = file_data.checkElider(bedrock_id);
-         if (be != null) {
-            IvyXmlWriter xw = our_plugin.beginMessage("ELISION",bedrock_id);
-            xw.field("FILE",file_data.getFileName());
-            xw.field("ID",for_id);
-            xw.begin("ELISION");
-            if (be.computeElision(cu,xw)) {
-               if (file_data.getCurrentId(bedrock_id) == null ||
-        	      file_data.getCurrentId(bedrock_id).equals(for_id)) {
-        	  xw.end("ELISION");
-        	  our_plugin.finishMessage(xw);
-        	}
-             }
-          }
+	 // System.err.println("BEDROCK: ELIDE " + for_id);
+	 BedrockElider be = file_data.checkElider(bedrock_id);
+	 if (be != null) {
+	    IvyXmlWriter xw = our_plugin.beginMessage("ELISION",bedrock_id);
+	    xw.field("FILE",file_data.getFileName());
+	    xw.field("ID",for_id);
+	    xw.begin("ELISION");
+	    if (be.computeElision(cu,xw)) {
+	       if (file_data.getCurrentId(bedrock_id) == null ||
+		      file_data.getCurrentId(bedrock_id).equals(for_id)) {
+		  xw.end("ELISION");
+		  our_plugin.finishMessage(xw);
+		}
+	     }
+	  }
        }
     }
 
@@ -1323,8 +1345,8 @@ private class FileData implements IBufferChangedListener {
 
    ICompilationUnit getSearchUnit() {
       if (last_ast != null) {
-         ICompilationUnit icu = getEditableUnit(last_ast);
-         if (icu != null) return icu;
+	 ICompilationUnit icu = getEditableUnit(last_ast);
+	 if (icu != null) return icu;
        }
       return comp_unit;
     }
@@ -1553,20 +1575,20 @@ private class BufferData {
    synchronized ICompilationUnit getEditableUnit() {
       if (is_changed) return comp_unit;
       try {
-         // comp_unit.becomeWorkingCopy(null);
-         // comp_unit.getSource() being null causes NullPointerException
-         if (comp_unit.getSource() != null)
-            comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
-         comp_unit.getBuffer().addBufferChangedListener(file_data);
-         is_changed = true;
+	 // comp_unit.becomeWorkingCopy(null);
+	 // comp_unit.getSource() being null causes NullPointerException
+	 if (comp_unit.getSource() != null)
+	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+	 comp_unit.getBuffer().addBufferChangedListener(file_data);
+	 is_changed = true;
        }
       catch (JavaModelException e) {
-         BedrockPlugin.logE("Problem creating working copy: " + e);
+	 BedrockPlugin.logE("Problem creating working copy: " + e);
        }
       catch (Throwable t) {
-         throw new Error("Problem getting editable unit: " + t,t);
+	 throw new Error("Problem getting editable unit: " + t,t);
        }
-   
+
       return comp_unit;
     }
 
@@ -1583,16 +1605,16 @@ private class BufferData {
       ICompilationUnit icu = getEditableUnit();
       CompilationUnit cu = null;
       try {
-         copy_owner.setId(id);
-         cu = icu.reconcile(AST.JLS3,true,true,null,null);
-         if (cu == null) cu = last_ast;
-         else last_ast = cu;
+	 copy_owner.setId(id);
+	 cu = icu.reconcile(AST.JLS3,true,true,null,null);
+	 if (cu == null) cu = last_ast;
+	 else last_ast = cu;
        }
       catch (JavaModelException e) {
-         BedrockPlugin.logE("Problem getting AST for file " +
-        		       file_data.getFileName() + ": " + e);
+	 BedrockPlugin.logE("Problem getting AST for file " +
+			       file_data.getFileName() + ": " + e);
        }
-   
+
       return last_ast;
     }
 

@@ -341,6 +341,24 @@ enum ErrorSeverity {
 }
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Debugging constants                                                     */
+/*                                                                              */
+/********************************************************************************/
+
+enum PybaseDebugAction {
+   NONE,
+   TERMINATE,
+   RESUME,
+   STEP_INTO,
+   STEP_OVER,
+   STEP_RETURN,
+   SUSPEND,
+   DROP_TO_FRAME
+}
+
 }	// end of interface PybaseConstants
 
 

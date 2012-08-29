@@ -252,6 +252,8 @@ private void addLocation(BumpLocation bl,Map<String,BassNameLocation> fieldmap,
 	 BassNameLocation inm = new BassNameLocation(bl,BassNameType.HEADER);
 	 all_names.add(inm);
 	 break;
+      default:
+	 break;
     }
 
    if (bn != null) all_names.add(bn);
@@ -265,6 +267,8 @@ private boolean showClassFile(BassNameLocation bn)
    switch (BoardSetup.getSetup().getLanguage()) {
       case PYTHON :
 	 return false;
+      default:
+	 break;
     }
 
    return true;
@@ -280,6 +284,8 @@ private boolean isRelevant(BumpLocation bl)
       case LOCAL :
       case UNKNOWN :
 	 return false;
+      default:
+	 break;
     }
 
    if (bl.getKey() == null) return false;

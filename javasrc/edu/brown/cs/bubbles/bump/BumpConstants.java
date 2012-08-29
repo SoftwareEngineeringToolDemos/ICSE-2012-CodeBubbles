@@ -259,6 +259,15 @@ String [] FIX_PARAMETERS = new String [] {
 };
 
 
+interface BumpContractType {
+   
+   boolean useContractsForJava();
+   boolean useJunit();
+   boolean enableAssertions();
+   
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -520,6 +529,8 @@ enum BumpThreadState {
       switch (this) {
 	 case EXCEPTION :
 	    return true;
+	 default:
+	    break;
        }
       return false;
     }
@@ -660,7 +671,8 @@ interface BumpLaunchConfig {
    String getRemoteHost();
    int getRemotePort();
    boolean isWorkingCopy();
-
+   String getContractArgs();
+   
    BumpLaunchConfig clone(String name);
    BumpLaunchConfig save();
    void delete();

@@ -559,6 +559,8 @@ private class TestListener extends RunListener {
 	 case LISTING :
 	    outputSingleTest(jt);
 	    break;
+	 default:
+	    break;
        }
     }
 

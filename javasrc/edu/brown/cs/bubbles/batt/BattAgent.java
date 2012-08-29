@@ -292,7 +292,7 @@ private void enterMethod(int id)
       ThreadData td = getThreadData();
       RtMethod fm = td.enterMethod(rm);
       if (fm != null) fm.markCall(rm);
-      else rm.markTop();
+      if (fm == null || td.getLevel() <= 2) rm.markTop();
     }
 }
 
@@ -678,24 +678,30 @@ private static class ThreadData {
    private RtMethod method_id;
    private RtBlock block_id;
    private ThreadData from_data;
+   private int call_level;
 
    ThreadData() {
       method_id = null;
       block_id = null;
       from_data = null;
+      call_level = 0;
     }
 
    private ThreadData(RtMethod rm,RtBlock rb,ThreadData td) {
       method_id = rm;
       block_id = rb;
       from_data = td;
+      call_level = 0;
     }
+
+   int getLevel()			{ return call_level; }
 
    RtMethod enterMethod(RtMethod rm) {
       from_data = new ThreadData(rm,block_id,from_data);
       RtMethod orm = method_id;
       method_id = rm;
       block_id = null;
+      ++call_level;
       return orm;
     }
 
@@ -703,6 +709,7 @@ private static class ThreadData {
       method_id = from_data.method_id;
       block_id = from_data.block_id;
       from_data = from_data.from_data;
+      --call_level;
     }
 
    RtBlock enterBlock(RtBlock rb) {

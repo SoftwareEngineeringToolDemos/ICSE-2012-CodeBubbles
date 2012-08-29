@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -43,7 +43,12 @@ abstract class BuenoCreator implements BuenoConstants
 /*										*/
 /********************************************************************************/
 
-private int	tab_size;
+private static int     tab_size;
+
+static {
+   BoardProperties bp = BoardProperties.getProperties("Bueno");
+   tab_size = bp.getInt(BUENO_TEMPLATE_TAB_SIZE,8);
+}
 
 
 
@@ -55,8 +60,6 @@ private int	tab_size;
 
 protected BuenoCreator()
 {
-   BoardProperties bp = BoardProperties.getProperties("Bueno");
-   tab_size = bp.getInt(BUENO_TEMPLATE_TAB_SIZE,8);
 }
 
 
@@ -110,6 +113,8 @@ protected void createType(BuenoType typ,BuenoLocation where,BuenoProperties prop
 	 break;
       case NEW_ANNOTATION :
 	 setupAnnotation(buf,props);
+	 break;
+      default:
 	 break;
     }
 
@@ -166,19 +171,19 @@ protected void setupAnnotation(StringBuffer buf,BuenoProperties props)
 
 /********************************************************************************/
 /*										*/
-/*	Creation methods for modules                                            */
+/*	Creation methods for modules						*/
 /*										*/
 /********************************************************************************/
 
 protected void createModule(BuenoLocation where,BuenoProperties props)
 {
    StringBuffer buf = new StringBuffer();
-   
+
    setupModule(buf,props);
-   
+
    String nm = props.getStringProperty(BuenoKey.KEY_PACKAGE) + "." +
       props.getStringProperty(BuenoKey.KEY_NAME);
-   
+
    BumpClient bc = BumpClient.getBump();
    bc.saveAll();
    File cf = bc.createNewClass(where.getProject(),nm,false,buf.toString());
@@ -217,6 +222,8 @@ protected void createInnerType(BuenoType typ,BuenoLocation where,BuenoProperties
 	 break;
       case NEW_INNER_ENUM :
 	 setupInnerEnum(buf,props);
+	 break;
+      default:
 	 break;
     }
 
@@ -279,6 +286,8 @@ protected void createMethod(BuenoType typ,BuenoLocation where,BuenoProperties pr
 	 break;
       case NEW_GETTER_SETTER :
 	 setupGetterSetter(buf,props);
+	 break;
+      default:
 	 break;
     }
 
@@ -396,6 +405,8 @@ protected void createComment(BuenoType typ,BuenoLocation where,BuenoProperties p
 	 break;
       case NEW_JAVADOC_COMMENT :
 	 setupJavadocComment(buf,props);
+	 break;
+      default:
 	 break;
     }
 
@@ -515,6 +526,8 @@ protected void methodText(StringBuffer buf,BuenoProperties props)
       pbuf.append("$(ITAB)}\n");
     }
 
+   pbuf.append("\n\n");
+
    StringReader sr = new StringReader(pbuf.toString());
    try {
       expand(sr,props,null,buf);
@@ -534,13 +547,13 @@ protected void methodText(StringBuffer buf,BuenoProperties props)
 protected void classText(StringBuffer buf,BuenoProperties props)
 {
    String pkg = props.getStringProperty(BuenoKey.KEY_PACKAGE);
-   
+
    if (pkg != null) {
       buf.append("package " + pkg + ";\n");
     }
-   
+
    buf.append("\n");
-   
+
    String [] imps = props.getImports();
    if (imps != null && imps.length > 0) {
       for (String s : imps) {
@@ -548,7 +561,7 @@ protected void classText(StringBuffer buf,BuenoProperties props)
        }
     }
    buf.append("\n");
-   
+
    String cmmt = props.getStringProperty(BuenoKey.KEY_COMMENT);
    if (props.getBooleanProperty(BuenoKey.KEY_ADD_JAVADOC)) {
       setupJavadocComment(buf,props,cmmt);
@@ -556,7 +569,7 @@ protected void classText(StringBuffer buf,BuenoProperties props)
    else if (props.getBooleanProperty(BuenoKey.KEY_ADD_COMMENT)) {
       setupBlockComment(buf,props,cmmt);
     }
-   
+
    int mods = props.getModifiers();
    int ct = 0;
    ct = addModifier(buf,"private",Modifier.isPrivate(mods),ct);
@@ -567,11 +580,11 @@ protected void classText(StringBuffer buf,BuenoProperties props)
    ct = addModifier(buf,"native",Modifier.isNative(mods),ct);
    ct = addModifier(buf,"final",Modifier.isFinal(mods),ct);
    if (ct > 0) buf.append(" ");
-   
+
    String typ = props.getStringProperty(BuenoKey.KEY_TYPE);
    if (typ == null) typ = "class";
    String nam = props.getStringProperty(BuenoKey.KEY_NAME);
-   
+
    buf.append(typ + " " + nam);
    String ext = props.getStringProperty(BuenoKey.KEY_EXTENDS);
    if (ext != null) buf.append(" extends " + ext);
@@ -604,7 +617,7 @@ protected void moduleText(StringBuffer buf,BuenoProperties props)
    if (props.getBooleanProperty(BuenoKey.KEY_ADD_COMMENT)) {
       setupBlockComment(buf,props,cmmt);
     }
-   
+
    String [] imps = props.getImports();
    if (imps != null && imps.length > 0) {
       for (String s : imps) {
@@ -613,12 +626,6 @@ protected void moduleText(StringBuffer buf,BuenoProperties props)
     }
    buf.append("\n");
 }
-
-
-
-
-
-
 
 
 
@@ -674,6 +681,7 @@ protected void innerClassText(StringBuffer buf,BuenoProperties props)
    buf.append("\n");
    buf.append("\n");
    buf.append("}\n");
+   buf.append("\n\n");
 }
 
 
@@ -731,7 +739,7 @@ protected void fieldText(StringBuffer buf,BuenoProperties props)
 /*										*/
 /********************************************************************************/
 
-private int addModifier(StringBuffer buf,String txt,boolean add,int ct)
+private static int addModifier(StringBuffer buf,String txt,boolean add,int ct)
 {
    if (!add) return ct;
 
@@ -744,11 +752,39 @@ private int addModifier(StringBuffer buf,String txt,boolean add,int ct)
 
 /********************************************************************************/
 /*										*/
+/*	Template finding methods						*/
+/*										*/
+/********************************************************************************/
+
+static Reader findTemplate(String id,BuenoProperties props)
+{
+   if (id == null) return null;
+
+   // try project-specific template first
+   String prj = props.getStringProperty(BuenoKey.KEY_PROJECT);
+   if (prj != null) {
+      String xnm = "templates/" + prj + "/" + id + ".template";
+      InputStream ins = BoardProperties.getLibraryFile(xnm);
+      if (ins != null) return new InputStreamReader(ins);
+    }
+
+   String pnm = "templates/" + id + ".template";
+   InputStream ins = BoardProperties.getLibraryFile(pnm);
+   if (ins == null) return null;
+
+   return new InputStreamReader(ins);
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Template expansion routines						*/
 /*										*/
 /********************************************************************************/
 
-protected void expand(Reader from,BuenoProperties props,String eol,StringBuffer buf) throws IOException
+static void expand(Reader from,BuenoProperties props,String eol,StringBuffer buf) throws IOException
 {
    BufferedReader br = new BufferedReader(from);
    if (eol == null) eol = System.getProperty("line.separator");
@@ -789,7 +825,7 @@ protected void expand(Reader from,BuenoProperties props,String eol,StringBuffer 
 
 
 
-private String getValue(String key,BuenoProperties props,String eol)
+private static String getValue(String key,BuenoProperties props,String eol)
 {
    StringBuffer buf = new StringBuffer();
    int ct = 0;
@@ -863,7 +899,7 @@ private String getValue(String key,BuenoProperties props,String eol)
 }
 
 
-private void outputList(String [] itms,String pfx,String sep,StringBuffer buf)
+private static void outputList(String [] itms,String pfx,String sep,StringBuffer buf)
 {
    if (itms == null) return;
    int ct = 0;
@@ -876,7 +912,7 @@ private void outputList(String [] itms,String pfx,String sep,StringBuffer buf)
 
 
 
-private void getFormattedValue(String key,BuenoProperties props,String pfx,String sfx,String eol,StringBuffer buf)
+private static void getFormattedValue(String key,BuenoProperties props,String pfx,String sfx,String eol,StringBuffer buf)
 {
    int p0 = pfx.length() + key.length() + 3;   // ${ ... }
    int p2 = 0;
@@ -923,7 +959,7 @@ private void getFormattedValue(String key,BuenoProperties props,String pfx,Strin
 
 
 
-private String expandTabs(String self,int tabstop)
+private static String expandTabs(String self,int tabstop)
 {
    int index;
 

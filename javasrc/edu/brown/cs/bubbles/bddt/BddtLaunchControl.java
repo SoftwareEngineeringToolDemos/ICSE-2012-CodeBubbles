@@ -595,6 +595,8 @@ private class StartDebug implements Runnable {
 	       case ERROR :
 		  ct = 1;
 		  break;
+	       default:
+		  break;
 	     }
 	  }
        }
@@ -853,6 +855,8 @@ private class RunEventHandler implements BumpRunEventHandler {
 	       last_stopped = null;
 	     }
 	    break;
+	 default:
+	    break;
        }
     }
 
@@ -882,6 +886,8 @@ private class RunEventHandler implements BumpRunEventHandler {
 	 case THREAD_TRACE :
 	 case THREAD_HISTORY :
 	    return;
+	 default:
+	    break;
        }
 
       int tct = thread_states.size();
@@ -985,7 +991,7 @@ void setActiveFrame(BumpStackFrame frm)
    else if (active_frame != null && active_frame.match(frm)) {
       for (BddtFrameListener fl : frame_listeners) {
 	 fl.setActiveFrame(frm);
-       }  
+       }
     }
    else {
       if (frame_annot != null) {
@@ -1172,7 +1178,7 @@ String getEvaluationString(BumpStackFrame frm,BumpRunValue rv,String id)
    if (frm.evaluateInternal(expr,el)) {
       //TODO: format the result a bit if it is too long
       BumpRunValue rrv = el.getResult();
-      if (rrv != null) return IvyXml.xmlSanitize(rrv.getValue());
+      if (rrv != null) return IvyXml.htmlSanitize(rrv.getValue());
     }
 
    return null;
@@ -1211,7 +1217,7 @@ private static String formatRunValue(BumpRunValue rv)
 	 break;
       case OBJECT :
 	 String s = rv.getDetail();
-	 if (s != null) return IvyXml.xmlSanitize(s);
+	 if (s != null) return IvyXml.htmlSanitize(s);
 	 break;
       case ARRAY :
 	 if (rv.getLength() <= 100) {
@@ -1224,7 +1230,7 @@ private static String formatRunValue(BumpRunValue rv)
 	 break;
       case PRIMITIVE :
       case STRING :
-	 return IvyXml.xmlSanitize(rv.getValue());
+	 return IvyXml.htmlSanitize(rv.getValue());
     }
 
    return null;
@@ -1262,6 +1268,8 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 		  if (rv1 != null) {
 		     rv = rv1.getValue("this?" + id);
 		   }
+		  break;
+	       default :
 		  break;
 	     }
 	    if (rv == null) rv = frm.getValue(id);

@@ -28,6 +28,7 @@ package edu.brown.cs.bubbles.bedrock;
 
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -1114,6 +1115,38 @@ public void launchConfigurationRemoved(ILaunchConfiguration cfg)
 
 /********************************************************************************/
 /*										*/
+/*	Console input methods							*/
+/*										*/
+/********************************************************************************/
+
+void consoleInput(String lname,String input) throws BedrockException
+{
+   input = IvyXml.decodeXmlString(input);
+
+   ILaunch[] launches = debug_plugin.getLaunchManager().getLaunches();
+
+   try {
+      for (ILaunch launch: launches) {
+	 if (!matchLaunch(lname,launch)) continue;
+	 IDebugTarget dt = launch.getDebugTarget();
+	 IProcess ip = dt.getProcess();
+	 IStreamsProxy isp = ip.getStreamsProxy();
+	 if (isp == null) throw new BedrockException("CONSOLE Streams proxy not supported");
+	 isp.write(input);
+	 BedrockPlugin.logD("Send to console: " + input);
+	 break;
+       }
+    }
+   catch (IOException e) {
+      throw new BedrockException("I/O error writing to console",e);
+    }
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Console management							*/
 /*										*/
 /********************************************************************************/
@@ -1272,30 +1305,30 @@ private class ConsoleThread extends Thread {
       StringBuffer buf = null;
       boolean iserr = false;
       for (ConsoleWrite cw : cd.getWrites()) {
-         if (cw.isEof()) {
-            if (buf != null) flushConsole(pid,buf,iserr);
-            buf = null;
-            eofConsole(pid);
-            continue;
-          }
-         if (buf == null) {
-            if (cw.getText() != null) {
-               buf = new StringBuffer();
-               iserr = cw.isStdErr();
-               buf.append(cw.getText());
-             }
-          }
-         else if (iserr == cw.isStdErr()) {
-            if (cw.getText() != null) buf.append(cw.getText());
-          }
-         else {
-            flushConsole(pid,buf,iserr);
-            buf = null;
-          }
-         if (buf != null && buf.length() > 32768) {
-            flushConsole(pid,buf,iserr);
-            buf = null;
-          }
+	 if (cw.isEof()) {
+	    if (buf != null) flushConsole(pid,buf,iserr);
+	    buf = null;
+	    eofConsole(pid);
+	    continue;
+	  }
+	 if (buf == null) {
+	    if (cw.getText() != null) {
+	       buf = new StringBuffer();
+	       iserr = cw.isStdErr();
+	       buf.append(cw.getText());
+	     }
+	  }
+	 else if (iserr == cw.isStdErr()) {
+	    if (cw.getText() != null) buf.append(cw.getText());
+	  }
+	 else {
+	    flushConsole(pid,buf,iserr);
+	    buf = null;
+	  }
+	 if (buf != null && buf.length() > 32768) {
+	    flushConsole(pid,buf,iserr);
+	    buf = null;
+	  }
        }
       if (buf != null) flushConsole(pid,buf,iserr);
     }

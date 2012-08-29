@@ -207,6 +207,8 @@ public String getNameHead()
 	 String cnm = nm.substring(idx2+1,idx1);
 	 cnm = cnm.replace('$','.');
 	 return cnm;
+      default:
+	 break;
     }
 
    return null;
@@ -237,6 +239,8 @@ public String getNameHead()
 	 int idx2 = nm.lastIndexOf(".",idx1-1);
 	 if (idx2 < 0) return null;
 	 return nm.substring(0,idx2);
+      default:
+	 break;
     }
 
    return null;

@@ -28,7 +28,11 @@ package edu.brown.cs.bubbles.bueno;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 
 import java.awt.Point;
+import javax.swing.JPanel;
 import java.util.EventListener;
+import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 
 
@@ -151,6 +155,56 @@ interface BuenoBubbleCreator {
    void createBubble(String proj,String name,BudaBubbleArea bba,Point p);
 }
 
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Interface for project creators                                          */
+/*                                                                              */
+/********************************************************************************/
+
+String PROJ_PROP_NAME = "ProjectName";
+String PROJ_PROP_BASE = "ProjectBase";
+String PROJ_PROP_DIRECTORY = "ProjectDirectory";
+String PROJ_PROP_SOURCE = "ProjectSource";
+String PROJ_PROP_LIBS = "ProjectLibraries";
+String PROJ_PROP_LINKS = "ProjectLinks";
+
+interface BuenoProjectProps {
+   
+   Object get(String k);
+   String getString(String k);
+   File getFile(String k);
+   Object put(String k,Object v);
+   Object remove(String k);
+   List<File> getLibraries();
+   List<File> getSources();
+   Map<String,File> getLinks();
+   
+}       // end of interface BuenoProjectProps
+
+
+interface BuenoProjectMaker {
+   
+   String getLabel();
+   boolean checkStatus(BuenoProjectProps props);
+   JPanel createPanel(BuenoProjectCreationControl ctrl,BuenoProjectProps props);
+   void resetPanel(BuenoProjectProps props);
+   boolean setupProject(BuenoProjectCreationControl ctrl,BuenoProjectProps props);
+
+}       // end of inner interface BuenoProjectMaker
+
+interface BuenoProjectCreationControl {
+   
+   void checkStatus();
+   BuenoProjectProps getProperties();
+   
+   boolean generateClassPathFile();
+   boolean generateProjectFile();
+   String getPackageName(File f);
+   
+}       // end of innter interface BuenoProjectCreationControl
 
 
 }	// end of interface BuenoConstants

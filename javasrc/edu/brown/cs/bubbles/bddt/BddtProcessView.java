@@ -239,6 +239,8 @@ private class ProcessHandler implements BumpRunEventHandler
 	 case PROCESS_PERFORMANCE :
 	 case PROCESS_SWING :
 	    break;
+	 default:
+	    break;
        }
       process_model.fireTableDataChanged();
    }

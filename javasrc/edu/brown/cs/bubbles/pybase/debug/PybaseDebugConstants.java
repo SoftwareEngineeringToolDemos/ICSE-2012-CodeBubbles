@@ -36,7 +36,9 @@
 
 package edu.brown.cs.bubbles.pybase.debug;
 
-
+import java.util.List;
+import java.util.Collection;
+import java.util.ArrayList;
 
 
 
@@ -81,9 +83,9 @@ int CMD_GET_TASKLETS = 503;
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Debugger events                                                         */
-/*                                                                              */
+/*										*/
+/*	Debugger events 							*/
+/*										*/
 /********************************************************************************/
 
 enum DebugReason {
@@ -94,15 +96,15 @@ enum DebugReason {
    STEP_OVER,
    STEP_RETURN,
    STEP_INTO,
-   
+
 }
-   
+
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Launch configuration constants                                          */
-/*                                                                              */
+/*										*/
+/*	Launch configuration constants						*/
+/*										*/
 /********************************************************************************/
 
 String CONFIG_FILE = ".launches";
@@ -129,13 +131,65 @@ interface CommandResponseListener {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Breakpoint constants                                                    */
-/*                                                                              */
+/*										*/
+/*	Breakpoint constants							*/
+/*										*/
 /********************************************************************************/
 
 String BREAKPOINT_FILE = ".breakpoints";
 
+
+
+/********************************************************************************/
+/*										*/
+/*	Return objects								*/
+/*										*/
+/********************************************************************************/
+
+public class ThreadReturn {
+
+   private PybaseDebugThread for_thread;
+   private String stop_reason;
+   private List<PybaseDebugStackFrame> thread_frames;
+
+   ThreadReturn(PybaseDebugThread t,String r,Collection<PybaseDebugStackFrame> frms) {
+      for_thread = t;
+      stop_reason = r;
+      frms = new ArrayList<PybaseDebugStackFrame>(frms);
+    }
+   
+   public PybaseDebugThread getThread()			{ return for_thread; }
+   public String getReason()				{ return stop_reason; }
+   public List<PybaseDebugStackFrame> getFrames()	{ return thread_frames; }
+
+}	// end of inner class ThreadReturn
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Counter class for unique ids						*/
+/*										*/
+/********************************************************************************/
+
+public class IdCounter {
+
+   private int counter_value;
+
+   IdCounter() {
+      counter_value = 1;
+    }
+
+   synchronized public int nextValue() {
+      return counter_value++;
+    }
+
+   synchronized public void noteValue(int v) {
+      if (counter_value <= v) counter_value = v+1;
+    }
+
+}	// end of inner class IdCounter
 
 }	// end of interface PybaseDebugConstants
 

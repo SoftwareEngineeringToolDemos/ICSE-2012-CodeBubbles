@@ -298,6 +298,8 @@ public String getReturnType()
 	 int idx1 = knm.lastIndexOf(")");
 	 String rtyp = knm.substring(idx1+1);
 	 return IvyFormat.formatTypeName(rtyp);
+      default:
+	 break;
     }
 
    return null;

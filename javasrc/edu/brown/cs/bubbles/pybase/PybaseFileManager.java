@@ -174,19 +174,20 @@ private static class FileData implements IFileData {
 
    private void loadFile() {
       try {
-	 FileReader fr = new FileReader(for_file);
+         FileReader fr = new FileReader(for_file);
          last_modified = for_file.lastModified();
          StringBuffer fbuf = new StringBuffer();
-	 char [] buf = new char[4096];
-	 for ( ; ; ) {
-	    int sts = fr.read(buf);
-	    if (sts < 0) break;
+         char [] buf = new char[4096];
+         for ( ; ; ) {
+            int sts = fr.read(buf);
+            if (sts < 0) break;
             fbuf.append(buf,0,sts);
-	  }
+          }
          use_document.set(fbuf.toString());
+         fr.close();
        }
       catch (IOException e) {
-	 PybaseMain.logE("Problem reading file",e);
+         PybaseMain.logE("Problem reading file",e);
        }
     }
    

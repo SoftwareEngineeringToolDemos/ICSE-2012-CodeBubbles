@@ -157,6 +157,8 @@ synchronized BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,M
 	 String ds = (String) values.remove("DESCRIPTION");
 	 task = defineTask(nm,proj,ds);
 	 break;
+      default:
+	 break;
     }
 
    if (task != null) {

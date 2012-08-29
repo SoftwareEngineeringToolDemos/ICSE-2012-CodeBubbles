@@ -156,7 +156,12 @@ private static String[] createEnvWithPythonpath(String pythonPathEnvStr,
 
       case IRONPYTHON:
 	 env.put("IRONPYTHONPATH", pythonPathEnvStr); // put the environment
-
+	 break;
+	 
+      case PYTHON:
+	 break;
+	 
+      default:
 	 break;
     }
    return getMapEnvAsArray(env);

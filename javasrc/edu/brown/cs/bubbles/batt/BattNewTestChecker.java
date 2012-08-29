@@ -95,7 +95,7 @@ String checkCallTest(BumpLocation mthd,String args,String rslt)
 
 
 
-String generateCallTestCode(String [][] tests)
+String generateCallTestCode(List<BattCallTest> tests)
 {
    return null;
 }
@@ -193,7 +193,7 @@ private Value parseTypedValue(StreamTokenizer stok,Type jt)
       // might want to return void value
       return null;
     }
-   String typ = jt.getInternalName();
+   String typ = jt.getClassName();
    
    nextToken(stok);
    
@@ -335,7 +335,6 @@ private Value parseTypedValue(StreamTokenizer stok,Type jt)
 private boolean isNumericType(Type t)
 {
    switch (t.getSort()) {
-      case Type.BOOLEAN :
       case Type.BYTE :
       case Type.CHAR :
       case Type.DOUBLE :

@@ -88,9 +88,8 @@ public static void initialize(BudaRoot br)
 {
    buda_root = br;
 
-   Icon chevron = BoardImage.getIcon("dropdown_chevron");
-   chevron = BoardImage.resizeIcon(((ImageIcon) chevron).getImage(),
-				      BUDA_BUTTON_RESIZE_WIDTH, BUDA_BUTTON_RESIZE_HEIGHT);
+   Icon chevron = BoardImage.getIcon("dropdown_chevron",
+					BUDA_BUTTON_RESIZE_WIDTH, BUDA_BUTTON_RESIZE_HEIGHT);
 
    option_set = new BoppOptionSet(br);
 
@@ -155,18 +154,18 @@ private static class OptionsListenerNew implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       BudaBubbleArea bba = for_root.getCurrentBubbleArea();
       if (bba == null) return;
-   
+
       BoppOptionPanel pnl = options_panel.get(bba);
       if (pnl == null) {
-         pnl = BoppFactory.getBoppPanelNew(bba);
-         options_panel.put(bba,pnl);
+	 pnl = BoppFactory.getBoppPanelNew(bba);
+	 options_panel.put(bba,pnl);
        }
       else if (pnl.getPanel().getParent() != null &&
-            pnl.getPanel().getParent().isVisible()) {
-         pnl.getPanel().getParent().setVisible(false);
-         return;
+	    pnl.getPanel().getParent().isVisible()) {
+	 pnl.getPanel().getParent().setVisible(false);
+	 return;
        }
-   
+
       JPanel jp = pnl.getPanel();
       Rectangle r = bba.getViewport();
       Dimension d = jp.getPreferredSize();

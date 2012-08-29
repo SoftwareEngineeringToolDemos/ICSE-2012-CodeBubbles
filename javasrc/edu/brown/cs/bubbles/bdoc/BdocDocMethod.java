@@ -194,6 +194,8 @@ BdocDocMethod(URL u) throws IOException
 	   }
 	  else cur_item.addDescriptionTag(t,a);
 	  break;
+      default:
+	 break;
     }
 }
 
@@ -233,6 +235,8 @@ BdocDocMethod(URL u) throws IOException
 	  }
 	 else cur_item.addDescriptionEndTag(t);
 	 break;
+      default:
+	 break;
     }
 }
 
@@ -259,6 +263,8 @@ BdocDocMethod(URL u) throws IOException
 	 break;
       case ITEMDESC :
 	 if (cur_item != null) cur_item.setDescription(new String(data));
+	 break;
+      default:
 	 break;
     }
 }

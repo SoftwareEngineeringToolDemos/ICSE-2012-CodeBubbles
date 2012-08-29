@@ -361,8 +361,7 @@ private void paintNormal(Graphics g,Rectangle alloc)
       g2.drawLine(alloc.x,alloc.y+alloc.height-1,alloc.x+alloc.width,alloc.y+alloc.height-1);
 
       if (annotate_cutline) {
-	 ImageIcon scissors = (ImageIcon) BoardImage.getIcon("icon_scissors_off.png");
-	 scissors = (ImageIcon) BoardImage.resizeIcon(scissors.getImage(), 15, 8);
+	 ImageIcon scissors = (ImageIcon) BoardImage.getIcon("icon_scissors_off.png",15,8);
 	 g2.drawImage(scissors.getImage(),(int) (alloc.x+0.80*alloc.width), alloc.y+alloc.height-5,new Color(0,0,0,0),null);
 	 g2.setColor(Color.black);
 	 g2.setFont(g2.getFont().deriveFont(8f));
@@ -422,7 +421,7 @@ private void paintElided(Graphics g,Rectangle alloc)
    g.drawImage(img,x,y,bep);
 
    drawElisionTrigger(g,alloc,false);
-   
+
    if (checkDrawn(g,x,y,img.getWidth(bep),ht)) {
       bep.addActiveRegion(x + BALE_ELLIPSES_INSIDE_DELTA,y,
 	       img.getWidth(bep) - 2 * BALE_ELLIPSES_INSIDE_DELTA,ht,null);
@@ -446,7 +445,7 @@ private void paintElidedComment(Graphics g,Rectangle alloc)
    g.drawImage(img,x,y,bep);
 
    drawElisionTrigger(g,alloc,false);
-   
+
    if (checkDrawn(g,x,y,img.getWidth(bep),ht)) {
       bep.addActiveRegion(x + BALE_ELLIPSES_INSIDE_DELTA,y,
 	       img.getWidth(bep) - 2 * BALE_ELLIPSES_INSIDE_DELTA,ht,null);
@@ -490,7 +489,7 @@ private void drawElisionTrigger(Graphics g,Rectangle alloc,boolean fg)
    int h = ic.getHeight(bep);
    g.drawImage(ic,x0,y0,bep);
 
-   if (checkDrawn(g,x0,y0,w,h)) 
+   if (checkDrawn(g,x0,y0,w,h))
       bep.addActiveRegion(x0,y0,w,h,elision_trigger);
 }
 
@@ -655,6 +654,8 @@ protected void computeLayout()
 		}
 	     }
 	    break;
+	 default:
+	    break;
        }
     }
 
@@ -797,6 +798,8 @@ private void tryLayout(double priority,float width)
 	    ht += view_data[i].getActualHeight();
 	    v.setSize(view_data[i].getActualWidth(),view_data[i].getActualHeight());
 	  }
+	 break;
+      default:
 	 break;
     }
 
@@ -949,12 +952,12 @@ private class ExtractTrigger implements RegionAction {
       Point pt = new Point(e.getX(),e.getY());
       int pos = bep.viewToModel(pt);
       if (pos < 0) return;
-   
+
       bep.setCaretPosition(pos);
       Action act = BaleEditorKit.findAction("FragmentAction");
       ActionEvent ae = new ActionEvent(bep,ActionEvent.ACTION_FIRST,"FragmentAction");
       if (act != null) act.actionPerformed(ae);
-   
+
       // TODO: Might want to do this explicitly rather than through the action
     }
 

@@ -241,6 +241,8 @@ BudaBubble makeBubble()
 	    bb = bf.createFieldsBubble(base_location.getProject(),cnm);
 	  }
 	 break;
+      default:
+	 break;
     }
 
    return bb;

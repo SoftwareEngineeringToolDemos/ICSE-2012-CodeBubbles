@@ -336,6 +336,8 @@ private String getFormatType(SimpleNode n,PybaseScopeItems scp)
          case OBJECT_FOUND_INTERFACE :
             typ = "TYPE";
             break;
+	 default:
+	    break;
       }
       if (gat != null && gat.getScopeId() == 1) typ = "BUILTIN";
     }

@@ -480,6 +480,8 @@ private void setState(GenContext ctx,ContextState st,StringBuffer buf)
       case ATTACH :
 	 buf.append("<br>");
 	 break;
+      default:
+	 break;
     }
 
    switch (st) {
@@ -518,7 +520,7 @@ private String fixText(String s)
 {
    if (s == null) return null;
 
-   return IvyXml.xmlSanitize(s);
+   return IvyXml.htmlSanitize(s);
 }
 
 
@@ -540,7 +542,7 @@ private String fixTextBlock(String s)
       BoardLog.logE("BBOOK","Problem parsing wiki text",e);
     }
 
-   return IvyXml.xmlSanitize(s);
+   return IvyXml.htmlSanitize(s);
 }
 
 

@@ -38,6 +38,8 @@ package edu.brown.cs.bubbles.pybase.debug;
 
 import edu.brown.cs.bubbles.pybase.PybaseMain;
 
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -59,7 +61,9 @@ public class PybaseDebugger implements PybaseDebugConstants {
 private List<PybaseDebugTarget> debug_targets;
 private PybaseLaunchConfig for_config;
 private ListenConnector listen_connect;
+private String debug_id;
 
+private static IdCounter        debug_counter = new IdCounter();
 
 
 /********************************************************************************/
@@ -73,6 +77,7 @@ PybaseDebugger(PybaseLaunchConfig cfg)
    debug_targets = new ArrayList<PybaseDebugTarget>();
    for_config = cfg;
    listen_connect = null;
+   debug_id = "DEBUG_" + Integer.toString(debug_counter.nextValue());
 }
 
 
@@ -89,10 +94,11 @@ void addTarget(PybaseDebugTarget t)
 }
 
 
-public PybaseLaunchConfig getLaunchConfig()
-{
-   return for_config;
-}
+public PybaseLaunchConfig getLaunchConfig()     { return for_config; }
+
+public List<PybaseDebugTarget> getTargets()     { return debug_targets; }
+
+public String getId()                           { return debug_id; }
 
 
 
@@ -124,6 +130,23 @@ Socket waitForConnect(Process p)
 public void dispose()
 {
    if (listen_connect != null) listen_connect.stopListening();
+}
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Output Methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+void outputXml(IvyXmlWriter xw)
+{
+   xw.begin("LAUNCH");
+   xw.field("MODE","debug");
+   xw.field("ID",debug_id);
+   xw.field("CID",for_config.getId());
+   xw.end("LAUNCH");
 }
 
 

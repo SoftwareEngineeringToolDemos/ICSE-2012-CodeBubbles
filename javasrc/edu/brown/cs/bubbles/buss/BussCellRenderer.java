@@ -85,8 +85,8 @@ BussCellRenderer(int contentwidth, BussBubble bussbubble)
 {
    if (!leaf) {
       if (sel) {
-	 if(buss_bubble.getEditorBubble() != null){
-		 buss_bubble.getLayeredPane().remove(buss_bubble.getEditorBubble());
+	 if (buss_bubble.getEditorBubble() != null) {
+	    buss_bubble.getLayeredPane().remove(buss_bubble.getEditorBubble());
 	  }
 
 	 buss_bubble.setEditorBubble(null);
@@ -99,51 +99,56 @@ BussCellRenderer(int contentwidth, BussBubble bussbubble)
 
    if (!sel) {
       Component c = ent.getCompactComponent();
-      if (c != null) return c;
-      String s = ent.getCompactText();
-      return simpleComponent(t,s,sel,exp,leaf,row,focus);
+      return c;
     }
-   
+
    BudaBubble editorbubble = ent.getBubble();
    if (editorbubble == null) {
       return simpleComponent(t,val,sel,exp,leaf,row,focus);
     }
-   
+
    editorbubble.setPreferredSize(editorbubble.getSize());
    editorbubble.setVisible(true);
-   
+
    int diffY = 0;
-   
+
    JPanel panel = new JPanel();
    panel.setPreferredSize(editorbubble.getSize());
-   
+
    if (buss_bubble.getEditorBubble() == editorbubble){
       return panel;
     }
-   
+
    Rectangle selectedItemRect = t.getRowBounds(row);
-   
+
    if (buss_bubble.getEditorBubble() != null) {
       buss_bubble.getLayeredPane().remove(buss_bubble.getEditorBubble());
-      
-      if(buss_bubble.getEditorBubble().getLocation().y < selectedItemRect.y)
-         diffY = -buss_bubble.getEditorBubble().getPreferredSize().height + buss_bubble.getSelectedEntry().getCompactComponent().getPreferredSize().height;
+
+      if(buss_bubble.getEditorBubble().getLocation().y < selectedItemRect.y) {
+	 Component c = buss_bubble.getSelectedEntry().getCompactComponent();
+	 int h1 = 12;
+	 if (c != null) h1 = c.getPreferredSize().height;
+	 diffY = -buss_bubble.getEditorBubble().getPreferredSize().height + h1;
+      }
     }
-   
+
    buss_bubble.setEditorBubble(editorbubble);
    buss_bubble.setSelectedEntry(ent);
-   
+
    editorbubble.setLocation(selectedItemRect.getLocation());
-   
+
    buss_bubble.getLayeredPane().add(editorbubble, Integer.valueOf(1), 0);
    Dimension dim = (Dimension)buss_bubble.getStackBoxDim().clone();
-   dim.height = dim.height + editorbubble.getPreferredSize().height - ent.getCompactComponent().getPreferredSize().height;
-   
+   int h1 = 12;
+   Component c = ent.getCompactComponent();
+   if (c != null) h1 = c.getPreferredSize().height;
+   dim.height = dim.height + editorbubble.getPreferredSize().height - h1;
+
    buss_bubble.getLayeredPane().setPreferredSize(dim);
    buss_bubble.setStackBoxSize(dim);
-   
+
    buss_bubble.setViewportLocation(diffY);
-   
+
    return panel;
 }
 

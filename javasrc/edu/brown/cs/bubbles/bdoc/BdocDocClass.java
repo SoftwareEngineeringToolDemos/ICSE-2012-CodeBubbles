@@ -250,6 +250,8 @@ protected void handleStartDocument()
       case BODYDESC :
 	 cur_item.addDescriptionTag(t,a);
 	 break;
+      default:
+	 break;
 
     }
 }
@@ -326,6 +328,8 @@ protected void handleStartDocument()
 	    parse_state = ParseState.BODYNAME;
 	  }
 	 break;
+      default:
+	 break;
     }
 }
 
@@ -359,6 +363,8 @@ protected void handleStartDocument()
 	 break;
       case BODYDESC :
 	 if (cur_item != null) cur_item.setDescription(new String(data));
+	 break;
+      default:
 	 break;
     }
 }

@@ -26,6 +26,7 @@
 package edu.brown.cs.bubbles.bddt;
 
 import edu.brown.cs.bubbles.board.BoardFont;
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.bump.BumpConstants.BumpRunValue;
 import edu.brown.cs.bubbles.bump.BumpConstants.BumpStackFrame;
 import edu.brown.cs.bubbles.bump.BumpConstants.BumpThread;
@@ -39,6 +40,11 @@ import java.util.EventListener;
 
 
 public interface BddtConstants {
+
+   
+   
+BoardProperties BDDT_PROPERTIES = BoardProperties.getProperties("Bddt");
+
 
 
 /********************************************************************************/
@@ -75,16 +81,16 @@ Color	BDDT_PANEL_BOTTOM_COLOR = new Color(0xffffffda);
 Color BDDT_CONFIG_TOP_COLOR = new Color(182,182,255);
 Color BDDT_CONFIG_BOTTOM_COLOR = Color.WHITE;
 
-int	BDDT_CONFIG_WIDTH = 450;
-int	BDDT_CONFIG_HEIGHT = 150;
+int     BDDT_CONFIG_WIDTH = BDDT_PROPERTIES.getInt("Bddt.config.width",450);
+int	BDDT_CONFIG_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.config.height",150);
 
 
 /**
  * Constants for the process panel
  **/
 
-int   BDDT_PROCESS_WIDTH = 350;
-int   BDDT_PROCESS_HEIGHT = 100;
+int   BDDT_PROCESS_WIDTH = BDDT_PROPERTIES.getInt("Bddt.process.width",350);
+int   BDDT_PROCESS_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.process.height",100);
 
 Color BDDT_PROCESS_TOP_COLOR = new Color(125,235,250);
 Color BDDT_PROCESS_BOTTOM_COLOR = Color.WHITE;
@@ -94,8 +100,8 @@ Color BDDT_PROCESS_BOTTOM_COLOR = Color.WHITE;
  * Constants for the threads panel
  */
 
-int   BDDT_THREADS_WIDTH = 400;
-int   BDDT_THREADS_HEIGHT = 200;
+int   BDDT_THREADS_WIDTH = BDDT_PROPERTIES.getInt("Bddt.threads.width",400);
+int   BDDT_THREADS_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.threads.height",200);
 
 Color BDDT_THREADS_TOP_COLOR = new Color(153,255,133);
 Color BDDT_THREADS_BOTTOM_COLOR = Color.WHITE;
@@ -105,9 +111,9 @@ Color BDDT_THREADS_BOTTOM_COLOR = Color.WHITE;
  * Constants for the stack/frame/value panesl
  */
 
-int   BDDT_STACK_WIDTH = 400;
-int   BDDT_STACK_HEIGHT = 200;
-int   BDDT_STACK_VALUE_HEIGHT = 50;
+int   BDDT_STACK_WIDTH = BDDT_PROPERTIES.getInt("Bddt.stack.width",400);
+int   BDDT_STACK_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.stack.height",200);
+int   BDDT_STACK_VALUE_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.stack.value.height",50);
 
 Color BDDT_STACK_TOP_COLOR = new Color(153,255,133);
 Color BDDT_STACK_BOTTOM_COLOR = Color.WHITE;
@@ -132,16 +138,16 @@ Color BDDT_LINK_COLOR = Color.RED;
  *	Constants for history viewer
  **/
 
-int   BDDT_HISTORY_WIDTH = 300;
-int   BDDT_HISTORY_HEIGHT = 200;
+int   BDDT_HISTORY_WIDTH = BDDT_PROPERTIES.getInt("Bddt.history.width",300);
+int   BDDT_HISTORY_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.history.height",200);
 
 
 /**
  *	Constants for stop trace viewer
  **/
 
-int   BDDT_STOP_TRACE_WIDTH = 300;
-int   BDDT_STOP_TRACE_HEIGHT = 200;
+int   BDDT_STOP_TRACE_WIDTH = BDDT_PROPERTIES.getInt("Bddt.stop.trace.width",300);
+int   BDDT_STOP_TRACE_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.stop.trace.height",200);
 
 
 
@@ -164,8 +170,8 @@ String BDDT_TOOLBAR_RUN_BUTTON = "DebugRun";
 /********************************************************************************/
 
 Font BDDT_CONSOLE_FONT = BoardFont.getFont(Font.MONOSPACED, Font.PLAIN, 11);
-int BDDT_CONSOLE_WIDTH = 300;
-int BDDT_CONSOLE_HEIGHT = 200;
+int BDDT_CONSOLE_WIDTH = BDDT_PROPERTIES.getInt("Bddt.console.width",300);
+int BDDT_CONSOLE_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.console.height",200);
 
 int BDDT_CONSOLE_MAX_LINES = 1000;
 
@@ -178,8 +184,8 @@ int BDDT_CONSOLE_MAX_LINES = 1000;
 /********************************************************************************/
 
 Font BDDT_PERF_FONT = BoardFont.getFont(Font.SERIF, Font.PLAIN, 11);
-int BDDT_PERF_WIDTH = 500;
-int BDDT_PERF_HEIGHT = 200;
+int BDDT_PERF_WIDTH = BDDT_PROPERTIES.getInt("Bddt.perf.width",500);
+int BDDT_PERF_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.perf.height",200);
 
 Color BDDT_PERF_TOP_COLOR = new Color(234,135,250);
 Color BDDT_PERF_BOTTOM_COLOR = Color.WHITE;
@@ -197,7 +203,9 @@ Color BDDT_PERF_BOTTOM_COLOR = Color.WHITE;
 /**
  * Initial size of the breakpoint bubble
  **/
-Dimension BDDT_BREAKPOINT_INITIAL_SIZE = new Dimension(320,130);
+Dimension BDDT_BREAKPOINT_INITIAL_SIZE = new Dimension(
+      BDDT_PROPERTIES.getInt("Bddt.break.width",320),
+      BDDT_PROPERTIES.getInt("Bddt.break.height",130));
 
 /**
  * Minimum width of columns
@@ -278,13 +286,17 @@ interface BddtFrameListener extends EventListener {
  * Initial size of the evaluation bubble
  **/
 
-Dimension BDDT_EVALUATION_INITIAL_SIZE = new Dimension(320,130);
+Dimension BDDT_EVALUATION_INITIAL_SIZE = new Dimension(
+      BDDT_PROPERTIES.getInt("Bddt.evaluation.width",320),
+      BDDT_PROPERTIES.getInt("Bddt.evaluation.height",130));
 String BDDT_PROPERTY_FLOAT_EVALUATION = "Evaluation.float";
 Color BDDT_EVALUATION_COLOR = new Color(255,255,128);
 Color BDDT_EVALUATION_OUTLINE = new Color(170,170,85);
 
 
-Dimension BDDT_INTERACTION_INITIAL_SIZE = new Dimension(320,130);
+Dimension BDDT_INTERACTION_INITIAL_SIZE = new Dimension(
+      BDDT_PROPERTIES.getInt("Bddt.interaction.width",320),
+      BDDT_PROPERTIES.getInt("Bddt.interaction.height",130));
 String BDDT_PROPERTY_FLOAT_INTERACTION = "Interaction.float";
 Color BDDT_INTERACTION_COLOR = new Color(245,222,179);
 Color BDDT_INTERACTION_OUTLINE = new Color(139,126,102);
@@ -308,12 +320,10 @@ enum LaunchState {
 }
 
 
-int BDDT_LAUNCH_CONTROL_X = 16;
-int BDDT_LAUNCH_CONTROL_Y = 26;
+int BDDT_LAUNCH_CONTROL_X = BDDT_PROPERTIES.getInt("Bddt.launch.control.x",16);
+int BDDT_LAUNCH_CONTROL_Y = BDDT_PROPERTIES.getInt("Bddt.launch.control.y",26);
 
 String BDDT_PROPERTY_FLOAT_LAUNCH_CONTROL = "LaunchControl.float";
-
-
 
 
 

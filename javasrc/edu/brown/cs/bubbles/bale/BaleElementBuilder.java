@@ -165,7 +165,6 @@ private void addLine()
    BaleElement.Branch cpar = null;
    if (first == null) {
       if (!cur_parent.isComment() && (havecmmt || num_blank >= 2)) {
-	 // TODO: add any prior blank lines to this new comment node
 	 cpar = new BaleElement.BlockCommentNode(for_document,cur_parent);
 	 addElementNode(cpar,num_blank);
 	 cpar.setAstNode(cur_ast);
@@ -325,6 +324,8 @@ private BaleElement.Branch createOuterBranch(BaleAstNode sn)
       case SET :
 	 // return new BaleElement.DeclSet(for_document,cur_parent);
 	 break;
+      default:
+	 break;
     }
    return null;
 }
@@ -344,6 +345,8 @@ private BaleElement.Branch createInnerBranch(BaleAstNode sn)
 	 case BLOCK :
 	 case SWITCH_BLOCK :
 	    return new BaleElement.InternalBlockNode(for_document,cur_parent);
+	 default :
+	    break;
        }
     }
    return null;
@@ -513,7 +516,7 @@ private void addElementNode(BaleElement nbe,int prior)
    else if (nbe.isComment() && prior > 0 && cur_parent != root_element) {
       BaleElement.Branch bbe = (BaleElement.Branch) nbe;
       int n = cur_parent.getElementCount();
-      // prior -= 1;			// is this what we want?
+      prior -= 1;			// is this what we want?
       int j = n-prior;
       for (int i = 0; i < prior; ++ i) {
 	 BaleElement celt = cur_parent.getBaleElement(j);

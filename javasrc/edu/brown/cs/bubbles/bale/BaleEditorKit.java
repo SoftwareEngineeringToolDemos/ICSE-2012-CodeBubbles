@@ -75,9 +75,10 @@ private static final Action newline_action = new NewlineAction();
 private static final Action default_key_action = new DefaultKeyAction();
 private static final Action backspace_action = new BackspaceAction();
 private static final Action toggle_insert_action = new ToggleInsertAction();
-private static final Action find_action = new FindAction();
+private static final Action find_action = new FindAction(false);
 private static final Action find_next_action = new FindNextAction(1);
 private static final Action find_prev_action = new FindNextAction(-1);
+private static final Action replace_action = new FindAction(true);
 private static final Action delete_line_action = new DeleteLineAction();
 private static final Action delete_to_eol_action = new DeleteToEolAction();
 private static final Action insert_line_above_action = new InsertLineAboveAction();
@@ -144,6 +145,7 @@ private static final Action [] local_actions = {
    find_action,
    find_next_action,
    find_prev_action,
+   replace_action,
    delete_line_action,
    delete_to_eol_action,
    insert_line_above_action,
@@ -215,6 +217,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("INSERT",toggle_insert_action),
       new KeyItem("F14",toggle_insert_action),          // for the mac keyboard
       new KeyItem("menu F",find_action),
+      new KeyItem("menu R",replace_action),
       new KeyItem("menu K",find_next_action),
       new KeyItem("menu shift K",find_prev_action),
       new KeyItem("menu D",delete_line_action),
@@ -819,6 +822,8 @@ private static class NewlineAction extends TextAction {
 	       case IN_FORMAL_COMMENT :
 		  text += " * ";
 		  break;
+	       default:
+		  break;
 	     }
 	  }
 
@@ -1256,18 +1261,22 @@ private static class CommentLinesAction extends TextAction {
 
 private static class FindAction extends TextAction {
 
+   private boolean do_replace;
+
    private static final long serialVersionUID = 1;
 
-   FindAction() {
+   FindAction(boolean rep) {
       super("FindAction");
+      do_replace = rep;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       BaleEditorPane target = getBaleEditor(e);
       if (!checkReadEditor(target)) return;
-      BaleFindBar fb = target.getFindBar();
+      BaleFinder fb = target.getFindBar();
+      fb.setReplace(do_replace);
       target.toggleFindBar();
-      fb.repaint();
+      fb.getComponent().repaint();
     }
 
 }	// end of inner class FindAction
@@ -1289,7 +1298,7 @@ private static class FindNextAction extends TextAction {
    @Override public void actionPerformed(ActionEvent e) {
       BaleEditorPane target = getBaleEditor(e);
       if (!checkReadEditor(target)) return;
-      BaleFindBar fb = target.getFindBar();
+      BaleFinder fb = target.getFindBar();
       fb.find(find_direction,true);
     }
 
@@ -1805,6 +1814,8 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
 	    cls = fnm;
 	    int idx2 = cls.lastIndexOf(".");
 	    cls = cls.substring(0,idx2);
+	    break;
+	 default:
 	    break;
        }
 
@@ -2350,6 +2361,8 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
 	 break;
       case ENUM :
 	 if (len < 2000) return false;
+	 break;
+      default:
 	 break;
     }
 

@@ -439,8 +439,12 @@ private double computeCost(int sidx)
 	       case LANGLE :
 	       case RANGLE :
 		  return 1;
+	       default:
+		  break;
 	     }
 	  }
+	 break;
+      default:
 	 break;
     }
 

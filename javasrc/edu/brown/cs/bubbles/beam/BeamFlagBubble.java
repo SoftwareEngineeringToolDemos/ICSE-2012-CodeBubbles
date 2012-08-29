@@ -228,8 +228,7 @@ private class ChevronMouseEvents extends MouseAdapter
 
 	 String path = "flags/default/" + _DefaultIcons[i] + ".png";
 
-	 Image raw = BoardImage.getImage(path);
-	 Icon icon = BoardImage.resizeIcon(raw, 22, 22);
+	 Icon icon = BoardImage.getIcon(path,22,22);
 	 item.setIcon(icon);
 
 	 item.addActionListener(new FlagContextMenuEvents());
@@ -244,8 +243,7 @@ private class ChevronMouseEvents extends MouseAdapter
 
 	 String path = "flags/additional/" + _AdditionalIcons[i] + ".png";
 
-	 Image raw = BoardImage.getImage(path);
-	 Icon icon = BoardImage.resizeIcon(raw, 22, 22);
+	 Icon icon = BoardImage.getIcon(path,22,22);
 	 item.setIcon(icon);
 
 	 item.addActionListener(new FlagContextMenuEvents());

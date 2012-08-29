@@ -300,6 +300,8 @@ private void computeAny(BudaBubble bb,double tx0,double ty0,double tx1,double ty
       case BORDER_NS :
 	 if (close(yv,-1) || close(yv,1)) return;
 	 break;
+      default:
+	 break;
     }
 
    rel_offset.setLocation(base_offset.getX(),base_offset.getY());

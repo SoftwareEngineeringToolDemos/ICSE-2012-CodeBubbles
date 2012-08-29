@@ -385,8 +385,12 @@ private void setupElements()
    // should this be incremental to avoid jumping?
 
    region_set = new TreeSet<BconRegion>(new RegionComparator());
+   
+   String cnm = for_class;
+   int idx = cnm.indexOf("<");
+   if (idx > 0) cnm = cnm.substring(0,idx);
 
-   List<BumpLocation> locs = bump_client.findAllDeclarations(for_project,for_class);
+   List<BumpLocation> locs = bump_client.findAllDeclarations(for_project,cnm);
    if (locs != null) {
       for (BumpLocation bl : locs) {
 	 BconRegion br = new BconRegionLocation(bale_file,bl);
@@ -986,6 +990,8 @@ private static class RegionRenderer extends DefaultListCellRenderer {
 	    c = hdrcolor;
 	    nam = rnm;
 	    break;
+	 default:
+	    break;
 	}
 
       if (pfx != null) nam = pfx + nam;
@@ -1173,6 +1179,8 @@ private String getButtonName(BconRegion br,BuenoType typ,boolean before)
 	 break;
       case NEW_JAVADOC_COMMENT :
 	 rslt += "JavaDoc Comment";
+	 break;
+      default:
 	 break;
     }
    if (before) rslt += " before ";

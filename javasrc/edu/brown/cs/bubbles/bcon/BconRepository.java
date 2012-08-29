@@ -67,7 +67,7 @@ BconRepository()
 {
    active_names = new HashMap<String,BconName>();
    check_names = null;
-   
+
    if (BoardSetup.getSetup().getLanguage() == BoardConstants.BoardLanguage.JAVA) {
       BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
       for (BassName bn : br.getAllNames()) {
@@ -88,7 +88,7 @@ BconRepository()
 	 if (active_names.containsKey(ky)) continue;
 	 BconName bcn = new BconName(bl);
 	 active_names.put(ky,bcn);
-       } 
+       }
     }
 
    BassFactory.getFactory().addPopupHandler(this);
@@ -142,7 +142,12 @@ private static class BconName extends BassNameBase {
       return "< OVERVIEW >";
     }
 
-   @Override public String getNameHead()	{ return getUserSymbolName(); }
+   @Override public String getNameHead() {
+      String nm = getUserSymbolName();
+      int idx = nm.indexOf("<");
+      if (idx > 0) nm = nm.substring(0,idx);
+      return nm;
+    }
 
    @Override public String getFullName()	{ return getNameHead() + ". " + getLocalName(); }
 
@@ -253,7 +258,7 @@ private static class PackageAction extends AbstractAction
 }
 
 @Override public void handleFileStarted(String proj,String file)		{ }
-@Override public void handleProjectOpened(String proj)                          { }
+@Override public void handleProjectOpened(String proj)				{ }
 
 
 

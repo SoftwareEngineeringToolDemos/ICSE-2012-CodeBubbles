@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -29,6 +29,7 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.bump.BumpConstants.BumpContractType;
 
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 
@@ -54,6 +55,21 @@ public BuenoClassDialog(BudaBubble source,Point locale,BuenoType typ,
 			    BuenoBubbleCreator newer)
 {
    super(source,locale,known,insert,newer,typ);
+   
+   String prj = property_set.getStringProperty(BuenoKey.KEY_PROJECT);
+   if (prj == null) prj = insertion_point.getProject();  
+   
+   BumpContractType bct = BumpClient.getBump().getContractType(prj);
+   
+   if (bct.useContractsForJava()) {
+      String imp = "import com.google.java.contract.*";
+      property_set.addToArrayProperty(BuenoKey.KEY_IMPORTS,imp);
+    }
+   
+   if (bct.useJunit()) {
+      String imp = "import org.junit.*";
+      property_set.addToArrayProperty(BuenoKey.KEY_IMPORTS,imp);    
+    }
 }
 
 
@@ -115,7 +131,7 @@ protected boolean checkParsing()
     }
 
    if (property_set.getStringProperty(BuenoKey.KEY_NAME) == null) return false;
-   
+
    String prj = property_set.getStringProperty(BuenoKey.KEY_PROJECT);
    if (prj == null) prj = insertion_point.getProject();
    String pkg = property_set.getStringProperty(BuenoKey.KEY_PACKAGE);

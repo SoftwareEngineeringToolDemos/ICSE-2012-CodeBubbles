@@ -212,6 +212,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case INTERFACE :
       case THROWABLE :
 	 return "< BODY OF " + super.getLocalName() + " >";
+      default:
+	 break;
     }
 
    return super.getLocalName();
@@ -233,6 +235,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 int idx = nm.indexOf("<");
 	 if (idx > 0) nm = nm.substring(0,idx);
 	 return nm;			// we add <PREFIX> or <BODY> for classes
+      default:
+	 break;
     }
 
    return super.getNameHead();
@@ -254,6 +258,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case FILE :
       case MODULE :
 	 return getNameHead() + ". " + getLocalName();
+      default:
+	 break;
     }
 
    return super.getFullName();
@@ -343,6 +349,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
    switch (name_type) {
       case FILE :
 	 return "Show file bubble for " + getNameHead();
+      default:
+	 break;
     }
 
    return null;
@@ -362,6 +370,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case CONSTRUCTOR :
       case METHOD :
 	 return appropriate_icon;
+      default:
+	 break;
    }
 
    return null;

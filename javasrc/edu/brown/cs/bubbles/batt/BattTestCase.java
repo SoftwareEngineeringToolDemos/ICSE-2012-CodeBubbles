@@ -33,7 +33,7 @@ import org.w3c.dom.*;
 import java.util.*;
 
 
-class BattTestCase implements BattConstants, Comparable<BattTestCase>
+class BattTestCase implements BattConstants, BattConstants.BattTest, Comparable<BattTestCase>
 {
 
 
@@ -303,10 +303,10 @@ private static class CountData {
 
    CountData(Element e) {
       method_data = new HashMap<String,MethodCountData>();
-   
+
       for (Element me : IvyXml.children(e,"METHOD")) {
-         MethodCountData mcd = new MethodCountData(me);
-         method_data.put(mcd.getName(),mcd);
+	 MethodCountData mcd = new MethodCountData(me);
+	 method_data.put(mcd.getName(),mcd);
        }
     }
 
@@ -339,9 +339,10 @@ private static class CountData {
 	  }
        }
 
-      if (mcd == null) return UseMode.NONE;
-      if (mcd.getTopCount() > 0) return UseMode.DIRECT;
-      if (mcd.getCalledCount() > 0) return UseMode.INDIRECT;
+      if (mcd != null) {
+	 if (mcd.getTopCount() > 0) return UseMode.DIRECT;
+	 if (mcd.getCalledCount() > 0) return UseMode.INDIRECT;
+       }
       return UseMode.NONE;
     }
 
@@ -377,13 +378,13 @@ private static class MethodCountData {
       calls_counts = new HashMap<String,Integer>();
       block_data = new HashMap<Integer,BlockCountData>();
       for (Element be : IvyXml.children(e,"CALLS")) {
-         int ct = IvyXml.getAttrInt(be,"CALLCOUNT");
-         String nm = computeMethodName(be);
-         calls_counts.put(nm,ct);
+	 int ct = IvyXml.getAttrInt(be,"CALLCOUNT");
+	 String nm = computeMethodName(be);
+	 calls_counts.put(nm,ct);
        }
       for (Element be : IvyXml.children(e,"BLOCK")) {
-         BlockCountData bcd = new BlockCountData(be);
-         block_data.put(bcd.getBlockIndex(),bcd);
+	 BlockCountData bcd = new BlockCountData(be);
+	 block_data.put(bcd.getBlockIndex(),bcd);
        }
     }
 

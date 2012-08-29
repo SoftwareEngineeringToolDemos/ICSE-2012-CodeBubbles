@@ -504,6 +504,8 @@ private class RemoteClient {
       
       MintDefaultReply mdr = new MintDefaultReply();
       mint_control.send(xw.toString(),mdr,MINT_MSG_FIRST_NON_NULL);
+      xw.close();
+      
       Element xml = mdr.waitForXml();
       if (IvyXml.isElement(xml,"RESULT")) {
          return IvyXml.getAttrLong(xml,"VALUE");
@@ -521,7 +523,7 @@ private class RemoteClient {
       
       xw.begin("BNOTE");
       xw.field("CMD","ENTER");
-
+   
       for (Map.Entry<String,Object> ent : values.entrySet()) {
          String k = ent.getKey();
          if (!field_strings.contains(k)) continue;
@@ -545,6 +547,7 @@ private class RemoteClient {
       
       MintDefaultReply mdr = new MintDefaultReply();
       mint_control.send(xw.toString(),mdr,MINT_MSG_FIRST_NON_NULL);
+      xw.close();
       Element xml = mdr.waitForXml();
       if (IvyXml.isElement(xml,"RESULT")) {
          Element txml = IvyXml.getChild(xml,"TASK");

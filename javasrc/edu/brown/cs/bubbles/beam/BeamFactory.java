@@ -415,7 +415,7 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
       Map<String,ProblemFlag> mpf = new HashMap<String,ProblemFlag>();
       flag_map = mpf;
       for (BumpProblem bp : BumpClient.getBump().getAllProblems()) {
-	 addFlags(bp,mpf);
+         addFlags(bp,mpf);
        }
     }
 
@@ -423,17 +423,17 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
       ProblemFlag pf = null;
       ProblemFlag pf1 = null;
       switch (bp.getErrorType()) {
-	 case ERROR :
-	 case FATAL :
-	    pf = error_flag;
-	    pf1 = error1_flag;
-	    break;
-	 case WARNING :
-	    pf = warning_flag;
-	    pf1 = warning1_flag;
-	    break;
-	 default :
-	    return;
+         case ERROR :
+         case FATAL :
+            pf = error_flag;
+            pf1 = error1_flag;
+            break;
+         case WARNING :
+            pf = warning_flag;
+            pf1 = warning1_flag;
+            break;
+         default :
+            return;
        }
       BassName bn = BassFactory.getFactory().findBubbleName(bp.getFile(),bp.getStart());
       if (bn == null) return;
@@ -444,10 +444,10 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
       if (pr == null || pnm == null) return;
       pnm = pr + ":." + pnm;
       while (pnm != null) {
-	addFlag(mpf,pnm,pf);
-	int idx1 = pnm.lastIndexOf(".");
-	if (idx1 < 0) break;
-	pnm = pnm.substring(0,idx1);
+        addFlag(mpf,pnm,pf);
+        int idx1 = pnm.lastIndexOf(".");
+        if (idx1 < 0) break;
+        pnm = pnm.substring(0,idx1);
       }
    }
 

@@ -42,7 +42,6 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 import org.w3c.dom.Element;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -65,7 +64,7 @@ private File    base_file;
 private boolean is_saved;
 private Map<String,String> config_attrs;
 
-private static AtomicInteger launch_counter = new AtomicInteger(1);
+private static IdCounter launch_counter = new IdCounter();
 
 
 
@@ -79,7 +78,7 @@ private static AtomicInteger launch_counter = new AtomicInteger(1);
 PybaseLaunchConfig(String nm)
 {
    config_name = nm;
-   config_number = launch_counter.getAndIncrement();
+   config_number = launch_counter.nextValue();
    config_id = "LAUNCH_" + Integer.toString(config_number);
    config_attrs = new HashMap<String,String>();
    base_file = null;
@@ -91,12 +90,9 @@ PybaseLaunchConfig(Element xml)
 {
    config_name = IvyXml.getAttrString(xml,"NAME");
    config_number = IvyXml.getAttrInt(xml,"ID");
-   for ( ; ; ) {
-      int iv = launch_counter.get();
-      if (iv > config_number) break;
-      if (launch_counter.compareAndSet(iv,config_number+1)) break;
-    }
+   launch_counter.noteValue(config_number);
    config_id = "LAUNCH+" + Integer.toString(config_number);
+   
    config_attrs = new HashMap<String,String>();
    for (Element ae : IvyXml.children(xml,"ATTR")) {
       config_attrs.put(IvyXml.getAttrString(ae,"KEY"),IvyXml.getAttrString(ae,"VALUE"));
@@ -112,7 +108,7 @@ PybaseLaunchConfig(Element xml)
 PybaseLaunchConfig(String nm,PybaseLaunchConfig orig)
 {
    config_name = nm;
-   config_number = launch_counter.getAndIncrement();
+   config_number = launch_counter.nextValue();
    config_id = "LAUNCH_" + Integer.toString(config_number);
    config_attrs = new HashMap<String,String>(orig.config_attrs);
    base_file = orig.base_file;

@@ -161,6 +161,7 @@ private void updateProject()
    
    BumpClient bc = BumpClient.getBump();
    bc.editProject(project_name,xw.toString());
+   xw.close();
 }
 
 

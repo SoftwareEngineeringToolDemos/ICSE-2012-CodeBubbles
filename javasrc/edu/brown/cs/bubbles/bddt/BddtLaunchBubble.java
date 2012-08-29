@@ -46,8 +46,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
+
 
 
 class BddtLaunchBubble extends BudaBubble implements BddtConstants, BudaConstants, BassConstants,
@@ -156,6 +157,8 @@ private void setupPanel()
 	  }
        }
     }
+   Collections.sort(starts);
+ 
    start_class = null;
    arg_area = null;
    vmarg_area = null;
@@ -170,6 +173,15 @@ private void setupPanel()
       case JAVA_APP :
 	 start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
 	 start_class.setEditable(true);
+	 if (launch_config.getMainClass() == null) {
+	    String s = (String) start_class.getSelectedItem();
+	    if (s != null) {
+	       if (edit_config == null) edit_config = launch_config;
+	       if (edit_config != null && start_class != null) {
+		  edit_config = edit_config.setMainClass(s);
+	        }
+	     }
+	  }
 	 stop_in_main = pnl.addBoolean("Stop in Main",launch_config.getStopInMain(),this);
 	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
 	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
@@ -184,6 +196,8 @@ private void setupPanel()
 	 host_name = pnl.addTextField("Remote Host",launch_config.getRemoteHost(),null,this);
 	 port_number = pnl.addNumericField("Remote Port",
 	       1000,65536,launch_config.getRemotePort(),this);
+	 break;
+      default:
 	 break;
     }
    pnl.addSeparator();

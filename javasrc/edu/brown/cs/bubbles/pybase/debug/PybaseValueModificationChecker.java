@@ -89,10 +89,10 @@ PybaseValueModificationChecker()			{ }
 public synchronized void verifyModified(PybaseDebugStackFrame frame, PybaseDebugVariable[] newFrameVariables)
 {
    synchronized(lock) {
-      Map<String, PybaseDebugStackFrame> threadIdCache = cache.get(frame.getThreadId());
+      Map<String, PybaseDebugStackFrame> threadIdCache = cache.get(frame.getThreadRemoteId());
       if(threadIdCache == null){
 	 threadIdCache = new HashMap<String, PybaseDebugStackFrame>();
-	 cache.put(frame.getThreadId(), threadIdCache);
+	 cache.put(frame.getThreadRemoteId(), threadIdCache);
        }
 
       PybaseDebugStackFrame cacheFrame = threadIdCache.get(frame.getId());
@@ -125,7 +125,7 @@ synchronized void onlyLeaveThreads(Collection<PybaseDebugThread> threads)
    synchronized(lock){
       HashSet<String> ids = new HashSet<String>();
       for (PybaseDebugThread thread : threads) {
-	 ids.add(thread.getId());
+	 ids.add(thread.getRemoteId());
        }
       //Must iterate in a copy.
       Set<String> keySet = new HashSet<String>(cache.keySet());

@@ -82,7 +82,7 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 	 case INTERFACE :
 	 case ENUM :
 	 case THROWABLE :
-         case MODULE :
+	 case MODULE :
 	    key = bl.getSymbolName();
 	    key = key + ".<PREFIX>";
 	    break;
@@ -189,7 +189,7 @@ private void setupStack()
 	 case INTERFACE :
 	 case ENUM :
 	 case THROWABLE :
-         case MODULE :
+	 case MODULE :
 	    TypeStackEntry te = new TypeStackEntry(locs);
 	    entries.add(te);
 	    break;
@@ -274,15 +274,13 @@ private abstract class GenericStackEntry implements BussEntry {
     }
 
    @Override public Component getCompactComponent()	{ return compact_fragment; }
-   @Override public String getCompactText()		{ return null; }
+
 
    @Override public Component getExpandComponent() {
       if (full_fragment == null) full_fragment = createFullFragment();
       return full_fragment;
     }
    @Override public String getExpandText()		{ return null; }
-
-   @Override public Component getHoverComponent()	{ return null; }
 
    @Override public BudaBubble getBubble() {
       if (item_bubble == null) {

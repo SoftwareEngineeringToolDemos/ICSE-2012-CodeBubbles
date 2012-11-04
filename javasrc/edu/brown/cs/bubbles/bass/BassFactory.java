@@ -124,8 +124,8 @@ public static synchronized void setup()
    BudaRoot.addBubbleConfigurator("BASS",new BassConfigurator());
    package_explorers = new HashMap<BudaBubbleArea,BassBubble>();
 
-   BudaRoot.registerMenuButton("Package Explorer",new PackageExplorerButton());
-   BudaRoot.registerMenuButton("Text Search",new TextSearchButton());
+   BudaRoot.registerMenuButton("Package Explorer",new PackageExplorerButton(),"Add/Remove the package explorer panel for easier browsing");
+   BudaRoot.registerMenuButton("Text Search",new TextSearchButton(),"Search for a string or pattern in all files");
 
    repository_map = new HashMap<BassRepository,BassTreeModelBase>();
 
@@ -191,8 +191,6 @@ public static void registerRepository(SearchType st,BassRepository br)
 
 public static void waitForNames()
 {
-
-
    bass_repository.waitForNames();
 }
 
@@ -285,7 +283,7 @@ public BassBubble createSearch(SearchType type,String proj,String pfx)
 }
 
 /**
- *	returns the package explorer if it exists, othewise null
+ *	returns the package explorer if it exists, otherwise null
  */
 
 public BudaBubble getPackageExplorer(BudaBubbleArea bba)
@@ -295,7 +293,7 @@ public BudaBubble getPackageExplorer(BudaBubbleArea bba)
 
 
 /**
- *	Create a buttle that can be used as the package explorer.
+ *	Create a bubble that can be used as the package explorer.
  **/
 
 public BassBubble createPackageExplorer(BudaBubbleArea bba)
@@ -420,7 +418,6 @@ private static class PackageExplorerButton implements BudaConstants.ButtonListen
        }
 
       peb = the_factory.createPackageExplorer(bba);
-      package_explorers.put(bba,peb);
 
       BudaRoot br = BudaRoot.findBudaRoot(bba);
       if (br == null) return;

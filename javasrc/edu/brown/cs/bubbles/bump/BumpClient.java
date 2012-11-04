@@ -197,7 +197,7 @@ public void useWebMint(String key,String url)
  **/
 
 public abstract String getName();
-
+public abstract String getServerName();
 
 
 
@@ -259,7 +259,7 @@ private void startIDE()
 
 
 
-@SuppressWarnings("unused") 
+@SuppressWarnings("unused")
 private void createInitialProject()
 {
    BoardSetup bs = BoardSetup.getSetup();
@@ -592,41 +592,41 @@ private class FileGetServerHandler implements MintHandler {
       File f = null;
       if (kind != null && kind.equals("BDOC")) f = BoardSetup.getDocumentationFile();
       else if (kind != null && kind.equals("NOTE")) {
-         File f1 = BoardSetup.getBubblesWorkingDirectory();
-         File f2 = new File(filenm);
-         f = new File(f1,f2.getName());
+	 File f1 = BoardSetup.getBubblesWorkingDirectory();
+	 File f2 = new File(filenm);
+	 f = new File(f1,f2.getName());
        }
       else f = new File(filenm);
       BoardLog.logD("BUMP","Remote file request " + f + " " + filenm + " " + id);
-   
+
       try {
-         FileInputStream fr = new FileInputStream(f);
-         long len = f.length();
-         int pos = 0;
-         byte [] buf = new byte[40960];
-         while (pos < len) {
-            int ct = fr.read(buf,0,buf.length);
-            MintDefaultReply mr = new MintDefaultReply();
-            IvyXmlWriter xw = new IvyXmlWriter();
-            xw.begin("BUMPFILE");
-            xw.field("ID",id);
-            xw.field("POS",pos);
-            xw.field("LEN",len);
-            xw.field("CT",ct);
-            xw.bytesElement("CNTS",buf,0,ct);
-            xw.end("BUMPFILE");
-            mint_control.send(xw.toString(),mr,MintConstants.MINT_MSG_FIRST_NON_NULL);
-            xw.close();
-            mr.waitFor();
-            pos += ct;
-          }
-         fr.close();
-         msg.replyTo("<OK/>");
+	 FileInputStream fr = new FileInputStream(f);
+	 long len = f.length();
+	 int pos = 0;
+	 byte [] buf = new byte[40960];
+	 while (pos < len) {
+	    int ct = fr.read(buf,0,buf.length);
+	    MintDefaultReply mr = new MintDefaultReply();
+	    IvyXmlWriter xw = new IvyXmlWriter();
+	    xw.begin("BUMPFILE");
+	    xw.field("ID",id);
+	    xw.field("POS",pos);
+	    xw.field("LEN",len);
+	    xw.field("CT",ct);
+	    xw.bytesElement("CNTS",buf,0,ct);
+	    xw.end("BUMPFILE");
+	    mint_control.send(xw.toString(),mr,MintConstants.MINT_MSG_FIRST_NON_NULL);
+	    xw.close();
+	    mr.waitFor();
+	    pos += ct;
+	  }
+	 fr.close();
+	 msg.replyTo("<OK/>");
        }
       catch (IOException e) {
-         msg.replyTo("<FAIL/>");
+	 msg.replyTo("<FAIL/>");
        }
-   
+
     }
 
 }	// end of inner class FileGetServerHandler
@@ -707,14 +707,14 @@ public Element getElisionForFile(File f)
     }
 
    IvyXmlWriter fxw = new IvyXmlWriter();
-   
+
    fxw.bytesElement("FILE",b);
 
    waitForIDE();
 
    Element rslt = getXmlReply("FILEELIDE",null,null,fxw.toString(),0);
    fxw.close();
-   
+
    return rslt;
 }
 
@@ -802,52 +802,52 @@ public Element getProjectData(String name,boolean fil,boolean path,boolean cls,b
 public BumpContractType getContractType(String proj)
 {
    if (proj == null) return new ContractData(null);
-   
+
    waitForIDE();
-   
+
    String qy = "OPTIONS='true'";
-   
+
    Element xml = getXmlReply("OPENPROJECT",proj,qy,null,0);
-   
+
    if (!IvyXml.isElement(xml,"RESULT")) return null;
-   
+
    Element pe = IvyXml.getChild(xml,"PROJECT");
-   
+
    return new ContractData(pe);
 }
 
 
 private class ContractData implements BumpContractType {
-   
+
    private boolean use_cofoja;
    private boolean use_junit;
    private boolean use_assertions;
-   
+
    ContractData(Element xml) {
       use_cofoja = false;
       use_junit = false;
       use_assertions = false;
       for (Element e : IvyXml.children(xml,"PROPERTY")) {
-         String q = IvyXml.getAttrString(e,"QUAL");
-         String k = IvyXml.getAttrString(e,"NAME");
-         if (q.equals("edu.brown.cs.bubbles.bedrock")) {
-            String v = IvyXml.getAttrString(e,"VALUE");
-            boolean fg = false;
-            if (v.startsWith("t") || v.startsWith("T") || v.startsWith("y") || v.startsWith("Y") ||
-                  v.startsWith("1")) 
-               fg = true;
-            if (k.equals("useContractsForJava")) use_cofoja = fg;
-            else if (k.equals("useJunit")) use_junit = fg;
-            else if (k.equals("useAssertions")) use_assertions = fg;
-          }
+	 String q = IvyXml.getAttrString(e,"QUAL");
+	 String k = IvyXml.getAttrString(e,"NAME");
+	 if (q.equals("edu.brown.cs.bubbles.bedrock")) {
+	    String v = IvyXml.getAttrString(e,"VALUE");
+	    boolean fg = false;
+	    if (v.startsWith("t") || v.startsWith("T") || v.startsWith("y") || v.startsWith("Y") ||
+		  v.startsWith("1"))
+	       fg = true;
+	    if (k.equals("useContractsForJava")) use_cofoja = fg;
+	    else if (k.equals("useJunit")) use_junit = fg;
+	    else if (k.equals("useAssertions")) use_assertions = fg;
+	  }
        }
     }
-   
-   @Override public boolean useContractsForJava()       { return use_cofoja; }
-   @Override public boolean useJunit()                  { return use_junit; }
-   @Override public boolean enableAssertions()          { return use_assertions; }
-   
-}       // end of inner class ContractData
+
+   @Override public boolean useContractsForJava()	{ return use_cofoja; }
+   @Override public boolean useJunit()			{ return use_junit; }
+   @Override public boolean enableAssertions()		{ return use_assertions; }
+
+}	// end of inner class ContractData
 
 
 
@@ -891,14 +891,14 @@ public void editProject(String name,String xml)
 
 
 
-public void createProject()
+public boolean createProject()
 {
    waitForIDE();
 
-   sendMessage("CREATEPROJECT",null,null,null);
+   return getStatusReply("CREATEPROJECT",null,null,null,0);
 }
 
-public void createProject(String nm,File dir)
+public boolean createProject(String nm,File dir)
 {
    waitForIDE();
 
@@ -907,7 +907,7 @@ public void createProject(String nm,File dir)
       q += " DIR='" + dir.getPath() + "'";
     }
 
-   sendMessage("CREATEPROJECT",null,q,null);
+   return getStatusReply("CREATEPROJECT",null,q,null,0);
 }
 
 
@@ -964,7 +964,7 @@ public List<BumpLocation> findMethods(String proj,String pat,boolean refs,boolea
    else sw.write(" FOR='METHOD'");
    if (system) sw.write(" SYSTEM='T'");
 
-   Element xml = getXmlReply("JAVASEARCH",proj,sw.toString(),null,0);
+   Element xml = getXmlReply("PATTERNSEARCH",proj,sw.toString(),null,0);
 
    return getSearchResults(proj,xml,false);
 }
@@ -1008,7 +1008,7 @@ public List<BumpLocation> findFields(String proj,String pat,boolean refs,boolean
    sw.write("' DEFS='" + defs + "' REFS='" + refs + "'");
    sw.write(" FOR='FIELD'");
 
-   Element xml = getXmlReply("JAVASEARCH",proj,sw.toString(),null,0);
+   Element xml = getXmlReply("PATTERNSEARCH",proj,sw.toString(),null,0);
 
    return getSearchResults(proj,xml,false);
 }
@@ -1065,6 +1065,13 @@ public List<BumpLocation> findCompilationUnit(String proj,File fil,String clsn)
 
 public List<BumpLocation> findClassInitializers(String proj,String clsn,File file)
 {
+   return findClassInitializers(proj,clsn,file,false);
+}
+
+
+
+public List<BumpLocation> findClassInitializers(String proj,String clsn,File file,boolean main)
+{
    waitForIDE();
 
    clsn = localFixupName(clsn);
@@ -1075,6 +1082,8 @@ public List<BumpLocation> findClassInitializers(String proj,String clsn,File fil
    String flds = "STATICS='T'";
    if (clsn != null) flds += " CLASS='" + clsn + "'";
    if (filn != null) flds += " FILE='" + filn + "'";
+   if (main) flds += " MAIN='TRUE'";
+   
    Element xml = getXmlReply("FINDREGIONS",proj,flds,null,0);
 
    return getSearchResults(proj,xml,false);
@@ -1124,7 +1133,7 @@ public List<BumpLocation> findClassDefinition(String proj,String clsn)
    sw.write("' DEFS='true' REFS='false'");
    sw.write(" FOR='TYPE'");
 
-   Element xml = getXmlReply("JAVASEARCH",proj,sw.toString(),null,0);
+   Element xml = getXmlReply("PATTERNSEARCH",proj,sw.toString(),null,0);
 
    return getSearchResults(proj,xml,false);
 }
@@ -1147,7 +1156,7 @@ public List<BumpLocation> findPackages(String proj,String nm)
    sw.write("' DEFS='true' REFS='true'");
    sw.write(" FOR='PACKAGE'");
 
-   Element xml = getXmlReply("JAVASEARCH",proj,sw.toString(),null,0);
+   Element xml = getXmlReply("PATTERNSEARCH",proj,sw.toString(),null,0);
 
    return getSearchResults(proj,xml,false);
 }
@@ -1190,7 +1199,7 @@ public List<BumpLocation> findTypes(String proj,String nm)
    sw.write("' DEFS='true' REFS='false'");
    sw.write(" FOR='TYPE'");
 
-   Element xml = getXmlReply("JAVASEARCH",proj,sw.toString(),null,0);
+   Element xml = getXmlReply("PATTERNSEARCH",proj,sw.toString(),null,0);
 
    return getSearchResults(proj,xml,false);
 }
@@ -1207,7 +1216,7 @@ public List<BumpLocation> findAllClasses(String nm)
    sw.write("' DEFS='true' REFS='false' SYSTEM='true'");
    sw.write(" FOR='CLASS'");
 
-   Element xml = getXmlReply("JAVASEARCH",null,sw.toString(),null,0);
+   Element xml = getXmlReply("PATTERNSEARCH",null,sw.toString(),null,0);
 
    return getSearchResults(null,xml,false);
 }
@@ -1233,7 +1242,7 @@ public List<BumpLocation> findAnnotations(String proj,String nm,boolean def,bool
    sw.write("' DEFS='" + Boolean.toString(def) + "' REFS='" + Boolean.toString(ref) + "'");
    sw.write(" FOR='ANNOTATION'");
 
-   Element xml = getXmlReply("JAVASEARCH",proj,sw.toString(),null,0);
+   Element xml = getXmlReply("PATTERNSEARCH",proj,sw.toString(),null,0);
 
    return getSearchResults(proj,xml,false);
 }
@@ -1407,12 +1416,17 @@ public Collection<BumpLocation> textSearch(String proj,String text,boolean liter
 
 public List<BumpLocation> findReferences(String proj,File file,int spos,int epos)
 {
+   return findReferences(proj,file,spos,epos,0);
+}
+
+public List<BumpLocation> findReferences(String proj,File file,int spos,int epos,long delay)
+{
    waitForIDE();
 
    String q = "FILE='" + file.getPath() + "' START='" + spos + "' END='" + epos + "'";
    q += " EXACT='true' EQUIV='true'";
 
-   Element xml = getXmlReply("FINDREFERENCES",proj,q,null,0);
+   Element xml = getXmlReply("FINDREFERENCES",proj,q,null,delay);
 
    if (!IvyXml.isElement(xml,"RESULT")) return null;
 
@@ -1440,7 +1454,13 @@ public void openEclipseEditor(String proj, File file, int lineNumber)
  **/
 
 public List<BumpLocation> findRWReferences(String proj,File file,int spos,int epos,
-						  boolean write)
+	 boolean write)
+{
+   return findRWReferences(proj,file,spos,epos,write,0);
+}
+
+public List<BumpLocation> findRWReferences(String proj,File file,int spos,int epos,
+						  boolean write,long delay)
 {
    waitForIDE();
 
@@ -1449,7 +1469,7 @@ public List<BumpLocation> findRWReferences(String proj,File file,int spos,int ep
    else q+= " RONLY='T'";
    q += " EXACT='true' EQUIV='true'";
 
-   Element xml = getXmlReply("FINDREFERENCES",proj,q,null,0);
+   Element xml = getXmlReply("FINDREFERENCES",proj,q,null,delay);
 
    if (!IvyXml.isElement(xml,"RESULT")) return null;
 
@@ -1466,11 +1486,17 @@ public List<BumpLocation> findRWReferences(String proj,File file,int spos,int ep
 
 public List<BumpLocation> findDefinition(String proj,File file,int spos,int epos)
 {
+   return findDefinition(proj,file,spos,epos,0);
+}
+
+
+public List<BumpLocation> findDefinition(String proj,File file,int spos,int epos,long delay)
+{
    waitForIDE();
 
    String q = "FILE='" + file.getPath() + "' START='" + spos + "' END='" + epos + "'";
 
-   Element xml = getXmlReply("FINDDEFINITIONS",proj,q,null,0);
+   Element xml = getXmlReply("FINDDEFINITIONS",proj,q,null,delay);
 
    if (!IvyXml.isElement(xml,"RESULT")) return null;
 
@@ -2174,7 +2200,7 @@ Element getNewRunConfiguration(String name,String clone,BumpLaunchConfigType typ
 
 Element editRunConfiguration(String id,String prop,String val)
 {
-   String q = "LAUNCH='" + id + "' PROP='" + prop + "' VALUE='" + val + "'";
+   String q = "LAUNCH='" + id + "' PROP='" + prop + "' VALUE='" + IvyXml.xmlSanitize(val) + "'";
    Element e = getXmlReply("EDITRUNCONFIG",null,q,null,0);
    return e;
 }
@@ -2230,8 +2256,21 @@ public BumpProcess startDebug(BumpLaunchConfig cfg,String id)
    if (cfg == null) return null;
 
    String q = "NAME='" + cfg.getId() +"' MODE='debug'";
+   
+   String xtr = null;
+   switch (cfg.getConfigType()) {
+      case JAVA_APP :
+      case JUNIT_TEST :
+	 xtr = run_manager.startDebugArgs(id);
+	 break;
+      case REMOTE_JAVA :
+	 break;
+      case PYTHON :
+	 break;
+      case UNKNOWN :
+	 break;
+   }
 
-   String xtr = run_manager.startDebugArgs(id);
    String ctr = cfg.getContractArgs();
    if (ctr != null) {
       if (xtr == null) xtr = ctr;
@@ -2660,7 +2699,7 @@ private static class ReplyHandler extends MintDefaultReply {
 	    if (stk != null) {
 	       String txt = IvyXml.getTextElement(xml,"MESSAGE");
 	       String id = IvyXml.getTextElement(xml,"EXCEPTION");
-	       BoardLog.logE("BEDROCK",txt,id,stk);
+	       BoardLog.logE(default_client.getServerName(),txt,id,stk);
 	     }
 	  }
        }

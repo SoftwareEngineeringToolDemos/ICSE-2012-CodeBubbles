@@ -169,6 +169,8 @@ public int getStartLine(IDocument doc)
  */
 public static int getStartLine(AbstractToken generator,IDocument doc)
 {
+   if (generator == null) return 0;
+   
    return getStartLine(generator, doc, generator.getRepresentation());
 }
 
@@ -219,6 +221,8 @@ public int getStartCol(IDocument doc)
    if (start_col >= 0) {
       return start_col;
     }
+   if (msg_generator == null) return 0;
+   
    start_col = getStartCol(msg_generator, doc, getShortMessageStr());
    return start_col;
 
@@ -264,7 +268,8 @@ public static int getStartCol(AbstractToken generator,IDocument doc,String short
 public static int getStartCol(AbstractToken generator,IDocument doc,String shortMessage,
 				 boolean returnAsName)
 {
-
+   if (generator == null) return 0;
+   
    // not import...
    if (!generator.isImport()) {
       return generator.getColDefinition();

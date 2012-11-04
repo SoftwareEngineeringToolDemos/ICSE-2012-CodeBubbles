@@ -172,12 +172,41 @@ public SimpleNode getNameOrNameTokAst()
 
 
 
+public SimpleNode getNameOrNameTokAst(AbstractToken an) 
+{
+   if (an == null) return getNameOrNameTokAst();
+   
+   if (token_ast == null) return null;
+   if (token_ast instanceof Name) return token_ast;
+   if (token_ast instanceof NameTok) return token_ast;
+   if (token_ast instanceof Attribute) {
+      Attribute att = (Attribute) token_ast;
+      SimpleNode s1 = att.attr;
+      SimpleNode s2 = att.value;
+      if (s2 != null && s2 instanceof Name) {
+	 Name n2 = (Name) s2;
+	 String nx = n2.id;
+	 String ny = an.getRepresentation();
+	 if (nx.equals(ny)) return s2;
+      }
+	
+      return s1;
+   }
+   if (token_ast instanceof FunctionDef) return ((FunctionDef) token_ast).name;
+   if (token_ast instanceof ClassDef) return ((ClassDef) token_ast).name;
+   return null;
+}  
+   
+ 
 public static SimpleNode getNameOrNameTokAst(SimpleNode sn)
 {
    if (sn == null) return null;
    if (sn instanceof Name) return sn;
    if (sn instanceof NameTok) return sn;
-   if (sn instanceof Attribute) return ((Attribute) sn).attr;
+   if (sn instanceof Attribute) {
+     //  return ((Attribute) sn ).attr;
+      return null;
+    }
    if (sn instanceof FunctionDef) return ((FunctionDef) sn).name;
    return null;
 }

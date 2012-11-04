@@ -510,7 +510,7 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
       setOpaque(false);
       setDragEnabled(true);
       setTransferHandler(new Transferer());
-      setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
 	 TableColumn tc = e.nextElement();
 	 tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));

@@ -109,10 +109,12 @@ enum DebugReason {
 
 String CONFIG_FILE = ".launches";
 
-String ATTR_PROJECT = "org.eclipse.jdt.launching.PROJECT_ATTR";
-String ATTR_ARGS = "org.eclipse.jdt.launching.PROGRAM_ARGUMENTS";
-String ATTR_PYTHON_ARGS = "org.eclipse.jdt.launching.VM_ARGUMENTS";
-String ATTR_MODULE = "org.eclipse.jdt.launching.MAIN_TYPE";
+String ATTR_PROJECT = "PROJECT_ATTR";
+String ATTR_ARGS = "PROGRAM_ARGUMENTS";
+String ATTR_PYTHON_ARGS = "VM_ARGUMENTS";
+String ATTR_MODULE = "MAIN_TYPE";
+String ATTR_WD = "WD";
+String ATTR_ENCODING = "ENCODING";
 
 
 
@@ -138,6 +140,11 @@ interface CommandResponseListener {
 
 String BREAKPOINT_FILE = ".breakpoints";
 
+enum BreakType {
+   NONE,
+   LINE,
+   EXCEPTION
+}
 
 
 /********************************************************************************/
@@ -157,8 +164,8 @@ public class ThreadReturn {
       stop_reason = r;
       frms = new ArrayList<PybaseDebugStackFrame>(frms);
     }
-   
-   public PybaseDebugThread getThread()			{ return for_thread; }
+
+   public PybaseDebugThread getThread() 		{ return for_thread; }
    public String getReason()				{ return stop_reason; }
    public List<PybaseDebugStackFrame> getFrames()	{ return thread_frames; }
 

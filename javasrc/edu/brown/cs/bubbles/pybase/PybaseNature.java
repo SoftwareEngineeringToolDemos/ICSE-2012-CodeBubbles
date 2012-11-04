@@ -53,8 +53,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 
 public class PybaseNature implements PybaseConstants {
@@ -66,13 +64,9 @@ public class PybaseNature implements PybaseConstants {
 /*										*/
 /********************************************************************************/
 
-private PybaseMain		pybase_main;
 private PybaseProject		the_project;
 private ASTManager ast_manager;
 private final PybasePathNature python_path_nature;
-
-private RebuildPythonNatureModules rebuild_job;
-private FutureTask<Boolean>	rebuild_task;
 
 private PybaseInterpreterType	interpreter_type;
 private Object			set_params_lock;
@@ -102,13 +96,10 @@ private static List<PybaseNature> all_natures = new ArrayList<PybaseNature>();
 
 PybaseNature(PybaseMain pm,PybaseProject proj)
 {
-   pybase_main = pm;
    set_params_lock = new Object();
    the_project = null;
    ast_manager = null;
    python_path_nature = new PybasePathNature(proj,this);
-   rebuild_job = new RebuildPythonNatureModules();
-   rebuild_task = null;
    if (proj != null) {
       setProject(proj);
       all_natures.add(this);
@@ -176,65 +167,14 @@ public String resolveModuleOnlyInProjectSources(String abspath,boolean addExtern
 public void rebuildPath()
 {
    clearCaches(true);
-   String paths = python_path_nature.getOnlyProjectPythonPathStr(true);
+
+   String paths = the_project.getProjectSourcePath();
+
    synchronized (set_params_lock) {
-      if (rebuild_task != null) rebuild_task.cancel(true);
-      rebuild_job.setParams(paths);
-
-      rebuild_task = new FutureTask<Boolean>(rebuild_job);
-      if (ast_manager == null) pybase_main.startTask(rebuild_task);
-      else pybase_main.startTaskDelayed(rebuild_task,20L);
-
-      while (ast_manager == null || ast_manager.getModulesManager() == null) {
-	 try {
-	    set_params_lock.wait(100);
-	  }
-	 catch (InterruptedException e) { }
-       }
-    }
-}
-
-/**
- * This is the job that is used to rebuild the python nature modules.
- *
- * @author Fabio
- */
-protected class RebuildPythonNatureModules implements Callable<Boolean> {
-
-   private volatile String submitted_paths;
-
-   private void setParams(String paths) {
-      submitted_paths = paths;
-    }
-
-   @Override public Boolean call() {
-      String paths;
-      paths = submitted_paths;
-
-      try {
-	 try {
-	    ASTManager tempastmanager = ast_manager;
-	    if (tempastmanager == null) {
-	       tempastmanager = new ASTManager();
-	     }
-	    synchronized (tempastmanager.getLock()) {
-	       ast_manager = tempastmanager;
-	       ast_manager.setProject(the_project,PybaseNature.this,false);
-	       tempastmanager.changePythonPath(paths, the_project);
-	       saveAstManager();
-	     }
-	    synchronized (set_params_lock) {
-	       set_params_lock.notifyAll();
-	    }
-	  }
-	 catch (Throwable e) {
-	    PybaseMain.logE("Problem setting up modules", e);
-	  }
-       }
-      catch (Exception e) {
-	 PybaseMain.logE("Problem setting up modules", e);
-       }
-      return Boolean.TRUE;
+      if (ast_manager == null) ast_manager = new ASTManager();
+      ast_manager.setProject(the_project,this,false);
+      ast_manager.changePythonPath(paths,the_project);
+      saveAstManager();
     }
 }
 
@@ -353,7 +293,7 @@ public void saveAstManager()
    File astOutputFile = getAstOutputFile();
    if (astOutputFile == null) return;
 
-   synchronized (ast_manager.getLock()) {
+   synchronized (this) {
       ast_manager.saveToFile(astOutputFile);
     }
 }
@@ -395,7 +335,6 @@ public AbstractInterpreterManager getRelatedInterpreterManager()
 public void clearCaches(boolean global)
 {
    interpreter_type = null;
-   python_path_nature.clearCaches();
    if (global) ModulesManager.clearCache();
 }
 

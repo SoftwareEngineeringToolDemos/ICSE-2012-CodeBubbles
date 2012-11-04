@@ -217,7 +217,8 @@ private class PerfEventHandler implements BumpRunEventHandler {
    @Override public void handleLaunchEvent(BumpRunEvent evt)		{ }
 
    @Override public void handleProcessEvent(BumpRunEvent evt) {
-      if (evt.getProcess() != launch_control.getProcess()) return;
+      if (evt.getProcess() != launch_control.getProcess()) 
+	 return;
       switch (evt.getEventType()) {
 	 case PROCESS_ADD :
 	    perf_model.clear();
@@ -259,10 +260,10 @@ private class PerfTable extends JTable implements BudaConstants.BudaBubbleOutput
    PerfTable(PerfModel mdl) {
       super(mdl);
       setOpaque(false);
-      setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-	 TableColumn tc = e.nextElement();
-	 tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
+         TableColumn tc = e.nextElement();
+         tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
        }
       cell_drawer = new CellDrawer[getColumnModel().getColumnCount()];
       setToolTipText("");
@@ -397,7 +398,7 @@ private class PerfModel extends AbstractTableModel {
       node_set = new ArrayList<PerfNode>();
       index_set = new HashMap<PerfNode,Integer>();
       unlock();
-      if (ln > 0) fireTableRowsDeleted(0,ln);
+      if (ln > 0) fireTableRowsDeleted(0,ln-1);
     }
 
    void lock()					{ model_lock.lock(); }

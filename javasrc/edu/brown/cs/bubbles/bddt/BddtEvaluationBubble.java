@@ -98,7 +98,7 @@ BddtEvaluationBubble(BddtLaunchControl ctrl)
    eval_table = new EvaluationTable(eval_model);
 
    JScrollPane scroll = new JScrollPane(eval_table);
-   scroll.setCursor(Cursor.getDefaultCursor());
+   BudaCursorManager.setCursor(scroll,Cursor.getDefaultCursor());
 
    frame_label = new JLabel();
    input_field = new JTextField();

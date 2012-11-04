@@ -37,6 +37,7 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkListener;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -91,6 +92,7 @@ private static BudaMenu 	bubble_menu = null;
 
 private static Map<String,BubbleConfigurator>	bubble_config;
 private static Map<String,PortConfigurator>	port_config;
+private static Map<String,HyperlinkListener>	hyperlink_config;
 
 private static DocBoxCreator	doc_creator = null;
 
@@ -139,6 +141,7 @@ static {
    bubble_config = new HashMap<String,BubbleConfigurator>();
    port_config = new HashMap<String,PortConfigurator>();
    bubble_flavor = new DataFlavor(BudaDragBubble.class,"Bubble");
+   hyperlink_config = new HashMap<String,HyperlinkListener>();
 
    port_config.put("BUDA",new DefaultPortConfigurator());
 
@@ -374,6 +377,48 @@ public void removeLink(BudaBubbleLink lnk)
    ba.removeLink(lnk);
 }
 
+
+/********************************************************************************/
+/*										*/
+/*	Help methods								*/
+/*										*/
+/********************************************************************************/
+
+private static Map<Component,BudaHelp> help_map;
+
+static {
+   help_map = new WeakHashMap<Component,BudaHelp>();
+}
+
+
+public static boolean showHelpTips()
+{
+   return BUDA_PROPERTIES.getBoolean(USE_HELP_TOOLTIPS);
+}
+
+
+public static void registerHelp(Component c,BudaHelpClient h)
+{
+   help_map.put(c,new BudaHelp(c,h));
+}
+
+
+
+public static void showHelp(MouseEvent e)
+{
+   if (e == null) e = last_mouse;
+   
+   Component c0 = SwingUtilities.getDeepestComponentAt((Component) e.getSource(),e.getX(),e.getY());
+
+   for (Component c = c0; c != null; c = c.getParent()) {
+      BudaHelp bh = help_map.get(c);
+      if (bh != null) {
+	 MouseEvent nme = SwingUtilities.convertMouseEvent((Component) e.getSource(),e,c);
+	 bh.simulateHover(nme);
+	 return;
+       }
+    }
+}
 
 
 /********************************************************************************/
@@ -679,10 +724,10 @@ public static void hideSearchBubble(Object src)
 	    c1 = ((JPopupMenu) c1).getInvoker();
 	    if (c1 == null) break;
 	 }
-         if (c1 == br.search_bubble) {
-            br.hideSearchBubble();
-            break;
-          }
+	 if (c1 == br.search_bubble) {
+	    br.hideSearchBubble();
+	    break;
+	  }
        }
     }
 }
@@ -818,14 +863,27 @@ public static BudaBubble createDocumentationBubble(String name)
 
 public static void registerMenuButton(String name,ButtonListener action)
 {
-   registerMenuButton(name, action, null);
+   registerMenuButton(name, action, null,null);
 }
 
 public static void registerMenuButton(String name,ButtonListener action, Icon icon)
 {
+   registerMenuButton(name,action,icon,null);
+}
+
+
+public static void registerMenuButton(String name,ButtonListener action,String tooltip)
+{
+   registerMenuButton(name,action,null,tooltip);
+}
+
+
+
+public static void registerMenuButton(String name,ButtonListener action, Icon icon,String tooltip)
+{
    if (name == null || name.length() == 0) return;
 
-   getBubbleMenu().addMenuItem(name,action,icon);
+   getBubbleMenu().addMenuItem(name,action,icon,tooltip);
 }
 
 
@@ -1020,8 +1078,8 @@ double getScaleFactor() 			{ return scale_factor; }
 void setScaleFactor(double sf)
 {
    Rectangle vr = bubble_view.getViewRect();
-   int cx = vr.x + vr.width / 2;
-   int cy = vr.y + vr.height / 2;
+   int cx = (int) ((vr.x + vr.width / 2)/scale_factor);
+   int cy = (int) ((vr.y + vr.height / 2)/scale_factor);
    setScaleFactor(sf,cx,cy);
 }
 
@@ -1031,10 +1089,11 @@ void setScaleFactor(double sf,int cx,int cy)
 {
    scale_factor = sf;
    bubble_area.setScaleFactor(sf);
-
+   // cx,cy are the center in the original coordinate system
+   
    Rectangle vr = bubble_view.getViewRect();
    int x = (int) (cx*scale_factor - vr.width/2.0);
-   x = (int)(cx - vr.width/2.0/scale_factor);
+   // x = (int)(cx - vr.width/2.0/scale_factor);
    int y = (int) (cy*scale_factor - vr.height/2.0);
    setViewport(x,y);
 }
@@ -1108,7 +1167,9 @@ private void setupGlobalActions()
    registerKeyAction(new SearchKeyHandler(false,true,false),"Search for Documentation",
 			KeyStroke.getKeyStroke(KeyEvent.VK_F12,0));
    registerKeyAction(new ZoomHandler(1),"Zoom in",
-			KeyStroke.getKeyStroke(KeyEvent.VK_PLUS,menudown|InputEvent.SHIFT_DOWN_MASK));
+			KeyStroke.getKeyStroke(KeyEvent.VK_PLUS,menudown));
+   registerKeyAction(new ZoomHandler(1),"Zoom in",
+		KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS,menudown|InputEvent.SHIFT_DOWN_MASK));
    registerKeyAction(new ZoomHandler(-1),"Zoom out",
 			KeyStroke.getKeyStroke(KeyEvent.VK_MINUS,menudown));
    registerKeyAction(new ZoomHandler(0),"Reset zoom",
@@ -1132,9 +1193,13 @@ private void setupGlobalActions()
    registerKeyAction(new PanHandler(0,1),"pan down",
 			KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, menudown));
    registerKeyAction(new MetricsHandler(),"force metrics dump",
-			KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, menudown|InputEvent.SHIFT_DOWN_MASK));
-   registerKeyAction(new MetricsHandler(),"force metrics dump",
-			KeyStroke.getKeyStroke(KeyEvent.VK_F1, menudown|InputEvent.SHIFT_DOWN_MASK));
+			KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK));
+   registerKeyAction(new HelpHandler(),"show help information",
+			KeyStroke.getKeyStroke(KeyEvent.VK_HELP,0));
+   registerKeyAction(new HelpHandler(),"show help information",
+			KeyStroke.getKeyStroke(KeyEvent.VK_SLASH,menudown|InputEvent.SHIFT_DOWN_MASK));
+   registerKeyAction(new HelpHandler(),"show help information",
+		KeyStroke.getKeyStroke(KeyEvent.VK_F1, menudown|InputEvent.SHIFT_DOWN_MASK));
 }
 
 
@@ -1184,7 +1249,7 @@ public void handleSaveAllRequest()
    for (BudaFileHandler bfh : file_handlers) {
       bfh.handleSaveRequest();
     }
-}   
+}
 
 
 
@@ -1204,9 +1269,18 @@ public void handleCheckpointAllRequest()
 }
 
 
+public static void addHyperlinkListener(String protocol,HyperlinkListener hl)
+{
+   hyperlink_config.put(protocol,hl);
+}
+
+public static HyperlinkListener getListenerForProtocol(String protocol)
+{
+   return hyperlink_config.get(protocol);
+}
 
 
-private class EscapeHandler extends AbstractAction implements ActionListener {
+private class EscapeHandler extends AbstractAction {
 
    private static final long serialVersionUID = 1;
 
@@ -1227,7 +1301,7 @@ private class EscapeHandler extends AbstractAction implements ActionListener {
 
 
 
-private class SearchKeyHandler extends AbstractAction implements ActionListener {
+private class SearchKeyHandler extends AbstractAction {
 
    private boolean doc_search;
    private boolean proj_search;
@@ -1275,7 +1349,7 @@ private class SearchKeyHandler extends AbstractAction implements ActionListener 
 
 
 
-private static class MetricsHandler extends AbstractAction implements ActionListener {
+private static class MetricsHandler extends AbstractAction {
 
    private static final long serialVersionUID = 1;
 
@@ -1284,6 +1358,24 @@ private static class MetricsHandler extends AbstractAction implements ActionList
     }
 
 }	// end of inner class MetricsHandler
+
+
+
+private static class HelpHandler extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   HelpHandler() {
+      super("Help");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      showHelp(null);
+    }
+
+}	// end of inner class HelpHandler
+
+
 
 
 /********************************************************************************/
@@ -2084,6 +2176,7 @@ public void stopWaitCursor() {
 }
 
 
+
 /********************************************************************************/
 /*										*/
 /*	Window closing methods							*/
@@ -2247,6 +2340,7 @@ private static class MouseEventQueue extends EventQueue {
       // only want mouse events for buttons other than 1
       if (!(e instanceof MouseEvent)) {
 	 if (e instanceof InputEvent) {
+	    BudaHover.handleKeyEvent();
 	    InputEvent ie = (InputEvent) e;
 	    BoardMetrics.noteActive(ie.getWhen());
 	  }
@@ -2347,8 +2441,3 @@ private static class MouseEventQueue extends EventQueue {
 
 
 /* end of BudaRoot.java */
-
-
-
-
-

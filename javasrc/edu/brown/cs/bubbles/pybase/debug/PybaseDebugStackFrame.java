@@ -36,6 +36,8 @@
 
 package edu.brown.cs.bubbles.pybase.debug;
 
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -144,6 +146,27 @@ public PybaseDebugCommand.GetVariable getFrameCommand(PybaseDebugTarget dbg)
    return new PybaseDebugCommand.GetFrame(dbg,frame_locator);
 }
 
+
+
+/********************************************************************************/
+/*										*/
+/*	Output methods								*/
+/*										*/
+/********************************************************************************/
+
+void outputXml(IvyXmlWriter xw,int lvl)
+{
+   xw.begin("STACKFRAME");
+   xw.field("NAME",frame_name);
+   xw.field("ID",frame_id);
+   xw.field("LINENO",frame_line);
+   xw.field("METHOD",frame_name);
+   if (lvl >= 0) xw.field("LEVEL",lvl);
+   xw.field("FILE",frame_file.getAbsolutePath());
+   xw.field("FILETYPE","PYTHON");
+   // handle args here if there are any
+   xw.end("STACKFRAME");
+}
 
 
 

@@ -124,20 +124,21 @@ public static void initialize(BudaRoot br)
 /*										*/
 /********************************************************************************/
 
-public List<BattTest> getAllTestCases(BaleContextConfig cfg)
+public List<BattTest> getAllTestCases(String mthd)
 {
    List<BattTest> all = new ArrayList<BattTest>();
 
-   String mthd = cfg.getMethodName();
    if (mthd == null) return null;
 
    for (BattTestCase btc : batt_model.getAllTests()) {
       UseMode um = btc.usesMethod(mthd);
       switch (um) {
+         case UNKNOWN :
 	 case INDIRECT :
 	 case DIRECT :
 	    all.add(btc);
 	    break;
+         case NONE :
 	 default:
 	    break;
        }
@@ -169,7 +170,6 @@ public BattNewTestPanel createNewTestPanel(BattTestBubbleCallback cbk)
 
    return pnl;
 }
-
 
 
 /********************************************************************************/
@@ -422,29 +422,31 @@ private static class BattContexter implements BaleContextListener {
        String tcnm = cnm + "Test";
        String pnm = cfg.getEditor().getContentProject();
        List<BumpLocation> locs = BumpClient.getBump().findTypes(pnm,cnm);
-       for (BumpLocation loc : locs) {
-	  String nm = loc.getSymbolName();
-	  if (nm.equals(cnm) && Modifier.isPublic(loc.getModifiers())) {
-	     List<BumpLocation> cntrs = BumpClient.getBump().findMethods(pnm,cnm,false,true,true,false);
-	     boolean cok = false;
-	     if (cntrs.size() == 0) cok = true;
-	     for (BumpLocation cloc : cntrs) {
-		String prms = cloc.getParameters();
-		if (Modifier.isPublic(loc.getModifiers()) && prms.equals("()")) cok = true;
+       if (locs != null) {
+	  for (BumpLocation loc : locs) {
+	     String nm = loc.getSymbolName();
+	     if (nm.equals(cnm) && Modifier.isPublic(loc.getModifiers())) {
+		List<BumpLocation> cntrs = BumpClient.getBump().findMethods(pnm,cnm,false,true,true,false);
+		boolean cok = false;
+		if (cntrs.size() == 0) cok = true;
+		for (BumpLocation cloc : cntrs) {
+		   String prms = cloc.getParameters();
+		   if (Modifier.isPublic(loc.getModifiers()) && prms.equals("()")) cok = true;
+	       	 }
+		if (cok) classes.add(cnm);
 	      }
-	     if (cok) classes.add(cnm);
-	   }
-	  else if (nm.equals(tcnm) && Modifier.isPublic(loc.getModifiers()) && !isinner) {
-	     List<BumpLocation> mthds = BumpClient.getBump().findMethod(pnm,mthd,false);
-	     boolean fok = false;
-	     for (BumpLocation bl : mthds) {
-		if (Modifier.isPrivate(bl.getModifiers())) fok = false;
-		else fok = true;
+	     else if (nm.equals(tcnm) && Modifier.isPublic(loc.getModifiers()) && !isinner) {
+		List<BumpLocation> mthds = BumpClient.getBump().findMethod(pnm,mthd,false);
+		boolean fok = false;
+		for (BumpLocation bl : mthds) {
+		   if (Modifier.isPrivate(bl.getModifiers())) fok = false;
+		   else fok = true;
+		}
+
+		if (fok) classes.add(cnm);
 	      }
-	
-	     if (fok) classes.add(cnm);
 	   }
-	}
+        }
 
        String mnm = mthd;
        int idx = mnm.indexOf("(");
@@ -453,10 +455,10 @@ private static class BattContexter implements BaleContextListener {
        if (idx >= 0) mnm = mnm.substring(idx+1);
 
        for (String c : classes) {
-	  menu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,mnm,c,false,cfg.getEditor()));
+	  menu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,mnm,pnm,c,false,cfg.getEditor()));
 	}
        if (!classes.contains(tcnm)) {
-	  menu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,mnm,tcnm,true,cfg.getEditor()));
+	  menu.add(new NewTestAction(mthd,NewTestMode.USER_CODE,mnm,pnm,tcnm,true,cfg.getEditor()));
 	}
     }
 
@@ -504,30 +506,30 @@ private static class NewTestAction extends AbstractAction {
    private NewTestMode test_mode;
    private String method_name;
    private String in_class;
+   private String in_project;
    private boolean create_class;
 
-   NewTestAction(String mthd,NewTestMode mode,String nm,String cls,boolean newcls,JComponent src) {
+   NewTestAction(String mthd,NewTestMode mode,String nm,String proj,String cls,boolean newcls,JComponent src) {
       super(getButtonName(mode,nm,cls,newcls));
       source_area = src;
       test_mode = mode;
       method_name = mthd;
+      in_project = proj;
       in_class = cls;
       create_class = newcls;
+      int idx = mthd.lastIndexOf("(");
+      if (idx > 0) idx = mthd.lastIndexOf(".",idx);
+      else idx = mthd.lastIndexOf(".");
+      if (idx >= 0) mthd = mthd.substring(idx+1);
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
       BoardMetrics.noteCommand("BDDT","NewTest_" + test_mode);
       BumpClient bc = BumpClient.getBump();
-      List<BumpLocation> locs = bc.findMethod(null,method_name,false);
+      List<BumpLocation> locs = bc.findMethod(in_project,method_name,false);
       if (locs == null || locs.size() == 0) return;
-      BumpLocation loc = null;
-      for (BumpLocation bl : locs) {
-	 // check if bl is relevant to the context of the action
-	 loc = bl;
-	 break;
-       }
-
-      BattNewTestBubble ntb = new BattNewTestBubble(method_name,loc,in_class,create_class,test_mode);
+      BumpLocation loc = locs.get(0);
+      BattNewTestBubble ntb = new BattNewTestBubble(method_name,loc,in_project,in_class,create_class,test_mode);
       BudaBubble bb = ntb.createNewTestBubble();
       if (bb == null) return;
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_area);

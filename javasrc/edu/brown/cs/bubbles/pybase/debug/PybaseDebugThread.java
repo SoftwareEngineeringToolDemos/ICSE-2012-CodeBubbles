@@ -88,7 +88,7 @@ PybaseDebugThread(PybaseDebugTarget target,String name,String id)
 
 
 
-PybaseDebugThread(PybaseDebugTarget tgt,Element xml) 
+PybaseDebugThread(PybaseDebugTarget tgt,Element xml)
 {
    debug_target = tgt;
    thread_name = IvyXml.getAttrString(xml,"name");
@@ -104,10 +104,12 @@ static List<PybaseDebugThread> getThreadsFromXml(PybaseDebugTarget tgt,String tx
    Element e = IvyXml.convertStringToXml(txt);
    if (e != null) {
       for (Element te : IvyXml.elementsByTag(e,"thread")) {
-         PybaseDebugThread t = new PybaseDebugThread(tgt,te);
-         rslt.add(t);
+	 PybaseDebugThread t = new PybaseDebugThread(tgt,te);
+	 rslt.add(t);
        }
     }
+   else System.err.println("PROBLEM WITH THREAD XML: " + txt);
+
    return rslt;
 }
 
@@ -121,6 +123,7 @@ private void setup()
    is_stepping = false;
    cur_stack = null;
 }
+		
 
 
 /********************************************************************************/
@@ -139,7 +142,7 @@ public void setSuspended(boolean state,List<PybaseDebugStackFrame> stack)
 public String getName() 			{ return thread_name + " - " + getRemoteId(); }
 
 public String getRemoteId()			{ return remote_id; }
-public String getLocalId()                      { return thread_id; }
+public String getLocalId()			{ return thread_id; }
 
 public boolean isPydevThread()			{ return is_pydev_thread; }
 
@@ -168,7 +171,7 @@ public boolean canSuspend()
 
 public boolean isSuspended()			{ return is_suspended; }
 
-public void resume() 
+public void resume()
 {
    if (!is_pydev_thread) {
       cur_stack = null;
@@ -199,7 +202,7 @@ public void stepInto()
    if (!is_pydev_thread) {
       is_stepping = true;
       debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_INTO,remote_id));
-    }	
+    }
 }
 
 public void stepOver()
@@ -207,7 +210,7 @@ public void stepOver()
    if (!is_pydev_thread) {
       is_stepping = true;
       debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_OVER,remote_id));
-    }	
+    }
 }
 
 public void stepReturn()
@@ -215,7 +218,7 @@ public void stepReturn()
    if (!is_pydev_thread) {
       is_stepping = true;
       debug_target.postCommand(new PybaseDebugCommand.Step(debug_target,CMD_STEP_RETURN,remote_id));
-    }	
+    }
 }
 
 public void runToLine(int line, String funcName)
@@ -245,7 +248,7 @@ public boolean hasStackFrames()
    return (cur_stack != null && cur_stack.size() > 0);
 }
 
-public PybaseDebugStackFrame getTopStackFrame() 
+public PybaseDebugStackFrame getTopStackFrame()
 {
    if (cur_stack == null) return null;
    if (cur_stack.size() == 0) return null;
@@ -264,20 +267,12 @@ public PybaseDebugStackFrame findStackFrameByID(String id)
 }
 
 
-public PybaseDebugBreakpoint[] getBreakpoints()
-{
-   // should return breakpoint that caused this thread to suspend
-   // not implementing this seems to cause no harm
-   PybaseDebugBreakpoint[] breaks = new PybaseDebugBreakpoint[0];
-   return breaks;
-}
-
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Output methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Output methods								*/
+/*										*/
 /********************************************************************************/
 
 void outputXml(IvyXmlWriter xw)

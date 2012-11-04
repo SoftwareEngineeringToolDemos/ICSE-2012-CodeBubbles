@@ -201,6 +201,12 @@ void handleCreateProject(String name,String dir,IvyXmlWriter xw) throws PybaseEx
    if (!pdir.isDirectory()) {
       throw new PybaseException("Project path must be a directory " + pdir);
     }
+   try {
+      pdir = pdir.getCanonicalFile();
+    }
+   catch (IOException e) {
+      pdir = pdir.getAbsoluteFile();
+    }
 
    loadProject(name,pdir);
 
@@ -215,12 +221,11 @@ void handleCreateProject(String name,String dir,IvyXmlWriter xw) throws PybaseEx
 /*										*/
 /********************************************************************************/
 
-void handleEditProject(String name,List<Element> opts,List<Element> paths,
-      IvyXmlWriter xw) throws PybaseException
+void handleEditProject(String name,Element pxml,IvyXmlWriter xw) throws PybaseException
 {
     PybaseProject pp = findProject(name);
     if (pp == null) throw new PybaseException("Can't find project " + name);
-    pp.editProject(opts,paths);
+    pp.editProject(pxml);
 }
 
 
@@ -309,7 +314,7 @@ void handleBuildProject(String proj,boolean clean,boolean full,boolean refresh,I
    PybaseProject p = all_projects.get(proj);
    if (p == null) throw new PybaseException("Unknown project " + proj);
 
-   p.build(refresh);
+   p.build(refresh,true);
 }
 
 
@@ -346,7 +351,7 @@ private void handleAllNames(PybaseProject pp,Set<String> files,NameThread nt,Ivy
 
    int ctr = 0;
    for (IFileData ifd : pp.getAllFiles()) {
-      if (files != null && !files.contains(ifd.getFile())) continue;
+      if (files != null && !files.contains(ifd.getFile().getPath())) continue;
       ISemanticData sd = pp.getParseData(ifd);
       if (sd != null) {
 	 if (nt != null) nt.addRoot(ifd,pp,sd);
@@ -551,6 +556,7 @@ IInterpreterSpec findInterpreter(File exe)
 
    for (InterpreterSpec is : all_interpreters) {
       if (exe.equals(is.getExecutable())) return is;
+      if (exe.getPath().equals(is.getExecutable().getName())) return is;
     }
 
    InterpreterSpec nis = new InterpreterSpec(exe);

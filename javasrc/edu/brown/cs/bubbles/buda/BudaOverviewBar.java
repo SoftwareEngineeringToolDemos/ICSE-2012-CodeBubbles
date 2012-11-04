@@ -26,6 +26,7 @@
 package edu.brown.cs.bubbles.buda;
 
 import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
 
 import javax.swing.JPanel;
 
@@ -38,7 +39,7 @@ import java.util.*;
 
 
 class BudaOverviewBar extends JPanel implements BudaConstants,
-	BudaConstants.BubbleAreaCallback
+	BudaConstants.BubbleAreaCallback, BudaHelpClient
 {
 
 
@@ -81,6 +82,7 @@ BudaOverviewBar(BudaBubbleArea ba,BudaViewport view,BudaRoot root)
    Dimension sz = new Dimension(0,BUBBLE_OVERVIEW_HEIGHT);
    setMinimumSize(sz);
    setPreferredSize(sz);
+   BudaRoot.registerHelp(this,this);
 
    setLayout(new FlowLayout(FlowLayout.TRAILING));
    mouse_context = null;
@@ -127,6 +129,28 @@ void setViewPosition(Rectangle r)
    else view_position = new RoundRectangle2D.Double(r.x, r.y, r.width, r.height, 0, 0);
 
    for_root.repaint();
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Tool Tip Methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public String getHelpLabel(MouseEvent e)
+{
+   if (!BudaRoot.showHelpTips()) return null;
+
+   return "overviewarea";
+}
+
+
+
+@Override public String getHelpText(MouseEvent e)
+{
+   return null;
 }
 
 

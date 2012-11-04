@@ -25,6 +25,7 @@
 
 package edu.brown.cs.bubbles.buda;
 
+import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
 import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.swing.SwingText;
@@ -44,7 +45,7 @@ import java.io.IOException;
 import java.util.*;
 
 
-class BudaTopBar extends JPanel implements ActionListener, BudaConstants, BoardConstants {
+class BudaTopBar extends JPanel implements ActionListener, BudaConstants, BoardConstants, BudaHelpClient {
 
 
 
@@ -106,6 +107,7 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    setMaximumSize(d);
 
    setBackground(TOP_BAR_COLOR);
+   BudaRoot.registerHelp(this,this);
 
    bubble_menu = new JPopupMenu("Menu");
    task_dummy_menu = new ShelfMenu();
@@ -427,6 +429,48 @@ private BudaShare [] createShareArray()
    Arrays.sort(shrs);
    return shrs;
 }
+
+
+/********************************************************************************/
+/*										*/
+/*	Tool tip methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public String getHelpLabel(MouseEvent e)
+{
+   if (!BudaRoot.showHelpTips()) return null;
+
+   Rectangle r = getBounds();
+   Dimension totsize = bubble_area.getSize();
+   int x = e.getX();
+
+   BudaWorkingSetImpl cws = null;
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
+      Rectangle wsr = ws.getRegion();
+      int x0 = wsr.x * r.width / totsize.width;
+      int x1 = (wsr.x + wsr.width) * r.width / totsize.width;
+      if (x > x0 && x < x1) {
+	 cws = ws;
+	 break;
+       }
+    }
+
+   if (cws != null) {
+      return "topbarworkingset";
+    }
+
+   return "topbar";
+}
+
+
+
+
+@Override public String getHelpText(MouseEvent e)
+{
+   return null;
+}
+
 
 
 /********************************************************************************/

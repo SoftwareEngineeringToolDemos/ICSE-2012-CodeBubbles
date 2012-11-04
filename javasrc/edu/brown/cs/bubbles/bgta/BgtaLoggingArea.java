@@ -22,6 +22,7 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import edu.brown.cs.bubbles.buda.*;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -72,7 +73,7 @@ BgtaLoggingArea(BgtaBubble bub)
    // setWrapStyleWord(true);
    setEditable(false);
    setOpaque(false);
-   setCursor(new Cursor(Cursor.TEXT_CURSOR));
+   BudaCursorManager.setCursor(this,new Cursor(Cursor.TEXT_CURSOR));
    setBorder(new EmptyBorder(0,5,0,0));
 
 //   StyleContext sc = StyleContext.getDefaultStyleContext();

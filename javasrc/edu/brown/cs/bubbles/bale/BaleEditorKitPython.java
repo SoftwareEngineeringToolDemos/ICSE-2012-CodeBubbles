@@ -119,9 +119,29 @@ private static class PythonBackspaceAction extends TextAction {
       if (!BaleEditorKit.checkReadEditor(target)) return;
       BaleDocument bd = target.getBaleDocument();
       int soff = target.getSelectionStart();
+      int lno = bd.findLineNumber(soff);
+      int lsoff = bd.findLineOffset(lno);
+      
+      boolean start = false;
+      try {
+	 if (lsoff == soff) start = true;
+	 else {
+	    String txt = bd.getText(lsoff,soff-lsoff);
+	    txt = txt.trim();
+	    if (txt.equals("")) start = true;
+	 }
+      }
+      catch (BadLocationException ex) { }
+      
+      if (!start) {
+	 backspace_action.actionPerformed(e);
+	 return;
+      }
+      
       BaleIndenter bind = bd.getIndenter();
       int oind = bind.getCurrentIndentationAtOffset(soff);
       int tind = bind.getDesiredIndentation(soff);
+      
       if (tind != oind || oind == 0) {
 	 backspace_action.actionPerformed(e);
 	 return;
@@ -146,7 +166,6 @@ private static class PythonUnindentAction extends TextAction {
 
    private static final long serialVersionUID = 1;
 
-   private Action backward_action;
    private Action forward_action;
 
    PythonUnindentAction() {
@@ -170,7 +189,7 @@ private static class PythonUnindentAction extends TextAction {
       int pos = tind-delta;
       if (pos < oind) {
 	 for (int i = oind; i > pos; --i) {
-	    backward_action.actionPerformed(e);
+	    forward_action.actionPerformed(e);
 	 }
       }
       else {

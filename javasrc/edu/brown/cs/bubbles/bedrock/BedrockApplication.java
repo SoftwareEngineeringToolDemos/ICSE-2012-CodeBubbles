@@ -38,6 +38,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.events.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
@@ -371,39 +372,50 @@ private class WbWindowAdvisor extends WorkbenchWindowAdvisor {
       super(cfg);
     }
 
+   @Override public void preWindowOpen() {
+      // remove the window
+      super.preWindowOpen();
+
+      BedrockPlugin.logD("PRE WINDOW OPEN " + use_display + " " + hide_display);
+
+      hideWindows();
+    }
+
    @Override public void postWindowOpen() {
       // remove the window
       super.postWindowOpen();
 
-      System.err.println("BEDROCK: POST WINDOW OPEN " + use_display + " " + hide_display);
+      BedrockPlugin.logD("POST WINDOW OPEN " + use_display + " " + hide_display);
 
+      hideWindows();
+    }
+
+   private void hideWindows() {
       if (use_display || hide_display) {
 	 Set<Shell> done = new HashSet<Shell>();
 	 for (Shell sh1 : base_display.getShells()) {
-	    BedrockPlugin.logD("SHELL3 " + sh1.isVisible() + " " + sh1 + " " + sh1.getText());
-	    sh1.setVisible(false);
-	    sh1.setEnabled(false);
-	    if (!done.contains(sh1)) {
-	       sh1.addShellListener(new WbShellRemover());
-	       done.add(sh1);
-	     }
+	    hideShell(sh1,done);
 	  }
 	 Shell sh = the_app.base_display.getActiveShell();
-	 if (sh != null && !done.contains(sh)) {
-	    BedrockPlugin.logD("SHELL6 " + sh.isVisible() + " " + sh + " " + sh.getText());
-	    sh.setVisible(false);
-	    sh.addShellListener(new WbShellRemover());
-	    done.add(sh);
-	  }
+	 hideShell(sh,done);
 	 IWorkbenchWindowConfigurer cfg = getWindowConfigurer();
 	 IWorkbenchWindow win = cfg.getWindow();
 	 sh = win.getShell();
-	 if (sh != null && !done.contains(sh)) {
-	    BedrockPlugin.logD("SHELL7 " + sh.isVisible() + " " + sh + " " + sh.getText());
-	    sh.setVisible(false);
-	    sh.addShellListener(new WbShellRemover());
-	    done.add(sh);
-	  }
+	 hideShell(sh,done);
+       }
+    }
+
+   private void hideShell(Shell sh,Set<Shell> done) {
+      if (sh == null) return;
+      if (done.contains(sh)) return;
+      BedrockPlugin.logD("SHELLX " + sh.isVisible() + " " + sh + " " + sh.getText());
+      sh.setVisible(false);
+      sh.setEnabled(false);
+      sh.setMinimized(true);
+      sh.addShellListener(new WbShellRemover());
+      done.add(sh);
+      for (Composite c = sh.getParent(); c != null; c = c.getParent()) {
+	 c.setVisible(false);
        }
     }
 
@@ -450,7 +462,7 @@ private class EndChecker extends Thread {
 	 if (PlatformUI.isWorkbenchRunning()) {
 	    BedrockPlugin bp = BedrockPlugin.getPlugin();
 	    IvyXmlWriter xw = bp.beginMessage("PING");
-	    String resp = bp.finishMessageWait(xw);
+	    String resp = bp.finishMessageWait(xw,600000);
 	    if (resp != null) ctr = 0;
 	    else if (++ctr >= 2) {
 	       xw = bp.beginMessage("STOP");

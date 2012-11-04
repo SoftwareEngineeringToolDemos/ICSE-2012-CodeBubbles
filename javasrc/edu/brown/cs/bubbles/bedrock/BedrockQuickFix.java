@@ -115,9 +115,11 @@ void handleQuickFix(String proj,String bid,String file,int off,int len,List<Elem
       pcs[i] = new ProblemContext(probs.get(i));
     }
 
-   WJob wj = new WJob(fc,pcs,xw);
-   wj.schedule();
+   if (BedrockApplication.getDisplay() == null) throw new BedrockException("No display");
+
    try {
+      WJob wj = new WJob(fc,pcs,xw);
+      wj.schedule();
       wj.join();
       IStatus rslt = wj.getResult();
       Throwable t = rslt.getException();
@@ -126,6 +128,9 @@ void handleQuickFix(String proj,String bid,String file,int off,int len,List<Elem
        }
     }
    catch (InterruptedException e) { }
+   catch (Throwable t) {
+      throw new BedrockException("Problem with quick fix",t);
+    }
 }
 
 
@@ -231,7 +236,7 @@ private boolean isUsable(IJavaCompletionProposal p)
 
    if (p.getClass().getName().equals("org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal"))
       return false;
-   
+
    try {
       Class<?> pcc = p.getClass();
       pcc.getMethod("getChange");
@@ -240,7 +245,7 @@ private boolean isUsable(IJavaCompletionProposal p)
    catch (Throwable t) {
       BedrockPlugin.logD("UNKNOWN COMPLETION TYPE " + p.getClass() + " " + p.getClass().getSuperclass());
    }
-   
+
    return false;
 }
 

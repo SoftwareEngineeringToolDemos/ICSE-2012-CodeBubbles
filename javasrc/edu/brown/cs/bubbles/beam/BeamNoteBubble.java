@@ -435,7 +435,7 @@ private void createFileName()
 /*										*/
 /********************************************************************************/
 
-private static class NoteArea extends JEditorPane implements BeamConstants
+private static class NoteArea extends JEditorPane
 {
    private static final long serialVersionUID = 1;
 

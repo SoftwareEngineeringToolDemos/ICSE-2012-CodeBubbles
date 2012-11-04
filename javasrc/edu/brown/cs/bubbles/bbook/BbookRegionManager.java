@@ -172,7 +172,7 @@ private class FileHandler implements BumpChangeHandler {
    @Override public void handleFileAdded(String proj,String file)	{ }
    @Override public void handleFileRemoved(String proj,String file)	{ }
    @Override public void handleFileStarted(String proj,String file)	{ }
-   @Override public void handleProjectOpened(String proj)               { }
+   @Override public void handleProjectOpened(String proj)		{ }
 
    @Override public void handleFileChanged(String proj,String file) {
       noteFileChanged(new File(file));
@@ -357,7 +357,11 @@ private void handleBubbleRemoved(BudaBubble bb)
    Document d = getBubbleDocument(bb);
    if (d != null) noedit_set.remove(d);
 
-   if (tr.removeBubble(bb)) task_regions.remove(tr);
+   if (tr.removeBubble(bb)) {
+      synchronized (task_regions) {
+	 task_regions.remove(tr);
+       }
+    }
 }
 
 
@@ -508,7 +512,9 @@ void loadTasks(Element xml,BudaBubbleArea bba)
 	  TaskRegion tr = findTaskRegion(bba,r);
 	   if (tr == null) {
 	      tr = new TaskRegion(bba,r);
-	      task_regions.add(tr);
+	      synchronized (task_regions) {
+		 task_regions.add(tr);
+	       }
 	    }
 	   tr.setTask(task);
        }
@@ -551,14 +557,14 @@ private class TaskRegion implements BbookRegion
    private void initializeBubbles(BudaBubble b0) {
       active_bubbles = new HashSet<BudaBubble>();
       for (BudaBubble bb : bubble_area.getBubblesInRegion(region_area)) {
-         if (isBubbleRelevant(bb)) {
-            if (b0 == null) b0 = bb;
-            noteBubble(bb);
-          }
+	 if (isBubbleRelevant(bb)) {
+	    if (b0 == null) b0 = bb;
+	    noteBubble(bb);
+	  }
        }
       working_set = null;
       if (b0 != null) {
-         working_set = bubble_area.findWorkingSetForBubble(b0);
+	 working_set = bubble_area.findWorkingSetForBubble(b0);
        }
     }
 

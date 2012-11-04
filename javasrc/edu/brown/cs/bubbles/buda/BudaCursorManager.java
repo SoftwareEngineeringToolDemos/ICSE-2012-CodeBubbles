@@ -141,17 +141,18 @@ private BudaCursorManager()
 /*										*/
 /********************************************************************************/
 
-private void setupCursorsForComponent(Component comp) {
-   if(comp.isCursorSet()){
+private void setupCursorsForComponent(Component comp) 
+{
+   if (comp.isCursorSet()) {
       default_cursors.put(comp, comp.getCursor());
-      if(comp.getParent() != null && global_cursor_set.contains(comp.getParent())){
+      if (comp.getParent() != null && global_cursor_set.contains(comp.getParent())) {
 	 comp.setCursor(comp.getParent().getCursor());
 	 global_cursor_set.add(comp);
        }
     }
-   if(!(comp instanceof Container)) return;
+   if (!(comp instanceof Container)) return;
    Container cont = (Container) comp;
-   for(Component c : cont.getComponents()) {
+   for (Component c : cont.getComponents()) {
       setupCursorsForComponent(c);
     }
 }
@@ -160,7 +161,7 @@ private void setupCursorsForComponent(Component comp) {
 
 private void setDefaultCursor(Component comp, Cursor curs)
 {
-   if(!global_cursor_set.contains(comp)) comp.setCursor(curs);
+   if (!global_cursor_set.contains(comp)) comp.setCursor(curs);
    default_cursors.put(comp, curs);
 }
 

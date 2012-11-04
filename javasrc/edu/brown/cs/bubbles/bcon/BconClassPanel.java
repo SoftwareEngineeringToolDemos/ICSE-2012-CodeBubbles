@@ -300,9 +300,7 @@ private void setupPanel()
    class_panel.addGBComponent(tfld,0,3,0,1,10,0);
    tfld.addActionListener(new FilterAction());
 
-   class_panel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-
-
+   BudaCursorManager.setCursor(class_panel,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 }
 
 

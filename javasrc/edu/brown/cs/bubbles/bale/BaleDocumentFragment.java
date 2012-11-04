@@ -332,7 +332,7 @@ void checkWriteLock()
 
 
 
-@Override int getFragmentOffset(int docoffset)
+@Override public int getFragmentOffset(int docoffset)
 {
    BaleFragmentContent cnt = (BaleFragmentContent) getContent();
 
@@ -340,7 +340,7 @@ void checkWriteLock()
 }
 
 
-@Override int getDocumentOffset(int fragoffset)
+@Override public int getDocumentOffset(int fragoffset)
 {
    BaleFragmentContent cnt = (BaleFragmentContent) getContent();
 
@@ -489,6 +489,9 @@ private void setupElements()
 	 root = new BaleElement.DeclSet(this,null);
 	 break;
       case STATICS :
+	 root = new BaleElement.DeclSet(this,null);
+	 break;
+      case MAIN :
 	 root = new BaleElement.DeclSet(this,null);
 	 break;
       case HEADER :

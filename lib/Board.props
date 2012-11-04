@@ -7,5 +7,6 @@
 <entry key="Board.metrics.default">true</entry>
 <entry key="Board.prefix.csci0150">CS15</entry>
 <entry key="Board.prefix.csci0320">CS32</entry>
+<entry key="Board.library.url">http://www.cs.brown.edu/people/spr/bubbles/lib/</entry>
 </properties>
 

@@ -368,7 +368,7 @@ private void expandForGroup(Rectangle r,BudaBubble grpb)
 /*										*/
 /********************************************************************************/
 
-private static final int USER_POSITION_UPDATE_TIME = 1500;
+private static final int USER_POSITION_UPDATE_TIME = 2000;
 private static final int USER_POSITION_RESTART_TIME = 500;
 
 
@@ -411,7 +411,7 @@ private static class UserUpdater implements ActionListener, ComponentListener {
 
    @Override public void componentMoved(ComponentEvent e) {
       // System.err.println("UPDATE: MOVE");
-      if (move_count++ >= 2) {
+      if (move_count++ >= 4) {
 	 int t1 = BUDA_PROPERTIES.getInt("Buda.placement.user.moved",USER_POSITION_RESTART_TIME);
 	 // System.err.println("UPDATE: RESTART " + t1);
 	 swing_timer.setInitialDelay(t1);

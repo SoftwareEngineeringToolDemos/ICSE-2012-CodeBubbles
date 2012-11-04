@@ -32,6 +32,7 @@ package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
@@ -57,6 +58,7 @@ abstract class BaleDocument extends AbstractDocument implements BaleConstants {
 private BaleElementBuffer	element_buffer;
 private DummyElement		dummy_element;
 private BaleElideMode		elide_mode;
+private BaleSplitMode		split_mode;
 private BaleTabHandler		tab_handler;
 private BaleIndenter		our_indenter;
 
@@ -81,11 +83,19 @@ BaleDocument(AbstractDocument.Content data)
    last_edit = 0;
    element_buffer = null;
    dummy_element = null;
+
    elide_mode = BaleElideMode.ELIDE_CHECK_ONCE;
    if (BALE_PROPERTIES.getBoolean(BALE_EDITOR_NO_ELISION))
       elide_mode = BaleElideMode.ELIDE_NONE;
    else if (BALE_PROPERTIES.getBoolean(BALE_EDITOR_ALWAYS_ELIDE))
       elide_mode = BaleElideMode.ELIDE_CHECK_ALWAYS;
+
+   split_mode = BaleSplitMode.SPLIT_NORMAL;
+   if (BALE_PROPERTIES.getBoolean(BALE_EDITOR_NO_REFLOW))
+      split_mode = BaleSplitMode.SPLIT_NEVER;
+   else if (data != null && data.length() > SPLIT_QUICK_SIZE)
+      split_mode = BaleSplitMode.SPLIT_QUICK;
+
    tab_handler = new BaleTabHandler();
    our_indenter = null;
 }
@@ -182,6 +192,7 @@ BaleElement getActualCharacterElement(int pos)
 	 int idx = e.getElementIndex(pos);
 	 e = e.getElement(idx);
        }
+      if (e != null && !(e instanceof BaleElement)) return null;
       return (BaleElement) e;
     }
    finally {
@@ -319,6 +330,51 @@ void checkWriteLock()
     }
    finally { baleWriteUnlock(); }
 }
+
+
+
+// for BaleFileOverview
+
+public boolean replace(int off,int len,String text,boolean fmt,boolean ind)
+{
+   Position sp = null;
+   Position ep = null;
+
+   baleWriteLock();
+   try {
+      replace(off,len,text,null);
+      int soff = off;
+      int eoff = off + text.length();
+      sp = createPosition(soff);
+      ep = createPosition(eoff);
+      if (fmt) {
+	 int dsoff = mapOffsetToEclipse(soff);
+	 int deoff = mapOffsetToEclipse(eoff);
+	 BumpClient bc = BumpClient.getBump();
+	 org.w3c.dom.Element edits = bc.format(getProjectName(),getFile(),dsoff,deoff);
+	 if (edits != null) {
+	    BaleApplyEdits bae = new BaleApplyEdits(this);
+	    bae.applyEdits(edits);
+	 }
+      }
+      if (ind) {
+	 int isoff = sp.getOffset();
+	 int ieoff = ep.getOffset();
+	 int slno = findLineNumber(isoff);
+	 int elno = findLineNumber(ieoff);
+	 for (int i = slno; i <= elno; ++i) {
+	    fixLineIndent(i);
+	 }
+      }
+   }
+   catch (BadLocationException e) {
+      return false;
+   }
+   finally { baleWriteUnlock(); }
+
+   return false;
+}
+
 
 
 
@@ -577,8 +633,8 @@ void checkpoint()				{ }
 boolean canSave()				{ return false; }
 
 
-int getFragmentOffset(int docoffset)		{ return docoffset; }
-int getDocumentOffset(int localoffset)		{ return localoffset; }
+public int getFragmentOffset(int docoffset)	       { return docoffset; }
+public int getDocumentOffset(int localoffset)	       { return localoffset; }
 BaleSimpleRegion getFragmentRegion(int docoffset,int len)
 {
    return new BaleSimpleRegion(getFragmentOffset(docoffset),len);
@@ -654,6 +710,9 @@ BaleHighlightContext getHighlightContext()
 BaleElideMode getElideMode()		{ return elide_mode; }
 
 void setElideMode(BaleElideMode md)	{ elide_mode = md; }
+
+BaleSplitMode getSplitMode()		{ return split_mode; }
+
 
 void recheckElisions()
 {

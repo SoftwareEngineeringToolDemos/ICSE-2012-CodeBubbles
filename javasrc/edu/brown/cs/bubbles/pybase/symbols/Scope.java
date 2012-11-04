@@ -173,7 +173,7 @@ public void addImportTokens(List<AbstractToken> list,AbstractToken generator,
 	    .getTryExceptImportError();
 
    // only report undefined imports if we're not inside a try..except ImportError.
-   boolean reportUndefinedImports = withinExceptNode == null;
+   boolean reportUndefinedImports = (withinExceptNode == null);
 
    boolean requireTokensToBeImports = false;
    ImportInfo importInfo = null;

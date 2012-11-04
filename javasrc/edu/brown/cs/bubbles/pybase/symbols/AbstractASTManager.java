@@ -76,7 +76,6 @@ private static final boolean  DEBUG_CACHE	= false;
 
 private final AssignAnalysis  assign_analysis	  = new AssignAnalysis();
 
-private final Object lock = new Object();
 
 
 
@@ -97,10 +96,6 @@ protected AbstractASTManager()
 /*	Access methods								*/
 /*										*/
 /********************************************************************************/
-
-public Object getLock() 			{ return lock; }
-
-
 
 public ModulesManager getModulesManager()	{ return modulesManager; }
 
@@ -1137,7 +1132,7 @@ public boolean getCompletionsForWildImport(CompletionState state,AbstractModule 
 	 return true;
        }
       else {
-	 PybaseMain.logE("Module not found:" + name.getRepresentation());
+	 PybaseMain.logI("Module not found:" + name.getRepresentation());
        }
     }
    catch (CompletionRecursionException e) {
@@ -1335,8 +1330,7 @@ throws CompletionRecursionException
 	    List<String> moduleParts = StringUtils.dotSplit(parentPackage);
 	    String relative = null;
 	    if (moduleParts.size() > level) {
-	       relative = FullRepIterable.joinParts(moduleParts, moduleParts.size()
-						       - level);
+	       relative = FullRepIterable.joinParts(moduleParts, moduleParts.size() - level);
 	     }
 
 	    String modName = ((NameTok) importFrom.module).id;

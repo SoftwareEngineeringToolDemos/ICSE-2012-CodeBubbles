@@ -1,7 +1,8 @@
 #! /bin/csh -f
 
 
-mail bubbles-ext-builds@cs.brown.edu <<EOF
+# mail bubbles-ext-builds@cs.brown.edu <<EOF
+mail spr@cs.brown.edu <<EOF
 
 ~s "New version of BUBBLES binary"
 ~r /pro/bubbles/lib/version.txt

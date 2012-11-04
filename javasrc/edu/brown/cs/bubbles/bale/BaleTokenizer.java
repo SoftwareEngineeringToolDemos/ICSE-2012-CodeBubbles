@@ -107,6 +107,7 @@ abstract protected boolean isOperator(String s);
 abstract protected boolean useSlashStarComments();
 abstract protected boolean useSlashSlashComments();
 abstract protected boolean useHashComments();
+abstract protected boolean useMultiLineString();
 
 
 
@@ -179,6 +180,7 @@ private BaleToken getNextToken()
 
    if (token_state != BaleTokenState.NORMAL) {
       if (token_state == BaleTokenState.IN_LINE_COMMENT) return scanLineComment(); //added by amc6
+      else if (token_state == BaleTokenState.IN_MULTILINE_STRING) return scanMultiLineString();
       else return scanComment(token_state == BaleTokenState.IN_FORMAL_COMMENT);
    }
 
@@ -270,6 +272,20 @@ private BaleToken getNextToken()
        }
     }
    else if (ch == '"') {
+      if (useMultiLineString()) {
+	 char ch1 = nextChar();
+	 if (ch1 != '"') backup();
+	 else {
+	    char ch2 = nextChar();
+	    if (ch2 != '"') {
+	       backup();
+	       backup();
+	     }
+	    else {
+	       return scanMultiLineString();
+	     }
+	  }
+       }
       for ( ; ; ) {
 	 ch = nextChar();
 	 if (ch == '"') return buildToken(BaleTokenType.STRING);
@@ -324,12 +340,12 @@ private BaleToken getNextToken()
 	  }
 	 else backup();
 	 return scanComment(formal);
-       }      
+       }
       else {
 	 if (ch != '=') backup();
 	 return buildToken(BaleTokenType.OP);		     // / or /=
        }
-    
+
     }
    else if (ch == '{') return buildToken(BaleTokenType.LBRACE);
    else if (ch == '}') return buildToken(BaleTokenType.RBRACE);
@@ -466,6 +482,35 @@ private Token scanComment(boolean formalstart)
 
 
 
+private Token scanMultiLineString()
+{
+   int fnd = 0;
+
+   for ( ; ; ) {
+      char ch = nextChar();
+      if (ch == '"') {
+	 token_state = BaleTokenState.NORMAL;
+	 if (++fnd == 3) return buildToken(BaleTokenType.LONGSTRING);
+       }
+      else fnd = 0;
+      if (ch < 0 || ch == 0xffff) {
+	 token_state = BaleTokenState.NORMAL;
+	 return buildToken(BaleTokenType.BADSTRING);
+       }
+      else if (ch == '\n') {
+	 token_state = BaleTokenState.IN_MULTILINE_STRING;
+	 return buildToken(BaleTokenType.LONGSTRING);
+       }
+      else if (ch == '\r') {
+	 ch = nextChar();
+	 if (ch != '\n') backup();
+	 token_state = BaleTokenState.IN_MULTILINE_STRING;
+	 return buildToken(BaleTokenType.LONGSTRING);
+       }
+    }
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -556,6 +601,7 @@ private static class JavaTokenizer extends BaleTokenizer {
    protected boolean useSlashSlashComments()	{ return true; }
    protected boolean useSlashStarComments()	{ return true; }
    protected boolean useHashComments()		{ return false; }
+   protected boolean useMultiLineString()	{ return false; }
 
 }	// end of inner class JavaTokenizer
 
@@ -676,6 +722,7 @@ private static class PythonTokenizer extends BaleTokenizer {
    protected boolean useSlashSlashComments()	{ return false; }
    protected boolean useSlashStarComments()	{ return false; }
    protected boolean useHashComments()		{ return true; }
+   protected boolean useMultiLineString()	{ return true; }
 
 }	// end of inner class PythonTokenizer
 
@@ -748,10 +795,10 @@ static {
    python_op_set.add(">>>=");
    python_op_set.add(">>");
    python_op_set.add(">");
-   python_op_set.add("//");   
-   python_op_set.add("**");   
-   python_op_set.add("->");   
-   python_op_set.add("//=");  
+   python_op_set.add("//");
+   python_op_set.add("**");
+   python_op_set.add("->");
+   python_op_set.add("//=");
    python_op_set.add("**=");
    python_op_set.add("\\");
 }

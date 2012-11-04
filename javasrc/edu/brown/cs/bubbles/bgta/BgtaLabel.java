@@ -21,6 +21,8 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import edu.brown.cs.bubbles.buda.*;
+
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
@@ -80,7 +82,7 @@ BgtaLabel(String username,String displayname)
    }
    user_name = username;
    my_label.setHorizontalTextPosition(JLabel.RIGHT);
-   my_label.setCursor(Cursor.getDefaultCursor());
+   BudaCursorManager.setCursor(my_label,Cursor.getDefaultCursor());
    my_label.createToolTip();
    my_button = null;
    

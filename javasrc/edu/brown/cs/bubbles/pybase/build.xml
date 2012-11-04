@@ -68,8 +68,8 @@
    </target>
 
    <target name='test1' depends='compile'>
-      <java classname='edu.brown.cs.bubbles.pybase.PybaseTest' fork='true'>
-	 <classpath refid='test1.classpath' />
+      <java classname='edu.brown.cs.bubbles.pybase.PybaseTest1' fork='true'>
+	 <classpath refid='test.classpath' />
       </java>
    </target>
 

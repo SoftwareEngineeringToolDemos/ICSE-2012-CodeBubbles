@@ -141,13 +141,13 @@ public BuenoProjectDialog(String proj)
    for (Element e : IvyXml.children(xml,"OPTION")) {
       String k = IvyXml.getAttrString(e,"NAME");
       String v = IvyXml.getAttrString(e,"VALUE");
-      option_elements.put(k,v);
+      if (k != null && v != null) option_elements.put(k,v);
     }
    for (Element e : IvyXml.children(xml,"PROPERTY")) {
       String q = IvyXml.getAttrString(e,"QUAL");
       String n = IvyXml.getAttrString(e,"NAME");
       String v = IvyXml.getAttrString(e,"VALUE");
-      option_elements.put(q + "." + n,v);
+      if (q != null && n != null && v != null) option_elements.put(q + "." + n,v);
     }
    start_options = new HashMap<String,String>(option_elements);
 
@@ -333,6 +333,9 @@ private class NewPathEntryBubble extends BudaBubble implements ActionListener {
    private JFileChooser file_chooser;
 
    NewPathEntryBubble(FileFilter ff,int mode) {
+      //TODO: If we are running as a client, we need to create a FileSystemView object
+      //  that reflects all requests to the server to get files
+
       file_chooser = new JFileChooser(last_directory);
       file_chooser.setMultiSelectionEnabled(true);
       file_chooser.addChoosableFileFilter(ff);
@@ -826,7 +829,7 @@ private void setupJunit()
 {
    BoardSetup bs = BoardSetup.getSetup();
    String path = bs.getLibraryPath("junit.jar");
-   
+
    boolean fnd = false;
    for (PathEntry pe : initial_paths) {
       if (pe.getBinaryPath() != null && pe.getBinaryPath().contains("junit")) fnd = true;
@@ -835,7 +838,7 @@ private void setupJunit()
       PathEntry pe = new PathEntry(new File(path));
       library_paths.addElement(pe);
     }
-   
+
    option_elements.put(JUNIT_OPTION,"true");
 }
 
@@ -873,8 +876,8 @@ private class ContractPanel extends SwingGridPanel implements ActionListener {
     }
 
    boolean setupCofoja()		{ return setup_cofoja; }
-   boolean setupJunit()                 { return setup_junit; }
-   boolean enableAssertions()           { return assert_button.isSelected(); }
+   boolean setupJunit() 		{ return setup_junit; }
+   boolean enableAssertions()		{ return assert_button.isSelected(); }
 
    @Override public void actionPerformed(ActionEvent evt) {
       if (evt.getSource() == cofoja_button) {
@@ -919,51 +922,52 @@ private class ProjectEditor implements ActionListener {
       Set<PathEntry> dels = new HashSet<PathEntry>(initial_paths);
       dels.removeAll(source_paths);
       boolean chng = false;
-   
+
       if (contract_panel.setupCofoja()) {
-         setupContractsForJava();
+	 setupContractsForJava();
        }
       if (contract_panel.setupJunit()) {
-         setupJunit();
+	 setupJunit();
        }
       option_elements.put(ASSERT_OPTION,Boolean.toString(contract_panel.enableAssertions()));
-   
+
       IvyXmlWriter xw = new IvyXmlWriter();
       xw.begin("PROJECT");
       xw.field("NAME",project_name);
       for (PathEntry pe : library_paths) {
-         pe.outputXml(xw,false);
-         dels.remove(pe);
+	 pe.outputXml(xw,false);
+	 dels.remove(pe);
        }
       for (PathEntry pe : dels) {
-         pe.outputXml(xw,true);
+	 pe.outputXml(xw,true);
        }
-   
+
       for (Map.Entry<String,String> ent : option_elements.entrySet()) {
-         String k = ent.getKey();
-         String v = ent.getValue();
-         String ov = start_options.get(k);
-         if (v.equals(ov)) continue;
-         chng = true;
-         xw.begin("OPTION");
-         xw.field("NAME",k);
-         xw.field("VALUE",v);
-         xw.end("OPTION");
+	 String k = ent.getKey();
+	 String v = ent.getValue();
+	 String ov = start_options.get(k);
+	 if (k == null || v == null) continue;
+	 if (v.equals(ov)) continue;
+	 chng = true;
+	 xw.begin("OPTION");
+	 xw.field("NAME",k);
+	 xw.field("VALUE",v);
+	 xw.end("OPTION");
        }
-   
+
       for (PrefEntry pe : pref_entries) {
-          pe.outputXml(xw);
-          chng = true;
+	  pe.outputXml(xw);
+	  chng = true;
        }
-   
+
       xw.end("PROJECT");
-   
+
       closeWindow(problem_panel);
-   
+
       BumpClient bc = BumpClient.getBump();
-   
+
       if (chng || anythingChanged())
-         bc.editProject(project_name,xw.toString());
+	 bc.editProject(project_name,xw.toString());
     }
 
 }	// end of inner class ProjectEditor

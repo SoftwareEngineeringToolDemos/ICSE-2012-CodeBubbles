@@ -65,18 +65,20 @@ BeamMouseBubble()
 {
    super(null,BudaBorder.RECTANGLE);
 
-   String mfilnm = BoardSetup.getSetup().getLibraryPath("mouseusage.html");
    StringBuffer buf = new StringBuffer();
    BufferedReader br = null;
 
    try {
-      br = new BufferedReader(new FileReader(mfilnm));
+      InputStream ins = BoardProperties.getLibraryFile("mouseusage.html");
+      if (ins == null) return;
+      br = new BufferedReader(new InputStreamReader(ins));
       for ( ; ; ) {
 	 String ln = br.readLine();
 	 if (ln == null) break;
 	 buf.append(ln);
 	 buf.append("\n");
        }
+      ins.close();
     }
    catch (IOException e) { }
 

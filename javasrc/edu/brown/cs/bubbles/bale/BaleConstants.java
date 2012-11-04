@@ -77,6 +77,7 @@ enum BaleFragmentType {
    FILE,
    FIELDS,				// set of fields (python attributes)
    STATICS,				// static initializers (python evaluations)
+   MAIN,				// python main program
    HEADER,				// class header
    ROFILE,				// Read-only file (not in IDE)
    ROMETHOD,				// read-only method (not in IDE)
@@ -100,7 +101,8 @@ enum BaleTokenState {
    NORMAL,
    IN_FORMAL_COMMENT,
    IN_COMMENT,
-   IN_LINE_COMMENT //amc6 added
+   IN_LINE_COMMENT, //amc6 added
+   IN_MULTILINE_STRING,
 }
 
 
@@ -151,6 +153,7 @@ enum BaleTokenType {
    NUMBER,				// numeric literal
    CHARLITERAL, 			// character literal
    STRING,				// string literal
+   LONGSTRING,				// long string literal (multiline)
    IDENTIFIER,				// identifier
    LPAREN,				// left paren (
    RPAREN,				// right paren )
@@ -291,6 +294,15 @@ enum BaleElideMode {
    ELIDE_CHECK_ALWAYS,			// redo elision as the cursor moves
    ELIDE_NONE				// no elision
 }
+
+
+enum BaleSplitMode {
+   SPLIT_NEVER, 			// don't split lines
+   SPLIT_QUICK, 			// fast check
+   SPLIT_NORMAL 			// normal (best) check
+}
+
+int	SPLIT_QUICK_SIZE = 20480;
 
 
 
@@ -1113,6 +1125,11 @@ interface BaleFileOverview extends Document {
    int findLineOffset(int line);
 
 /**
+ *
+ **/
+   int getFragmentOffset(int off);
+
+/**
  *	Find the line number for the line that contains the given file position.
  **/
    int findLineNumber(int off);
@@ -1121,6 +1138,11 @@ interface BaleFileOverview extends Document {
  *	Ensure position is maintained over saves
  **/
    Position savePosition(Position p);
+
+/**
+ *	Handle text editing
+ **/
+   boolean replace(int off,int len,String text,boolean format,boolean indent);
 
 }	// end of interface BaleFileOverview
 

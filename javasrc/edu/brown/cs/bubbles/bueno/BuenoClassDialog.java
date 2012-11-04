@@ -61,6 +61,8 @@ public BuenoClassDialog(BudaBubble source,Point locale,BuenoType typ,
    
    BumpContractType bct = BumpClient.getBump().getContractType(prj);
    
+   if (bct == null) return;
+   
    if (bct.useContractsForJava()) {
       String imp = "import com.google.java.contract.*";
       property_set.addToArrayProperty(BuenoKey.KEY_IMPORTS,imp);

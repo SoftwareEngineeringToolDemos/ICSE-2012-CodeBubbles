@@ -331,6 +331,12 @@
 	 <KEYWORD TEXT="viewport"/>
 	 <KEYWORD TEXT="panning"/>
       </OPT>
+      <OPT NAME="Buda.help.tooltips" TYPE="Boolean" DESCRIPTION="Show help tooltips">
+	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME='Popular Options'/>
+	 <TAB NAME='System Options'/>
+	 <KEYWORD TEXT='help' />
+      </OPT>
       <OPT NAME="Buda.mergeforreg" DESCRIPTION="Show merged search on right click" TYPE="BOOLEAN">
 	 <TAB NAME="Search Options"/>
       </OPT>

@@ -31,6 +31,8 @@
 package edu.brown.cs.bubbles.buss;
 
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.buda.BudaConstants.BubbleViewCallback;
+import edu.brown.cs.bubbles.buda.BudaConstants.BudaWorkingSet;
 import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.*;
@@ -73,12 +75,12 @@ private static final long serialVersionUID = 1;
 /*										*/
 /********************************************************************************/
 
-BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussBubble)
+BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussbubble)
 {
    super(mdl);
 
    tree_model = mdl;
-   buss_bubble = bussBubble;
+   buss_bubble = bussbubble;
 
    Font ft = BUSS_STACK_FONT;
    Font ftb = ft.deriveFont(Font.BOLD);
@@ -92,8 +94,8 @@ BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussBubble)
    setFont(ftb);
    setDragEnabled(true);
    setTransferHandler(new Transferer());
-   setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-   setCellRenderer(new BussCellRenderer(contentWidth, bussBubble));
+   BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+   setCellRenderer(new BussCellRenderer(contentWidth, bussbubble));
    setRowHeight(0);
    setOpaque(false);
 
@@ -109,6 +111,8 @@ BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussBubble)
    tui.setRightChildIndent(BUSS_TREE_INDENT);
 
    expandAll();
+
+   BudaRoot.addBubbleViewCallback(new BussBubbleCallback(buss_bubble));
 }
 
 
@@ -389,6 +393,57 @@ private class ShowSelectedAction extends AbstractAction implements ActionListene
 
 }	// end of inner class EscapeHandler
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Classes for maintaining bubble windows as part of the bubble stack	*/
+/*										*/
+/********************************************************************************/
+
+private static class BussBubbleCallback implements BubbleViewCallback {
+
+   private static final double DISTANCE_LIMIT = 100;
+   private BussBubble buss_bubble;
+
+   BussBubbleCallback(BussBubble bussBubble){
+      buss_bubble = bussBubble;
+    }
+
+   @Override public void focusChanged(BudaBubble bb,boolean set)	{ }
+   @Override public void bubbleAdded(BudaBubble bb)			{ }
+   @Override public void bubbleRemoved(BudaBubble bb)			{ }
+   @Override public void workingSetAdded(BudaWorkingSet ws)		{ }
+   @Override public void workingSetRemoved(BudaWorkingSet ws)		{ }
+   @Override public void doneConfiguration()				{ }
+   @Override public void copyFromTo(BudaBubble f,BudaBubble t)		{ }
+
+   @Override public boolean bubbleActionDone(BudaBubble bb) {
+      if (buss_bubble.getEditorBubble() != bb) return false;
+
+      Point editorloc = bb.getLocation();
+      Point originallocation = buss_bubble.getEditorBubbleLocation();
+
+      if (editorloc == null || originallocation == null) return false;
+
+      double distance = Point.distance(editorloc.x, editorloc.y, originallocation.x, originallocation.y);
+
+      if (distance <= DISTANCE_LIMIT) {
+	 bb.setFixed(true);
+	 buss_bubble.updateEditorBubbleLocation();
+	 return true;
+       }
+      else {
+	 buss_bubble.setPreviewBubble(null);
+	 bb.setFixed(false);
+	 buss_bubble.removeEditorBubble();
+       }
+
+      return false;
+   }
+
+}	// end of inner class EditorBubbleCallback
 
 
 

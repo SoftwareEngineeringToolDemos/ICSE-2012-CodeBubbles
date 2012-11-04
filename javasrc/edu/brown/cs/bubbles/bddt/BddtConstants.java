@@ -41,8 +41,8 @@ import java.util.EventListener;
 
 public interface BddtConstants {
 
-   
-   
+
+
 BoardProperties BDDT_PROPERTIES = BoardProperties.getProperties("Bddt");
 
 
@@ -81,7 +81,7 @@ Color	BDDT_PANEL_BOTTOM_COLOR = new Color(0xffffffda);
 Color BDDT_CONFIG_TOP_COLOR = new Color(182,182,255);
 Color BDDT_CONFIG_BOTTOM_COLOR = Color.WHITE;
 
-int     BDDT_CONFIG_WIDTH = BDDT_PROPERTIES.getInt("Bddt.config.width",450);
+int	BDDT_CONFIG_WIDTH = BDDT_PROPERTIES.getInt("Bddt.config.width",450);
 int	BDDT_CONFIG_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.config.height",150);
 
 
@@ -256,6 +256,7 @@ Insets BDDT_BREAKPOINT_BUTTON_MARGIN = new Insets(0,0,0,0);
  *	Color for execution annotations
  **/
 String BDDT_EXECUTE_ANNOT_COLOR = "ExecutionAnnotation.color";
+String BDDT_EXECUTE_EXCEPT_COLOR = "ExecutionAnnotation.exception.color";
 String BDDT_FRAME_ANNOT_COLOR = "FrameAnnotation.color";
 
 

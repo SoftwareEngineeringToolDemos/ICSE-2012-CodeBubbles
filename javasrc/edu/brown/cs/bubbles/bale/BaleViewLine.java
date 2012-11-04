@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -198,8 +198,15 @@ private float computeBestLineSplit(double p,float w)
    SplitLine spl0 = new SplitLine();
    SplitLine spl = null;
 
-   if (!BALE_PROPERTIES.getBoolean(BALE_EDITOR_NO_REFLOW)) {
-      spl = splitLine(w,spl0,100);
+   switch (getBaleElement().getBaleDocument().getSplitMode()) {
+      case SPLIT_NEVER :
+	 break;
+      case SPLIT_NORMAL :
+	 spl = splitLine(w,spl0,100,true);
+	 break;
+      case SPLIT_QUICK :
+	 spl = splitLine(w,spl0,100,false);
+	 break;
     }
 
    if (spl == null) spl = spl0;
@@ -232,7 +239,7 @@ private float computeBestLineSplit(double p,float w)
 /*										*/
 /********************************************************************************/
 
-private SplitLine splitLine(float w,SplitLine spl,int maxlines)
+private SplitLine splitLine(float w,SplitLine spl,int maxlines,boolean opt)
 {
    //TODO: if only entry left is a blank line, remove the leading spaces
 
@@ -269,7 +276,7 @@ private SplitLine splitLine(float w,SplitLine spl,int maxlines)
 	 float mxwd = BALE_MAX_INITIAL_REFLOW_INDENT * space;
 	 if (wd > mxwd) {
 	    spl.setInitialSpace(mxwd);
-	    SplitLine nspl = splitLine(w,spl,maxlines);
+	    SplitLine nspl = splitLine(w,spl,maxlines,opt);
 	    if (nspl == null) nspl = spl;
 	    return nspl;
 	  }
@@ -302,7 +309,7 @@ private SplitLine splitLine(float w,SplitLine spl,int maxlines)
 	 if (ind > BALE_MAX_REFLOW_INDENT) ind = BALE_MAX_REFLOW_INDENT;
 	 float wd = ind * space;
 	 SplitLine nspl = new SplitLine(spl,i,wd);
-	 nspl = splitLine(w,nspl,maxlines);	 // find best split of the rest of line
+	 nspl = splitLine(w,nspl,maxlines,opt);      // find best split of the rest of line
 	 if (nspl == null) break;	   // too far to left -- better splits to the right
 	 if (nspl.getTotalWidth() > spl.getTotalWidth()) {
 	    // earlier break moves things further to the right -- might want to reset indentation
@@ -310,6 +317,7 @@ private SplitLine splitLine(float w,SplitLine spl,int maxlines)
 	  }
 	 maxlines = Math.min(maxlines,nspl.getLineCount());
 	 if (nspl.isBetterThan(bestsplit)) bestsplit = nspl;
+	 if (!opt) break;
        }
     }
 
@@ -471,7 +479,7 @@ private BaleAstNode getAstNode(BaleElement be)
 
 
 
-@SuppressWarnings("unused") 
+@SuppressWarnings("unused")
 private int getAstDelta(BaleAstNode ast0,BaleAstNode ast1)
 {
    while (ast0 != null && ast0.getIdType() != BaleAstIdType.NONE) {

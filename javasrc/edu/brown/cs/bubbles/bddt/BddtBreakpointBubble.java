@@ -100,7 +100,7 @@ BddtBreakpointBubble()
 
    JScrollPane scroll = new JScrollPane(breakpoint_table);
    breakpoint_table.setFillsViewportHeight(true);
-   scroll.setCursor(Cursor.getDefaultCursor());
+   BudaCursorManager.setCursor(scroll,Cursor.getDefaultCursor());
 
    JPanel mainpanel = new JPanel(new BorderLayout());
    mainpanel.add(tool_bar,BorderLayout.SOUTH);

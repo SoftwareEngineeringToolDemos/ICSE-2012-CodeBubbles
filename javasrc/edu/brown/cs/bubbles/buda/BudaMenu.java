@@ -57,8 +57,8 @@ class BudaMenu implements BudaConstants, BudaConstants.BubbleViewCallback {
 /*										*/
 /********************************************************************************/
 
-private Map<String,List<MenuItem>>  menu_groups;
-private List<MenuData>		    active_menus;
+private Map<String,Set<MenuItem>>  menu_groups;
+private List<MenuData>		   active_menus;
 
 private static final int	MENU_DELTA = 15;
 
@@ -74,7 +74,7 @@ private static final int	MENU_DELTA = 15;
 
 BudaMenu()
 {
-   menu_groups = new LinkedHashMap<String,List<MenuItem>>();
+   menu_groups = new LinkedHashMap<String,Set<MenuItem>>();
    active_menus = new ArrayList<MenuData>();
    BudaRoot.addBubbleConfigurator("BUDAMENU",new MenuConfigurator());
    BudaRoot.addBubbleViewCallback(this);
@@ -88,24 +88,30 @@ BudaMenu()
 /*										*/
 /********************************************************************************/
 
-void addMenuItem(String id,ButtonListener callback,Icon icon)
+void addMenuItem(String id,ButtonListener callback,Icon icon,String tooltip)
 {
    String pfx = "*";
    String name = id;
+   String order = "";
 
+   int idx1 = id.indexOf("#");
+   if (idx1 >= 0) {
+      order = order.substring(0,idx1);
+      id = id.substring(idx1+1);
+    }
    int idx = id.indexOf(".");
    if (idx >= 0) {
       pfx = id.substring(0,idx);
       name = id.substring(idx+1);
     }
 
-   List<MenuItem> itms = menu_groups.get(pfx);
+   Set<MenuItem> itms = menu_groups.get(pfx);
    if (itms == null) {
-      itms = new ArrayList<MenuItem>();
+      itms = new TreeSet<MenuItem>();
       menu_groups.put(pfx,itms);
     }
 
-   itms.add(new MenuItem(id,name,callback,icon));
+   itms.add(new MenuItem(id,name,callback,icon,tooltip,order));
 }
 
 
@@ -178,9 +184,8 @@ MenuPanel createMenu(Point pt)
    Set<MenuItem> done = new HashSet<MenuItem>();
 
    int ct = 0;
-   for (List<MenuItem> itms : menu_groups.values()) {
-      if (ct > 0) pnl.add(new JSeparator());
-
+   for (Set<MenuItem> itms : menu_groups.values()) {
+      if (ct++ > 0) pnl.add(new JSeparator());
       addPopupItems(pt,itms,pnl,null,done);
     }
 
@@ -194,7 +199,7 @@ MenuPanel createMenu(Point pt)
 
 
 
-private void addPopupItems(Point pt,List<MenuItem> itms,JComponent menu,String pfx,Set<MenuItem> done)
+private void addPopupItems(Point pt,Set<MenuItem> itms,JComponent menu,String pfx,Set<MenuItem> done)
 {
    int pln = (pfx == null ? 0 : pfx.length());
 
@@ -216,7 +221,7 @@ private void addPopupItems(Point pt,List<MenuItem> itms,JComponent menu,String p
 	    menu.add(mb);
 	  }
 	 else menu.add(m);
-	 List<MenuItem> nitem = new ArrayList<MenuItem>();
+	 Set<MenuItem> nitem = new TreeSet<MenuItem>();
 	 for (MenuItem xmi : itms) {
 	    if (xmi.getName().startsWith(npfx)) nitem.add(xmi);
 	  }
@@ -261,24 +266,33 @@ private void addPopupItems(Point pt,List<MenuItem> itms,JComponent menu,String p
 /*										*/
 /********************************************************************************/
 
-private static class MenuItem {
+private static class MenuItem implements Comparable<MenuItem> {
 
    private String full_id;
    private String item_name;
    private Icon menu_icon;
    private ButtonListener call_back;
+   private String tool_tip;
+   private String order_text;
 
-   MenuItem(String id,String nm,ButtonListener cb, Icon ii) {
-	      full_id = id;
-	      item_name = nm;
-	      call_back = cb;
-	      menu_icon = ii;
-	    }
+   MenuItem(String id,String nm,ButtonListener cb, Icon ii,String tt,String order) {
+      full_id = id;
+      item_name = nm;
+      call_back = cb;
+      menu_icon = ii;
+      tool_tip = tt;
+      order_text = (order == null ? "" : order) + "#" + item_name;
+    }
 
    String getId()				{ return full_id; }
    String getName()				{ return item_name; }
    Icon getIcon()				{ return menu_icon; }
    ButtonListener getCallback() 		{ return call_back; }
+   String getToolTip()				{ return tool_tip; }
+
+   @Override public int compareTo(MenuItem mi) {
+      return order_text.compareTo(mi.order_text);
+    }
 
 }	// end of inner class MenuItem
 
@@ -325,6 +339,9 @@ private static class MenuPanel extends SwingGridPanel implements FocusListener,
 	    MenuComponent b = (MenuComponent) c;
 	    b.setTransparent(fgt_color);
 	  }
+	 else if (c instanceof JSeparator) {
+	    colorSeparator((JSeparator) c,true);
+	 }
        }
     }
 
@@ -334,6 +351,9 @@ private static class MenuPanel extends SwingGridPanel implements FocusListener,
 	    MenuComponent b = (MenuComponent) c;
 	    b.setNontransparent(fg_color);
 	  }
+	 else if (c instanceof JSeparator) {
+	    colorSeparator((JSeparator) c,false);
+	 }
        }
     }
 
@@ -343,7 +363,11 @@ private static class MenuPanel extends SwingGridPanel implements FocusListener,
       cx |= 0x40000000;
       return new Color(cx,true);
     }
-
+   
+   private void colorSeparator(JSeparator js,boolean transp) {
+      
+   }
+   
    @Override public void focusGained(FocusEvent e)	{ setNontransparent(); }
    @Override public void focusLost(FocusEvent e)	{ setTransparent(); }
 
@@ -383,6 +407,7 @@ private class MenuBtn extends JMenuItem implements MenuComponent, ActionListener
       start_point = pt;
       setBackground(BUDA_MENU_BACKGROUND_COLOR);
       setFont(BUBBLE_MENU_FONT);
+      ToolTipManager.sharedInstance().registerComponent(this);
       // setContentAreaFilled(false);
       // enabling this cause the buttons to be green on the mac
       // setBorderPainted(false);
@@ -414,6 +439,12 @@ private class MenuBtn extends JMenuItem implements MenuComponent, ActionListener
 	 bc.buttonActivated(bba,for_item.getId(),start_point);
        }
       noteMenuUsed(this);
+    }
+
+   @Override public String getToolTipText() {
+      String tt = for_item.getToolTip();
+      if (tt != null) return tt;
+      return for_item.getId();
     }
 
 }	// end of inner class MenuBtn

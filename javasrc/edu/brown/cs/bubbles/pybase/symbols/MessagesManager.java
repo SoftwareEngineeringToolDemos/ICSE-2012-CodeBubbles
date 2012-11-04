@@ -205,7 +205,6 @@ public void addUnusedMessage(SimpleNode node,Found f)
    for (GenAndTok g : f) {
       if (g.getGenerator() instanceof SourceToken) {
 	 SimpleNode ast = ((SourceToken) g.getGenerator()).getAst();
-
 	 // it can be an unused import
 	 if (ast instanceof Import || ast instanceof ImportFrom) {
 	    if (AbstractVisitor.isWildImport(ast)) {
@@ -404,11 +403,11 @@ private void doAddMessage(List<PybaseMessage> msgs,ErrorType type,Object string,
    if (isUnusedImportMessage(type)) {
       if (!shouldAddUnusedImportMessage()) {
 	 return;
-      }
-   }
-
+       }
+    }
+   
    PybaseMessage messagetoadd = new PybaseMessage(type,string,token,analysis_prefs);
-
+   
    String messageToIgnore = analysis_prefs.getRequiredMessageToIgnore(messagetoadd.getType());
    if (messageToIgnore != null) {
       int startLine = messagetoadd.getStartLine(for_document) - 1;
@@ -416,9 +415,9 @@ private void doAddMessage(List<PybaseMessage> msgs,ErrorType type,Object string,
       if (line.indexOf(messageToIgnore) != -1) {
 	 // keep going... nothing to see here...
 	 return;
-      }
-   }
-
+       }
+    }
+   
    msgs.add(messagetoadd);
 }
 
@@ -466,15 +465,16 @@ private boolean startsWithNamesToIgnore(GenAndTok g)
       names_to_ignore_cache = analysis_prefs.getNamesIgnoredByUnusedVariable();
    }
    String representation = g.getToken().getRepresentation();
+   if (names_to_ignore_cache.contains(representation)) return true;
 
-   boolean addIt = true;
    for (String str : names_to_ignore_cache) {
       if (representation.startsWith(str)) {
-	 addIt = false;
-	 break;
+         names_to_ignore_cache.add(representation);
+         return true;
       }
    }
-   return addIt;
+   
+   return false;
 }
 
 

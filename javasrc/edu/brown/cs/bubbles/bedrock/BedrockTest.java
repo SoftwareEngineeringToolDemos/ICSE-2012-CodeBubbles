@@ -175,12 +175,12 @@ private void test01()
 		  "<REGION START='1808' END='1808' PRIORITY='1.0' />");
 
    sendCommand("RENAME",proj,"FILE='" + src2 +"' START='1708' END='1708' NEWNAME='hello' UPDATEREFS='true'",null);
-   sendCommand("JAVASEARCH",proj,"PATTERN='getWhen' FOR='METHOD' DEFS='false' REFS='true'",null);
+   sendCommand("PATTERNSEARCH",proj,"PATTERN='getWhen' FOR='METHOD' DEFS='false' REFS='true'",null);
    sendCommand("CALLPATH",proj,"FROM='trial.PlotSun.main(*)' TO='trial.PlotSun.get4(*)'",null);
    sendCommand("FORMATMETHOD",proj,"FILE='" + src2 + "'",
 		  "<REGION START='1671' END='2000' />");
-   sendCommand("JAVASEARCH",proj,"PATTERN='PlotSun.process' FOR='METHOD' DEFS='true' REFS='false'",null);
-   sendCommand("JAVASEARCH",null,"PATTERN='PlotSun.process' FOR='METHOD' DEFS='true' REFS='false'",null);
+   sendCommand("PATTERNSEARCH",proj,"PATTERN='PlotSun.process' FOR='METHOD' DEFS='true' REFS='false'",null);
+   sendCommand("PATTERNSEARCH",null,"PATTERN='PlotSun.process' FOR='METHOD' DEFS='true' REFS='false'",null);
 
    synchronized (this) {
       try {

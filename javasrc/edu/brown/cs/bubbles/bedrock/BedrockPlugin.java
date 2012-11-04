@@ -466,7 +466,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 	 bedrock_project.importExistingProject(proj);
        }
       catch(Throwable t) {
-         xw.close();
+	 xw.close();
 	 throw new BedrockException("Exception constructing project: " + t.getMessage());
        }
     }
@@ -517,7 +517,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("OPENEDITOR")) {
        bedrock_java.handleOpenEditor(proj, IvyXml.getAttrString(xml,"FILE"), IvyXml.getAttrInt(xml,"LINENUMBER"));
     }
-   else if (cmd.equals("JAVASEARCH")) {
+   else if (cmd.equals("PATTERNSEARCH")) {
       bedrock_java.handleJavaSearch(proj,IvyXml.getAttrString(xml,"PATTERN"),
 				       IvyXml.getAttrString(xml,"FOR"),
 				       IvyXml.getAttrBool(xml,"DEFS",true),
@@ -591,8 +591,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 					      IvyXml.getAttrBool(xml,"TRACE",false));
     }
    else if (cmd.equals("ADDEXCEPTIONBREAKPOINT")) {
-      bedrock_breakpoint.setExceptionBreakpoint(proj,IvyXml.getAttrString(xml,"CLASS"),
-						   IvyXml.getAttrBool(xml,"CAUGHT",false),
+      bedrock_breakpoint.setExceptionBreakpoint(proj,IvyXml.getAttrString(xml,"CLASS"), IvyXml.getAttrBool(xml,"CAUGHT",false),
 						   IvyXml.getAttrBool(xml,"UNCAUGHT",true),
 						   IvyXml.getAttrBool(xml,"CHECKED",false),
 						   IvyXml.getAttrBool(xml,"SUSPENDVM",false));

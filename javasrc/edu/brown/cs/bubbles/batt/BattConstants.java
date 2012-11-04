@@ -198,22 +198,27 @@ enum NewStatus {
 
 interface BattTest {
 
+    UseMode usesMethod(String mthd);
+    String getName();
+    String getClassName();
+    String getMethodName();
+
 }
 
 
 interface BattCallTest {
-   
+
    String getTestInput();
    String getTestOutput();
    String getTestOp();
-   
-}       // end of interface BattCallTest
+
+}	// end of interface BattCallTest
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Definitions for new test bubbles                                        */
-/*                                                                              */
+/*										*/
+/*	Definitions for new test bubbles					*/
+/*										*/
 /********************************************************************************/
 
 interface StatusUpdate {
@@ -221,27 +226,27 @@ interface StatusUpdate {
 }
 
 interface BattTestBubbleCallback extends StatusUpdate {
-   
+
    String getButtonName();
    BumpLocation getLocation();
    NewTestMode getTestMode();
    String getClassName();
    boolean getCreateClass();
-   
+
    void itemUpdated();
    boolean handleTestCases(List<BattCallTest> tests);
    void handleTestCases(String code);
-   
+
 }
 
 interface BattNewTestPanel {
-   
+
    JPanel getPanel();
    boolean validate();
    List<BattCallTest> getActiveTests();
-   
+
 }
-   
+
 
 
 

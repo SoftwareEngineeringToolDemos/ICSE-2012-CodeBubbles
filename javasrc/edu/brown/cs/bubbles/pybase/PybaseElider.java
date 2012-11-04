@@ -715,13 +715,13 @@ private class ElidePass3 extends Visitor {
       Object ret = unhandled_node(n);
       PybaseScopeItems scp = sem_data.getGlobalScope();
       if (ret != null && scp != null) {
-	 Found fnd = scp.findByToken(n);
-	 if (fnd != null) {
-	    GenAndTok gat = fnd.getSingle();
-	    AbstractToken at = gat.getGenerator();
-	    String s1 = at.getAsAbsoluteImport();
-	    xml_writer.field("FULLNAME",s1);
-	  }
+         Found fnd = scp.findByToken(n);
+         if (fnd != null) {
+            GenAndTok gat = fnd.getSingle();
+            AbstractToken at = gat.getGenerator();
+            String s1 = at.getAsAbsoluteImport();
+            xml_writer.field("FULLNAME",s1);
+          }
        }
       postVisit(n);
       return ret;

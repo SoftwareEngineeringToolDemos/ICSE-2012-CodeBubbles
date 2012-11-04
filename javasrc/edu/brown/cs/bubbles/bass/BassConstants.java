@@ -67,9 +67,9 @@ static final BoardProperties bass_properties = BoardProperties.getProperties("Ba
 
 /**
  *	This enumeration lists the types of names that symbols can represent.
- *	STATICS refers to static initializers (python evaluations); 
- * 	HEADER refers to a class header (i.e. the imports, package, etc.
- *      information).
+ *	STATICS refers to static initializers (python evaluations);
+ *	HEADER refers to a class header (i.e. the imports, package, etc.
+ *	information).
  **/
 
 enum BassNameType {
@@ -80,6 +80,7 @@ enum BassNameType {
    CONSTRUCTOR,
    FIELDS,
    STATICS,
+   MAIN_PROGRAM,
    CLASS,
    ENUM,
    INTERFACE,
@@ -206,7 +207,7 @@ String BASS_CONFIG_LIST_NAME = "@Launch Configurations";
 String BASS_PROCESS_LIST_NAME = "@Processes";
 
 /**
- * 	Name for the courses lsit
+ *	Name for the courses lsit
  */
 
 String BASS_COURSE_LIST_NAME = "@Courses";
@@ -332,25 +333,25 @@ interface BassPopupHandler extends EventListener {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      BassFlagger -- callback to get flag information for a name              */
-/*                                                                              */
+/*										*/
+/*	BassFlagger -- callback to get flag information for a name		*/
+/*										*/
 /********************************************************************************/
 
 interface BassFlagger extends EventListener {
-   
+
    public BassFlag getFlagForName(String fullname);
-   
-}       // end of interface BassFlagger
+
+}	// end of interface BassFlagger
 
 
 interface BassFlag {
    Icon getOverlayIcon();
    int getPriority();
-}       // end of interface BassFlag
+}	// end of interface BassFlag
 
 
-   
+
 
 
 }	// end of interface BassConstants

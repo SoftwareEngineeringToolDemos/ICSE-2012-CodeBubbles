@@ -53,6 +53,7 @@ public class PybaseProject implements PybaseConstants
 /*										*/
 /********************************************************************************/
 
+private PybaseMain	pybase_main;
 private PybaseProjectManager project_manager;
 private String project_name;
 private File base_directory;
@@ -76,8 +77,13 @@ private Set<IFileData> all_files;
 
 PybaseProject(PybaseMain pm,String name,File base)
 {
+   pybase_main = pm;
    project_manager = pm.getProjectManager();
    base_directory = base.getAbsoluteFile();
+   try {
+      base_directory = base_directory.getCanonicalFile();
+   }
+   catch (IOException e) { }
    if (name == null) name = base.getName();
    project_name = name;
    project_paths = new ArrayList<IPathSpec>();
@@ -91,7 +97,9 @@ PybaseProject(PybaseMain pm,String name,File base)
 
    File f1 = new File(base_directory,".pyproject");
    Element xml = IvyXml.loadXmlFromFile(f1);
-   if (xml == null) setupDefaults();
+   if (xml == null) {
+      setupDefaults();
+    }
    else {
       String bfile = IvyXml.getTextElement(xml,"EXE");
       File bf = (bfile == null ? null : new File(bfile));
@@ -141,7 +149,7 @@ void setupDefaults()
 
 public String getName() 			{ return project_name; }
 File getBasePath()				{ return base_directory; }
-File getBinary()				{ return python_interpreter.getExecutable(); }
+public File getBinary() 			{ return python_interpreter.getExecutable(); }
 PybaseVersion getVersion()			{ return python_interpreter.getPythonVersion(); }
 public PybaseNature getNature() 		{ return project_nature; }
 PybasePreferences getPreferences()		{ return pybase_prefs; }
@@ -212,17 +220,25 @@ ISemanticData getParseData(IFileData fd)
 /*										*/
 /********************************************************************************/
 
-void editProject(List<Element> opts,List<Element> paths)
+void editProject(Element pxml)
 {
-   for (Element oelt : opts) {
+   for (Element oelt : IvyXml.children(pxml,"OPTION")) {
       String k = IvyXml.getAttrString(oelt,"KEY");
       String v = IvyXml.getAttrString(oelt,"VALUE");
       pybase_prefs.setProperty(k,v);
-    }
+   }
 
    Set<IPathSpec> done = new HashSet<IPathSpec>();
-   for (Element pelt : paths) {
+   boolean havepath = false;
+   for (Element pelt : IvyXml.children(pxml,"PATH")) {
+      havepath = true;
       File f1 = new File(IvyXml.getAttrString(pelt,"DIRECTORY"));
+      try {
+	 f1 = f1.getCanonicalFile();
+       }
+      catch (IOException e) {
+	 f1 = f1.getAbsoluteFile();
+       }
       boolean fnd = false;
       for (IPathSpec ps : project_paths) {
 	 if (done.contains(ps)) continue;
@@ -256,10 +272,15 @@ void editProject(List<Element> opts,List<Element> paths)
 	 project_paths.add(ps);
        }
     }
-   for (Iterator<IPathSpec> it = project_paths.iterator(); it.hasNext(); ) {
-      IPathSpec ps = it.next();
-      if (!done.contains(ps)) it.remove();
+
+   if (havepath) {
+      for (Iterator<IPathSpec> it = project_paths.iterator(); it.hasNext(); ) {
+	 IPathSpec ps = it.next();
+	 if (!done.contains(ps)) it.remove();
+       }
     }
+
+   project_nature.rebuildPath();
 
    saveProject();
 }
@@ -341,7 +362,7 @@ void findPackage(String name,IvyXmlWriter xw)
 void createModule(String name,String cnts,IvyXmlWriter xw) throws PybaseException
 {
    File fil = findModuleFile(name);
-   
+
    try {
       FileWriter fw = new FileWriter(fil);
       fw.write(cnts);
@@ -356,12 +377,14 @@ void createModule(String name,String cnts,IvyXmlWriter xw) throws PybaseExceptio
       xw.field("PATH",fil.getAbsolutePath());
       xw.end();
     }
+
+   build(true,false);
 }
 
 
 
 
-File findModuleFile(String name) throws PybaseException
+public File findModuleFile(String name) throws PybaseException
 {
    File dir = null;
    String [] comps = name.split("\\.");
@@ -424,7 +447,7 @@ void outputXml(IvyXmlWriter xw)
    for (IFileSpec fs : project_files) {
       fs.outputXml(xw);
     }
-   pybase_prefs.outputXml(xw);
+   pybase_prefs.outputXml(xw,false);
    xw.end("PROJECT");
 }
 
@@ -454,7 +477,7 @@ void outputProject(boolean files,boolean paths,boolean clss,boolean opts,IvyXmlW
        }
     }
 
-   if (opts) pybase_prefs.outputXml(xw);
+   if (opts) pybase_prefs.outputXml(xw,true);
 
    xw.end("PROJECT");
 }
@@ -481,23 +504,83 @@ void open()
 
 
 
-void build(boolean refresh)
+void build(boolean refresh,boolean reload)
 {
    if (!is_open) {
       open();
       return;
     }
 
+   Set<IFileData> oldfiles = null;
+
    if (refresh) {
-      all_files.clear();
-      parse_data.clear();
+      oldfiles = new HashSet<IFileData>(all_files);
+      if (reload) {
+	 all_files.clear();
+	 parse_data.clear();
+       }
     }
 
    for (IPathSpec ps : project_paths) {
       File dir = ps.getOSFile(base_directory);
-      loadFiles(null,dir,refresh);
+      loadFiles(null,dir,reload);
+    }
+
+   if (oldfiles != null) {
+      handleRefresh(oldfiles);
     }
 }
+
+
+
+private void handleRefresh(Set<IFileData> oldfiles)
+{
+   IvyXmlWriter xw = pybase_main.beginMessage("RESOURCE");
+   int ctr = 0;
+   for (IFileData fd : all_files) {
+      IFileData old = null;
+      for (IFileData ofd : oldfiles) {
+	 if (ofd.getFile().equals(fd.getFile())) {
+	    old = ofd;
+	    break;
+	  }
+       }
+      if (old == null) {
+	 outputDelta(xw,"ADDED",fd);
+	 ++ctr;
+       }
+      else if (old.getLastDateLastModified() != fd.getLastDateLastModified()) {
+	 oldfiles.remove(old);
+	 outputDelta(xw,"CHANGED",fd);
+	 ++ctr;
+       }
+      else {
+	 oldfiles.remove(old);
+       }
+    }
+   for (IFileData fd : oldfiles) {
+      outputDelta(xw,"REMOVED",fd);
+      ++ctr;
+    }
+   if (ctr > 0) {
+      pybase_main.finishMessage(xw);
+    }
+}
+
+
+
+private void outputDelta(IvyXmlWriter xw,String act,IFileData ifd)
+{
+   xw.begin("DELTA");
+   xw.field("KIND",act);
+   xw.begin("RESOURCE");
+   xw.field("TYPE","FILE");
+   xw.field("PROJECT",project_name);
+   xw.field("LOCATION",ifd.getFile().getAbsolutePath());
+   xw.end("RESOURCE");
+   xw.end("DELTA");
+}
+
 
 
 
@@ -526,22 +609,33 @@ private void loadFiles(String pfx,File dir,boolean reload)
 	    int idx = mnm.lastIndexOf(".");
 	    if (idx >= 0) mnm = mnm.substring(0,idx);
 	    if (pfx != null) mnm = pfx + "." + mnm;
-	    IFileData fd = PybaseFileManager.getFileManager().getFileData(f,mnm,this);
-	    if (reload) fd.reload();
+	    IFileData fd = PybaseFileManager.getFileManager().getNewFileData(f,mnm,this);
+	    ISemanticData isd = parse_data.get(fd);
+	    if (reload) {
+	       // fd.reload();
+	       isd = null;
+	     }
 	    all_files.add(fd);
-	    ISemanticData sd = parseFile(fd);
-	    if (sd != null) {
-	       System.err.println("PYBASE: PARSE YIELDS: " + sd.getRootNode());
-	       IvyXmlWriter xw = PybaseMain.getPybaseMain().beginMessage("FILEERROR");
-	       xw.field("PROJECT",sd.getProject().getName());
-	       xw.field("FILE",fd.getFile().getPath());
-	       xw.begin("MESSAGES");
-	       for (PybaseMessage m : sd.getMessages()) {
-		  System.err.println("PYBASE: PARSE ERROR: " + m);
-		  PybaseUtil.outputProblem(m,sd,xw);
+	    if (isd == null) {
+	       ISemanticData sd = parseFile(fd);
+	       if (sd != null) {
+		  System.err.println("PYBASE: PARSE YIELDS: " + sd.getRootNode());
+		  IvyXmlWriter xw = PybaseMain.getPybaseMain().beginMessage("FILEERROR");
+		  xw.field("PROJECT",sd.getProject().getName());
+		  xw.field("FILE",fd.getFile().getPath());
+		  xw.begin("MESSAGES");
+		  for (PybaseMessage m : sd.getMessages()) {
+		     try {
+			System.err.println("PYBASE: PARSE ERROR: " + m);
+			PybaseUtil.outputProblem(m,sd,xw);
+		      }
+		     catch (Throwable t) {
+			PybaseMain.logE("Pybase error message: ",t);
+		      }
+		   }
+		  xw.end("MESSAGES");
+		  PybaseMain.getPybaseMain().finishMessage(xw);
 		}
-	       xw.end("MESSAGES");
-	       PybaseMain.getPybaseMain().finishMessage(xw);
 	     }
 	  }
        }

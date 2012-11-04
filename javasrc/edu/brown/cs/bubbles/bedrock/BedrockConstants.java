@@ -35,6 +35,7 @@ package edu.brown.cs.bubbles.bedrock;
 
 
 
+
 public interface BedrockConstants {
 
 
@@ -140,11 +141,50 @@ enum BedrockLogLevel {
 
 
 
+
 }	// end of interface BedrockConstants
 
 
 
 
 /* end of BedrockConstants.java */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

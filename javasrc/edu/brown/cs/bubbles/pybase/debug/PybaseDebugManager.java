@@ -38,7 +38,6 @@ package edu.brown.cs.bubbles.pybase.debug;
 
 import edu.brown.cs.bubbles.pybase.PybaseMain;
 import edu.brown.cs.bubbles.pybase.PybaseException;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
 import edu.brown.cs.bubbles.pybase.PybaseConstants;
 
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -50,7 +49,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.List;
+import java.util.ArrayList;
 
 
 public class PybaseDebugManager implements PybaseDebugConstants, PybaseConstants {
@@ -67,8 +67,9 @@ private Map<String,PybaseLaunchConfig>		config_map;
 private File					config_file;
 private Map<String,PybaseDebugBreakpoint>	break_map;
 private File					break_file;
-private Map<String,PybaseDebugger>              debug_map;
+private Map<String,PybaseDebugger>		debug_map;
 
+private static PybaseDebugManager		the_manager;
 
 
 
@@ -78,14 +79,23 @@ private Map<String,PybaseDebugger>              debug_map;
 /*										*/
 /********************************************************************************/
 
-public PybaseDebugManager(PybaseMain pm)
+public static PybaseDebugManager getManager()
 {
-   pybase_main = pm;
+   if (the_manager == null) {
+      the_manager = new PybaseDebugManager();
+    }
+   return the_manager;
+}
+
+
+private PybaseDebugManager()
+{
+   pybase_main = PybaseMain.getPybaseMain();
 
    config_map = new ConcurrentHashMap<String,PybaseLaunchConfig>();
-   config_file = new File(pm.getWorkSpaceDirectory(),CONFIG_FILE);
+   config_file = new File(pybase_main.getWorkSpaceDirectory(),CONFIG_FILE);
    break_map = new ConcurrentHashMap<String,PybaseDebugBreakpoint>();
-   break_file = new File(pm.getWorkSpaceDirectory(),BREAKPOINT_FILE);
+   break_file = new File(pybase_main.getWorkSpaceDirectory(),BREAKPOINT_FILE);
    debug_map = new ConcurrentHashMap<String,PybaseDebugger>();
 
    loadConfigurations();
@@ -162,6 +172,7 @@ public void getNewRunConfiguration(String proj,String nm,String clone,IvyXmlWrit
 
    if (plc != null) {
       if (proj != null) plc.setAttribute(ATTR_PROJECT,proj);
+      config_map.put(plc.getId(),plc);
       plc.outputBubbles(xw);
       handleLaunchNotify(plc,"ADD");
     }
@@ -190,8 +201,14 @@ public void editRunConfiguration(String lid,String prop,String val,IvyXmlWriter 
 {
    PybaseLaunchConfig cfg = config_map.get(lid);
    if (cfg == null) throw new PybaseException("Launch configuration " + lid + " not found");
+
+   cfg = cfg.getWorkingCopy();
    if (prop.equals("NAME")) {
       cfg.setName(val);
+    }
+   else if (prop.equals("FILE")) {
+      File f = new File(val);
+      cfg.setFileToRun(f);
     }
    else {
       cfg.setAttribute(prop,val);
@@ -208,8 +225,12 @@ public void saveRunConfiguration(String lid,IvyXmlWriter xw) throws PybaseExcept
 {
    PybaseLaunchConfig cfg = config_map.get(lid);
    if (cfg == null) throw new PybaseException("Launch configuration " + lid + " not found");
-   cfg.setSaved(true);
+
+   cfg.commitWorkingCopy();
+
    saveConfigurations();
+
+   if (xw != null) cfg.outputBubbles(xw);
 
    handleLaunchNotify(cfg,"CHANGE");
 }
@@ -249,13 +270,20 @@ private void handleLaunchNotify(PybaseLaunchConfig plc,String reason)
 private void loadBreakpoints()
 {
    Element xml = IvyXml.loadXmlFromFile(config_file);
-   for (Element be : IvyXml.children(xml,"BREAKPOINT")) {
-      try {
-         PybaseDebugBreakpoint pb = new PybaseDebugBreakpoint(pybase_main,be);
-         break_map.put(pb.getId(),pb);
-       }
-      catch (PybaseException e) {
-         PybaseMain.logE("Breakpoint not found: " + IvyXml.convertXmlToString(xml),e);
+   if (xml == null) {
+      PybaseDebugBreakpoint bp;
+      bp = PybaseDebugBreakpoint.createExceptionBreakpoint("Exception",true,true);
+      break_map.put(bp.getId(),bp);
+    }
+   else {
+      for (Element be : IvyXml.children(xml,"BREAKPOINT")) {
+	 try {
+	    PybaseDebugBreakpoint pb = PybaseDebugBreakpoint.createBreakpoint(be);
+	    break_map.put(pb.getId(),pb);
+	  }
+	 catch (PybaseException e) {
+	    PybaseMain.logE("Breakpoint not found: " + IvyXml.convertXmlToString(xml),e);
+	  }
        }
     }
 }
@@ -267,7 +295,7 @@ private void saveBreakpoints()
       IvyXmlWriter xw = new IvyXmlWriter(break_file);
       xw.begin("BREAKPOINTS");
       for (PybaseDebugBreakpoint pb : break_map.values()) {
-         pb.outputXml(xw);
+	 pb.outputXml(xw);
        }
       xw.end("BREAKPOINTS");
       xw.close();
@@ -293,17 +321,36 @@ public void getAllBreakpoints(IvyXmlWriter xw)
 }
 
 
+List<PybaseDebugBreakpoint> getBreakpoints()
+{
+   return new ArrayList<PybaseDebugBreakpoint>(break_map.values());
+}
+
+
 
 public void setLineBreakpoint(String proj,String id,String file,int line,boolean susvm,boolean trace)
-        throws PybaseException
+	throws PybaseException
 {
-   PybaseProject pp = pybase_main.getProject(proj);
-   IFileData fd = pybase_main.getFileData(file,pp);
-   PybaseDebugBreakpoint pb = new PybaseDebugBreakpoint(fd,line);
+   IFileData fd = pybase_main.getFileData(file);
+   if (fd == null) throw new PybaseException("File " + file + " not found");
+   PybaseDebugBreakpoint pb = PybaseDebugBreakpoint.createLineBreakpoint(fd,line);
    break_map.put(pb.getId(),pb);
    saveBreakpoints();
    handleBreakNotify(pb,"ADD");
 }
+
+
+public void setExceptionBreakpoint(String proj,String exc,boolean caught,
+				      boolean uncaught,boolean checked,
+				      boolean susvm)
+	throws PybaseException
+{
+   PybaseDebugBreakpoint pb = PybaseDebugBreakpoint.createExceptionBreakpoint(exc, caught, uncaught);
+   break_map.put(pb.getId(),pb);
+   saveBreakpoints();
+   handleBreakNotify(pb,"ADD");
+}
+
 
 
 public void editBreakpoint(String id,String p1,String v1,String p2,String v2,String p3,String v3)
@@ -330,18 +377,18 @@ private void handleBreakNotify(PybaseDebugBreakpoint pb,String reason)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Methods to handle launches                                              */
-/*                                                                              */
+/*										*/
+/*	Methods to handle launches						*/
+/*										*/
 /********************************************************************************/
 
 public void runProject(String id,IvyXmlWriter xw) throws PybaseException
 {
    PybaseLaunchConfig plc = config_map.get(id);
    if (plc == null) throw new PybaseException("Launch configuration " + id + " not found");
-  
+
    PybaseDebugger pd = null;
-   
+
    try {
       pd = PybaseRunner.runDebug(plc);
       debug_map.put(pd.getId(),pd);
@@ -349,16 +396,25 @@ public void runProject(String id,IvyXmlWriter xw) throws PybaseException
    catch (IOException e) {
       throw new PybaseException("Problem starting debugger",e);
     }
-   
-   pd.outputXml(xw);
+
+   xw.begin("LAUNCH");
+   xw.field("MODE","debug");
+   xw.field("ID",pd.getId());
+   xw.field("CID",pd.getLaunchConfig().getId());
+   PybaseDebugTarget dt = pd.getTarget();
+   if (dt != null) {
+      xw.field("TARGET",dt.getId());
+      xw.field("PROCESS",dt.getId());
+    }
+   xw.end("LAUNCH");
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Debugger actions                                                        */
-/*                                                                              */
+/*										*/
+/*	Debugger actions							*/
+/*										*/
 /********************************************************************************/
 
 public void debugAction(String lid,String tgtid,String pid,String tid,String fid,
@@ -367,81 +423,82 @@ public void debugAction(String lid,String tgtid,String pid,String tid,String fid
    for (PybaseDebugger pd : debug_map.values()) {
       if (lid != null && !pd.getId().equals(lid)) continue;
       if (tgtid == null && pid== null && tid == null) {
-         if (doAction(pd,act)) {
-            xw.textElement("LAUNCH",act.toString());
-            continue;
-          }
+	 if (doAction(pd,act)) {
+	    xw.textElement("LAUNCH",act.toString());
+	    continue;
+	  }
        }
-      for (PybaseDebugTarget pdt : pd.getTargets()) {
-         if (tgtid != null && !pdt.getId().equals(tgtid)) continue;
-         if (tid == null) {
-            if (doAction(pdt,act)) {
-               xw.textElement("TARGET",act.toString());
-               continue;
-             }
-          }
-         try {
-            for (PybaseDebugThread thr : pdt.getThreads()) {
-               if (!thr.getLocalId().equals(tid)) continue;
-               if (!thr.isSuspended() && act != PybaseDebugAction.SUSPEND) continue;
-               if (doAction(thr,fid,act)) {
-                  xw.textElement("THREAD",act.toString());
-                }
-             }
-          }
-         catch (PybaseException e) { }
+
+      PybaseDebugTarget pdt = pd.getTarget();
+      if (pdt != null) {
+	 if (tgtid != null && !pdt.getId().equals(tgtid)) return;
+	 if (tid == null) {
+	    if (doAction(pdt,act)) {
+	       xw.textElement("TARGET",act.toString());
+	       return;
+	     }
+	  }
+	 try {
+	    for (PybaseDebugThread thr : pdt.getThreads()) {
+	       if (!thr.getLocalId().equals(tid)) continue;
+	       if (!thr.isSuspended() && act != PybaseDebugAction.SUSPEND) return;
+	       if (doAction(thr,fid,act)) {
+		  xw.textElement("THREAD",act.toString());
+		}
+	     }
+	  }
+	 catch (PybaseException e) { }
        }
     }
-      
 }
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Console input handling                                                  */
-/*                                                                              */
+/*										*/
+/*	Console input handling							*/
+/*										*/
 /********************************************************************************/
 
 public void consoleInput(String lid,String txt) throws PybaseException
-{ 
+{
    for (PybaseDebugger pd : debug_map.values()) {
-      if (lid != null && !pd.getId().equals(lid)) continue; 
-      for (PybaseDebugTarget tgt : pd.getTargets()) {
-         try {
-            tgt.consoleInput(txt);
-          }
-         catch (IOException e) {
-            throw new PybaseException("Problem with console output",e);
-          }
+      if (lid != null && !pd.getId().equals(lid)) continue;
+      PybaseDebugTarget tgt = pd.getTarget();
+      if (tgt != null) {
+	 try {
+	    tgt.consoleInput(txt);
+	  }
+	 catch (IOException e) {
+	    throw new PybaseException("Problem with console output",e);
+	  }
        }
     }
 }
 
 
-   
-   
+
+
 private boolean doAction(PybaseDebugger pd,PybaseDebugAction act)
 {
    boolean isdone = false;
-   
+
    switch (act) {
       case NONE :
-         isdone = true;
-         break;
+	 isdone = true;
+	 break;
       case TERMINATE :
-         for (PybaseDebugTarget dt : pd.getTargets()) {
-            if (dt.canTerminate()) {
-               dt.terminate();
-               isdone = true;
-             }
-          }
-         break;
+	 PybaseDebugTarget dt = pd.getTarget();
+	 if (dt != null && dt.canTerminate()) {
+	    dt.terminate();
+	    isdone = true;
+	  }
+	 break;
       default:
 	 break;
     }
-            
+
    return isdone;
 }
 
@@ -450,23 +507,23 @@ private boolean doAction(PybaseDebugTarget pdt,PybaseDebugAction act) throws Pyb
 {
    switch (act) {
       case NONE :
-         break;
+	 break;
       case TERMINATE :
-         if (pdt.canTerminate()) pdt.terminate();
-         else return false;
-         break;
+	 if (pdt.canTerminate()) pdt.terminate();
+	 else return false;
+	 break;
       case SUSPEND :
-         if (pdt.canSuspend()) pdt.suspend();
-         else return false;
-         break;
+	 if (pdt.canSuspend()) pdt.suspend();
+	 else return false;
+	 break;
       case RESUME :
-         if (pdt.canResume()) pdt.resume();
-         else return false;
-         break;
+	 if (pdt.canResume()) pdt.resume();
+	 else return false;
+	 break;
       default :
-         return false;
+	 return false;
     }
-   
+
    return true;
 }
 
@@ -475,40 +532,40 @@ private boolean doAction(PybaseDebugThread thr,String fid,PybaseDebugAction act)
 {
    switch (act) {
       case NONE :
-         return false;
+	 return false;
       case TERMINATE :
-         if (thr.canTerminate()) thr.terminate();
-         else return false;
-         break;
+	 if (thr.canTerminate()) thr.terminate();
+	 else return false;
+	 break;
       case RESUME :
-         if (thr.canResume()) thr.resume();
-         else return false;
-         break;
+	 if (thr.canResume()) thr.resume();
+	 else return false;
+	 break;
       case SUSPEND :
-         if (thr.canSuspend()) thr.suspend();
-         else return false;
-         break;
+	 if (thr.canSuspend()) thr.suspend();
+	 else return false;
+	 break;
       case STEP_INTO :
-         if (thr.canStepInto()) thr.stepInto();
-         else return false;
-         break;
+	 if (thr.canStepInto()) thr.stepInto();
+	 else return false;
+	 break;
       case STEP_OVER :
-         if (thr.canStepOver()) thr.stepOver();
-         else return false;
-         break;
+	 if (thr.canStepOver()) thr.stepOver();
+	 else return false;
+	 break;
       case DROP_TO_FRAME :
-         PybaseDebugStackFrame frm = thr.getTopStackFrame();
-         if (fid != null) {
-            for (PybaseDebugStackFrame f1 : thr.getStackFrames()) {
-               if (f1.getId().equals(fid)) frm = f1;
-             }
-          }
-         PybaseMain.logD("No support for drop to frame for " + frm);
-         return false;
+	 PybaseDebugStackFrame frm = thr.getTopStackFrame();
+	 if (fid != null) {
+	    for (PybaseDebugStackFrame f1 : thr.getStackFrames()) {
+	       if (f1.getId().equals(fid)) frm = f1;
+	     }
+	  }
+	 PybaseMain.logD("No support for drop to frame for " + frm);
+	 return false;
       default:
 	 break;
     }
-                
+
    return true;
 }
 
@@ -516,6 +573,28 @@ private boolean doAction(PybaseDebugThread thr,String fid,PybaseDebugAction act)
 
 public void getStackFrames(String lid,String tid,int cnt,int dep,IvyXmlWriter xw)
 {
+   xw.begin("STACKFRAMES");
+
+   for (PybaseDebugger pd : debug_map.values()) {
+      if (lid != null && !pd.getId().equals(lid)) continue;
+      PybaseDebugTarget tgt = pd.getTarget();
+      if (tgt != null) {
+	 PybaseDebugThread thr = tgt.findThreadById(tid);
+	 xw.begin("THREAD");
+	 xw.field("NAME",thr.getName());
+	 xw.field("ID",thr.getLocalId());
+	 int ctr = 0;
+	 for (PybaseDebugStackFrame frm : thr.getStackFrames()) {
+	    if (frm == null) continue;
+	    frm.outputXml(xw,ctr);
+	    if (cnt > 0 && ctr > cnt) break;
+	    ++ctr;
+	  }
+	 xw.end("THREAD");
+       }
+    }
+
+   xw.end("STACKFRAMES");
 }
 
 
@@ -527,9 +606,10 @@ public void evaluateExpression(String pid,String bid,String expr,String tid,Stri
       boolean implicit,boolean dobreak,String rid,IvyXmlWriter xw)
 {
    for (PybaseDebugger pd : debug_map.values()) {
-      if (pid != null && !pd.getId().equals(pid)) continue; 
-      for (PybaseDebugTarget tgt : pd.getTargets()) {
-         tgt.evaluateExpression(bid,rid,expr,null);
+      if (pid != null && !pd.getId().equals(pid)) continue;
+      PybaseDebugTarget tgt = pd.getTarget();
+      if (tgt != null) {
+	 tgt.evaluateExpression(bid,rid,expr,null);
        }
     }
 }

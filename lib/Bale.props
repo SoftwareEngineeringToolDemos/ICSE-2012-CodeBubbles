@@ -83,8 +83,8 @@
 <entry key="visualization.icon.location">bottomright</entry>
 <entry key="visualization.icon.size">small</entry>
 <entry key="visualization.gradient.enable">true</entry>
-<entry key="visualization.gradient.indication">class</entry>
-<entry key="visualization.gradient.direction">vertical</entry>
+<entry key="visualization.gradient.indication">package</entry>
+<entry key="visualization.gradient.direction">horizontal</entry>
 <entry key="Bale.editor.do.gradient">true</entry>
 <entry key="Bale.comment.wrapping">false</entry>
 <entry key="Bale.autocomplete.delay">0</entry>

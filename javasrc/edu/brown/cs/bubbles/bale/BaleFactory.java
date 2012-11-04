@@ -208,6 +208,14 @@ BaleFragmentEditor createStaticsFragmentEditor(String proj,String cls,File file)
 }
 
 
+BaleFragmentEditor createMainProgramFragmentEditor(String proj,String cls,File file)
+{
+   List<BumpLocation> locs = bump_client.findClassInitializers(proj,cls,file,true);
+
+   return getEditorFromLocations(locs,BaleFragmentType.MAIN,cls + ".<MAIN>");
+}
+
+
 
 BaleFragmentEditor createClassPrefixFragmentEditor(String proj,String cls)
 {
@@ -374,8 +382,8 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 	  }
 	 break;
       case MODULE :
-         // fed = createFileEditor(bl.getSymbolProject(),null,bl.getFile());
-         break;
+	 // fed = createFileEditor(bl.getSymbolProject(),null,bl.getFile());
+	 break;
       default:
 	 break;
     }
@@ -524,6 +532,15 @@ public BudaBubble createFieldsBubble(String proj,String cls)
 public BudaBubble createStaticsBubble(String proj,String cls,File file)
 {
    BaleFragmentEditor bfe = createStaticsFragmentEditor(proj,cls,file);
+   if (bfe == null) return null;
+
+   return new BaleEditorBubble(bfe);
+}
+
+
+public BudaBubble createMainProgramBubble(String proj,String cls,File file)
+{
+   BaleFragmentEditor bfe = createMainProgramFragmentEditor(proj,cls,file);
    if (bfe == null) return null;
 
    return new BaleEditorBubble(bfe);
@@ -1009,7 +1026,10 @@ List<BaleRegion> getFragmentRegions(BaleDocument doc)
 	 locs = bump_client.findFields(proj,cnam);
 	 break;
       case STATICS :
-	 locs = bump_client.findClassInitializers(proj,cnam,fil);
+	 locs = bump_client.findClassInitializers(proj,cnam,fil,false);
+	 break;
+      case MAIN :
+	 locs = bump_client.findClassInitializers(proj,cnam,fil,true);
 	 break;
       case HEADER :
 	 locs = bump_client.findClassHeader(proj,cnam);
@@ -1061,6 +1081,9 @@ private BaleFragmentEditor getEditorFromLocations(List<BumpLocation> locs)
       case STATIC_INITIALIZER :
 	 ftyp = BaleFragmentType.STATICS;
 	 break;
+      case MAIN_PROGRAM :
+	 ftyp = BaleFragmentType.MAIN;
+	 break;
       case ENUM_CONSTANT :
       case FIELD :
 	 ftyp = BaleFragmentType.FIELDS;
@@ -1068,9 +1091,9 @@ private BaleFragmentEditor getEditorFromLocations(List<BumpLocation> locs)
 	 fragname = fragname.substring(0,idx) + ".< FIELDS >";
 	 break;
       case MODULE :
-         ftyp = BaleFragmentType.FILE;
-         fragname = loc0.getFile().getPath();
-         break;
+	 ftyp = BaleFragmentType.FILE;
+	 fragname = loc0.getFile().getPath();
+	 break;
       default :
 	 return null;
     }
@@ -1088,6 +1111,7 @@ private List<BaleRegion> getRegionsFromLocations(List<BumpLocation> locs)
    String proj = loc0.getSymbolProject();
    File f = loc0.getFile();
    BaleDocumentIde fdoc = getDocument(proj,f);
+   BoardLanguage lang = BoardSetup.getSetup().getLanguage();
 
    Segment s = new Segment();
    try {
@@ -1125,9 +1149,13 @@ private List<BaleRegion> getRegionsFromLocations(List<BumpLocation> locs)
 	     }
 	    else if (havecmmt) ;
 	    else if (Character.isWhitespace(s.charAt(eoffset))) ;
-	    else if (s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
+	    // TAKE PYTHON COMMENTS INTO ACCOUT (i.e. #)
+	    else if (lang == BoardLanguage.JAVA && s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
 	       havecmmt = true;
 	     }
+	    else if (lang == BoardLanguage.PYTHON && s.charAt(eoffset) == '#') {
+	       havecmmt = true;
+	    }
 	    else break;
 	    ++eoffset;
 	  }

@@ -349,9 +349,11 @@ static void outputBreakpoint(IBreakpoint xbp,IvyXmlWriter xw)
 
    xw.begin("BREAKPOINT");
    try {
+      xw.field("ID",bp.hashCode());
       xw.field("ENABLED",bp.isEnabled());
       xw.field("PERSISTED",bp.isPersisted());
       xw.field("REGISTERED",bp.isRegistered());
+
       if (bp.getHitCount() >= 0) xw.field("HITCOUNT",bp.getHitCount());
       if (bp.getSuspendPolicy() == IJavaBreakpoint.SUSPEND_THREAD) xw.field("SUSPEND","THREAD");
       else xw.field("SUSPEND","VM");
@@ -362,8 +364,6 @@ static void outputBreakpoint(IBreakpoint xbp,IvyXmlWriter xw)
 	 if (fnm != null) xw.field("FILE",fnm);
        }
       xw.field("MODEL",bp.getModelIdentifier());
-
-      xw.field("ID",bp.hashCode());
 
       if (bp instanceof IJavaLineBreakpoint) {
 	 IJavaLineBreakpoint lb = (IJavaLineBreakpoint) bp;
@@ -1437,13 +1437,15 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
    for (Iterator<?> it = attrs.entrySet().iterator(); it.hasNext(); ) {
       Map.Entry<?,?> ent =  (Map.Entry<?,?>) it.next();
       Object val = ent.getValue();
-      if (val == null) continue;
+      String key = ent.getKey().toString();
+      key = BedrockRuntime.getExternalPropertyName(key);
+      if (key == null || val == null) continue;
       if (val instanceof ArrayList<?>) {
 	 ArrayList<?> al = (ArrayList<?>) val;
 	 for (int j = 0; j < al.size(); ++j) {
 	    Object v1 = al.get(j);
 	    xw.begin("ATTRIBUTE");
-	    xw.field("NAME",ent.getKey().toString());
+	    xw.field("NAME",key);
 	    xw.field("INDEX",j+1);
 	    xw.field("TYPE",v1.getClass().getName());
 	    xw.cdata(v1.toString());
@@ -1452,7 +1454,7 @@ static void outputLaunch(ILaunchConfiguration cfg,IvyXmlWriter xw)
        }
       else {
 	 xw.begin("ATTRIBUTE");
-	 xw.field("NAME",ent.getKey().toString());
+	 xw.field("NAME",key);
 	 xw.field("TYPE",val.getClass().getName());
 	 xw.cdata(val.toString());
 	 xw.end("ATTRIBUTE");

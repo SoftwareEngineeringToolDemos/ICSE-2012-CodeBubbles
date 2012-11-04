@@ -95,7 +95,7 @@ BumpClientPython()
  **/
 
 @Override public String getName()		{ return "Python"; }
-
+@Override public String getServerName() 	{ return "PYBASE"; }
 
 
 
@@ -149,8 +149,7 @@ private void ensureRunning()
    argl.add(cp);
 
    File f1 = BoardSetup.getSetup().getRootDirectory();
-   File f2 = new File(f1,"pybles");
-   argl.add("-Dedu.brown.cs.bubbles.pybase.ROOT=" + f2.getAbsolutePath());
+   argl.add("-Dedu.brown.cs.bubbles.pybase.ROOT=" + f1.getAbsolutePath());
 
    argl.add(cls);
    if (ws != null) {

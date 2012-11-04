@@ -64,6 +64,24 @@ private ConsoleThread		console_thread;
 private Map<Integer,ConsoleData> console_map;
 private Set<ILaunchConfiguration> working_configs;
 
+private static Map<String,String> prop_map;
+
+static {
+   prop_map = new HashMap<String,String>();
+
+   prop_map.put("PROJECT_ATTR","org.eclipse.jdt.launching.PROJECT_ATTR");
+   prop_map.put("MAIN_TYPE","org.eclipse.jdt.launching.MAIN_TYPE");
+   prop_map.put("PROGRAM_ARGUMENTS","org.eclipse.jdt.launching.PROGRAM_ARGUMENTS");
+   prop_map.put("VM_ARGUMENTS","org.eclipse.jdt.launching.VM_ARGUMENTS");
+   prop_map.put("TESTNAME","org.eclipse.jdt.junit.TESTNAME");
+   prop_map.put("TEST_KIND","org.eclipse.jdt.junit.TEST_KIND");
+   prop_map.put("CONTRACTS","edu.brown.cs.bubbles.bedrock.CONTRACTS");
+   prop_map.put("ASSERTIONS","edu.brown.cs.bubbles.bedrock.ASSERTIONS");
+   prop_map.put("CONNECT_MAP","org.eclipse.jdt.launching.CONNECT_MAP");
+   prop_map.put("STOP_IN_MAIN","org.eclipse.jdt.launching.STOP_IN_MAIN");
+}
+
+
 
 
 /********************************************************************************/
@@ -190,6 +208,9 @@ void editRunConfiguration(String lnch,String prop,String val,IvyXmlWriter xw)
    if (lnch == null) return;
    ILaunchConfigurationWorkingCopy wc = findWorkingLaunchConfig(lnch);
 
+   String pnm = prop_map.get(prop);
+   if (pnm == null) pnm = prop;
+
    if (prop.endsWith("_MAP") && val != null) {
       StringTokenizer tok = new StringTokenizer(val," {},");
       HashMap<String,String> map = new HashMap<String,String>();
@@ -201,17 +222,17 @@ void editRunConfiguration(String lnch,String prop,String val,IvyXmlWriter xw)
 	 String vl = s.substring(idx+1);
 	 map.put(nm,vl);
        }
-      wc.setAttribute(prop,map);
+      wc.setAttribute(pnm,map);
     }
    else if (prop.equals("NAME")) {
       wc.rename(val);
     }
    else if (prop.contains("STOP_IN_MAIN")) {
       Boolean b = Boolean.valueOf(val);
-      wc.setAttribute(prop,b);
+      wc.setAttribute(pnm,b);
     }
    else {
-      wc.setAttribute(prop,val);
+      wc.setAttribute(pnm,val);
     }
 
    BedrockUtil.outputLaunch(wc,xw);
@@ -311,6 +332,18 @@ private ILaunchConfiguration findLaunchConfig(String id) throws BedrockException
 
 
 
+static String getExternalPropertyName(String p)
+{
+   if (p == null) return null;
+
+   for (Map.Entry<String,String> ent : prop_map.entrySet()) {
+      if (p.equals(ent.getValue())) return ent.getKey();
+    }
+
+   return p;
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -327,7 +360,7 @@ void runProject(String cfg,String mode,boolean build,boolean reg,String vmarg,St
 
       if (vmarg != null) {
 	 ILaunchConfigurationWorkingCopy ccnf = cnf.getWorkingCopy();
-	 String vmatt = "org.eclipse.jdt.launching.VM_ARGUMENTS";
+	 String vmatt = prop_map.get("VM_ARGUMENTS");
 	 String ja = ccnf.getAttribute(vmatt,(String) null);
 	 if (ja == null || ja.length() == 0) ja = vmarg;
 	 else ja = ja + " " + vmarg;
@@ -1428,12 +1461,7 @@ private boolean matchLaunchConfiguration(String id,ILaunchConfiguration il)
    if (id.equals("*")) return true;
    if (id.equals(il.toString())) return true;
    if (id.equals(Integer.toString(System.identityHashCode(il)))) return true;
-   try {
-      String atr = il.getAttribute(BEDROCK_LAUNCH_ID_PROP,(String) null);
-      if (atr != null && id.equals(atr)) return true;
-      if (id.equals(il.getMemento())) return true;
-    }
-   catch (CoreException e) { }
+   if (id.equals(BedrockUtil.getId(il))) return true;
    if (id.equals(il.getName())) return true;
 
    return false;

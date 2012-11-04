@@ -89,6 +89,9 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	 case STATICS :
 	    bb = bf.createStaticsBubble(proj,head,file);
 	    break;
+	 case MAIN :
+	    bb = bf.createMainProgramBubble(proj,head,file);
+	    break;
 	 case HEADER :
 	    bb = bf.createClassPrefixBubble(proj,head);
 	    break;

@@ -81,6 +81,7 @@ BconRegionLocation(BaleConstants.BaleFileOverview fov,BumpLocation bl)
 	 region_type = RegionType.REGION_CONSTRUCTOR;
 	 break;
       case STATIC_INITIALIZER :
+      case MAIN_PROGRAM :
 	 region_type = RegionType.REGION_INITIALIZER;
 	 break;
     }
@@ -231,6 +232,10 @@ BudaBubble makeBubble()
       case STATIC_INITIALIZER :
 	 String inm = base_location.getSymbolName();
 	 bb = bf.createStaticsBubble(base_location.getProject(),inm,base_location.getFile());
+	 break;
+      case MAIN_PROGRAM :
+         inm = base_location.getSymbolName();
+	 bb = bf.createMainProgramBubble(base_location.getProject(),inm,base_location.getFile());
 	 break;
       case FIELD :
       case ENUM_CONSTANT :

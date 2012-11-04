@@ -34,6 +34,7 @@ import edu.brown.cs.bubbles.bump.BumpLocation;
 import java.awt.Rectangle;
 import java.awt.Point;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 
@@ -67,7 +68,7 @@ BddtBubbleManager(BddtLaunchControl blc)
 {
    launch_control = blc;
    bubble_area = null;
-   bubble_map = new HashMap<BudaBubble,BubbleData>();
+   bubble_map = new ConcurrentHashMap<BudaBubble,BubbleData>();
 }
 
 
@@ -493,6 +494,7 @@ BumpStackFrame getFrameForBubble(BudaBubble bb)
    if (bd == null) return null;
    if (bd.getFrame() == null) {
       BumpStackFrame frm = launch_control.getActiveFrame();
+      if (frm == null || bd.getBubble() == null) return null;
       if (bd.getBubble().getContentType() == BudaContentNameType.METHOD) {
 	 String s1 = bd.getBubble().getContentName();
 	 if (s1 != null) {

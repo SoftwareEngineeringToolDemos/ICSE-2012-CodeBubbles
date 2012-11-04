@@ -180,7 +180,7 @@ private void setupPanel()
 
    the_panel.addComponentListener(new PanelWidthManager());
 
-   the_panel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+   BudaCursorManager.setCursor(the_panel,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
    the_panel.setBackground(BDOC_TOP_COLOR);
    the_panel.setFocusable(true);
@@ -408,7 +408,7 @@ private class DescriptionView extends JEditorPane {
       setForeground(NAME_COLOR);
       setEditable(false);
       setOpaque(false);
-      setCursor(new Cursor(Cursor.TEXT_CURSOR));
+      BudaCursorManager.setCursor(this,new Cursor(Cursor.TEXT_CURSOR));
       putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES,Boolean.TRUE);
       addHyperlinkListener(new DocLinker());
     }

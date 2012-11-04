@@ -85,6 +85,7 @@ void addPanel()
    btn.add(new HelpVideoAction());
    btn.add(new HelpWikiAction());
    btn.add(new HelpTutorialAction());
+   btn.add(new HelpTodoAction());
    btn.add(new HelpKeyAction());
    btn.add(new HelpMouseAction());
 
@@ -194,6 +195,19 @@ private class HelpWikiAction extends HelpUrlAction {
     }
 
 }	// end of inner class HelpWikiAction
+
+
+
+private class HelpTodoAction extends HelpUrlAction {
+
+   private static final long serialVersionUID = 1;
+
+   HelpTodoAction() {
+      super("Show How-To Page",HELP_TODO_KEY,HELP_TODO_URL);
+    }
+
+}	// end of inner class HelpTodoAction
+
 
 
 

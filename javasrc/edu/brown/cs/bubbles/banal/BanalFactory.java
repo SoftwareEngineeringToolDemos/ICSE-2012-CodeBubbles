@@ -185,14 +185,14 @@ void startBanalServer()
 	     }
 	    catch (IllegalThreadStateException e) { }
 	  }
-	
+
 	 try {
 	    wait(2000);
 	  }
 	 catch (InterruptedException e) { }
        }
       if (!server_running) {
-	 BoardLog.logE("BANAL","Unable to start bvcr server");
+	 BoardLog.logE("BANAL","Unable to start banal server");
 	 server_running = true; 	// don't try again
        }
     }

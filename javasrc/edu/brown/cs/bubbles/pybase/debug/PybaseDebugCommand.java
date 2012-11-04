@@ -120,6 +120,8 @@ abstract public String getOutgoing();
 public final int getSequence()			{ return sequence_number; }
 
 
+
+
 /********************************************************************************/
 /*										*/
 /*	Processing methods							*/
@@ -221,7 +223,7 @@ static class EvaluateExpression extends PybaseDebugCommand {
 
    private String var_locator;
    private String var_expression;
-   
+
    private boolean is_error;
    private String result_payload;
    private boolean do_exec;
@@ -243,10 +245,10 @@ static class EvaluateExpression extends PybaseDebugCommand {
 
    public void processOKResponse(int cmdCode, String payload) {
       if (cmdCode == CMD_EVALUATE_EXPRESSION || cmdCode == CMD_EXEC_EXPRESSION)
-         result_payload = payload;
+	 result_payload = payload;
       else {
-         is_error = true;
-         PybaseMain.logE("Unexpected response to EvaluateExpression");
+	 is_error = true;
+	 PybaseMain.logE("Unexpected response to EvaluateExpression");
        }
     }
 
@@ -524,19 +526,22 @@ static class RunToLine extends PybaseDebugCommand {
 
 static class SendPyException extends PybaseDebugCommand {
 
-   public SendPyException(PybaseDebugTarget debugger) {
+   private String for_exception;
+   private boolean is_caught;
+   private boolean is_uncaught;
+
+   public SendPyException(PybaseDebugTarget debugger,String exc,boolean caught,boolean unc) {
       super(debugger);
+      for_exception = exc;
+      is_caught = caught;
+      is_uncaught = unc;
     }
 
    @Override public String getOutgoing() {
-      // PyExceptionBreakPointManager instance = PyExceptionBreakPointManager.getInstance();
-      // String pyExceptions = instance.getExceptionsString().trim();
-      // String breakOnUncaught = instance.getBreakOnUncaughtExceptions().trim();
-      // String breakOnCaught = instance.getBreakOnCaughtExceptions().trim();
-      //
-      // return makeCommand(PybaseDebugCommand.CMD_SET_PY_EXCEPTION, getSequence(),
-      // StringUtils.join(ConfigureExceptionsFileUtils.DELIMITER, breakOnUncaught, breakOnCaught, pyExceptions));
-      return null;
+      String c = (is_caught ? "true" : "false");
+      String u = (is_uncaught ? "true" : "false");
+      String cmd = u + ";" + c + ";" + for_exception;
+      return makeCommand(PybaseDebugCommand.CMD_SET_PY_EXCEPTION,getSequence(),cmd);
     }
 
 }	// end of inner class SendPyException
@@ -571,17 +576,17 @@ static class SetBreakpoint extends PybaseDebugCommand {
 
    @Override public String getOutgoing() {
       StringBuffer cmd = new StringBuffer().
-         append(break_file).append("\t").append(break_line);
-   
+	 append(break_file).append("\t").append(break_line);
+
       if (function_name != null) {
-         String last = function_name;
-         int idx = last.lastIndexOf(".");
-         if (idx > 0) last = last.substring(idx+1);
-         cmd.append("\t**FUNC**").append(last.trim());
+	 String last = function_name;
+	 int idx = last.lastIndexOf(".");
+	 if (idx > 0) last = last.substring(idx+1);
+	 cmd.append("\t**FUNC**").append(last.trim());
        }
-   
+
       cmd.append("\t").append(break_condition);
-   
+
       return makeCommand(CMD_SET_BREAK, getSequence(), cmd.toString());
     }
 
@@ -708,8 +713,8 @@ static class ThreadList extends PybaseDebugCommand {
 
    public void processOKResponse(int cmdCode, String payload) {
       if (cmdCode != 102) {
-         PybaseMain.logE("Unexpected response to LIST THREADS"  + payload);
-         return;
+	 PybaseMain.logE("Unexpected response to LIST THREADS"  + payload);
+	 return;
        }
       thread_data = PybaseDebugThread.getThreadsFromXml(debug_target, payload);
       is_done = true;

@@ -118,8 +118,9 @@ protected void createType(BuenoType typ,BuenoLocation where,BuenoProperties prop
 	 break;
     }
 
-   String nm = props.getStringProperty(BuenoKey.KEY_PACKAGE) + "." +
-      props.getStringProperty(BuenoKey.KEY_NAME);
+   String nm = props.getStringProperty(BuenoKey.KEY_PACKAGE);
+   if (nm != null) nm += "." + props.getStringProperty(BuenoKey.KEY_NAME);
+   else nm = props.getStringProperty(BuenoKey.KEY_NAME);
 
    BumpClient bc = BumpClient.getBump();
    bc.saveAll();
@@ -878,6 +879,11 @@ private static String getValue(String key,BuenoProperties props,String eol)
    else if (key.equals("ATTRIBUTES")) {
       String v = props.getStringProperty(BuenoKey.KEY_ATTRIBUTES);
       if (v != null) buf.append(v + " ");
+    }
+   else if (key.equals("AUTHOR")) {
+      String v = props.getStringProperty(BuenoKey.KEY_AUTHOR);
+      if (v == null) v = System.getProperty("user.name");
+      if (v != null) buf.append(v);
     }
    else {
       String pnm = BUENO_PROPERTY_HEAD + key;

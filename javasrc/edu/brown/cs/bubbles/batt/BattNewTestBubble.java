@@ -56,6 +56,7 @@ private String			method_name;
 private BumpLocation		method_data;
 private BattTestBubbleCallback  user_callback;
 private String                  button_name;
+private String			in_project;
 private String			in_class;
 private boolean			create_class;
 
@@ -70,13 +71,14 @@ private boolean			create_class;
 /*										*/
 /********************************************************************************/
 
-BattNewTestBubble(String mthd,BumpLocation loc,String incls,boolean newcls,NewTestMode md)
+BattNewTestBubble(String mthd,BumpLocation loc,String inprj,String incls,boolean newcls,NewTestMode md)
 {
    test_mode = md;
    method_name = mthd;
    method_data = loc;
    user_callback = null;
    button_name = "Generate";
+   in_project = inprj;
    in_class = incls;
    create_class = newcls;
 }
@@ -110,26 +112,19 @@ BudaBubble createNewTestBubble()
 {
    if (method_data == null) return null;
 
-   String fnm = method_name;
-   int idx1 = fnm.indexOf("(");
-   if (idx1 >= 0) fnm = fnm.substring(0,idx1);
-   idx1 = fnm.lastIndexOf(".");
-   if (idx1 >= 0) fnm = fnm.substring(idx1+1);
-
    BudaBubble bb = null;
 
    switch (test_mode) {
       default :
       case USER_CODE :
 	 String nm = getTestMethodName();
-	 createNewTestMethod(fnm,nm,in_class,create_class,null);
-	 bb = BaleFactory.getFactory().createMethodBubble(null,nm);
+	 createNewTestMethod(method_name,nm,in_project,in_class,create_class,null);
+	 bb = BaleFactory.getFactory().createMethodBubble(in_project,nm);
 	 break;
       case INPUT_OUTPUT :
-	 bb = new CallMethodBubble(fnm);
+	 bb = new CallMethodBubble(method_name);
 	 break;
     }
-
 
    return bb;
 }
@@ -149,23 +144,18 @@ BattNewTestPanel createNewTestPanel()
 
 private String getTestMethodName()
 {
-   String cnm = null;
    String mnm = method_name;
    int idx = mnm.indexOf("(");
-   if (idx >= 0) mnm = mnm.substring(0,idx);
+   if (idx > 0) mnm = mnm.substring(0,idx);
    idx = mnm.lastIndexOf(".");
-   if (idx >= 0) {
-      cnm = mnm.substring(0,idx);
-      mnm = mnm.substring(idx+1);
-    }
-   if (mnm.length() == 0) mnm = "something";
-
+   if (idx > 0) mnm = mnm.substring(idx+1);
+   
    BumpClient bc = BumpClient.getBump();
 
    for (int i = 1; i < 100; ++i) {
       String tnm = "test_" + mnm + "_" + i;
-      String fnm = cnm + "." + tnm;
-      List<BumpLocation> locs = bc.findMethod(null,fnm,false);
+      String fnm = in_class + "." + tnm;
+      List<BumpLocation> locs = bc.findMethod(in_project,fnm,false);
       if (locs == null || locs.size() == 0) return fnm;
     }
 
@@ -181,7 +171,7 @@ private String getTestMethodName()
 /*										*/
 /********************************************************************************/
 
-private void createNewTestMethod(String fnm,String nm,String icnm,boolean newcls,String cnts)
+private void createNewTestMethod(String fnm,String nm,String ipnm,String icnm,boolean newcls,String cnts)
 {
    int idx = nm.lastIndexOf(".");
    String cnm = nm.substring(0,idx);
@@ -211,15 +201,15 @@ private void createNewTestMethod(String fnm,String nm,String icnm,boolean newcls
 	 cnnm = cnnm.substring(idx1+1);
 	 props.put(BuenoKey.KEY_PACKAGE, pkg);
 	 props.put(BuenoKey.KEY_NAME, cnnm);
-      }
-      BuenoLocation loc = BuenoFactory.getFactory().createLocation(null,cnm,pkg,false);
+       }
+      props.put(BuenoKey.KEY_IMPORTS, "import org.junit.*;");
+      BuenoLocation loc = BuenoFactory.getFactory().createLocation(ipnm,cnm,pkg,false);
       BuenoFactory.getFactory().createNew(BuenoType.NEW_CLASS, loc, props);
-  } 
-      
+    } 
       
    String anm = null;
    // anm should be last test in class, or null if there are none
-   BuenoLocation loc = BuenoFactory.getFactory().createLocation(null,cnm,anm,true);
+   BuenoLocation loc = BuenoFactory.getFactory().createLocation(ipnm,cnm,anm,true);
 
    BuenoProperties props = new BuenoProperties();
    props.put(BuenoKey.KEY_ADD_COMMENT,Boolean.TRUE);

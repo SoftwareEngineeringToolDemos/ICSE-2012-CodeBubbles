@@ -119,9 +119,6 @@ private File		library_dir;
 private BoardLanguage	board_language;
 
 
-private static String	       prop_base;
-
-
 private static BoardSetup	board_setup = null;
 
 private static final long MIN_MEMORY = 1024*1024*1024;
@@ -134,11 +131,6 @@ private static String [] ivy_props = new String [] {
 private static String [] ivy_env = new String [] {
    "IVY", "BROWN_IVY_IVY", "BROWN_IVY"
 };
-
-static {
-   prop_base = System.getProperty("edu.brown.cs.bubbles.BASE");
-   if (prop_base == null) prop_base = BOARD_PROP_BASE;
-}
 
 
 
@@ -627,7 +619,7 @@ public static String getVersionData()
 
 public static File getPropertyBase()
 {
-   return new File(prop_base);
+   return BoardProperties.getPropertyDirectory();
 }
 
 
@@ -885,7 +877,7 @@ private synchronized void setupMint()
 
 void resetProperties()
 {
-   File ivv = new File(prop_base);
+   File ivv = BoardProperties.getPropertyDirectory();
    if (!ivv.exists()) ivv.mkdir();
 
    for (String s : BOARD_RESOURCE_PROPS) {
@@ -988,7 +980,10 @@ public boolean doSetup()
 	 if (has_changed || wd.hasChanged()) {
 	    if (create_workspace) {
 	       File wf = new File(default_workspace);
-	       if (!wf.exists()) wf.mkdirs();
+	       if (!wf.exists()) {
+		  wf.mkdirs();
+		  BoardLog.setup();	// might need to restart logging
+		}
 	       create_workspace = false;
 	     }
 	    saveProperties();
@@ -1158,6 +1153,11 @@ private void handleSetup()
       BoardLog.logE("BOARD","Setup aborted by user/workspace dialog");
       System.exit(1);
     }
+   if (create_workspace) {
+      File wf = new File(default_workspace);
+      if (!wf.exists()) wf.mkdirs();
+      create_workspace = false;
+   }
 
    saveProperties();
 }
@@ -1319,6 +1319,7 @@ private boolean checkInstall()
 	 jar_directory = f.getParent();
 	 checkJarResources();
 	 checkJarLibraries();
+	 loadUrlLibraries();
        }
     }
    catch (IOException e) {
@@ -1333,6 +1334,7 @@ private boolean checkInstall()
    if (!install_jar) {
       checkLibResources();
     }
+
 
    return true;
 }
@@ -1377,7 +1379,7 @@ private static boolean checkInstallDirectory(File ind)
 
 private void checkJarResources()
 {
-   File ivv = new File(prop_base);
+   File ivv = BoardProperties.getPropertyDirectory();
    if (!ivv.exists()) ivv.mkdir();
 
    File cpt = null;
@@ -1444,6 +1446,50 @@ private void checkJarLibraries()
    File pyd = libd.getParentFile();
    File pyd1 = new File(pyd,"pybles");
    extractPybles(pyd1,libd,update_setup);
+}
+
+
+
+private void loadUrlLibraries()
+{
+   BoardProperties bp = BoardProperties.getProperties("Board");
+   String urlbase = bp.getProperty("Board.library.url","http://www.cs.brown.edu/people/spr/bubbles/lib/");
+   if (!urlbase.endsWith("/")) urlbase += "/";
+
+   for (String s : BOARD_LIBRARY_URLS) {
+      File f = getLibraryDirectory();
+      for (StringTokenizer tok = new StringTokenizer(s,"/"); tok.hasMoreTokens(); ) {
+	 String nm = tok.nextToken();
+	 f = new File(f,nm);
+	 if (tok.hasMoreTokens() && !f.exists()) f.mkdir();
+       }
+      long dlm = f.lastModified();
+      try {
+	 URL u = new URL(urlbase + s);
+	 HttpURLConnection c = (HttpURLConnection) u.openConnection();
+	 if (dlm != 0) c.setIfModifiedSince(dlm);
+	 int cd = c.getResponseCode();
+	 if (cd == HttpURLConnection.HTTP_OK) {
+	    long ndlm = c.getLastModified();
+	    if (ndlm > dlm) {
+	       InputStream ins = c.getInputStream();
+	       FileOutputStream ots = new FileOutputStream(f);
+	       byte [] buf = new byte[16384];
+	       for ( ; ; ) {
+		  int ln = ins.read(buf);
+		  if (ln <= 0) break;
+		  ots.write(buf,0,ln);
+		}
+	       ins.close();
+	       ots.close();
+	     }
+	  }
+	 c.disconnect();
+       }
+      catch (IOException e) {
+	 BoardLog.logE("BOARD","Problem loading url library " + s,e);
+       }
+    }
 }
 
 
@@ -1563,7 +1609,7 @@ private void extractPybles(File pyd,File libd,boolean force)
 
 private void checkLibResources()
 {
-   File ivv = new File(prop_base);
+   File ivv = BoardProperties.getPropertyDirectory();
    if (!ivv.exists()) ivv.mkdir();
    File lbv = new File(install_path,BOARD_INSTALL_LIBRARY);
 
@@ -1815,6 +1861,13 @@ private void restartBubbles()
       cp.append(File.pathSeparator);
       cp.append(f.getPath());
     }
+   for (String s : BOARD_CLASSPATH_FILES) {
+      s = s.replace('/',File.separatorChar);
+      File f = new File(dir,s);
+      cp.append(File.pathSeparator);
+      cp.append(f.getPath());
+    }
+
 
    List<String> args = new ArrayList<String>();
    if (java_args != null) args.addAll(java_args);

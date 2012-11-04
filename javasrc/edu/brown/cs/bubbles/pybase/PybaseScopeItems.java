@@ -168,6 +168,8 @@ public Map<String, Tuple<AbstractToken, Found>> getNamesToIgnore()
 				  */
 public PybaseScopeItems.TryExceptInfo getTryExceptImportError()
 {
+   PybaseScopeItems.TryExceptInfo dflt = null;
+
    for (PybaseScopeItems.TryExceptInfo except : getCurrTryExceptNodes()) {
       for (excepthandlerType handler : except.try_except.handlers) {
 	 if (handler.type != null) {
@@ -176,9 +178,10 @@ public PybaseScopeItems.TryExceptInfo getTryExceptImportError()
 	       return except;
 	    }
 	 }
+	 else dflt = except;
       }
    }
-   return null;
+   return dflt;
 }
 
 
@@ -278,7 +281,10 @@ public void putRef(SimpleNode n,Found f)
       SimpleNode n1 = SourceToken.getNameOrNameTokAst(n);
       if (n1 != null && n1 != n) putRef(n1,f);
       if (n instanceof Attribute) {
-	 putRef(((Attribute) n).attr,f);
+	 Attribute at = (Attribute) n;
+	 putRef(at.attr,f);
+	 // SimpleNode n2 = SourceToken.getNameOrNameTokAst(at.value);
+	 // if (n2 != null) putRef(n2,f);
        }
       else if (n instanceof FunctionDef) {
 	 putRef(((FunctionDef) n).name,f);

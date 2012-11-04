@@ -102,6 +102,10 @@ BaleEditorBubble(BaleFragmentEditor bfe)
 	 maxwd = bp.getIntOption("Bale.initial.width.statics",maxwd);
 	 maxht = bp.getIntOption("Bale.initial.height.statics",maxht);
 	 break;
+      case MAIN :
+	 maxwd = bp.getIntOption("Bale.initial.width.main",maxwd);
+	 maxht = bp.getIntOption("Bale.initial.height.main",maxht);
+	 break;
       case HEADER :
 	 maxwd = bp.getIntOption("Bale.initial.width.prefix",maxwd);
 	 maxht = bp.getIntOption("Bale.initial.height.prefix",maxht);
@@ -231,6 +235,7 @@ BaleEditorBubble(BaleFragmentEditor bfe)
 	 break;
       case FIELDS :
       case STATICS :
+      case MAIN :
       case HEADER :
 	 nty = BudaContentNameType.CLASS_ITEM;
 	 break;
@@ -482,7 +487,7 @@ private class Hoverer extends BudaHover {
       }
     }
 
-   @Override public void endHover() {
+   @Override public void endHover(MouseEvent e) {
       if (preview_bubble != null){
 	 preview_bubble.setVisible(false);
 	 preview_bubble.disposeBubble();

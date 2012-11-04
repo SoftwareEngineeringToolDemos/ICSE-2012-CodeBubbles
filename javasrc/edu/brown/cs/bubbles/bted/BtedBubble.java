@@ -237,7 +237,7 @@ private void setupGui()
    topPanel.add(name_label, BorderLayout.NORTH);
    topPanel.add(toolBar, BorderLayout.CENTER);
 
-   scroll_pane.setCursor(Cursor.getDefaultCursor());
+   BudaCursorManager.setCursor(scroll_pane,Cursor.getDefaultCursor());
 
    main_panel.add(topPanel, BorderLayout.NORTH);
    main_panel.add(search_bar, BorderLayout.SOUTH);

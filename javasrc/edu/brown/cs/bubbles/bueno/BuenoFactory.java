@@ -26,13 +26,16 @@
 package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.board.BoardSetup;
 import edu.brown.cs.bubbles.bump.BumpLocation;
-import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.*;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.awt.Point;
+
 
 
 public class BuenoFactory implements BuenoConstants
@@ -100,7 +103,10 @@ public static void setup()
    new BuenoProjectMakerSource();
    new BuenoProjectMakerTemplate();
    // new BuenoProjectMakerAnt();
+
+   BudaRoot.registerMenuButton("Create New Project",new CreateListener());
 }
+
 
 
 
@@ -250,9 +256,30 @@ boolean insertText(BuenoLocation loc,String text)
 
 public BudaBubble getCreateProjectBubble()
 {
-   BuenoProjectCreator bpc = new BuenoProjectCreator();
-   return bpc.createProjectCreationBubble();
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case JAVA :
+	 BuenoProjectCreator bpc = new BuenoProjectCreator();
+	 return bpc.createProjectCreationBubble();
+      case PYTHON :
+	 return BuenoPythonProject.createNewPythonProjectBubble();
+      default :
+	 return null;
+    }
 }
+
+
+private static class CreateListener implements BudaConstants.ButtonListener {
+
+   public void buttonActivated(BudaBubbleArea bba,String id,Point pt) {
+      BuenoFactory bf = getFactory();
+      BudaBubble bb = bf.getCreateProjectBubble();
+      if (bb == null) return;
+      bba.addBubble(bb,null,pt,BudaConstants.PLACEMENT_LOGICAL|
+		       BudaConstants.PLACEMENT_MOVETO |
+		       BudaConstants.PLACEMENT_USER);
+    }
+
+}	// end of inner class CreateListener
 
 
 

@@ -96,7 +96,7 @@ BeamFlagBubble(String imagePath)
 
    _Panel = new JPanel();
    _Panel.setSize(128, 128);
-   _Panel.setCursor(Cursor.getDefaultCursor());
+   BudaCursorManager.setCursor(_Panel,Cursor.getDefaultCursor());
 
    _Panel.setLayout(null);
 

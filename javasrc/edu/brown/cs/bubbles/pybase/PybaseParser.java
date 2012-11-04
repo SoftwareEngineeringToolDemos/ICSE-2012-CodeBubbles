@@ -303,6 +303,7 @@ private PybaseMessage createErrorMessage(Throwable error) throws BadLocationExce
       message = message.replaceAll("\\r", " ");
       message = message.replaceAll("\\n", " ");
     }
+   if (message == null) message = "Syntax Error";
 
    return new PybaseMessage(ErrorType.SYNTAX_ERROR,message,errorlinestart,errorlineend,errorcolstart,errorcolend,pref);
 }
@@ -323,16 +324,20 @@ private static Point getExtendedStart(SimpleNode n)
       for (Object o : n.specialsBefore) {
 	 if (o instanceof SpecialStr) {
 	    SpecialStr ss = (SpecialStr) o;
-	    if (ss.beginLine < bline || (ss.beginLine == bline && ss.beginCol < bcol)) {
-	       bline = ss.beginLine;
-	       bcol = ss.beginCol;
+	    if (ss.beginLine > 0) {
+	       if (ss.beginLine < bline || (ss.beginLine == bline && ss.beginCol < bcol)) {
+		  bline = ss.beginLine;
+		  bcol = ss.beginCol;
+		}
 	     }
 	  }
 	 else if (o instanceof SimpleNode) {
 	    SimpleNode sn = (SimpleNode) o;
-	    if (sn.beginLine < bline || (sn.beginLine == bline && sn.beginColumn < bcol)) {
-	       bline = sn.beginLine;
-	       bcol = sn.beginColumn;
+	    if (sn.beginLine > 0) {
+	       if (sn.beginLine < bline || (sn.beginLine == bline && sn.beginColumn < bcol)) {
+		  bline = sn.beginLine;
+		  bcol = sn.beginColumn;
+		}
 	     }
 	  }
        }
@@ -420,13 +425,22 @@ private class ParentSetter extends Visitor {
 	 else if (n instanceof Import) {
 	    fixMissingKey(n,"import");
 	  }
+	 else if (n instanceof Compare) {
+	    Compare cmp = (Compare) n;
+	    for (int i = 0; i < cmp.comparators.length; ++i) {
+	       if (cmp.ops[i] == cmpopType.NotIn) {
+		  fixMissingKey(cmp.comparators[i],"not in");
+		}
+	     }
+	  }
+
 
 	 Point pt = getExtendedStart(n);
 	 int bline = pt.x;
 	 int bcol = pt.y;
 
 	 for (SimpleNode p : parent_stack) {
-	    if (p.beginLine > bline ||
+	    if (p.beginLine > bline || p.beginLine == 0 ||
 		   (p.beginLine == bline && p.beginColumn > bcol)) {
 	       p.beginLine = bline;
 	       p.beginColumn = bcol;
@@ -489,9 +503,15 @@ private class EndSetter extends Visitor {
     }
 
    @Override public void traverse(SimpleNode n) throws Exception {
-      open_level(n);
-      super.traverse(n);
-      close_level(n);
+      try {
+	 open_level(n);
+	 super.traverse(n);
+	 close_level(n);
+       }
+      catch (Exception e) {
+	 PybaseMain.logE("Problem traversing tree for end finding",e);
+	 throw e;
+       }
     }
 
    @Override protected void open_level(SimpleNode n) {
@@ -500,11 +520,41 @@ private class EndSetter extends Visitor {
 	 int bline = ps.x;
 	 int bcol = ps.y;
 	 file_data.setStart(n,bline,bcol);
+	 int off = 0;
+	 try {
+	    off = file_data.getDocument().getLineOffset(bline-1) + bcol-1-1;
+	 }
+	 catch (BadLocationException e) {
+	    PybaseMain.logE("Problem getting end of item",e);
+	    return;
+	 }
 	 while (!set_stack.isEmpty()) {
 	    SimpleNode sn = set_stack.pop();
 	    try {
-	       int off = file_data.getDocument().getLineOffset(bline-1) + bcol-1-1;
-	       while (off > 0 && Character.isWhitespace(file_data.getDocument().getChar(off))) --off;
+	       List<Object> aft = sn.specialsAfter;
+	       if (aft != null && aft.size() > 0) {
+		  for (Object o : aft) {
+		     if (o instanceof SimpleNode) {
+			SimpleNode sn1 = (SimpleNode) o;
+			int off1 = file_data.getDocument().getLineOffset(sn1.beginLine-1) + sn1.beginColumn - 1 - 1;
+			if (off1 < off) off = off1;
+		     }
+		     else if (o instanceof SpecialStr) {
+			SpecialStr ss1 = (SpecialStr) o;
+			int off2 = file_data.getDocument().getLineOffset(ss1.beginLine-1) + ss1.beginCol - 1 - 1;
+			if (off2 < off) off = off2;
+		     }
+		     else {
+			System.err.println("HANDLE THIS");
+		     }
+		  }
+	       }
+	       while (off > 0) {
+		  char ch = file_data.getDocument().getChar(off);
+		  // this still doesn't work for things like 'not in' operator
+		  if (isIgnore(ch)) --off;
+		  else break;
+	       }
 	       file_data.setEnd(sn,off);
 	     }
 	    catch (BadLocationException e) {
@@ -512,7 +562,18 @@ private class EndSetter extends Visitor {
 	     }
 	  }
        }
+      else {
+	 PybaseMain.logD("NO LINE KNOWN FOR " + n);
+       }
     }
+
+   private boolean isIgnore(char ch) {
+      if (Character.isWhitespace(ch)) return true;
+      if (Character.isJavaIdentifierPart(ch)) return false;
+      if (ch == '"' || ch == '\'') return false;
+      if (ch == ';') return false;
+      return true;
+   }
 
    @Override protected void close_level(SimpleNode n) {
       set_stack.push(n);

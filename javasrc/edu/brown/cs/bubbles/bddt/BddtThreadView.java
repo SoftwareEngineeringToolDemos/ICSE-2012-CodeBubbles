@@ -585,13 +585,13 @@ private class ThreadsTable extends JTable implements BudaConstants.BudaBubbleOut
       addMouseListener(this);
       setDragEnabled(true);
       setTransferHandler(new Transferer());
-      setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       setSelectionBackground(Color.WHITE);
       setSelectionForeground(Color.BLACK);
       setOpaque(false);
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-	 TableColumn tc = e.nextElement();
-	 tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
+         TableColumn tc = e.nextElement();
+         tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
        }
       cell_drawer = new CellDrawer[col_names.length];
     }

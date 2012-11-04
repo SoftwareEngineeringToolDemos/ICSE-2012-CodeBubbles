@@ -78,6 +78,11 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 	    idx = key.lastIndexOf(".");
 	    key = key.substring(0,idx+1) + ".<INITIALIZER>";
 	    break;
+         case MAIN_PROGRAM :
+            key = bl.getSymbolName();
+            idx = key.lastIndexOf(".");
+            key = key.substring(0,idx+1) + ".<MAIN>";
+            break;
 	 case CLASS :
 	 case INTERFACE :
 	 case ENUM :
@@ -185,6 +190,10 @@ private void setupStack()
 	    InitializerStackEntry ie = new InitializerStackEntry(locs);
 	    entries.add(ie);
 	    break;
+         case MAIN_PROGRAM :
+	    MainProgramStackEntry me = new MainProgramStackEntry(locs);
+	    entries.add(me);
+	    break;
 	 case CLASS :
 	 case INTERFACE :
 	 case ENUM :
@@ -226,7 +235,7 @@ private void setupStack()
        }
     }
 
-   BudaRoot.addBubbleViewCallback(new EditorBubbleCallback(bb));
+   // BudaRoot.addBubbleViewCallback(new EditorBubbleCallback(bb));
 }
 
 
@@ -381,6 +390,32 @@ private class InitializerStackEntry extends GenericStackEntry {
 
 
 
+private class MainProgramStackEntry extends GenericStackEntry {
+   
+   private String class_name;
+   
+   MainProgramStackEntry(List<BumpLocation> locs) {
+      super(locs);
+      String nm = def_location.getSymbolName();
+      int idx = nm.lastIndexOf(".");
+      class_name = nm.substring(0,idx);
+    }
+   
+   @Override public String getEntryName() {
+      return class_name.replace('$','.') + ".<MAIN>";
+    }
+   
+   @Override protected BaleFragmentEditor createFullFragment() {
+      BaleFragmentEditor ed = BaleFactory.getFactory().createStaticsFragmentEditor(
+            def_location.getSymbolProject(),class_name,def_location.getFile());
+      ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
+      return ed;
+    }
+   
+}	// end of inner class MainProgramStackEntry
+
+
+
 private class TypeStackEntry extends GenericStackEntry {
 
    private String class_name;
@@ -411,7 +446,8 @@ private class TypeStackEntry extends GenericStackEntry {
 /*	Classes for maintaining bubble windows as part of the bubble stack	*/
 /*										*/
 /********************************************************************************/
-
+/**************** now done in BussStackBox
+ * 
 private static class EditorBubbleCallback implements BubbleViewCallback {
 
    private static final double DISTANCE_LIMIT = 100;
@@ -460,6 +496,7 @@ private static class EditorBubbleCallback implements BubbleViewCallback {
 
 }	// end of inner class EditorBubbleCallback
 
+***************************/
 
 
 }	// end of class BaleBubbleStack
@@ -467,3 +504,4 @@ private static class EditorBubbleCallback implements BubbleViewCallback {
 
 
 /* end of BaleBubbleStack.java */
+

@@ -25,6 +25,7 @@
 
 package edu.brown.cs.bubbles.burp;
 
+import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardMetrics;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaRoot;
@@ -284,7 +285,7 @@ public void undo(JTextComponent be)
    while (!havesig) {
       BurpChangeData cd = (ed == null ? current_change : ed.getCurrentChange());
       if (cd == null) break;
-      cd.addDependencies(deps);
+      cd.addDependencies(deps,null);
       deps = null;
       if (!cd.canUndo()) break;
       cd.undo();
@@ -334,6 +335,7 @@ public void redo(JTextComponent be)
 
 void resetCurrentChange(BurpChangeData when,BurpChangeData to,boolean fwd)
 {
+   BoardLog.logD("BURP", "RESET CURRENT " + current_change + " " + to);
    if (current_change == when) current_change = to;
    else if (fwd && current_change == null) current_change = to;
 }
@@ -360,6 +362,7 @@ synchronized void handleNewEdit(BurpEditorData ed,UndoableEdit ue,boolean evt,bo
       current_change = cd;
       change_map.put(bed,cd);
     }
+   BoardLog.logD("BURP","Record edit " + cd + " " + ue.getUndoPresentationName() + " " + ed);
 
    if (evt) cd.setSignificant(sig);
 

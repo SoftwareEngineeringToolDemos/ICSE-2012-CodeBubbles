@@ -108,6 +108,10 @@ BaleCrumbBarComponent(BaleCrumbBar par, BaleCrumbBarComponent bro, String shotxt
    setForeground(_color);
    append(my_arrow, Color.black);
    addMouseListener(new Mouser());
+
+   if (BudaRoot.showHelpTips()) {
+      setToolTipText("Tool tip for crumb bar component");
+    }
 }
 
 

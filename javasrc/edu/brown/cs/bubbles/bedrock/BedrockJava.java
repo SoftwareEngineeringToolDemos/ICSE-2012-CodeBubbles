@@ -727,7 +727,7 @@ void handleJavaSearch(String proj,String patstr,String foritems,
    try {
       se.search(pat,parts,scp,fh,null);
     }
-   catch (CoreException e) {
+   catch (Throwable e) {
       throw new BedrockException("Problem doing Java search: " + e,e);
     }
 }
@@ -870,11 +870,11 @@ private static class SearchHandler extends TextSearchRequestor {
 
    private IJavaElement getElement(IFile r,int off,int len) {
       for (ICompilationUnit icu : base_units) {
-         IResource ir = icu.getResource();
-         if (ir == null) return null;
-         if (ir.equals(r)) {
-            return findInnerElement(icu,off,len);
-          }
+	 IResource ir = icu.getResource();
+	 if (ir == null) return null;
+	 if (ir.equals(r)) {
+	    return findInnerElement(icu,off,len);
+	  }
        }
       return null;
     }

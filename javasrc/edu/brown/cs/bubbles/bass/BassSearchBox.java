@@ -160,7 +160,7 @@ BassSearchBox(BassTreeModel mdl,boolean common)
    active_options.setDragEnabled(true);
    active_options.addMouseListener(new Mouser());
    active_options.setTransferHandler(new Transferer());
-   active_options.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+   BudaCursorManager.setCursor(active_options,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
    active_options.setCellRenderer(new BassCellRenderer());
    active_options.setToggleClickCount(1);
    active_options.addTreeExpansionListener(this);
@@ -1059,7 +1059,7 @@ private class Hoverer extends BudaHover {
        }
     }
 
-   @Override public void endHover(){
+   @Override public void endHover(MouseEvent e) {
       if (preview_bubble != null){
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(self);
 	 if (bba != null) bba.removeBubble(preview_bubble);

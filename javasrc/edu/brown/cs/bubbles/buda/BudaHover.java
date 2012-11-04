@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -33,10 +33,14 @@ package edu.brown.cs.bubbles.buda;
 import edu.brown.cs.bubbles.board.BoardLog;
 
 import javax.swing.*;
+import javax.swing.Timer;
 
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.*;
+import java.util.*;
+
+
 
 /**
  *	This class provides extended support for hovering.  Whereas tool tips
@@ -66,6 +70,8 @@ private JViewport	use_viewport;
 private Point		view_point;
 private boolean 	doing_hover;
 
+private static Map<BudaHover,Boolean> all_hovers = new WeakHashMap<BudaHover,Boolean>();
+private static int	num_hover = 0;
 
 private static final int HOVER_TIME = 500;
 
@@ -111,6 +117,8 @@ protected BudaHover(Component c)
     }
 
    if (!havescroll) c.addMouseWheelListener(m);
+   
+   all_hovers.put(this, Boolean.TRUE);
 }
 
 
@@ -158,7 +166,7 @@ public abstract void handleHover(MouseEvent e);
  *
  **/
 
-public abstract void endHover();
+public abstract void endHover(MouseEvent e);
 
 
 
@@ -167,6 +175,20 @@ public abstract void endHover();
 /*	Handle callback from the timer						*/
 /*										*/
 /********************************************************************************/
+
+void simulateHover(MouseEvent e)
+{
+   try {
+      handleHover(e);
+      doing_hover = true;
+      last_mouse = null;
+    }
+   catch (Throwable t) {
+      BoardLog.logE("BUDA","Problem handling hover",t);
+    }
+}
+
+
 
 @Override public void actionPerformed(ActionEvent e)
 {
@@ -186,6 +208,7 @@ public abstract void endHover();
       catch (Throwable t) {
 	 BoardLog.logE("BUDA","Problem handling hover",t);
        }
+      ++num_hover;
       doing_hover = true;
       last_mouse = null;
     }
@@ -198,19 +221,20 @@ public abstract void endHover();
 }
 
 
-protected void clearHover()
+protected void clearHover(MouseEvent e)
 {
    last_mouse = null;
 
    if (!doing_hover) return;
 
    try {
-      endHover();
+      endHover(e);
     }
    catch (Throwable t) {
       BoardLog.logE("BUDA","Problem handling hover end",t);
     }
    doing_hover = false;
+   --num_hover;
 }
 
 
@@ -224,23 +248,23 @@ protected void clearHover()
 private class Mouser extends MouseAdapter {
 
    @Override public void mouseClicked(MouseEvent e) {
-      clearHover();
+      clearHover(e);
     }
 
    @Override public void mouseDragged(MouseEvent e) {
-      clearHover();
+      clearHover(e);
     }
 
    @Override public void mouseEntered(MouseEvent e) {
-      clearHover();
+      clearHover(e);
     }
 
    @Override public void mouseExited(MouseEvent e) {
-      clearHover();
+      clearHover(e);
     }
 
    @Override public void mouseMoved(MouseEvent e) {
-      clearHover();
+      clearHover(e);
       last_mouse = e;
       if (!delay_timer.isRunning()) {
 	 delay_timer.setInitialDelay(hover_time);
@@ -252,15 +276,15 @@ private class Mouser extends MouseAdapter {
     }
 
    @Override public void mousePressed(MouseEvent e) {
-      clearHover();
+      clearHover(e);
     }
 
    @Override public void mouseReleased(MouseEvent e) {
-      clearHover();
+      clearHover(e);
     }
 
    @Override public void mouseWheelMoved(MouseWheelEvent e) {
-      clearHover();
+      clearHover(e);
     }
 
 }	// end of inner class Mouser
@@ -270,7 +294,7 @@ private class Mouser extends MouseAdapter {
 private class Keyer extends KeyAdapter {
 
    @Override public void keyPressed(KeyEvent e) {
-      clearHover();
+      clearHover(null);
     }
 
 }	// end of inner class Keyer
@@ -280,15 +304,25 @@ private class Keyer extends KeyAdapter {
 private class Comper extends ComponentAdapter implements HierarchyListener {
 
    @Override public void componentHidden(ComponentEvent e) {
-      clearHover();
+      clearHover(null);
     }
 
    @Override public void hierarchyChanged(HierarchyEvent e) {
       if (!e.getComponent().isShowing() && doing_hover)
-	 clearHover();
+	 clearHover(null);
    }
 
 }	// end of inner class Comper
+
+
+static void handleKeyEvent()
+{
+   if (num_hover > 0) {
+      for (BudaHover bh : all_hovers.keySet()) {
+	 bh.clearHover(null);
+       }
+    }
+}
 
 
 

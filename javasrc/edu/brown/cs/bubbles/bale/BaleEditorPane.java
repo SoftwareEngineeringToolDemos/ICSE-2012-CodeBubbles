@@ -342,23 +342,24 @@ void handleContextMenu(MouseEvent evt)
    boolean idok = be.isIdentifier() && !be.isUndefined();
    boolean elok = be.isElided();
 
-   addButton(menu,"Go to Implementation",idok,hdlr);
-   addButton(menu,"Go to Definition",idok,hdlr);
-   addButton(menu,"Find All References",idok,hdlr);
-   addButton(menu,"Go to Documentation",idok,hdlr);
-   addButton(menu,"Go to Search",idok,hdlr);
-   addButton(menu,"Go to Type",idok,hdlr);
-   addButton(menu,"Remove Elision",elok,hdlr);
-   addButton(menu,"Remove All Elisions",true,hdlr);
+   addButton(menu,"Go to Implementation",idok,hdlr,null);
+   addButton(menu,"Go to Definition",idok,hdlr,null);
+   addButton(menu,"Find All References",idok,hdlr,null);
+   addButton(menu,"Go to Documentation",idok,hdlr,null);
+   addButton(menu,"Go to Search",idok,hdlr,null);
+   addButton(menu,"Go to Type",idok,hdlr,null);
+   addButton(menu,"Remove Elision",elok,hdlr,null);
+   addButton(menu,"Remove All Elisions",true,hdlr,null);
    // TODO: only allow rename of user identifiers
-   addButton(menu,"Rename",idok,hdlr);
+   addButton(menu,"Rename",idok,hdlr,null);
    boolean extr = (getSelectionStart() != getSelectionEnd());
-   addButton(menu,"Extract Code into New Method",extr,hdlr);
+   addButton(menu,"Extract Code into New Method",extr,hdlr,null);
 
    BaleContextConfig bcc = new ContextData(loc,be);
    BaleFactory.getFactory().addContextMenuItems(bcc,menu);
 
-   addButton(menu,"Open Eclipse Editor",true,hdlr);
+   addButton(menu,"Open Eclipse Editor",true,hdlr,null);
+   addButton(menu,"Remove Bubble",true,new RemoveBubbleHandler(),null);
 
    int ct = menu.getComponentCount();
    if (ct == 0) return;
@@ -368,12 +369,13 @@ void handleContextMenu(MouseEvent evt)
 
 
 
-private void addButton(JPopupMenu m,String txt,boolean enable,ActionListener hdlr)
+private void addButton(JPopupMenu m,String txt,boolean enable,ActionListener hdlr,String tt)
 {
    JMenuItem mi = new JMenuItem(txt);
    if (hdlr != null) mi.addActionListener(hdlr);
    mi.setEnabled(enable);
    m.add(mi);
+   if (tt != null) mi.setToolTipText(tt);
 }
 
 
@@ -397,6 +399,19 @@ private class ContextMenuHandler implements ActionListener {
     }
 
 }	// end of inner class ContextMenuHandler
+
+
+private class RemoveBubbleHandler implements ActionListener {
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BaleEditorPane.this);
+      BudaBubble bbl = BudaRoot.findBudaBubble(BaleEditorPane.this);
+      if (bbl != null && bba != null) {
+	 bba.userRemoveBubble(bbl);
+       }
+    }
+
+}	// end of inner class RemoveBubbleHandler
 
 
 
@@ -1049,8 +1064,10 @@ private class ActiveMouser extends MouseAdapter {
       if (set == over_region) return;
       if (base_cursor == null) base_cursor = getCursor();
       over_region = set;
-      if (set) setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-      else setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+      if (set) 
+         BudaCursorManager.setTemporaryCursor(BaleEditorPane.this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      else 
+         BudaCursorManager.setTemporaryCursor(BaleEditorPane.this,Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
     }
 
 }	// end of inner class ActiveMouser

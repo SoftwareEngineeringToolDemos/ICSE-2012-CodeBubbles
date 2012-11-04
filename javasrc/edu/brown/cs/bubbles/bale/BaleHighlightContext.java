@@ -287,7 +287,7 @@ private void startHighlight(CaretEvent start)
 
 	 if (split_identifier) {
 	    locsr = bump_client.findRWReferences(doc.getProjectName(),
-						    doc.getFile(),spos,epos,false);
+						    doc.getFile(),spos,epos,false,1000);
 	    BumpSymbolType styp = BumpSymbolType.UNKNOWN;
 	    if (locsr != null && locsr.size() > 0) {
 	       BumpLocation loc = locsr.get(0);
@@ -297,21 +297,21 @@ private void startHighlight(CaretEvent start)
 	    if (locsr != null) removeDefs(locsr);
 	    switch (styp) {
 	       case UNKNOWN :
-		  locsw = bump_client.findReferences(doc.getProjectName(),doc.getFile(),spos,epos);
+		  locsw = bump_client.findReferences(doc.getProjectName(),doc.getFile(),spos,epos,1000);
 		  break;
 	       case FIELD :
 	       case LOCAL :
 		  locsw = bump_client.findRWReferences(doc.getProjectName(),
-							  doc.getFile(),spos,epos,true);
+							  doc.getFile(),spos,epos,true,500);
 		  locsd = bump_client.findDefinition(doc.getProjectName(),
-							doc.getFile(),spos,epos);
+							doc.getFile(),spos,epos,500);
 		  break;
 	       case CLASS :
 	       case THROWABLE :
 	       case ENUM :
 	       case INTERFACE :
 		  locsd = bump_client.findDefinition(doc.getProjectName(),
-							doc.getFile(),spos,epos);
+							doc.getFile(),spos,epos,1000);
 		  removeDefs(locsd);
 		  break;
                case MODULE :

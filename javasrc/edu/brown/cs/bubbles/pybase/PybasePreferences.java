@@ -92,22 +92,24 @@ static {
    DEFAULT_IGNORE_ANNOTATION.put(ErrorType.UNRESOLVED_IMPORT, "UnresolvedImport");
    DEFAULT_IGNORE_ANNOTATION.put(ErrorType.NO_SELF, "@NoSelf");
    DEFAULT_IGNORE_ANNOTATION.put(ErrorType.UNUSED_WILD_IMPORT, "@UnusedWildImport");
-   DEFAULT_IGNORE_ANNOTATION.put(ErrorType.UNDEFINED_IMPORT_VARIABLE, "@UndefedVariable");
+   DEFAULT_IGNORE_ANNOTATION.put(ErrorType.UNDEFINED_IMPORT_VARIABLE, "@UndefinedVariable");
+   DEFAULT_IGNORE_ANNOTATION.put(ErrorType.UNDEFINED_VARIABLE, "@UndefinedVariable");
    DEFAULT_IGNORE_ANNOTATION.put(ErrorType.NO_EFFECT_STMT, "@NoEffect");
    DEFAULT_IGNORE_ANNOTATION.put(ErrorType.INDENTATION_PROBLEM, "@IndentOk");
    DEFAULT_IGNORE_ANNOTATION.put(ErrorType.ASSIGNMENT_TO_BUILT_IN_SYMBOL, "@ReservedAssignment");
 
    DEFAULT_IGNORE_UNUSED = new HashSet<String>();
-   DEFAULT_IGNORE_UNUSED.add("__init__");
-   DEFAULT_IGNORE_UNUSED.add("*QT");
+   DEFAULT_IGNORE_UNUSED.add(PybaseUtil.convertWildcardToRegex("__init__"));
+   DEFAULT_IGNORE_UNUSED.add(PybaseUtil.convertWildcardToRegex("QT"));
+   DEFAULT_IGNORE_UNUSED.add(PybaseUtil.convertWildcardToRegex("_"));
 
    DEFAULT_IGNORE_MODULE = new HashSet<String>();
-   DEFAULT_IGNORE_MODULE.add("__init__");
-   DEFAULT_IGNORE_MODULE.add("*QT");
+   DEFAULT_IGNORE_MODULE.add(PybaseUtil.convertWildcardToRegex("__init__"));
+   DEFAULT_IGNORE_MODULE.add(PybaseUtil.convertWildcardToRegex("*QT"));
 
    DEFAULT_GLOBAL_NAMES = new HashSet<String>();
-   DEFAULT_GLOBAL_NAMES.add("_");
-   DEFAULT_GLOBAL_NAMES.add("tr");
+   DEFAULT_GLOBAL_NAMES.add(PybaseUtil.convertWildcardToRegex("_"));
+   DEFAULT_GLOBAL_NAMES.add(PybaseUtil.convertWildcardToRegex("tr"));
 };
 
 
@@ -227,7 +229,19 @@ public String getProperty(String prop,String dflt)
 
 public void setProperty(String prop,String value)
 {
-   pref_props.put(prop,value);
+   if (prop.startsWith("ErrorType.")) {
+      String ets = prop.substring(10);
+      value = value.toUpperCase();
+      try {
+         ErrorType et = ErrorType.valueOf(ErrorType.class,ets);
+         ErrorSeverity es = ErrorSeverity.valueOf(ErrorSeverity.class,value);
+         severity_map.put(et,es);
+       }
+      catch (IllegalArgumentException e) { }
+    }
+   else {
+      pref_props.put(prop,value);
+    }
 }
 
 
@@ -239,21 +253,19 @@ public void setProperty(String prop,String value)
 /*										*/
 /********************************************************************************/
 
-void outputXml(IvyXmlWriter xw)
+void outputXml(IvyXmlWriter xw,boolean user)
 {
    xw.begin("PREFERENCES");
 
    for (Map.Entry<ErrorType,ErrorSeverity> ent : severity_map.entrySet()) {
-      ErrorSeverity es1 = DEFAULT_SEVERITY_MAP.get(ent.getKey());
-      if (es1 == null || es1 != ent.getValue()) {
-	 xw.begin("SEVERITY");
-	 xw.field("TYPE",ent.getKey());
-	 xw.field("VALUE",ent.getValue());
-	 xw.end("SEVERITY");
-       }
+      xw.begin("SEVERITY");
+      xw.field("TYPE",ent.getKey());
+      xw.field("VALUE",ent.getValue());
+      xw.end("SEVERITY");
     }
 
    for (Map.Entry<String,String> ent : pref_props.entrySet()) {
+      if (user && ent.getKey().equals("INTERPRETER_PATH_NEW")) continue;
       xw.begin("PROP");
       xw.field("KEY",ent.getKey());
       xw.field("VALUE",ent.getValue());
@@ -273,7 +285,8 @@ void loadXml(Element xml)
 
    for (Element sev : IvyXml.children(prefs,"SEVERITY")) {
       ErrorType et = IvyXml.getAttrEnum(sev,"TYPE",ErrorType.SYNTAX_ERROR);
-      ErrorSeverity ev = IvyXml.getAttrEnum(sev,"VALUE",ErrorSeverity.ERROR);
+      ErrorSeverity ev = severity_map.get(et);
+      ev = IvyXml.getAttrEnum(sev,"VALUE",ev);
       severity_map.put(et,ev);
     }
 

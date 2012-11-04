@@ -251,10 +251,7 @@ public AbstractModule getModuleInDirectManager(String name,PybaseNature nature,
 public String resolveModuleOnlyInProjectSources(String fileAbsolutePath,
 	 boolean addExternal)
 {
-   String onlyProjectPythonPathStr = this.the_nature.getPythonPathNature()
-	    .getOnlyProjectPythonPathStr(addExternal);
-   HashSet<String> projectSourcePath = new HashSet<String>(
-	    StringUtils.splitAndRemoveEmptyTrimmed(onlyProjectPythonPathStr, '|'));
+   Set<String> projectSourcePath = the_nature.getPythonPathNature().getProjectSourcePathSet();
 
    return this.pythonPathHelper.resolveModule(fileAbsolutePath, new ArrayList<String>(
 	    projectSourcePath));

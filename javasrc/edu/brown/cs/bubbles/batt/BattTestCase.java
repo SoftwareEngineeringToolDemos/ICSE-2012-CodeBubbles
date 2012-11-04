@@ -80,14 +80,15 @@ BattTestCase(String name)
 /*										*/
 /********************************************************************************/
 
-synchronized String getName()			{ return test_name; }
-synchronized String getClassName()		{ return class_name; }
-synchronized String getMethodName()		{ return method_name; }
-synchronized TestStatus getStatus()		{ return test_status; }
-synchronized TestState getState()		{ return test_state; }
+@Override public synchronized String getName()			{ return test_name; }
+@Override public synchronized String getClassName()		{ return class_name; }
+@Override public synchronized String getMethodName()		{ return method_name; }
 
-synchronized void setStatus(TestStatus sts)	{ test_status = sts; }
-synchronized void setState(TestState st)	{ test_state = st; }
+synchronized TestStatus getStatus()				{ return test_status; }
+synchronized TestState getState()				{ return test_state; }
+
+synchronized void setStatus(TestStatus sts)			{ test_status = sts; }
+synchronized void setState(TestState st)			{ test_state = st; }
 
 
 
@@ -188,7 +189,7 @@ synchronized FileState usesClasses(Map<String,FileState> clsmap)
 
 
 
-synchronized UseMode usesMethod(String mthd)
+@Override synchronized public UseMode usesMethod(String mthd)
 {
    if (count_data == null) return UseMode.UNKNOWN;
 
@@ -286,6 +287,20 @@ synchronized String getToolTip()
 @Override public int compareTo(BattTestCase btc)
 {
    return getName().compareTo(btc.getName());
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Output methods								*/
+/*										*/
+/********************************************************************************/
+
+@Override public String toString()
+{
+   return getName();
 }
 
 

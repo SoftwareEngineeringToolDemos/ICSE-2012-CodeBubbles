@@ -694,8 +694,15 @@ private static class RefreshButton implements ActionListener, Runnable
 
 void addNewConfigurationActions(JPopupMenu menu)
 {
-   menu.add(new CreateConfigAction(BumpLaunchConfigType.JAVA_APP));
-   menu.add(new CreateConfigAction(BumpLaunchConfigType.REMOTE_JAVA));
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case JAVA :
+	 menu.add(new CreateConfigAction(BumpLaunchConfigType.JAVA_APP));
+	 menu.add(new CreateConfigAction(BumpLaunchConfigType.REMOTE_JAVA));
+	 break;
+      case PYTHON :
+	 menu.add(new CreateConfigAction(BumpLaunchConfigType.PYTHON));
+	 break;
+    }
 }
 
 

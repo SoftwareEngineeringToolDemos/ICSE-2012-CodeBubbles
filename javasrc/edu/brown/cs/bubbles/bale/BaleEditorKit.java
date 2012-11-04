@@ -28,6 +28,7 @@ package edu.brown.cs.bubbles.bale;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardMetrics;
 import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
 import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
@@ -37,6 +38,7 @@ import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
 import edu.brown.cs.ivy.swing.SwingEditorPane;
+import edu.brown.cs.ivy.swing.SwingText;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -249,7 +251,8 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu shift F",format_action),
       new KeyItem("alt B",expand_action),
 
-      new KeyItem("menu SPACE",autocomplete_action),
+      // new KeyItem("menu SPACE",autocomplete_action),
+      new KeyItem("ctrl SPACE",autocomplete_action),
 
       new KeyItem("F3",goto_implementation_action),
       new KeyItem("menu F3",goto_type_action),
@@ -277,6 +280,7 @@ private static Keymap	bale_keymap;
 
 static {
    Keymap dflt = JTextComponent.getKeymap(JTextComponent.DEFAULT_KEYMAP);
+   SwingText.fixKeyBindings(dflt);
    bale_keymap = JTextComponent.addKeymap("BALE",dflt);
    for (KeyItem ka : key_defs) {
       ka.addToKeyMap(bale_keymap);
@@ -1546,23 +1550,40 @@ private static class SaveAllAction extends AbstractAction {
       if (target == null) return;
       BudaRoot br = BudaRoot.findBudaRoot(target);
       if (br == null) return;
+      BoardMetrics.noteCommand("BALE","SaveAll");
 
+      SaveAllRun sar = new SaveAllRun(br);
+
+      // sar.run();
+      BoardThreadPool.start(sar);
+    }
+
+}	// end of inner class SaveAllAction
+
+
+private static class SaveAllRun implements Runnable {
+
+   private BudaRoot for_root;
+
+   SaveAllRun(BudaRoot br) {
+      for_root = br;
+    }
+
+   @Override public void run() {
       BowiFactory.startTask(BowiTaskType.SAVE);
       try {
-	 // bc.saveAll();
-	 br.handleSaveAllRequest();
+	 // BumpClient.getBump().saveAll();
+	 for_root.handleSaveAllRequest();
 	 BumpClient.getBump().compile(false,false,false);
 	 try {
-	    br.saveConfiguration(null);
+	    for_root.saveConfiguration(null);
 	  }
 	 catch (IOException ex) { }
        }
       finally { BowiFactory.stopTask(BowiTaskType.SAVE); }
-
-      BoardMetrics.noteCommand("BALE","SaveAll");
     }
 
-}	// end of inner class SaveAllAction
+}	// end of inner class SaveAllRun
 
 
 
@@ -1810,6 +1831,7 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
 	    break;
 	 case FIELDS :
 	 case STATICS :
+	 case MAIN :
 	 case HEADER :
 	    cls = fnm;
 	    int idx2 = cls.lastIndexOf(".");
@@ -2045,55 +2067,55 @@ private static class GotoReferenceAction extends TextAction {
    @Override public void actionPerformed(ActionEvent e) {
       BowiFactory.startTask(BowiTaskType.FIND_ALL_REFERENCES);
       try {
-	 BaleEditorPane target = getBaleEditor(e);
-	 if (!checkReadEditor(target)) return;
-	 BaleDocument bd = target.getBaleDocument();
-	 int soff = target.getSelectionStart();
-	 int eoff = target.getSelectionEnd();
-	 BaleElement be = bd.getCharacterElement(soff);
-
-	 BumpClient bc = BumpClient.getBump();
-	 Collection<BumpLocation> locs;
-	 BalePosition sp;
-
-	 String fullnm = null;
-
-	 fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
-					       bd.mapOffsetToEclipse(soff),
-					       bd.mapOffsetToEclipse(eoff));
-
-
-	 try {
-	    sp = (BalePosition) bd.createPosition(soff);
-	    locs = bc.findReferences(bd.getProjectName(),
-					bd.getFile(),
-					bd.mapOffsetToEclipse(soff),
-					bd.mapOffsetToEclipse(eoff));
-	  }
-	 catch (BadLocationException ex) {
-	    return;
-	  }
-
-	 if (fullnm == null) {
-	    BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
-	    Action act = findAction(beepAction);
-	    if (act != null) act.actionPerformed(e);
-	    return;
-	  }
-
-	 if (doClassSearchAction(locs)) {
-	    goto_search_action.actionPerformed(e);
-	    return;
-	  }
-
-	 if (locs == null || locs.size() == 0) {
-	    BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.REF, sp);
-	    Action act = findAction(beepAction);
-	    if (act != null) act.actionPerformed(e);
-	    return;
-	  }
-
-	 BaleBubbleStack.createBubbles(target,sp,null,false,locs,BudaLinkStyle.STYLE_REFERENCE);
+         BaleEditorPane target = getBaleEditor(e);
+         if (!checkReadEditor(target)) return;
+         BaleDocument bd = target.getBaleDocument();
+         int soff = target.getSelectionStart();
+         int eoff = target.getSelectionEnd();
+         BaleElement be = bd.getCharacterElement(soff);
+   
+         BumpClient bc = BumpClient.getBump();
+         Collection<BumpLocation> locs;
+         BalePosition sp;
+   
+         String fullnm = null;
+   
+         fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
+        				       bd.mapOffsetToEclipse(soff),
+        				       bd.mapOffsetToEclipse(eoff));
+   
+   
+         try {
+            sp = (BalePosition) bd.createPosition(soff);
+            locs = bc.findReferences(bd.getProjectName(),
+        				bd.getFile(),
+        				bd.mapOffsetToEclipse(soff),
+        				bd.mapOffsetToEclipse(eoff));
+          }
+         catch (BadLocationException ex) {
+            return;
+          }
+   
+         if (fullnm == null) {
+            BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
+            Action act = findAction(beepAction);
+            if (act != null) act.actionPerformed(e);
+            return;
+          }
+   
+         if (doClassSearchAction(locs)) {
+            goto_search_action.actionPerformed(e);
+            return;
+          }
+   
+         if (locs == null || locs.size() == 0) {
+            BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.REF, sp);
+            Action act = findAction(beepAction);
+            if (act != null) act.actionPerformed(e);
+            return;
+          }
+   
+         BaleBubbleStack.createBubbles(target,sp,null,false,locs,BudaLinkStyle.STYLE_REFERENCE);
        }
       finally { BowiFactory.stopTask(BowiTaskType.FIND_ALL_REFERENCES); }
       BoardMetrics.noteCommand("BALE","GoToReference");
@@ -2119,71 +2141,71 @@ private static class GotoDocAction extends TextAction {
       int soff = target.getSelectionStart();
       int eoff = target.getSelectionEnd();
       BumpClient bc = BumpClient.getBump();
-
+   
       String fullnm = null;
-
+   
       fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
-					    bd.mapOffsetToEclipse(soff),
-					    bd.mapOffsetToEclipse(eoff));
-
+        				    bd.mapOffsetToEclipse(soff),
+        				    bd.mapOffsetToEclipse(eoff));
+   
       BalePosition sp = null;
       try {
-	 sp = (BalePosition) bd.createPosition(soff);
+         sp = (BalePosition) bd.createPosition(soff);
        }
       catch (BadLocationException ex) { }
-
+   
       BaleElement be = bd.getCharacterElement(soff);
-
+   
       if (fullnm != null) {
-	 // BoardLog.logD("BALE","FIND DOCUMENTATION FOR " + fullnm);
-	 BudaBubble bb = BudaRoot.createDocumentationBubble(fullnm);
-	 if (bb != null) {
-	    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
-	    BudaBubble obbl = BudaRoot.findBudaBubble(target);
-	    if (bba == null || obbl == null) return;
-
-	    Point lp = null;
-	    BudaConstants.LinkPort port0 = null;
-	    if (sp != null) {
-	       port0 = new BaleLinePort(target,sp,"Find Link");
-	       lp = port0.getLinkPoint(obbl,obbl.getLocation());
-	     }
-	    else port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
-
-	    bba.addBubble(bb,target,lp,PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW);
-
-	    /****************
-	    BudaRoot root = BudaRoot.findBudaRoot(target);
-	    Rectangle loc = BudaRoot.findBudaLocation(target);
-	    if (lp != null) loc.y = lp.y;
-	    root.add(bb,new BudaConstraint(loc.x+loc.width+BUBBLE_CREATION_SPACE,loc.y));
-	    ****************/
-
-	    BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
-	    BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
-	    bba.addLink(lnk);
-	    BoardMetrics.noteCommand("BALE","GoToDocumentation");
-	    return;
-	  }
-	 else {
-	    if (e.getActionCommand() == null) {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
-	     }
-	    else if (e.getActionCommand().equals("GotoImplementationAction")) {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.IMPLDOC, sp);
-	     }
-	    else if (e.getActionCommand().equals("GotoDefinitionAction")) {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DEFDOC, sp);
-	     }
-	    else {
-	       BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
-	     }
-	  }
+         // BoardLog.logD("BALE","FIND DOCUMENTATION FOR " + fullnm);
+         BudaBubble bb = BudaRoot.createDocumentationBubble(fullnm);
+         if (bb != null) {
+            BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
+            BudaBubble obbl = BudaRoot.findBudaBubble(target);
+            if (bba == null || obbl == null) return;
+   
+            Point lp = null;
+            BudaConstants.LinkPort port0 = null;
+            if (sp != null) {
+               port0 = new BaleLinePort(target,sp,"Find Link");
+               lp = port0.getLinkPoint(obbl,obbl.getLocation());
+             }
+            else port0 = new BudaDefaultPort(BudaPortPosition.BORDER_EW,true);
+   
+            bba.addBubble(bb,target,lp,PLACEMENT_RIGHT|PLACEMENT_MOVETO|PLACEMENT_NEW);
+   
+            /****************
+            BudaRoot root = BudaRoot.findBudaRoot(target);
+            Rectangle loc = BudaRoot.findBudaLocation(target);
+            if (lp != null) loc.y = lp.y;
+            root.add(bb,new BudaConstraint(loc.x+loc.width+BUBBLE_CREATION_SPACE,loc.y));
+            ****************/
+   
+            BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
+            BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
+            bba.addLink(lnk);
+            BoardMetrics.noteCommand("BALE","GoToDocumentation");
+            return;
+          }
+         else {
+            if (e.getActionCommand() == null) {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
+             }
+            else if (e.getActionCommand().equals("GotoImplementationAction")) {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.IMPLDOC, sp);
+             }
+            else if (e.getActionCommand().equals("GotoDefinitionAction")) {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DEFDOC, sp);
+             }
+            else {
+               BaleInfoBubble.createInfoBubble(target, be.getName(),BaleInfoBubbleType.DOC, sp);
+             }
+          }
        }
       else {
-	 BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
+         BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
        }
-
+   
       Action act = findAction(beepAction);
       if (act != null) act.actionPerformed(e);
     }

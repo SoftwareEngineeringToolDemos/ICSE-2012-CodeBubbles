@@ -38,6 +38,7 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaPortPosition;
 import edu.brown.cs.bubbles.buda.BudaConstants.LinkPort;
+import edu.brown.cs.bubbles.buda.BudaConstants.BudaBubblePosition;
 import edu.brown.cs.bubbles.bass.BassConstants.BassFlagger;
 import edu.brown.cs.bubbles.bass.BassConstants.BassFlag;
 import edu.brown.cs.bubbles.bass.*;
@@ -194,8 +195,12 @@ private static Icon imageToFlagIcon(String path)
 
 @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt)
 {
-   BudaRoot br = BudaRoot.findBudaRoot(bba);
    BudaBubble bb = null;
+
+   int place = BudaConstants.PLACEMENT_LOGICAL | BudaConstants.PLACEMENT_USER;
+   BudaBubblePosition pos = BudaBubblePosition.MOVABLE;
+
+   BoardProperties bp = BoardProperties.getProperties("Beam");
 
    if (id.equals(NOTE_BUTTON)) {
       bb = new BeamNoteBubble();
@@ -244,6 +249,7 @@ private static Icon imageToFlagIcon(String path)
     }
    else if (id.equals(PROBLEM_BUTTON)) {
       bb = new BeamProblemBubble(null,false);
+      if (bp.getBoolean("Beam.problem.fixed")) pos = BudaBubblePosition.FLOAT;
     }
    else if (id.equals(TASK_BUTTON)) {
       bb = new BeamProblemBubble(null,true);
@@ -264,9 +270,8 @@ private static Icon imageToFlagIcon(String path)
       bb = new BeamKeyBubble();
     }
 
-   if (br != null && bb != null) {
-      BudaConstraint bc = new BudaConstraint(pt);
-      br.add(bb,bc);
+   if (bba != null && bb != null) {
+      bba.addBubble(bb,null,pt,place,pos);
       bb.grabFocus();
     }
 }
@@ -415,7 +420,7 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
       Map<String,ProblemFlag> mpf = new HashMap<String,ProblemFlag>();
       flag_map = mpf;
       for (BumpProblem bp : BumpClient.getBump().getAllProblems()) {
-         addFlags(bp,mpf);
+	 addFlags(bp,mpf);
        }
     }
 
@@ -423,17 +428,17 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
       ProblemFlag pf = null;
       ProblemFlag pf1 = null;
       switch (bp.getErrorType()) {
-         case ERROR :
-         case FATAL :
-            pf = error_flag;
-            pf1 = error1_flag;
-            break;
-         case WARNING :
-            pf = warning_flag;
-            pf1 = warning1_flag;
-            break;
-         default :
-            return;
+	 case ERROR :
+	 case FATAL :
+	    pf = error_flag;
+	    pf1 = error1_flag;
+	    break;
+	 case WARNING :
+	    pf = warning_flag;
+	    pf1 = warning1_flag;
+	    break;
+	 default :
+	    return;
        }
       BassName bn = BassFactory.getFactory().findBubbleName(bp.getFile(),bp.getStart());
       if (bn == null) return;
@@ -444,10 +449,10 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
       if (pr == null || pnm == null) return;
       pnm = pr + ":." + pnm;
       while (pnm != null) {
-        addFlag(mpf,pnm,pf);
-        int idx1 = pnm.lastIndexOf(".");
-        if (idx1 < 0) break;
-        pnm = pnm.substring(0,idx1);
+	addFlag(mpf,pnm,pf);
+	int idx1 = pnm.lastIndexOf(".");
+	if (idx1 < 0) break;
+	pnm = pnm.substring(0,idx1);
       }
    }
 

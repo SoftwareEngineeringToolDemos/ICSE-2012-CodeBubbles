@@ -166,7 +166,6 @@ public ImportInfo visitImportToken(AbstractToken token,boolean reportUndefinedIm
    Tuple3<AbstractModule, String, AbstractToken> modTok = null;
    String checkForToken = "";
    if (token instanceof SourceToken) {
-
       AbstractASTManager astManager = the_nature.getAstManager();
       CompletionState state = CompletionStateFactory.getEmptyCompletionState(
 	 token.getRepresentation(), the_nature, completionCache);
@@ -181,7 +180,6 @@ public ImportInfo visitImportToken(AbstractToken token,boolean reportUndefinedIm
 	 checkForToken = modTok.o2;
 	 if (modTok.o2.length() == 0) {
 	    wasResolved = true;
-
 	  }
 	 else {
 	    try {
@@ -199,7 +197,12 @@ public ImportInfo visitImportToken(AbstractToken token,boolean reportUndefinedIm
 
       // if it got here, it was not resolved
       if (!wasResolved && reportUndefinedImports) {
-	 the_visitor.onAddUnresolvedImport(token);
+	 String or = token.getOriginalRep();
+	 String mr = token.getParentPackage();
+	 if (mr != null && or != null && mr.equals(or)) {
+	    // handle import self
+	 }
+	 else the_visitor.onAddUnresolvedImport(token);
        }
 
     }

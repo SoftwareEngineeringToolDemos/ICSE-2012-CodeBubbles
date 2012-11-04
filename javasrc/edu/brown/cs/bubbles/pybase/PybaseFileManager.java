@@ -86,11 +86,21 @@ private PybaseFileManager()
 /*										*/
 /********************************************************************************/
 
-IFileData getFileData(File f,String nm,PybaseProject pp)
+IFileData getFileData(File f)
 {
-   if (nm == null) nm = f.getName();
-   else if (f == null) f = new File(nm);
+   return file_data.get(f);
+}
 
+
+IFileData getFileData(String fnm)
+{
+   return file_data.get(new File(fnm));
+}
+
+
+
+IFileData getNewFileData(File f,String nm,PybaseProject pp)
+{
    FileData fd = file_data.get(f);
 
    if (fd == null) {
@@ -111,7 +121,7 @@ IFileData getFileData(IDocument d,File f)
 
 int getFileOffset(File f,int line,int col)
 {
-   IFileData ifd = getFileData(f,null,null);
+   IFileData ifd = getFileData(f);
    if (ifd == null) return 0;
 
    IDocument doc = ifd.getDocument();
@@ -174,42 +184,42 @@ private static class FileData implements IFileData {
 
    private void loadFile() {
       try {
-         FileReader fr = new FileReader(for_file);
-         last_modified = for_file.lastModified();
-         StringBuffer fbuf = new StringBuffer();
-         char [] buf = new char[4096];
-         for ( ; ; ) {
-            int sts = fr.read(buf);
-            if (sts < 0) break;
-            fbuf.append(buf,0,sts);
-          }
-         use_document.set(fbuf.toString());
-         fr.close();
+	 FileReader fr = new FileReader(for_file);
+	 last_modified = for_file.lastModified();
+	 StringBuffer fbuf = new StringBuffer();
+	 char [] buf = new char[4096];
+	 for ( ; ; ) {
+	    int sts = fr.read(buf);
+	    if (sts < 0) break;
+	    fbuf.append(buf,0,sts);
+	  }
+	 use_document.set(fbuf.toString());
+	 fr.close();
        }
       catch (IOException e) {
-         PybaseMain.logE("Problem reading file",e);
+	 PybaseMain.logE("Problem reading file",e);
        }
     }
-   
+
    @Override public boolean commit(boolean refresh,boolean save) {
       boolean upd = false;
       if (refresh) {
-         long lm = for_file.lastModified();
-         if (lm > last_modified) {
-            loadFile();
-            upd = true;
-          }
-       } 
+	 long lm = for_file.lastModified();
+	 if (lm > last_modified) {
+	    loadFile();
+	    upd = true;
+	  }
+       }
       else if (save && has_changed) {
-         try {
-            FileWriter fw = new FileWriter(for_file);
-            fw.write(use_document.get());
-            fw.close();
-            last_modified = for_file.lastModified();
-          }
-         catch (IOException e) {
-            PybaseMain.logE("Problem saving file",e);
-          }
+	 try {
+	    FileWriter fw = new FileWriter(for_file);
+	    fw.write(use_document.get());
+	    fw.close();
+	    last_modified = for_file.lastModified();
+	  }
+	 catch (IOException e) {
+	    PybaseMain.logE("Problem saving file",e);
+	  }
        }
       has_changed = false;
       return upd;
@@ -218,8 +228,9 @@ private static class FileData implements IFileData {
    @Override public File getFile()				{ return for_file; }
    @Override public IDocument getDocument()			{ return use_document; }
    @Override public String getModuleName()			{ return module_name; }
-   @Override public boolean hasChanged()                        { return has_changed; }
-   @Override public void markChanged()                          { has_changed = true; }
+   @Override public boolean hasChanged()			{ return has_changed; }
+   @Override public void markChanged()				{ has_changed = true; }
+   @Override public long getLastDateLastModified()		{ return last_modified; }
 
    @Override public void clearPositions()		{ position_data.clear(); }
 
@@ -227,16 +238,17 @@ private static class FileData implements IFileData {
       if (line == 0) return;
       int off = 0;
       try {
-	 off = use_document.getLineOffset(line-1) + col-1;
+         off = use_document.getLineOffset(line-1) + col-1;
        }
       catch (BadLocationException e) {
-	 PybaseMain.logE("Bad location for start offset",e);
-	 return;
+         PybaseMain.logE("Bad location for start offset",e);
+         return;
        }
+      // System.err.println("SET START " + line + " " + col + " " + off + " " + o);
       int [] offs = position_data.get(o);
       if (offs == null) {
-	 offs = new int [2];
-	 position_data.put(o,offs);
+         offs = new int [2];
+         position_data.put(o,offs);
        }
       offs[0] = off;
     }
@@ -270,6 +282,7 @@ private static class FileData implements IFileData {
     }
 
    @Override public void setEnd(Object o,int off) {
+      // System.err.println("SET END " + off + " " + o);
       int [] offs = position_data.get(o);
       if (offs == null) {
 	 offs = new int[2];

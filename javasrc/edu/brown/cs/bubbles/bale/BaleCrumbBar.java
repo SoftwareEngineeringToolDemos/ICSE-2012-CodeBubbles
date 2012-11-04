@@ -31,6 +31,7 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.burp.BurpHistory;
+import edu.brown.cs.bubbles.buda.BudaCursorManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -100,7 +101,7 @@ BaleCrumbBar(BaleEditorPane be, String name)
 
    last_name = null;
 
-   setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+   BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
    addComponentListener(new ResizeListener());
 
    setBackground(BALE_PROPERTIES.getColor(BALE_EDITOR_TOP_COLOR));

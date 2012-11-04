@@ -645,7 +645,7 @@ public static String getBuiltinType(String tok)
 
 private static List<SimpleNode> getAttributeParts(Attribute node)
 {
-   ArrayList<SimpleNode> nodes = new ArrayList<SimpleNode>();
+   ArrayList<SimpleNode> nodes = new ArrayList<SimpleNode>();				
 
    nodes.add(node.attr);
    SimpleNode s = node.value;
@@ -733,8 +733,11 @@ private static String getFullMethodName(ASTEntry last)
  * @param node the if node that we want to check.
  * @return null if the passed node is not
  */
-public static boolean isIfMAinNode(If node)
+public static boolean isIfMainNode(SimpleNode nd)
 {
+   if (!(nd instanceof If)) return false;
+   If node = (If) nd;
+
    if (node.test instanceof Compare) {
       Compare compareNode = (Compare) node.test;
       // handcrafted structure walking

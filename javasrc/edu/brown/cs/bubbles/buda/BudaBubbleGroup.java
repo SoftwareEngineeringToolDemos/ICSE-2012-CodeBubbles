@@ -437,8 +437,41 @@ void outputXml(BudaXmlWriter xw)
 
 void handlePopupMenu(MouseEvent e)
 {
+   BudaBubble bb1 = null;
+   for (BudaBubble bb : group_bubbles) {
+      bb1 = bb;
+      break;
+    }
+   if (bb1 == null) return;
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb1);
+   if (bba == null) return;
+
+   JPopupMenu pm = new JPopupMenu();
+   pm.add(new RemoveAction());
+   pm.show(bba,e.getX(),e.getY());
 }
 
+
+
+private class RemoveAction extends AbstractAction {
+
+   RemoveAction() {
+      super("Remove Group");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubble bb1 = null;
+      for (BudaBubble bb : group_bubbles) {
+	 bb1 = bb;
+	 break;
+       }
+      if (bb1 == null) return;
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb1);
+      if (bba == null) return;
+      bba.userRemoveGroup(BudaBubbleGroup.this);
+    }
+
+}	// end of inner class RemoveAction
 
 
 

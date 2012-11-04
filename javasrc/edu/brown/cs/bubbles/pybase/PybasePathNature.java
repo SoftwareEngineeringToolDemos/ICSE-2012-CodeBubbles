@@ -117,58 +117,23 @@ private ModulesManager getProjectModulesManager()
 }
 
 
-/**
- * @return the project pythonpath with complete paths in the filesystem.
- */
-public String getOnlyProjectPythonPathStr(boolean addExternal)
-{
-   if (the_project == null || the_nature == null) return "";
-
-   String source = getProjectSourcePath(true);
-   if (source == null) source = "";
-
-   String external = null;
-   if (addExternal) external = getProjectExternalSourcePath(true);
-   if (external == null) external = "";
-
-   return source + "|" + external;
-}
-
-
-public void setProjectSourcePath(String newSourcePath)
-{}
-
-public void setProjectExternalSourcePath(String newExternalSourcePath)
-{}
-
-public void setVariableSubstitution(Map<String, String> variableSubstitution)
-{}
-
-public void clearCaches()
-{}
-
-
-public Set<String> getProjectSourcePathSet(boolean replace)
+public Set<String> getProjectSourcePathSet()
 {
    String projectSourcePath;
    PybaseNature nature = the_nature;
    if (nature == null) return new HashSet<String>();
-   projectSourcePath = getProjectSourcePath(replace);
+   projectSourcePath = getProjectSourcePath();
+
    return new HashSet<String>(StringUtils.splitAndRemoveEmptyTrimmed(projectSourcePath,'|'));
 }
 
-public String getProjectSourcePath(boolean replace)
+
+
+public String getProjectSourcePath()
 {
+   if (the_project == null) return "";
+
    return the_project.getProjectSourcePath();
-}
-
-
-public String getProjectExternalSourcePath(boolean replace)
-{
-   String extPath = the_project.getProjectSourcePath();
-   if (extPath == null) extPath = "";
-
-   return trimAndReplaceVariablesIfNeeded(replace, extPath, the_nature);
 }
 
 
@@ -184,25 +149,6 @@ public Map<String, String> getVariableSubstitution(boolean addinterpretersubs)
 
    return rslt;
 }
-
-
-/********************************************************************************/
-/*										*/
-/*	Utility methods 							*/
-/*										*/
-/********************************************************************************/
-
-private String trimAndReplaceVariablesIfNeeded(boolean replace,String projectSourcePath,
-						  PybaseNature nature)
-{
-   String ret = StringUtils.leftAndRightTrim(projectSourcePath, '|');
-   if (replace) {
-      // StringSubstitution substitution = new StringSubstitution(nature);
-      // ret = substitution.performPythonpathStringSubstitution(ret);
-    }
-   return ret;
-}
-
 
 
 

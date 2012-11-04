@@ -171,7 +171,7 @@ LocalScope getScope()			{ return for_scope; }
 
 protected void checkIfMainNode(If node)
 {
-   boolean isIfMainNode = NodeUtils.isIfMAinNode(node);
+   boolean isIfMainNode = NodeUtils.isIfMainNode(node);
    if (isIfMainNode) {
       for_scope.setIfMainLine(node.beginLine);
    }

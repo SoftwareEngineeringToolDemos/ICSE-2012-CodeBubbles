@@ -101,8 +101,6 @@ BddtLaunchBubble(BumpLaunchConfig cfg)
    edit_config = null;
    doing_load = false;
 
-   if (cfg == null) return;
-
    setupPanel();
 }
 
@@ -146,19 +144,34 @@ private void setupPanel()
    BassRepository br = BassFactory.getRepository(BassConstants.SearchType.SEARCH_CODE);
    for (BassName bn : br.getAllNames()) {
       if (lp == null || bn.getProject().equals(lp)) {
-	 if (bn.getName().endsWith(".main") &&
-		  bn.getNameType() == BassNameType.METHOD &&
-		  Modifier.isPublic(bn.getModifiers()) &&
-		  Modifier.isStatic(bn.getModifiers())) {
-	    String cn = bn.getClassName();
-	    String pn = bn.getPackageName();
-	    if (pn != null) cn = pn + "." + cn;
-	    starts.add(cn);
+	 switch (launch_config.getConfigType()) {
+	    case UNKNOWN :
+	       break;
+	    case JAVA_APP :
+	       if (bn.getName().endsWith(".main") &&
+		      bn.getNameType() == BassNameType.METHOD &&
+		      Modifier.isPublic(bn.getModifiers()) &&
+		      Modifier.isStatic(bn.getModifiers())) {
+		  String cn = bn.getClassName();
+		  String pn = bn.getPackageName();
+		  if (pn != null) cn = pn + "." + cn;
+		  starts.add(cn);
+		}
+	       break;
+	    case JUNIT_TEST :
+	    case REMOTE_JAVA :
+	       break;
+	    case PYTHON :
+	       if (bn.getNameType() == BassNameType.MODULE) {
+		  String cn = bn.getPackageName();
+		  starts.add(cn);
+		}
+	       break;
 	  }
        }
     }
    Collections.sort(starts);
- 
+
    start_class = null;
    arg_area = null;
    vmarg_area = null;
@@ -179,7 +192,7 @@ private void setupPanel()
 	       if (edit_config == null) edit_config = launch_config;
 	       if (edit_config != null && start_class != null) {
 		  edit_config = edit_config.setMainClass(s);
-	        }
+		}
 	     }
 	  }
 	 stop_in_main = pnl.addBoolean("Stop in Main",launch_config.getStopInMain(),this);
@@ -196,6 +209,11 @@ private void setupPanel()
 	 host_name = pnl.addTextField("Remote Host",launch_config.getRemoteHost(),null,this);
 	 port_number = pnl.addNumericField("Remote Port",
 	       1000,65536,launch_config.getRemotePort(),this);
+	 break;
+      case PYTHON :
+	 start_class = pnl.addChoice("Module to Run",starts,launch_config.getMainClass(),this);
+	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
+	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
 	 break;
       default:
 	 break;
@@ -344,7 +362,7 @@ private String getNewName()
        }
     }
    else if (doing_load) return;
-   else if (cmd.equals("Start Class")) {
+   else if (cmd.equals("Start Class") || cmd.equals("Module to Run")) {
       if (edit_config == null) edit_config = launch_config;
       if (edit_config != null && start_class != null) {
 	 edit_config = edit_config.setMainClass((String) start_class.getSelectedItem());

@@ -99,7 +99,7 @@ private BgtaBubble(String username)
    log_pane = new JScrollPane(logging_area,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 	   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-   log_pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
+   BudaCursorManager.setCursor(log_pane,new Cursor(Cursor.HAND_CURSOR));
    log_pane.setOpaque(false);
    log_pane.getViewport().setOpaque(false);
    log_pane.setBorder(new EmptyBorder(0,0,0,0));

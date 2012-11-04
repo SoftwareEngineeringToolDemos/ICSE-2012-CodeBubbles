@@ -27,6 +27,7 @@ import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
 import edu.brown.cs.bubbles.pybase.symbols.Found;
 import edu.brown.cs.bubbles.pybase.symbols.GenAndTok;
 import edu.brown.cs.bubbles.pybase.symbols.SourceToken;
+import edu.brown.cs.bubbles.pybase.symbols.NodeUtils;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
@@ -105,6 +106,25 @@ static void outputProjectSymbol(PybaseProject pp,IvyXmlWriter xw)
 
 
 
+static void outputSearchFor(SimpleNode sn,AbstractToken tok,IvyXmlWriter xw)
+{
+    String tnm = null;
+    if (tok != null) tnm = token_type_names.get(tok.getType());
+    if (tnm == null) {
+       if (sn instanceof Module) tnm = "Module";
+       else tnm = "StaticInitializer";
+     }
+
+    if (tnm != null && tok != null) {
+       xw.begin("SEARCHFOR");
+       xw.field("TYPE",tnm);
+       xw.text(tok.getRepresentation());
+       xw.end("SEARCHFOR");
+     }
+}
+
+
+
 static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,SimpleNode sn,IvyXmlWriter xw)
 {
     xw.begin("ITEM");
@@ -114,8 +134,9 @@ static void outputSymbol(PybaseProject pp,IFileData file,AbstractToken tok,Simpl
     if (tok != null) tnm = token_type_names.get(tok.getType());
     if (tnm == null) {
        if (sn instanceof Module) tnm = "Module";
+       else if (NodeUtils.isIfMainNode(sn)) tnm = "PythonMain";
        else tnm = "StaticInitializer";
-    }
+     }
     if (tnm != null) xw.field("TYPE",tnm);
     if (tok != null) xw.field("HID",tok.hashCode());
     else xw.field("HID",sn.hashCode());
@@ -267,12 +288,12 @@ public static String getContextName(SimpleNode sn)
 /*										*/
 /********************************************************************************/
 
-static void outputSearchMatch(ISemanticData isd,AbstractToken atok,IvyXmlWriter xw)
+static void outputSearchMatch(ISemanticData isd,AbstractToken base,AbstractToken atok,IvyXmlWriter xw)
 {
    SourceToken tok = null;
    if (atok instanceof SourceToken) tok = (SourceToken) atok;
    if (tok == null) return;
-   SimpleNode sn = tok.getNameOrNameTokAst();
+   SimpleNode sn = tok.getNameOrNameTokAst(base);
    if (sn == null) return;
 
    xw.begin("MATCH");
@@ -280,34 +301,23 @@ static void outputSearchMatch(ISemanticData isd,AbstractToken atok,IvyXmlWriter 
    xw.field("LINE",sn.beginLine);
    xw.field("COL",sn.beginColumn);
 
-   int eline = tok.getLineEnd(false);
-   int ecol = tok.getColEnd(false);
-   // xw.field("LINEX",eline);
-   // xw.field("COLX",ecol);
-
-   int [] lce = tok.getLineColEnd();
-   if (lce != null) {
-      eline = lce[0];
-      ecol = lce[1];
-      // xw.field("ELINE",lce[0]);
-      // xw.field("ECOL",lce[1]);
-    }
-
    if (isd.getFileData() != null) {
+      IFileData ifd = isd.getFileData();
       File f = isd.getFileData().getFile();
       if (f != null) {
 	 xw.field("FILE",f.getPath());
-	 int off = PybaseFileManager.getFileManager().getFileOffset(f,sn.beginLine,sn.beginColumn);
+	 int off = ifd.getStartOffset(sn);
 	 xw.field("STARTOFFSET",off);
-	 int xoff = PybaseFileManager.getFileManager().getFileOffset(f,eline,ecol);
+	 int xoff = ifd.getEndOffset(sn);
 	 xw.field("ENDOFFSET",xoff);
-	 xw.field("LENGTH",xoff-off);
+	 xw.field("LENGTH",xoff-off+1);
        }
     }
+   if (base == null) sn = null;
 
    PybaseProject pp = isd.getProject();
    if (pp != null) xw.field("PROJECT",pp.getName());
-   outputSymbol(isd.getProject(),isd.getFileData(),tok,null,xw);
+   outputSymbol(isd.getProject(),isd.getFileData(),tok,sn,xw);
    xw.end("MATCH");
 }
 
@@ -323,16 +333,18 @@ static void outputProblem(PybaseMessage m,ISemanticData isd,IvyXmlWriter xw)
 {
    IFileData ifd = isd.getFileData();
    IDocument doc = ifd.getDocument();
+   int sln = m.getStartLine(doc);
+   int scl = m.getStartCol(doc);
+   int eln = m.getEndLine(doc);
+   int ecl = m.getEndCol(doc);
+   String msg = m.getMessage();
+   List<String> ls = m.getAdditionalInfo();
 
    xw.begin("PROBLEM");
    xw.field("PROJECT",isd.getProject().getName());
    xw.field("FILE",ifd.getFile().getPath());
    xw.field("MSGID",m.getType());
-   xw.field("MESSAGE",m.getMessage());
-   int sln = m.getStartLine(doc);
-   int scl = m.getStartCol(doc);
-   int eln = m.getEndLine(doc);
-   int ecl = m.getEndCol(doc);
+   xw.field("MESSAGE",msg);
    xw.field("LINE",sln);
 
    switch (m.getSeverity()) {
@@ -353,7 +365,6 @@ static void outputProblem(PybaseMessage m,ISemanticData isd,IvyXmlWriter xw)
     }
    catch (BadLocationException e) { }
 
-   List<String> ls = m.getAdditionalInfo();
    if (ls != null) {
       for (String s : ls) {
 	 xw.textElement("ARG",s);
@@ -361,6 +372,55 @@ static void outputProblem(PybaseMessage m,ISemanticData isd,IvyXmlWriter xw)
     }
    xw.end("PROBLEM");
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle matching 							*/
+/*										*/
+/********************************************************************************/
+
+static String convertWildcardToRegex(String s)
+{
+   if (s == null) return null;
+
+   StringBuffer nb = new StringBuffer(s.length()*8);
+   int brct = 0;
+   boolean qtfg = false;
+   boolean bkfg = false;
+   String star = null;
+
+   star = "\\w*";
+
+   nb.append('^');
+
+   for (int i = 0; i < s.length(); ++i) {
+      char c = s.charAt(i);
+      if (bkfg) {
+	 if (c == '\\') qtfg = true;
+	 else if (!qtfg && c == ']') bkfg = false;
+	 else { nb.append(c); qtfg = false; continue; }
+       }
+      if (c == '/' || c == '\\') {
+	 if (File.separatorChar == '\\') nb.append("\\\\");
+	 else nb.append(File.separatorChar);
+       }
+      else if (c == '@') nb.append(".*");
+      else if (c == '*') nb.append(star);
+      else if (c == '.') nb.append("\\.");
+      else if (c == '{') { nb.append("("); ++brct; }
+      else if (c == '}') { nb.append(")"); --brct; }
+      else if (brct > 0 && c == ',') nb.append('|');
+      else if (c == '?') nb.append(".");
+      else if (c == '[') { nb.append(c); bkfg = true; }
+      else nb.append(c);
+    }
+
+   nb.append('$');
+
+   return nb.toString();
+ }
 
 
 }	// end of class PybaseUtil

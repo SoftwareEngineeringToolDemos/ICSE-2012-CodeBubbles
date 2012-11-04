@@ -104,6 +104,9 @@ BassNameLocation(BumpLocation bl)
       case FIELD :
 	 name_type = BassNameType.FIELDS;
 	 break;
+      case MAIN_PROGRAM :
+	 name_type = BassNameType.MAIN_PROGRAM;
+	 break;
       case STATIC_INITIALIZER :
 	 name_type = BassNameType.STATICS;
 	 break;
@@ -201,6 +204,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 return "< FIELDS >";
       case STATICS :
 	 return "< INITIALIZERS >";
+      case MAIN_PROGRAM :
+	 return "< MAIN >";
       case HEADER :
 	 return "< PREFIX >";
       case FILE :
@@ -248,6 +253,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 {
    switch (name_type) {
       case STATICS :
+      case MAIN_PROGRAM :
       case FIELDS :
       case CLASS :
       case THROWABLE :
@@ -292,6 +298,9 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case STATICS :
 	 bb = bf.createStaticsBubble(getProject(),getNameHead(),getFile());
 	 break;
+      case MAIN_PROGRAM :
+	 bb = bf.createMainProgramBubble(getProject(),getNameHead(),getFile());
+	 break;
       case CLASS :
       case ENUM :
       case INTERFACE :
@@ -308,7 +317,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 break;
       case MODULE :
 	 bb = bf.createFileBubble(getProject(),getFile(),getNameHead());
-	 break; 
+	 break;
       default :
 	 BoardLog.logW("BASS","NO BUBBLE FOR " + getKey());
 	 break;
@@ -332,6 +341,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case METHOD :
       case FIELDS :
       case STATICS :
+      case MAIN_PROGRAM :
       case CLASS :
       case ENUM :
       case INTERFACE :

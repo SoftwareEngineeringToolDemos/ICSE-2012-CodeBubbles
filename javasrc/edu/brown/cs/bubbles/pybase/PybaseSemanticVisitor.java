@@ -1372,8 +1372,8 @@ private boolean markRead(AbstractToken token,String rep,boolean addToNotDefined,
    while (found == false && it.hasNext()) {
       String nextTokToSearch = it.next();
       foundAs = cur_scope.findFirst(nextTokToSearch, true, acceptedScopes);
-      found = (foundAs != null);
-      if (found && foundAs != null) {
+      if (foundAs != null) {
+         found = true;
 	 foundAsStr = nextTokToSearch;
 	 foundAs.getSingle().addReference(token);
 	 if (intermediate && token.getAst() instanceof Attribute) {
@@ -1382,10 +1382,18 @@ private boolean markRead(AbstractToken token,String rep,boolean addToNotDefined,
 	       currScopeItems.putRef(at.value,foundAs);
 	     }
 	  }
+         else if (!intermediate && token.getAst() instanceof Attribute) {
+            Attribute at = (Attribute) token.getAst();
+            if (at.value instanceof Name) {
+               currScopeItems.putRef(at.value,foundAs);
+             }
+            // currScopeItems.putRef(at.attr,foundAs);
+          }
 	 else if (!intermediate) {
 	    currScopeItems.putRef(token,foundAs);
 	  }
        }
+      else found = false;
     }
 
 
@@ -1406,10 +1414,8 @@ private boolean markRead(AbstractToken token,String rep,boolean addToNotDefined,
 	       ff.getSingle().addReference(token);
 	     }
 	  }
-	 else {
-	    currScopeItems.putRef(t1,token);
-	  }
-	 currScopeItems.putRef(token,xfound.o2);
+         else currScopeItems.putRef(t1,token);
+	 // currScopeItems.putRef(token,xfound.o2);
        }
 
       if (addToNotDefined && xfound == null) {

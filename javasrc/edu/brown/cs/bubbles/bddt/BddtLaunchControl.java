@@ -838,7 +838,6 @@ private class RunEventHandler implements BumpRunEventHandler {
 	       last_stopped = null;
 	       BddtFactory.getFactory().getConsoleControl().clearConsole(cur_process);
 	       BddtFactory.getFactory().getHistoryControl().clearHistory(cur_process);
-
 	     }
 	    break;
 	 case PROCESS_REMOVE :
@@ -1023,6 +1022,7 @@ private class ExecutionAnnot implements BaleAnnotation {
    private BaleFileOverview for_document;
    private Position execute_pos;
    private Color annot_color;
+   private Color except_color;
    private File for_file;
 
    ExecutionAnnot(BumpThread th,BumpStackFrame frm) {
@@ -1035,6 +1035,7 @@ private class ExecutionAnnot implements BaleAnnotation {
       int off = for_document.findLineOffset(frm.getLineNumber());
       BoardProperties bp = BoardProperties.getProperties("Bddt");
       annot_color = bp.getColor(BDDT_EXECUTE_ANNOT_COLOR,new Color(0x4000ff00,true));
+      except_color = bp.getColor(BDDT_EXECUTE_EXCEPT_COLOR,new Color(0x40ff0000,true));
 
       execute_pos = null;
       try {
@@ -1051,14 +1052,25 @@ private class ExecutionAnnot implements BaleAnnotation {
    @Override public File getFile()		{ return for_file; }
 
    @Override public Icon getIcon() {
+      if (for_thread.getExceptionType() != null) return BoardImage.getIcon("execexcept");
       return BoardImage.getIcon("exec");
     }
 
    @Override public String getToolTip() {
-      return "Thread " + for_thread.getName() + " stopped at " + for_frame.getLineNumber();
+      String exc = for_thread.getExceptionType();
+      if (exc == null) {
+	 return "Thread " + for_thread.getName() + " stopped at " + for_frame.getLineNumber();
+       }
+      else {
+	 return "Thread " + for_thread.getName() + " stopped at " + for_frame.getLineNumber() +
+	    " due to " + exc;
+       }
     }
 
-   @Override public Color getLineColor()			{ return annot_color; }
+   @Override public Color getLineColor() {
+      if (for_thread.getExceptionType() != null) return except_color;
+      return annot_color;
+    }
    @Override public Color getBackgroundColor()			{ return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb) {

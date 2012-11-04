@@ -22,6 +22,7 @@
 <entry key="Swing.float">true</entry>
 <entry key="Performance.float">true</entry>
 <entry key="ExecutionAnnotation.color">#4000ff00</entry>
+<entry key="ExecutionAnnotation.exception.color">#40ff0000</entry>
 <entry key="FrameAnnotation.color">#40ffff00</entry>
 <entry key="Bddt.buttons.StepInto">false</entry>
 <entry key="Bddt.buttons.StepUser">true</entry>

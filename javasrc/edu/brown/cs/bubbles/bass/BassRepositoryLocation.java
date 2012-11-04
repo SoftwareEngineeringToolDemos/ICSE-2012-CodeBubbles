@@ -124,6 +124,9 @@ BassName findBubbleName(File f,int eclipsepos)
 {
    BassNameLocation best = null;
    int bestlen = 0;
+   boolean inclbest = false;
+   int maxdelta0 = 0;
+   int maxdelta1 = 2;
 
    waitForNames();
 
@@ -133,14 +136,17 @@ BassName findBubbleName(File f,int eclipsepos)
 	 if (bnl.getFile().equals(f)) {
 	    int spos = bnl.getEclipseStartOffset();
 	    int epos = bnl.getEclipseEndOffset();
+	    boolean incl = (spos <= eclipsepos && epos > eclipsepos);
+	    if (best != null && incl && !inclbest && best.getNameType() == bnl.getNameType()) best = null;
 	    if (best == null || epos - spos <= bestlen) {
 	       if (best != null && epos - spos == bestlen) {
 		  if (best.getNameType() == BassNameType.HEADER && bnl.getNameType() == BassNameType.CLASS) ;
 		  else continue;
 		}
-	       if (spos-16 <= eclipsepos && epos+16 > eclipsepos) {	// allow for indentations
+	       if (spos-maxdelta0 <= eclipsepos && epos+maxdelta1 > eclipsepos) {	// allow for indentations
 		  best = bnl;
 		  bestlen = epos - spos;
+		  inclbest = incl;
 		}
 	     }
 	  }
@@ -194,12 +200,13 @@ private synchronized void loadNames()
 {
    Map<String,BassNameLocation> fieldmap = new HashMap<String,BassNameLocation>();
    Map<String,BassNameLocation> staticmap = new HashMap<String,BassNameLocation>();
+   Map<String,BassNameLocation> mainmap = new HashMap<String,BassNameLocation>();
 
    BumpClient bc = BumpClient.getBump();
    Collection<BumpLocation> locs = bc.findAllNames(null);
    if (locs != null) {
       for (BumpLocation bl : locs) {
-	 addLocation(bl,fieldmap,staticmap);
+	 addLocation(bl,fieldmap,staticmap,mainmap);
        }
     }
 
@@ -210,7 +217,8 @@ private synchronized void loadNames()
 
 
 private void addLocation(BumpLocation bl,Map<String,BassNameLocation> fieldmap,
-			    Map<String,BassNameLocation> staticmap)
+			    Map<String,BassNameLocation> staticmap,
+			    Map<String,BassNameLocation> mainmap)
 {
    if (!isRelevant(bl)) return;
 
@@ -223,6 +231,14 @@ private void addLocation(BumpLocation bl,Map<String,BassNameLocation> fieldmap,
 	    bn = null;
 	  }
 	 else fieldmap.put(bn.getNameHead(),bn);
+	 break;
+      case MAIN_PROGRAM :
+	 BassNameLocation mbn = mainmap.get(bn.getNameHead());
+	 if (mbn != null) {
+	    mbn.addLocation(bl);
+	    bn = null;
+	 }
+	 else mainmap.put(bn.getNameHead(),bn);
 	 break;
       case STATICS :
 	 BassNameLocation sbn = staticmap.get(bn.getNameHead());
@@ -369,6 +385,7 @@ private void addNamesForFile(String proj,String file,boolean rem)
 {
    Map<String,BassNameLocation> fieldmap = new HashMap<String,BassNameLocation>();
    Map<String,BassNameLocation> staticmap = new HashMap<String,BassNameLocation>();
+   Map<String,BassNameLocation> mainmap = new HashMap<String,BassNameLocation>();
    List<String> fls = null;
    if (file != null) {
       fls = new ArrayList<String>();
@@ -381,7 +398,7 @@ private void addNamesForFile(String proj,String file,boolean rem)
       if (rem) removeNamesForFile(proj,file);
       if (locs != null) {
 	 for (BumpLocation bl : locs) {
-	    addLocation(bl,fieldmap,staticmap);
+	    addLocation(bl,fieldmap,staticmap,mainmap);
 	  }
        }
     }

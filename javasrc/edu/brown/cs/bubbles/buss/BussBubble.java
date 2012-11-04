@@ -434,7 +434,7 @@ private class BussResizeListener extends ComponentAdapter {
 
 @Override public void setVisible(boolean isVisible){
    super.setVisible(isVisible);
-   buss_hover.clearHover();
+   buss_hover.clearHover(null);
 }
 
 
@@ -486,7 +486,7 @@ private class Hoverer extends BudaHover implements ComponentListener {
        }
     }
 
-   @Override public void endHover() {
+   @Override public void endHover(MouseEvent e) {
       if (preview_bubble != null){
 	 preview_bubble.setVisible(false);
 	 preview_bubble = null;
@@ -497,13 +497,13 @@ private class Hoverer extends BudaHover implements ComponentListener {
       preview_bubble = previewBubble;
    }
 
-   @Override protected void clearHover(){
-      super.clearHover();
+   @Override protected void clearHover(MouseEvent e){
+      super.clearHover(e);
    }
 
    @Override public void componentHidden(ComponentEvent e)	{ }
 
-   @Override public void componentMoved(ComponentEvent e)	{ clearHover(); }
+   @Override public void componentMoved(ComponentEvent e)	{ clearHover(null); }
 
    @Override public void componentResized(ComponentEvent e)	{ }
 

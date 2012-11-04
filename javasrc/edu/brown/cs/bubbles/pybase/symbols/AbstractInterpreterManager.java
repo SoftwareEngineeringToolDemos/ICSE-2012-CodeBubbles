@@ -431,8 +431,8 @@ public PybaseInterpreter[] getInterpretersFromPersistedString(String persisted)
 		  info.getModulesManager().load();
 		}
 	       catch (Exception e) {
-		  PybaseMain.logE("Restoring info for: " + info.getExecutableOrJar(), e);
-		  PybaseMain.logE("Finished restoring information for: "
+		  PybaseMain.logD("Restoring info for: " + info.getExecutableOrJar() + ": " + e);
+		  PybaseMain.logD("Finished restoring information for: "
 				     + info.executable_or_jar + " at: "
 				     + info.getModulesManager().getIoDirectory());
 		}
@@ -594,11 +594,7 @@ private void restorePythonpathForNatures()
 	 if (getInterpreterType() == nature.getInterpreterType()) {
 	    PybasePathNature pythonPathNature = nature.getPythonPathNature();
 
-
-	    // There's a catch here: if the nature uses some variable defined in the string substitution
-	    // from the interpreter info, we need to do a full build instead of only making a notification.
-	    String complete = pythonPathNature.getProjectExternalSourcePath(false)
-	       + pythonPathNature.getProjectSourcePath(false);
+	    String complete = pythonPathNature.getProjectSourcePath();
 
 	    PybaseNature n = nature;
 	    String projectInterpreterName = n.getProjectInterpreterName();

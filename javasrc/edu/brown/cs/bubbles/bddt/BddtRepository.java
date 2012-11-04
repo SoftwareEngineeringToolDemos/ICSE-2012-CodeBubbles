@@ -130,6 +130,7 @@ private static class ConfigName extends BassNameBase {
     }
 
    @Override public BudaBubble createBubble() {
+      if (for_config == null) return null;
       return new BddtLaunchBubble(for_config);
     }
 

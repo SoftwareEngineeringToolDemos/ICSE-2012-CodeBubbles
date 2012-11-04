@@ -142,6 +142,7 @@ BaleCompletionContext(BaleEditorPane edt,int soff,char ch)
 
 void handleSelected()
 {
+   if (the_panel == null) return;
    CompletionItem ci = the_panel.getCurrentCompletion();
    if (ci == null) return;
    handleCompletion(ci);

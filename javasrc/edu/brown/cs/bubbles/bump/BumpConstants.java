@@ -88,6 +88,7 @@ enum BumpSymbolType {
    FUNCTION,
    CONSTRUCTOR,
    STATIC_INITIALIZER,
+   MAIN_PROGRAM,
    MODULE,
    PACKAGE,
    PROJECT,
@@ -259,8 +260,8 @@ String [] FIX_PARAMETERS = new String [] {
 };
 
 
-interface BumpContractType {
-   
+interface BumpContractType { 
+
    boolean useContractsForJava();
    boolean useJunit();
    boolean enableAssertions();
@@ -564,7 +565,7 @@ enum BumpThreadStateDetail {
    CLIENT_REQUEST,
    EVALUATION,
    EVALUATION_IMPLICIT,
-   STEP_END,
+   STEP_END, 
    STEP_INTO,
    STEP_OVER,
    STEP_RETURN,
@@ -629,7 +630,7 @@ enum BumpLaunchConfigType {
    JAVA_APP("Java Application"),
    JUNIT_TEST("JUnit"),
    REMOTE_JAVA("Remote Java Application"),
-   PYTHON("Python");
+   PYTHON("PYTHON");
 
    private String eclipse_name;
 

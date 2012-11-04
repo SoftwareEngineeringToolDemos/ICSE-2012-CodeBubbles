@@ -43,8 +43,6 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class PybaseDebugger implements PybaseDebugConstants {
@@ -58,12 +56,12 @@ public class PybaseDebugger implements PybaseDebugConstants {
 /*										*/
 /********************************************************************************/
 
-private List<PybaseDebugTarget> debug_targets;
+private PybaseDebugTarget debug_target;
 private PybaseLaunchConfig for_config;
 private ListenConnector listen_connect;
 private String debug_id;
 
-private static IdCounter        debug_counter = new IdCounter();
+private static IdCounter	debug_counter = new IdCounter();
 
 
 /********************************************************************************/
@@ -74,7 +72,7 @@ private static IdCounter        debug_counter = new IdCounter();
 
 PybaseDebugger(PybaseLaunchConfig cfg)
 {
-   debug_targets = new ArrayList<PybaseDebugTarget>();
+   debug_target = null;
    for_config = cfg;
    listen_connect = null;
    debug_id = "DEBUG_" + Integer.toString(debug_counter.nextValue());
@@ -88,17 +86,19 @@ PybaseDebugger(PybaseLaunchConfig cfg)
 /*										*/
 /********************************************************************************/
 
-void addTarget(PybaseDebugTarget t)
+void setTarget(PybaseDebugTarget t)
 {
-   debug_targets.add(t);
+   debug_target = t;
 }
 
 
-public PybaseLaunchConfig getLaunchConfig()     { return for_config; }
+public PybaseLaunchConfig getLaunchConfig()	{ return for_config; }
+							
+public PybaseDebugTarget getTarget()		{ return debug_target; }
 
-public List<PybaseDebugTarget> getTargets()     { return debug_targets; }
+public String getId()				{ return debug_id; }
 
-public String getId()                           { return debug_id; }
+int getServerPort()				{ return listen_connect.getServerPort(); }
 
 
 
@@ -117,7 +117,7 @@ void startConnect() throws IOException
 
 
 Socket waitForConnect(Process p)
-{ 
+{
    if (listen_connect == null) return null;
    listen_connect.waitForConnection();
    if (listen_connect.getException() != null) {
@@ -135,9 +135,9 @@ public void dispose()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Output Methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Output Methods								*/
+/*										*/
 /********************************************************************************/
 
 void outputXml(IvyXmlWriter xw)
@@ -152,48 +152,49 @@ void outputXml(IvyXmlWriter xw)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      ListenConnector                                                         */
-/*                                                                              */
+/*										*/
+/*	ListenConnector 							*/
+/*										*/
 /********************************************************************************/
 
 private class ListenConnector extends Thread {
-   
+
    private int time_out;
    private ServerSocket server_socket;
    private Socket accept_socket;
    private Exception error_exception;
-   
+
    ListenConnector() throws IOException {
       time_out = 0;
       accept_socket = null;
       error_exception = null;
       server_socket = null;
       try {
-         server_socket = new ServerSocket();
+	 server_socket = new ServerSocket(0);
+	 server_socket.setSoTimeout(time_out);
        }
       catch (IOException e) {
-         PybaseMain.logE("Problem creating server socket",e);
-         throw e;
+	 PybaseMain.logE("Problem creating server socket",e);
+	 throw e;
        }
     }
-   
-   Exception getException()             { return error_exception; }
-   Socket getSocket()                   { return accept_socket; }
-   
+
+   int getServerPort()			{ return server_socket.getLocalPort(); }
+   Exception getException()		{ return error_exception; }
+   Socket getSocket()			{ return accept_socket; }
+
    @Override public void run() {
       try {
-         server_socket.setSoTimeout(time_out);
-         accept_socket = server_socket.accept();
+	 accept_socket = server_socket.accept();
        }
       catch (IOException e) {
-         error_exception = e;
+	 error_exception = e;
        }
       synchronized (this) {
 	 notifyAll();
       }
     }
-   
+
    void waitForConnection() {
       synchronized (this) {
 	 while (server_socket != null && accept_socket == null && error_exception == null) {
@@ -204,28 +205,28 @@ private class ListenConnector extends Thread {
 	 }
       }
    }
-   
+
    void stopListening() {
       if (server_socket != null) {
-         try {
-            server_socket.close();
-          }
-         catch (IOException ex) { }
-         server_socket = null;
-         synchronized (this) {
-            notifyAll();
-         }
+	 try {
+	    server_socket.close();
+	  }
+	 catch (IOException ex) { }
+	 server_socket = null;
+	 synchronized (this) {
+	    notifyAll();				
+	 }
        }
     }
-   
+
    @Override protected void finalize() throws Throwable {
       stopListening();
     }
-   
-}       // end of inner class ListenConnector
-   
-      
-      
+
+}	// end of inner class ListenConnector
+
+
+
 
 
 }	// end of class PybaseDebugger

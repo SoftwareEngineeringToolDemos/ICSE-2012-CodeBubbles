@@ -100,7 +100,7 @@ BaleCompactFragment(BaleDocument bd,Collection<BumpLocation> locs,int wd)
 	 case INTERFACE :
 	 case ENUM :
 	 case THROWABLE :
-         case MODULE :
+	 case MODULE :
 	    if (bl.getDefinitionOffset() == bl.getOffset() &&
 	       bl.getDefinitionEndOffset() == bl.getEndOffset()) {
 	       // add dummy line
@@ -495,7 +495,8 @@ private class ContentData {
       ary_str[0] = firststr.substring(0, firststr.length() - 1);
       ary_str[ary_str.length - 1] = laststr.trim().substring(1);
       before_highlight_str = ary_str[0];
-      first_highlight_str = ary_str[1];
+      if (ary_str.length > 1) first_highlight_str = ary_str[1];
+      else first_highlight_str = "";
       StringBuffer afterhighlightstrbuf = new StringBuffer();
 
       for(int i = 2;i<ary_str.length;i++) {

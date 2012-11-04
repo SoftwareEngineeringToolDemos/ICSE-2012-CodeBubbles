@@ -54,6 +54,14 @@
       </java>
    </target>
 
+   <target name='buildhelp' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.buda.BudaHelp' fork='true'>
+	 <classpath refid='test.classpath' />
+      </java>
+      <copy file='helptext.html' tofile='/pro/web/web/people/spr/codebubbles/todohelp.html' />
+      <copy file='helptext.html' tofile='${BUBBLES}/lib/helptext.html' />
+   </target>
+
    <target name='jar' depends='compile'>
       <jar destfile="buda.jar" manifest='manifest.mf'>
 	 <fileset dir='${PRO}/ivy/java' includes= '**/*.class' />

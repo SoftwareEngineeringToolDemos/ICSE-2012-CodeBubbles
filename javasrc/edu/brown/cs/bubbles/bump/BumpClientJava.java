@@ -87,7 +87,7 @@ BumpClientJava()
  **/
 
 @Override public String getName()		{ return "Eclipse"; }
-
+@Override public String getServerName() 	{ return "BEDROCK"; }
 
 
 
@@ -114,7 +114,7 @@ private void ensureRunning()
    for ( ; ; ) {
       String r = getStringReply("PING",null,null,null,5000);
       if (r != null && r.startsWith("<RESULT>")) {
-	 r = r.substring(8);		
+	 r = r.substring(8);	
 	 int idx = r.indexOf("<");
 	 if (idx >= 0) r = r.substring(0,idx);
       }

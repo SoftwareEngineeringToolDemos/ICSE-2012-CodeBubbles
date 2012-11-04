@@ -29,6 +29,7 @@
 package edu.brown.cs.bubbles.pybase.debug;
 
 import edu.brown.cs.bubbles.pybase.PybaseException;
+import edu.brown.cs.bubbles.pybase.PybaseMain;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +50,7 @@ public static PybaseDebugger runDebug(PybaseLaunchConfig config) throws IOExcept
 {
    PybaseDebugger dbg = new PybaseDebugger(config);
    dbg.startConnect();
-   Process p = createProcess(config);
+   Process p = createProcess(config,dbg);
    PybaseDebugTarget tgt = new PybaseDebugTarget(dbg,p);
    Socket socket = null;
    try {
@@ -62,12 +63,12 @@ public static PybaseDebugger runDebug(PybaseLaunchConfig config) throws IOExcept
    catch (Exception ex) {
       p.destroy();
       String msg = "Unexpected error setting up the debugger";
-      throw new PybaseException(msg);
+      throw new PybaseException(msg,ex);
     }
    tgt.startTransmission(socket);
    tgt.initialize();
    tgt.addConsoleInputListener();
-   dbg.addTarget(tgt); 
+   dbg.setTarget(tgt);
 
    return dbg;
 }
@@ -79,7 +80,8 @@ public static PybaseDebugger runDebug(PybaseLaunchConfig config) throws IOExcept
 /*										*/
 /********************************************************************************/
 
-private static Process createProcess(PybaseLaunchConfig cfg) throws IOException
+private static Process createProcess(PybaseLaunchConfig cfg,PybaseDebugger dbg)
+	throws IOException, PybaseException
 {
    String [] env = cfg.getEnvironment();
 
@@ -92,9 +94,17 @@ private static Process createProcess(PybaseLaunchConfig cfg) throws IOException
       s[s.length-1] = "PYTHONIOENCODING=" + encoding;
       env = s;
     }
-   String [] cmdline = cfg.getCommandLine();
+   String [] cmdline = cfg.getCommandLine(dbg);
    File wdir = cfg.getWorkingDirectory();
    Runtime rt = Runtime.getRuntime();
+
+   StringBuffer buf = new StringBuffer();
+   for (String s : cmdline) {
+      buf.append(s);
+      buf.append(" ");
+    }
+   PybaseMain.logI("RUN " + buf.toString());
+
    Process p = rt.exec(cmdline,env,wdir);
    return p;
 }

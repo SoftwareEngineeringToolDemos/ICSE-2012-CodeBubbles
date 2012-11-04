@@ -77,13 +77,14 @@ private DebugReader debug_reader;
 private DebugWriter debug_writer;
 private int	sequence_number;
 private PybaseMain pybase_main;
+private Process  run_process;
 
 private File	debug_file;
 private List<PybaseDebugThread> thread_data;
 private boolean is_disconnected;
 private PybaseValueModificationChecker modification_checker;
 private PybaseDebugger remote_debugger;
-private String  target_id;
+private String	target_id;
 private OutputStream console_input;
 
 private static IdCounter       target_counter = new IdCounter();
@@ -102,9 +103,12 @@ PybaseDebugTarget(PybaseDebugger p,Process px)
    debug_reader = null;
    debug_writer = null;
    remote_debugger = p;
-   
+   run_process = px;
+
+   System.err.println("WORKING ON PROCESS " + px);
+
    target_id = "TARGET_" + Integer.toString(target_counter.nextValue());
-   
+
    sequence_number = -1;
    pybase_main = PybaseMain.getPybaseMain();
 
@@ -112,7 +116,7 @@ PybaseDebugTarget(PybaseDebugger p,Process px)
    modification_checker = new PybaseValueModificationChecker();
    thread_data = null;
    debug_file = null;
-   
+
    ConsoleReader cr = new ConsoleReader(px.getInputStream(),false);
    cr.start();
    cr = new ConsoleReader(px.getErrorStream(),false);
@@ -161,14 +165,14 @@ public boolean canSuspend()
    return false;
 }
 
-public boolean hasThreads()  			{ return true; }
+public boolean hasThreads()			{ return true; }
 
 
 
 
 public PybaseDebugger getDegugger()				{ return remote_debugger; }
-public File getFile()                                           { return debug_file; }
-public String getId()                                           { return target_id; }
+public File getFile()						{ return debug_file; }
+public String getId()						{ return target_id; }
 
 
 public PybaseDebugThread findThreadById(String tid)
@@ -182,13 +186,15 @@ public PybaseDebugThread findThreadById(String tid)
 
 public boolean canDisconnect()			{ return !is_disconnected; }
 public boolean isDisconnected() 		{ return is_disconnected; }
-public void disconnect() 
+public void disconnect()
 {
    terminate();
    modification_checker = null;
 }
 
-	
+
+Process getProcess()				{ return run_process; }
+
 
 
 /********************************************************************************/
@@ -233,19 +239,19 @@ public void startTransmission(Socket s) throws IOException
 /*										*/
 /********************************************************************************/
 
-public void initialize() 
+public void initialize()
 {
    generateProcessEvent("CREATE");
-   
+
    // we post version command just for fun
    // it establishes the connection
    postCommand(new PybaseDebugCommand.Version(this));
 
-   // now, register all the breakpoints in all projects
-   // addBreakpointsFor(ResourcesPlugin.getWorkspace().getRoot());
-
-   // Sending python exceptions before sending run command
-   onSetConfiguredExceptions();
+   // ADD ALL BREAKPOINTS
+   PybaseDebugManager pm = PybaseDebugManager.getManager();
+   for (PybaseDebugBreakpoint db : pm.getBreakpoints()) {
+      breakpointAdded(db);
+    }
 
    // Send the run command, and we are off
    PybaseDebugCommand.Run run = new PybaseDebugCommand.Run(this);
@@ -256,9 +262,11 @@ public void initialize()
 
 public void processCommand(String scode,String seq,String payload)
 {
+   PybaseMain.logD("DEBUG Command: " + scode + " " + seq + " " + payload);
+
    try {
       int cmdcode = Integer.parseInt(scode);
-	
+
       switch (cmdcode) {
 	 case CMD_THREAD_CREATED :
 	    processThreadCreated(payload);
@@ -279,7 +287,7 @@ public void processCommand(String scode,String seq,String payload)
     }
    catch (Exception e) {
       PybaseMain.logE("Error processing: " + scode + " payload: "+ payload, e);
-    }	
+    }
 }
 
 
@@ -317,13 +325,13 @@ public List<PybaseDebugThread> getThreads() throws PybaseException
 	 thread_data = new ArrayList<PybaseDebugThread>();
        }
     }
-    
+
    return thread_data;
 }
 
 
 
-public void terminate() 
+public void terminate()
 {
    if (comm_socket != null) {
       try {
@@ -352,7 +360,7 @@ public void terminate()
     }
 
    thread_data = new ArrayList<PybaseDebugThread>();
-   
+
    generateProcessEvent("TERMINATE");
 }
 
@@ -360,15 +368,15 @@ public void terminate()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Evaluation commands                                                     */
-/*                                                                              */
+/*										*/
+/*	Evaluation commands							*/
+/*										*/
 /********************************************************************************/
 
 void evaluateExpression(String bid,String eid,String expr,String loc)
 {
    PybaseDebugCommand.EvaluateExpression cmd = new PybaseDebugCommand.EvaluateExpression(
-         this,expr,loc,true);
+	 this,expr,loc,true);
    EvalRunner er = new EvalRunner(bid,eid,loc,cmd);
    pybase_main.startTask(er);
 }
@@ -376,45 +384,45 @@ void evaluateExpression(String bid,String eid,String expr,String loc)
 
 
 private class EvalRunner implements Runnable, CommandResponseListener {
-   
+
    private String bubble_id;
    private String eval_id;
    private String locator_id;
    private PybaseDebugCommand.EvaluateExpression eval_command;
-   
+
    EvalRunner(String bid,String id,String loc,PybaseDebugCommand.EvaluateExpression cmd) {
       bubble_id = bid;
       eval_id = id;
       locator_id = loc;
       eval_command = cmd;
     }
-   
+
    @Override public void run() {
       eval_command.setCompletionListener(this);
       postCommand(eval_command);
     }
-   
+
    @Override public void commandComplete(PybaseDebugCommand cmd) {
        String r = eval_command.getResponse();
        if (r != null) {
-          IvyXmlWriter xw = pybase_main.beginMessage("EVALUATION",bubble_id);
-          xw.field("ID",eval_id);
-          xw.field("STATUS","OK");
-          Element e = IvyXml.convertStringToXml(r);
-          List<PybaseDebugVariable> vars = new ArrayList<PybaseDebugVariable>();
-          for (Element ce : IvyXml.elementsByTag(e,"var")) {
-             vars.add(createVariable(locator_id,ce));
-           }
-          // output vars
-          // pybase_main.finishMessage(xw);
-        }
+	  IvyXmlWriter xw = pybase_main.beginMessage("EVALUATION",bubble_id);
+	  xw.field("ID",eval_id);
+	  xw.field("STATUS","OK");
+	  Element e = IvyXml.convertStringToXml(r);
+	  List<PybaseDebugVariable> vars = new ArrayList<PybaseDebugVariable>();
+	  for (Element ce : IvyXml.elementsByTag(e,"var")) {
+	     vars.add(createVariable(locator_id,ce));
+	   }
+	  // output vars
+	  // pybase_main.finishMessage(xw);
+	}
        else {
-          // handle error
-        }
+	  // handle error
+	}
     }
-   
-}       // end of inner class EvalRunner
-      
+
+}	// end of inner class EvalRunner
+
 
 
 
@@ -439,33 +447,35 @@ private PybaseDebugVariable createVariable(String locator,Element xml)
 
 
 
-
-
 /********************************************************************************/
 /*										*/
 /*	Breakpoint methods							*/
 /*										*/
 /********************************************************************************/
 
-public void onSetConfiguredExceptions()
-{
-   // Sending python exceptions to the debugger
-   PybaseDebugCommand.SendPyException sendCmd = new PybaseDebugCommand.SendPyException(this);
-   postCommand(sendCmd);
-}
-
-
 public void breakpointAdded(PybaseDebugBreakpoint b)
 {
    if (b.isEnabled()) {
-      String condition = b.getCondition();
-      if(condition != null){
-	 condition = condition.replaceAll("\n", "@_@NEW_LINE_CHAR@_@");
-	 condition = condition.replaceAll("\t", "@_@TAB_CHAR@_@");
-       }
-      PybaseDebugCommand.SetBreakpoint  cmd = new PybaseDebugCommand.SetBreakpoint(
-	 this, b.getFile(), b.getLine(), condition, b.getFunctionName());
-      this.postCommand(cmd);
+      switch (b.getType()) {
+	 case NONE :
+	    break;
+	 case LINE :
+	    String condition = b.getCondition();
+	    if(condition != null){
+	       condition = condition.replaceAll("\n", "@_@NEW_LINE_CHAR@_@");
+	       condition = condition.replaceAll("\t", "@_@TAB_CHAR@_@");
+	    }
+	    String fct = "None";                // b.getFunctionName()
+	    PybaseDebugCommand.SetBreakpoint cmd = new PybaseDebugCommand.SetBreakpoint(
+		     this, b.getFile(), b.getLine(), condition, fct);
+	    this.postCommand(cmd);
+	    break;
+	 case EXCEPTION :
+	    PybaseDebugCommand.SendPyException ecmd = new PybaseDebugCommand.SendPyException(
+	       this,b.getException(),b.isCaught(),b.isUncaught());
+	    this.postCommand(ecmd);
+	    break;
+      }
     }
 }
 
@@ -473,8 +483,16 @@ public void breakpointAdded(PybaseDebugBreakpoint b)
 
 public void breakpointRemoved(PybaseDebugBreakpoint b)
 {
-   PybaseDebugCommand.RemoveBreakpoint cmd = new PybaseDebugCommand.RemoveBreakpoint(this, b.getFile(), b.getLine());
-   this.postCommand(cmd);
+   switch (b.getType()) {
+      case NONE :
+	 break;
+      case LINE :
+	 PybaseDebugCommand.RemoveBreakpoint cmd = new PybaseDebugCommand.RemoveBreakpoint(this, b.getFile(), b.getLine());
+	 this.postCommand(cmd);
+	 break;
+      case EXCEPTION :
+	 // remove exception breakpoint
+   }
 }
 
 
@@ -508,7 +526,7 @@ private void processThreadCreated(String payload)
    else {
       thread_data.addAll(newthreads);
     }
-  
+
    // Now notify debugger that new threads were added
    for (PybaseDebugThread thrd : newthreads) {
       generateThreadEvent("CREATE",null,thrd);
@@ -546,47 +564,47 @@ private void processThreadSuspended(String payload)
       case CMD_STEP_RETURN :
       case CMD_RUN_TO_LINE :
       case CMD_SET_NEXT_STATEMENT :
-         reason = DebugReason.STEP_END;
-         break;
+	 reason = DebugReason.STEP_END;
+	 break;
       case CMD_THREAD_SUSPEND :
-         reason = DebugReason.CLIENT_REQUEST;
-         break;
+	 reason = DebugReason.CLIENT_REQUEST;
+	 break;
       case CMD_SET_BREAK :
-         reason = DebugReason.BREAKPOINT; 
-         break;
+	 reason = DebugReason.BREAKPOINT;
+	 break;
       default :
-         PybaseMain.logE("Unexpected reason for suspension: " + sr);
-         reason = DebugReason.UNSPECIFIED;
-         break;
+	 PybaseMain.logE("Unexpected reason for suspension: " + sr);
+	 reason = DebugReason.UNSPECIFIED;
+	 break;
     }
 
    if (t != null) {
-      modification_checker.onlyLeaveThreads(thread_data); 
+      modification_checker.onlyLeaveThreads(thread_data);
       List<PybaseDebugStackFrame> frms = new ArrayList<PybaseDebugStackFrame>();
       for (Element fe : IvyXml.children(te,"frame")) {
-         String fid = IvyXml.getAttrString(fe,"id");
-         String fnm = IvyXml.getAttrString(fe,"name");
-         String fil = IvyXml.getAttrString(fe,"file");
-         int lno = IvyXml.getAttrInt(fe,"line");
-         File file = null;
-         if (fil != null) {
-            try {
-               fil = URLDecoder.decode(fil,"UTF-8");
-             }
-            catch (UnsupportedEncodingException ex) { }
-            file = new File(fil);
-            if (file.exists()) file = file.getAbsoluteFile();
-          }
-         PybaseDebugStackFrame sf = t.findStackFrameByID(fid);
-         if (sf == null) {
-            sf = new PybaseDebugStackFrame(t,fid,fnm,file,lno,this);
-          }
-         else {
-            sf.setName(fnm);
-            sf.setFile(file);
-            sf.setLine(lno);
-          }
-         frms.add(sf);
+	 String fid = IvyXml.getAttrString(fe,"id");
+	 String fnm = IvyXml.getAttrString(fe,"name");
+	 String fil = IvyXml.getAttrString(fe,"file");
+	 int lno = IvyXml.getAttrInt(fe,"line");
+	 File file = null;
+	 if (fil != null) {
+	    try {
+	       fil = URLDecoder.decode(fil,"UTF-8");
+	     }
+	    catch (UnsupportedEncodingException ex) { }
+	    file = new File(fil);
+	    if (file.exists()) file = file.getAbsoluteFile();
+	  }
+	 PybaseDebugStackFrame sf = t.findStackFrameByID(fid);
+	 if (sf == null) {
+	    sf = new PybaseDebugStackFrame(t,fid,fnm,file,lno,this);
+	  }
+	 else {
+	    sf.setName(fnm);
+	    sf.setFile(file);
+	    sf.setLine(lno);
+	  }
+	 frms.add(sf);
        }
       t.setSuspended(true,frms);
       generateThreadEvent("SUSPEND",reason,t);
@@ -643,12 +661,12 @@ private void processThreadRun(String payload)
 	 // expected, when pydevd reports "None"
 	 resumereason = DebugReason.UNSPECIFIED;
        }
-	
+
       String threadID = threadIdAndReason[0];
       PybaseDebugThread t = findThreadById(threadID);
       if (t != null) {
 	 t.setSuspended(false, null);
-         generateThreadEvent("RESUME",resumereason,t);
+	 generateThreadEvent("RESUME",resumereason,t);
        }
       else {
 	 PybaseMain.logE("Unable to find thread " + threadID);
@@ -681,9 +699,9 @@ void consoleInput(String txt) throws IOException
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Output methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Output methods								*/
+/*										*/
 /********************************************************************************/
 
 private void generateProcessEvent(String kind)
@@ -713,7 +731,7 @@ private void generateThreadEvent(String kind,DebugReason reason,PybaseDebugThrea
 }
 
 
-private void outputProcessXml(IvyXmlWriter xw) 
+private void outputProcessXml(IvyXmlWriter xw)
 {
    xw.begin("PROCESS");
    xw.field("PID",target_id);
@@ -759,32 +777,34 @@ private static class DebugReader extends Thread {
 
     private void processCommand(String cmdline) {
        try {
-          String[] cmdparsed = cmdline.split("\t", 3);
-          int cmdcode = Integer.parseInt(cmdparsed[0]);
-          int seqcode = Integer.parseInt(cmdparsed[1]);
-          String payload = URLDecoder.decode(cmdparsed[2], "UTF-8");
-    
-          PybaseDebugCommand cmd;
-          synchronized (response_queue) {
-             cmd = response_queue.remove(new Integer(seqcode));
-           }
-    
-          if (cmd == null) {
-             if (remote_target != null) {
-        	remote_target.processCommand(cmdparsed[0],cmdparsed[1],payload);
-              }
-             else {
-        	PybaseMain.logE("Debug error: command received no target");
-              }
-           }
-          else {
-             cmd.processResponse(cmdcode,payload);
-           }
-        }
+	  PybaseMain.logD("DEBUG RESPONSE: " + cmdline);
+
+	  String[] cmdparsed = cmdline.split("\t", 3);
+	  int cmdcode = Integer.parseInt(cmdparsed[0]);
+	  int seqcode = Integer.parseInt(cmdparsed[1]);
+	  String payload = URLDecoder.decode(cmdparsed[2], "UTF-8");
+
+	  PybaseDebugCommand cmd;
+	  synchronized (response_queue) {
+	     cmd = response_queue.remove(new Integer(seqcode));
+	   }
+
+	  if (cmd == null) {
+	     if (remote_target != null) {
+		remote_target.processCommand(cmdparsed[0],cmdparsed[1],payload);
+	      }
+	     else {
+		PybaseMain.logE("Debug error: command received no target");
+	      }
+	   }
+	  else {
+	     cmd.processResponse(cmdcode,payload);
+	   }
+	}
        catch (Exception e) {
-          PybaseMain.logE("Error processing debug command",e);
-          throw new RuntimeException(e);
-        }
+	  PybaseMain.logE("Error processing debug command",e);
+	  throw new RuntimeException(e);
+	}
      }
 
     @Override public void run() {
@@ -863,15 +883,19 @@ private static class DebugWriter extends Thread {
 		}
 	       catch (InterruptedException e) { }
 	     }
+	    if (is_done) break;
 	    cmd = cmd_queue.remove(0);
 	  }
-
 	 try {
 	    if (cmd != null) {
 	       cmd.aboutToSend();
-	       out_writer.write(cmd.getOutgoing());
-	       out_writer.write("\n");
-	       out_writer.flush();
+	       String c = cmd.getOutgoing();
+	       PybaseMain.logD("DEBUG COMMAND " + cmd + " " + c);
+	       if (c != null) {
+		  out_writer.write(c);
+		  out_writer.write("\n");
+		  out_writer.flush();
+		}
 	     }
 	  }
 	 catch (IOException e1) {
@@ -881,7 +905,7 @@ private static class DebugWriter extends Thread {
 	    is_done = true;
 	  }
        }
-    }
+   }
 
 }	// end of inner class DebugWriter
 
@@ -892,13 +916,13 @@ private static class DebugWriter extends Thread {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle console I/O                                                         */
-/*                                                                              */
+/*										*/
+/*	Handle console I/O							*/
+/*										*/
 /********************************************************************************/
 
 class ConsoleReader extends Thread {
-   
+
    private Reader input_stream;
    private boolean is_stderr;
 
@@ -911,18 +935,20 @@ class ConsoleReader extends Thread {
    @Override public void run() {
       char [] buf = new char[4096];
       try {
-         for ( ; ; ) {
-            int ln = input_stream.read(buf);
-            if (ln < 0) break;
-            IvyXmlWriter xw = pybase_main.beginMessage("CONSOLE");
-            xw.field("PID",target_id);
-            xw.field("STDERR",is_stderr);
-            xw.cdataElement("TEXT",buf);
-            pybase_main.finishMessage(xw);
-          }
+	 for ( ; ; ) {
+	    int ln = input_stream.read(buf);
+	    if (ln < 0) break;
+	    String txt = new String(buf,0,ln);
+	    PybaseMain.logD("CONSOLE WRITE: " + is_stderr + " " + txt);
+	    IvyXmlWriter xw = pybase_main.beginMessage("CONSOLE");
+	    xw.field("PID",target_id);
+	    xw.field("STDERR",is_stderr);
+	    xw.cdataElement("TEXT",txt);
+	    pybase_main.finishMessage(xw);
+	  }
        }
       catch (IOException e) {
-         PybaseMain.logD("Error reading from process: " + e);
+	 PybaseMain.logD("Error reading from process: " + e);
        }
       IvyXmlWriter xw = pybase_main.beginMessage("CONSOLE");
       xw.field("PID",target_id);

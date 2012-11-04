@@ -289,6 +289,33 @@
 	 <TAB NAME='Code Editor Options'/>
 	 <KEYWORD TEXT="Font" />
       </OPT>
+      <OPT NAME="Bale.initial.width" DESCRIPTION="Default width of code editors" TYPE="INTEGER">
+	 <TAB NAME="Code Editor Options"/>
+	 <EXAMPLE TEXT="Width in pixels"/>
+	 <KEYWORD TEXT="default"/>
+	 <KEYWORD TEXT="width"/>
+	 <KEYWORD TEXT="code"/>
+	 <KEYWORD TEXT="editor"/>
+	 <KEYWORD TEXT="bubble"/>
+      </OPT>
+      <OPT NAME="Bale.initial.width.file" DESCRIPTION="Default width of file code editors" TYPE="INTEGER">
+	 <TAB NAME="Code Editor Options"/>
+	 <EXAMPLE TEXT="Width in pixels"/>
+	 <KEYWORD TEXT="default"/>
+	 <KEYWORD TEXT="width"/>
+	 <KEYWORD TEXT="code"/>
+	 <KEYWORD TEXT="editor"/>
+	 <KEYWORD TEXT="bubble"/>
+      </OPT>
+      <OPT NAME="Bale.initial.width.class" DESCRIPTION="Default width of class code editors" TYPE="INTEGER">
+	 <TAB NAME="Code Editor Options"/>
+	 <EXAMPLE TEXT="Width in pixels"/>
+	 <KEYWORD TEXT="default"/>
+	 <KEYWORD TEXT="width"/>
+	 <KEYWORD TEXT="code"/>
+	 <KEYWORD TEXT="editor"/>
+	 <KEYWORD TEXT="bubble"/>
+      </OPT>
    </PACKAGE>
 
    <PACKAGE NAME="Buda">
@@ -300,7 +327,7 @@
 	 <KEYWORD TEXT="viewport"/>
 	 <KEYWORD TEXT="panning"/>
       </OPT>
-      <OPT NAME="Buda.mergeforreg" DESCRIPTION="Show merged search on right click" TYPE="BOOLEAN">
+      <OPT NAME="Buda.mergeforreg" DESCRIPTION="Show intergated search on right click" TYPE="BOOLEAN">
 	 <TAB NAME='Overall Drawing Options' />
 	 <TAB NAME="Search Options"/>
       </OPT>
@@ -335,6 +362,7 @@
        </OPT>
        <OPT NAME='Buda.tooltip.font' DESCRIPTION='Tool tip font' TYPE='FONT'>
 	 <TAB NAME='Overall Drawing Options' />
+	 <TAB NAME="Font Options"/>
 	 <KEYWORD TEXT='tool' />
 	 <KEYWORD TEXT='tip' />
        </OPT>
@@ -368,8 +396,14 @@
       <OPT NAME='Buda.placement.user.initial' DESCRIPTION='Initial Delay on Placement' TYPE='INTEGER' MIN='0' MAX='5000'>
 	 <TAB NAME='Bubble Config' />
        </OPT>
-      <OPT NAME='Buda.placement.user.movedl' DESCRIPTION='Placement delay after move' TYPE='INTEGER' MIN='0' MAX='5000'>
+      <OPT NAME='Buda.placement.user.moved' DESCRIPTION='Placement delay after move' TYPE='INTEGER' MIN='0' MAX='5000'>
 	 <TAB NAME='Bubble Config' />
+      </OPT>
+      <OPT NAME="Buda.help.tooltips" TYPE="BOOLEAN" DESCRIPTION="Show help tooltips">
+	 <TAB NAME="Bubble Config"/>
+	 <TAB NAME='Popular Options'/>
+	 <TAB NAME='System Options'/>
+	 <KEYWORD TEXT='help' />
       </OPT>
    </PACKAGE>
 
@@ -403,6 +437,7 @@
       </OPT>
       <OPT NAME='Bass.font' DESCRIPTION='Font for search boxes' TYPE='FONT'>
 	 <TAB NAME="Search Options"/>
+	 <TAB NAME="Font Options"/>
       </OPT>
    </PACKAGE>
 

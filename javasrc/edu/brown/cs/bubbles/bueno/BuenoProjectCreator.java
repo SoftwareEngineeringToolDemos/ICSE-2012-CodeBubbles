@@ -49,7 +49,7 @@ public class BuenoProjectCreator implements BuenoConstants, BuenoConstants.Bueno
 /*										*/
 /********************************************************************************/
 
-private ProjProps       project_props;
+private ProjProps	project_props;
 
 private BuenoProjectMaker project_type;
 
@@ -60,7 +60,7 @@ private JComboBox	type_field;
 private JButton 	create_button;
 
 static private Map<String,BuenoProjectMaker> type_names = new TreeMap<String,BuenoProjectMaker>();
-static BuenoProjectMaker        default_type = null;
+static BuenoProjectMaker	default_type = null;
 
 private static final String NAME_PAT = "\\p{Alpha}\\w*";
 
@@ -80,7 +80,7 @@ public BuenoProjectCreator()
 }
 
 
-static void addProjectMaker(BuenoProjectMaker pm) 
+static void addProjectMaker(BuenoProjectMaker pm)
 {
    type_names.put(pm.getLabel(),pm);
    if (default_type == null) default_type = pm;
@@ -147,7 +147,7 @@ private JPanel getJavaCreationPanel()
     }
    type_field = pnl.addChoice("Project Type",type_names.keySet(),idx,cact);
    pnl.addSeparator();
-   
+
    for (BuenoProjectMaker bpm : type_names.values()) {
       JPanel spnl = bpm.createPanel(this,project_props);
       panel_map.put(bpm,spnl);
@@ -157,8 +157,9 @@ private JPanel getJavaCreationPanel()
 
    create_button = pnl.addBottomButton("CREATE","CREATE PROJECT",cact);
    pnl.addBottomButtons();
-   
+
    setVisibilities();
+   checkStatus();
 
    return pnl;
 }
@@ -172,13 +173,13 @@ private void setVisibilities()
    for (BuenoProjectMaker bpm : type_names.values()) {
       JPanel spnl = panel_map.get(bpm);
       if (bpm == project_type) {
-         if (!spnl.isVisible()) {
-            spnl.setVisible(true);
-            bpm.resetPanel(project_props);
-          }
+	 if (!spnl.isVisible()) {
+	    spnl.setVisible(true);
+	    bpm.resetPanel(project_props);
+	  }
        }
       else {
-         spnl.setVisible(false);
+	 spnl.setVisible(false);
        }
     }
 }
@@ -220,10 +221,10 @@ private class CreationActions implements ActionListener, UndoableEditListener {
 
    @Override public void undoableEditHappened(UndoableEditEvent evt) {
       if (name_field.getDocument() == evt.getSource()) {
-         project_props.put(PROJ_PROP_NAME,name_field.getText());
+	 project_props.put(PROJ_PROP_NAME,name_field.getText());
 	 setProjectDirectory();
        }
-      
+
       checkStatus();
     }
 
@@ -231,10 +232,10 @@ private class CreationActions implements ActionListener, UndoableEditListener {
       String pnm = project_props.getString(PROJ_PROP_NAME);
       File pdir = null;
       if (pnm != null && pnm.length() > 0 && pnm.matches(NAME_PAT)) {
-         BoardSetup bs = BoardSetup.getSetup();
-         File f1 = new File(bs.getDefaultWorkspace());
-         File f2 = new File(f1,pnm);
-         if (!f2.exists()) pdir = f2;
+	 BoardSetup bs = BoardSetup.getSetup();
+	 File f1 = new File(bs.getDefaultWorkspace());
+	 File f2 = new File(f1,pnm);
+	 if (!f2.exists()) pdir = f2;
        }
       project_props.put(PROJ_PROP_DIRECTORY,pdir);
     }
@@ -256,12 +257,12 @@ private boolean createProject()
    if (!pdir.mkdir()) return false;
    File bdir = new File(pdir,"bin");
    if (!bdir.mkdir()) return false;
-   
+
    if (!project_type.setupProject(this,project_props)) return false;
-   
+
    if (!generateClassPathFile()) return false;
    if (!generateProjectFile()) return false;
-   
+
    BumpClient bc = BumpClient.getBump();
    bc.importProject(pnm);
 
@@ -275,7 +276,7 @@ private boolean createProject()
 /*										*/
 /********************************************************************************/
 
-@Override public BuenoProjectProps getProperties()      { return project_props; }
+@Override public BuenoProjectProps getProperties()	{ return project_props; }
 
 @Override public boolean generateClassPathFile()
 {
@@ -287,10 +288,10 @@ private boolean createProject()
       xw.outputHeader();
       xw.begin("classpath");
       for (File sdir : project_props.getSources()) {
-         xw.begin("classpathentry");
-         xw.field("kind","src");
-         xw.field("path",getFilePath(project_props,sdir));
-         xw.end("classpathentry");
+	 xw.begin("classpathentry");
+	 xw.field("kind","src");
+	 xw.field("path",getFilePath(project_props,sdir));
+	 xw.end("classpathentry");
        }
       xw.begin("classpathentry");
       xw.field("kind","con");
@@ -322,7 +323,7 @@ private boolean createProject()
 {
    File pdir = project_props.getFile(PROJ_PROP_DIRECTORY);
    String pnm = project_props.getString(PROJ_PROP_NAME);
-   
+
    try {
       File f1 = new File(pdir,".project");
       IvyXmlWriter xw = new IvyXmlWriter(f1);
@@ -361,7 +362,7 @@ private boolean createProject()
 
 
 
-@Override public String getPackageName(File src) 
+@Override public String getPackageName(File src)
 {
    try {
       FileReader fis = new FileReader(src);
@@ -370,44 +371,44 @@ private boolean createProject()
       str.slashStarComments(true);
       str.eolIsSignificant(false);
       str.lowerCaseMode(false);
-      
+
       StringBuilder pkg = new StringBuilder();
-      
+
       for ( ; ; ) {
-         int tid = str.nextToken();
-         if (tid == StreamTokenizer.TT_WORD) {
-            if (str.sval.equals("package")) {
-               for ( ; ; ) {
-                  int nid = str.nextToken();
-                  if (nid != StreamTokenizer.TT_WORD) break;
-                  pkg.append(str.sval);
-                  nid = str.nextToken();
-                  if (nid != '.') break;
-                  pkg.append(".");
-                }
-               break;
-             }
-            else break;
-          }
+	 int tid = str.nextToken();
+	 if (tid == StreamTokenizer.TT_WORD) {
+	    if (str.sval.equals("package")) {
+	       for ( ; ; ) {
+		  int nid = str.nextToken();
+		  if (nid != StreamTokenizer.TT_WORD) break;
+		  pkg.append(str.sval);
+		  nid = str.nextToken();
+		  if (nid != '.') break;
+		  pkg.append(".");
+		}
+	       break;
+	     }
+	    else break;
+	  }
        }
-      
+
       fis.close();
       return pkg.toString();
     }
    catch (IOException e) {
     }
-   
+
    return null;
 }
-      
-      
+
+
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Helper methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Helper methods								*/
+/*										*/
 /********************************************************************************/
 
 private String getFilePath(BuenoProjectProps props,File f)
@@ -418,13 +419,13 @@ private String getFilePath(BuenoProjectProps props,File f)
       pdir = pdir.getCanonicalFile();
    }
    catch (IOException e) { }
-   
+
    f = f.getAbsoluteFile();
    try {
       f = f.getCanonicalFile();
    }
    catch (IOException e) { }
-   
+
    String p1 = f.getPath();
    String p2 = pdir.getPath();
    String p3 = p2 + File.separator;
@@ -457,30 +458,30 @@ private String getFilePath(BuenoProjectProps props,File f)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Property holder                                                         */
-/*                                                                              */
+/*										*/
+/*	Property holder 							*/
+/*										*/
 /********************************************************************************/
 
 private static class ProjProps extends HashMap<String,Object> implements BuenoProjectProps {
-   
-   ProjProps()                          { }
-   
-   @Override public String getString(String k)          { return (String) get(k); }
-   @Override public File getFile(String k)              { return (File) get(k); }
-   @Override public Object get(String k)                { return super.get(k); }
-   @Override public Object remove(String k)             { return super.remove(k); }
+
+   ProjProps()				{ }
+
+   @Override public String getString(String k)		{ return (String) get(k); }
+   @Override public File getFile(String k)		{ return (File) get(k); }
+   @Override public Object get(String k)		{ return super.get(k); }
+   @Override public Object remove(String k)		{ return super.remove(k); }
    @Override public Object put(String k,Object v) {
       if (v == null) return super.remove(k);
       else return super.put(k,v);
     }
-   
+
    @SuppressWarnings("unchecked")
    @Override public List<File> getLibraries() {
       List<File> lf = (List<File>)get(PROJ_PROP_LIBS);
       if (lf == null) {
-         lf = new ArrayList<File>();
-         super.put(PROJ_PROP_LIBS,lf);
+	 lf = new ArrayList<File>();
+	 super.put(PROJ_PROP_LIBS,lf);
        }
       return lf;
     }
@@ -488,23 +489,23 @@ private static class ProjProps extends HashMap<String,Object> implements BuenoPr
    @Override public List<File> getSources() {
       List<File> lf = (List<File>)get(PROJ_PROP_SOURCE);
       if (lf == null) {
-         lf = new ArrayList<File>();
-         super.put(PROJ_PROP_SOURCE,lf);
+	 lf = new ArrayList<File>();
+	 super.put(PROJ_PROP_SOURCE,lf);
        }
       return lf;
    }
-   
+
    @SuppressWarnings("unchecked")
    @Override public Map<String,File> getLinks() {
       Map<String,File> lnks = (Map<String,File>) get(PROJ_PROP_LINKS);
       if (lnks == null) {
-         lnks = new HashMap<String,File>();
-         super.put(PROJ_PROP_LINKS,lnks);
+	 lnks = new HashMap<String,File>();
+	 super.put(PROJ_PROP_LINKS,lnks);
        }
       return lnks;
     }
-   
-}       // end of inner class ProjProps
+
+}	// end of inner class ProjProps
 
 
 }	// end of class BuenoProjectCreator

@@ -102,8 +102,7 @@ void handleStartFile(String proj,String bid,String file,String id,boolean cnts,I
 	throws PybaseException
 {
    File f = new File(file);
-   PybaseProject pp = pybase_main.getProjectManager().findProject(proj);
-   IFileData fd = PybaseFileManager.getFileManager().getFileData(f,file,pp);
+   IFileData fd = PybaseFileManager.getFileManager().getFileData(f);
    if (fd == null) throw new PybaseException("File " + file + " not found");
 
    addMonitor(fd,bid,id);
@@ -123,11 +122,11 @@ void elisionSetup(String proj,String bid,String file,boolean compute,
 {
    File f = new File(file);
    PybaseProject pp = pybase_main.getProjectManager().findProject(proj);
-   IFileData fd = PybaseFileManager.getFileManager().getFileData(f,file,pp);
-
+   IFileData fd = PybaseFileManager.getFileManager().getFileData(f);
    if (fd == null) {
       throw new PybaseException("File " + file + " not available for elision");
     }
+
    if (monitor_map.get(fd) == null) {
       throw new PybaseException("File " + file + " not open");
     }
@@ -183,7 +182,7 @@ void handleEdit(String proj,String bid,String file,String id,List<IEditData> edi
 	throws PybaseException
 {
    PybaseProject pp = pybase_main.getProjectManager().findProject(proj);
-   IFileData fd = PybaseFileManager.getFileManager().getFileData(null,file,pp);
+   IFileData fd = PybaseFileManager.getFileManager().getFileData(file);
    if (fd == null) throw new PybaseException("File " + file + " not found");
 
    if (bid == null) bid = "*";
@@ -281,7 +280,7 @@ void handleCommit(String proj,String bid,boolean refresh,boolean save,
       for (Element e : files) {
 	 String fnm = IvyXml.getAttrString(e,"NAME");
 	 if (fnm == null) fnm = IvyXml.getText(e);
-	 IFileData ifd	= PybaseFileManager.getFileManager().getFileData(null,fnm,pp);
+	 IFileData ifd	= PybaseFileManager.getFileManager().getFileData(fnm);
 	 if (ifd != null) {
 	    boolean r = IvyXml.getAttrBool(e,"REFRESH",refresh);
 	    boolean s = IvyXml.getAttrBool(e,"SAVE",save);
@@ -315,7 +314,18 @@ private void commitFile(PybaseProject pp,IFileData ifd,String bid,boolean refres
 
    if (upd && fed != null) {
       AutoCompile ac = new AutoCompile(pp,ifd,null,fed);
-      PybaseMain.getPybaseMain().startTask(ac);
+      PybaseMain pm = PybaseMain.getPybaseMain();
+      pm.startTask(ac);
+      IvyXmlWriter rxw = pm.beginMessage("RESOURCE");
+      rxw.begin("DELTA");
+      rxw.field("KIND","CHANGED");
+      rxw.begin("RESOURCE");
+      rxw.field("TYPE","FILE");
+      rxw.field("PROJECT",pp.getName());
+      rxw.field("LOCATION",ifd.getFile().getAbsolutePath());
+      rxw.end("RESOURCE");
+      rxw.end("DELTA");
+      pm.finishMessage(rxw);
     }
 }
 
@@ -386,7 +396,7 @@ private class EditHandler implements IDocumentListener {
       IDocument doc = evt.getDocument();
       int off = evt.getOffset();
       String txt = evt.getText();
-      PybaseMain.logD("Doc Edit " + len + " " + off + " " + (txt == null));
+      PybaseMain.logD("Doc Edit " + len + " " + off + " " + (txt == null) + " " + doc.getLength());
       List<FileEditData> lfed = monitor_map.get(for_file);
       String owner = owner_map.get(for_file);
       for (FileEditData fed : lfed) {

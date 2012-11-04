@@ -25,6 +25,8 @@
 
 package edu.brown.cs.bubbles.buda;
 
+import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
+
 import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
@@ -55,7 +57,7 @@ import java.util.List;
  *
  **/
 
-public class BudaBubbleArea extends JLayeredPane implements BudaConstants {
+public class BudaBubbleArea extends JLayeredPane implements BudaConstants, BudaHelpClient {
 
 
 
@@ -83,6 +85,7 @@ private BudaBubble	  focus_bubble;
 private BudaChannelSet	  channel_set;
 private Cursor		  palm_cursor;
 private boolean 	  first_time;
+private Dimension	  base_size;
 
 private Map<BudaBubble,Point> floating_bubbles;
 private Map<BudaBubble,BudaBubbleDock[]> docked_bubbles;
@@ -154,6 +157,7 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    int h0 = IvyXml.getAttrInt(cfg,"MAXY") + 100;
    if (w > BUBBLE_DISPLAY_WIDTH && w > w0) w = Math.max(w0,BUBBLE_DISPLAY_WIDTH);
    if (h > BUBBLE_DISPLAY_HEIGHT && h > h0) h = Math.max(h0,BUBBLE_DISPLAY_HEIGHT);
+   base_size = new Dimension(w,h);
 
    setSize(w,h);
 
@@ -165,6 +169,8 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    Dimension d = t.getBestCursorSize(32,32);
    if(d.width == 32 && d.height == 32) palm_cursor= t.createCustomCursor(BoardImage.getImage("palm3"), new Point(16,16), "PALM_CURSOR");
    else palm_cursor = new Cursor(Cursor.MOVE_CURSOR);
+
+   BudaRoot.registerHelp(this,this);
 }
 
 
@@ -369,7 +375,11 @@ void removeCurrentBubble(MouseEvent e)
       }
     }
 
+   // c.pack();
    c.setLocation(loc);
+   c.setLocation(new Point(0,0));
+   c.setLocation(loc);
+
    if (bb != null && fixed) bb.setFixed(fixed);
 
    boolean added = false;
@@ -565,10 +575,11 @@ void setFocusBubble(BudaBubble bb,boolean fg)
    for (BudaBubble bbl : active_bubbles) {
       String key = bbl.getContentKey();
       if (bbl == obb || bbl == bb ||
-	     (key != null && (key.equals(okey) || key.equals(nkey)))) {
+	       (key != null && (key.equals(okey) || key.equals(nkey)))) {
 	 bbl.repaint();
-       }
-    }
+      }
+   }
+   if (scale_factor != 1.0) repaint();
 
    focusLinks(bb,fg);
 
@@ -810,12 +821,10 @@ void checkAreaDimensions()
    if (maxx > osz.width || maxy > osz.height) {
       osz.width = Math.max(osz.width,maxx);
       osz.height = Math.max(osz.height,maxy);
+      base_size = new Dimension(osz);
       setSize(osz);
     }
 }
-
-
-
 
 
 
@@ -893,6 +902,12 @@ double getScaleFactor() 			{ return scale_factor; }
 void setScaleFactor(double sf)
 {
    scale_factor = sf;
+   Dimension nsz = new Dimension();
+   nsz.width = (int) (base_size.width * scale_factor);
+   nsz.height = (int) (base_size.height * scale_factor);
+   setSize(nsz);
+
+   // need to resize the bubble area to take new scale factor into account
    repaint();
 }
 
@@ -1011,6 +1026,47 @@ public int getRegionSpace()
 
 /********************************************************************************/
 /*										*/
+/*	Help methods								*/
+/*										*/
+/********************************************************************************/
+
+@Override public String getHelpLabel(MouseEvent e)
+{
+   if (!BudaRoot.showHelpTips()) return null;
+
+   MouseRegion mr = last_mouse;
+   if (mr == null) {
+      mr = new MouseRegion(e);
+    }
+
+   if (mr.getBubble() != null) {
+      if (mr.getRegion().isBorder()) {
+	 return "bubbleborder";
+       }
+      return "bubblecontent";
+    }
+   else if (mr.getGroup() != null) {
+      if (mr.getGroup().getSize() == 1) return "bubblehalo";
+      return "bubblegroup";
+    }
+   else if (mr.getLink() != null) {
+      return "bubblelink";
+    }
+
+   return "bubblearea";
+}
+
+
+
+@Override public String getHelpText(MouseEvent e)
+{
+   return null;
+}
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Painting methods							*/
 /*										*/
 /********************************************************************************/
@@ -1033,6 +1089,7 @@ public int getRegionSpace()
    if (scale_factor != 1.0 && g instanceof Graphics2D) {
       Graphics2D g1 = (Graphics2D) g.create();
       g1.scale(scale_factor,scale_factor);
+      g1.setClip(cur_viewport); 	// clip is bad if given by children.  This isn't quite right either
       super.paint(g1);
     }
    else {
@@ -1888,14 +1945,12 @@ private void handleMouseEvent(MouseEvent e)
       if (mr.getBubble() != null) userRemoveBubble(mr.getBubble());
       else if (mr.getGroup() != null) {
 	 if (e.getClickCount() == 1) {
-	    //TODO: put up help message that telling user to double click to remove group
 	  }
 	 else if (e.getClickCount() == 2) {
 	    userRemoveGroup(mr.getGroup());
 	  }
        }
       else if (mr.getLink() != null) {
-	 // TODO: should this be undoable?
 	 removeLink(mr.getLink());
        }
     }
@@ -2084,13 +2139,6 @@ private class MouseRegion {
       int y = e.getY();
 
       if (scale_factor != 1.0) {
-	 Point p0 = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),
-							BudaBubbleArea.this);
-	 x = (int)(p0.x / scale_factor);
-	 y = (int)(p0.y / scale_factor);
-       }
-
-      if (scale_factor != 1.0) {
 	 x = (int)(x / scale_factor);
 	 y = (int)(y / scale_factor);
        }
@@ -2206,7 +2254,6 @@ private class BubbleMoveContext extends MouseContext {
       start_layer = getLayer(bb);
       addMovingBubble(bb);
       move_count = 0;
-      //BudaCursorManager.setGlobalCursorForComponent(bb, palm_cursor);
     }
 
    void next(MouseEvent e) {
@@ -2227,8 +2274,6 @@ private class BubbleMoveContext extends MouseContext {
       int y0 = initial_location.y + (int)(p0.y / scale_factor) - initial_mouse.y;
 
       if (scale_factor != 1.0) {
-	 p0 = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(),
-					     BudaBubbleArea.this);
 	 p0 = new Point((int)(p0.x / scale_factor), (int)(p0.y / scale_factor));
        }
 
@@ -2248,7 +2293,6 @@ private class BubbleMoveContext extends MouseContext {
        }
 
       for_bubble.setLocation(x0,y0);
-      // TODO: ensure that this isn't done twice
       fixupGroups(for_bubble);
       if (for_bubble.isUserPos()) repaint();
     }
@@ -2444,7 +2488,9 @@ private class AreaMoveContext extends MouseContext {
     }
 
    void next(MouseEvent e) {
-      if (focus_bubble!=null) focus_bubble.forceFreeze();
+      if (focus_bubble != null) focus_bubble.forceFreeze();
+
+      BudaCursorManager.setTemporaryCursor(BudaBubbleArea.this,palm_cursor);
 
       ++move_count;
       Point p1 = e.getLocationOnScreen();
@@ -2460,6 +2506,7 @@ private class AreaMoveContext extends MouseContext {
 
    void finish() {
       super.finish();
+      BudaCursorManager.resetDefaults(BudaBubbleArea.this);
       if (focus_bubble != null) focus_bubble.unfreeze();
       if (move_count > 0) BoardMetrics.noteCommand("BUDA","areaMoved");
     }
@@ -2618,7 +2665,7 @@ public void userRemoveBubble(BudaBubble bb)
 
 
 
-private void userRemoveGroup(BudaBubbleGroup bg)
+void userRemoveGroup(BudaBubbleGroup bg)
 {
    BudaHintBubble undo = new BudaHintBubble("Undo Delete Group",
 					       new UndoRemove(bg.getBubbles()),30000);
@@ -2682,6 +2729,7 @@ private class UndoRemove implements BudaHintActions {
       BoardMetrics.noteCommand("BUDA","undoRemove");
       for (BudaBubble bb : bubble_set) {
 	  bb.setVisible(true);
+	  bb.setUserPos(false);
 	  BudaBubblePosition pos = BudaBubblePosition.MOVABLE;
 	  if (bb.isFixed()) pos = BudaBubblePosition.FIXED;
 	  else if (bb.isFloating()) pos = BudaBubblePosition.FLOAT;

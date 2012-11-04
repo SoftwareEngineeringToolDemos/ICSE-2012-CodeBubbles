@@ -574,6 +574,7 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	 case BADCHARLIT :
 	 case CHARLITERAL :
 	 case STRING :
+	 case LONGSTRING :
 	    nelt = new BaleElement.Literal(doc,cur,soff,eoff,bt.getType());
 	    break;
 	 case IDENTIFIER :

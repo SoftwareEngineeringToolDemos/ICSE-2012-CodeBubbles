@@ -98,7 +98,7 @@ BaleViewport(JEditorPane editor,JPanel annot)
    addMouseWheelListener(this);
 
    JScrollBar sb = getVerticalScrollBar();
-   sb.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+   BudaCursorManager.setCursor(sb,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 }
 
 

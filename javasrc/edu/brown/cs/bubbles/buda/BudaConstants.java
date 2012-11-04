@@ -335,6 +335,10 @@ int   SCROLL_ANIM_TOTAL = 500;
 
 
 
+String USE_HELP_TOOLTIPS = "Buda.help.tooltips";
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Bubble Group Constants							*/
@@ -1251,6 +1255,21 @@ class FocusOnEntry extends MouseAdapter implements Serializable {
     }
 
 }	// end of inner class FocusOnEntry
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Help Client Interface							*/
+/*										*/
+/********************************************************************************/
+
+interface BudaHelpClient {
+
+   String getHelpText(MouseEvent e);
+   String getHelpLabel(MouseEvent e);
+
+}	// end of inner interface BudaHelpClient
 
 
 

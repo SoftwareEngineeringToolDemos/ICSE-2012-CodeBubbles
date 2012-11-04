@@ -1,0 +1,44 @@
+<HELPDEMOS>
+
+   <DEMO NAME='testaction'>
+      <ACTION TYPE='FINDBUBBLE' LEFT='true' SET='start' />
+      <ACTION TYPE='FINDBUBBLE' RIGHT='true' SET='middle' />
+      <ACTION TYPE='FINDBUBBLE' CENTER='true' SET='end' />
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>In this example we first move to a bubble on the left of the display</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOVE' TARGET='start' />
+      <ACTION TYPE='SPEECH' TEXT='Now we move the mouse to a bubble on the right' />
+      <ACTION TYPE='MOVE' TARGET='middle' />
+      <ACTION TYPE='SPEECH' TEXT='Now move to a bubble near the center of the display' />
+      <ACTION TYPE='MOVE' TARGET='end' />
+      <ACTION TYPE='SPEECH' TEXT='And right click on that bubble' />
+      <ACTION TYPE='MOUSE' UP='true' DOWN='true' BUTTON='4' />
+      <ACTION TYPE='SPEECH' WAIT='true' />
+   </DEMO>
+
+   <DEMO NAME='dragarea'>
+      <ACTION TYPE='SPEECH' WAIT='TRUE'>
+	 <TEXT>First move the mouse so it is over the bubble area background</TEXT>
+      </ACTION>
+      <ACTION TYPE='BACKGROUND' MOUSE='true' AREA='BUBBLEAREA' SET='point' />
+      <ACTION TYPE='MOVE' TARGET='point' />
+      <ACTION TYPE='SPEECH' TEXT="Push down with the right mouse button" />
+      <ACTION TYPE='MOUSE' DOWN='true' BUTTON='4' />
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>Then you can draw the background around by moving the mouse</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOVE' TARGET='point'>
+	  <POINT X='0' Y='-300' />
+	  <POINT X='300' Y='0' />
+	  <POINT X='0' Y='300' />
+	  <POINT X='-300' Y='0' />
+      </ACTION>
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>And release the mouse button when you are done</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOUSE' UP='TRUE' BUTTON='4' />
+      <ACTION TYPE='MOVE' JUMP='true' TARGET='StartPoint' />
+   </DEMO>
+
+</HELPDEMOS>

@@ -101,7 +101,7 @@ private void setProperties(Element d)
    break_props = new HashMap<String,Object>();
    break_desc = null;
 
-   break_props.put("ENABLED",Boolean.valueOf(IvyXml.getAttrBool(d,"ENABLED")));
+   break_props.put("ENABLED",Boolean.valueOf(IvyXml.getAttrBool(d,"ENABLED",false)));
    break_props.put("HITCOUNT",IvyXml.getAttrInteger(d,"HITCOUNT"));
    break_props.put("SUSPEND",IvyXml.getAttrString(d,"SUSPEND"));
    break_props.put("CLASS",IvyXml.getAttrString(d,"CLASS"));

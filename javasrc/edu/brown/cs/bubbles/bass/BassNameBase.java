@@ -200,6 +200,7 @@ public String getNameHead()
       case METHOD :
       case CONSTRUCTOR :
       case STATICS :
+      case MAIN_PROGRAM :
 	 String nm = getSymbolName();
 	 int idx1 = nm.lastIndexOf(".");
 	 if (idx1 <= 0) return null;
@@ -233,6 +234,7 @@ public String getNameHead()
       case METHOD :
       case CONSTRUCTOR :
       case STATICS :
+      case MAIN_PROGRAM :
 	 String nm = getSymbolName();
 	 int idx1 = nm.lastIndexOf(".");
 	 if (idx1 <= 0) return null;

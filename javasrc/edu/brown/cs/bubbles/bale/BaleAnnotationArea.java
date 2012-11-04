@@ -33,6 +33,7 @@ package edu.brown.cs.bubbles.bale;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardMetrics;
 import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.buda.BudaCursorManager;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -88,7 +89,7 @@ BaleAnnotationArea(BaleEditor be)
    //setBackground(BALE_ANNOT_BAR_COLOR);
    setOpaque(false);
    setToolTipText("Annotation area");
-   setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+   BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
    addMouseListener(new Mouser());
    JComponent jbe = (JComponent) be;
    jbe.addComponentListener(new CheckUpdater());
@@ -519,6 +520,7 @@ private boolean checkElement(BaleElement be)
       catch (BadLocationException e) { return chng; }
       int slno = for_document.findLineNumber(soff)-start_line;
       int elno = for_document.findLineNumber(eoff)-start_line;
+      if (slno < 0) slno = elno+1;
       for (int lno = slno; lno <= elno; ++lno) {
 	 if (line_data[lno] == null) {
 	    line_data[lno] = new LineData(start_line+lno,r.y,r.y+r.height);//-1);

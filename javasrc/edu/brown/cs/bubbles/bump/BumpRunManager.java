@@ -66,7 +66,7 @@ private Map<BumpThread,SwingEventListenerList<BumpThreadFilter>> thread_filters;
 private Map<String,File>	source_map;
 private ConcurrentMap<String,ProcessData> console_processes;
 
-private boolean 	use_debug_server = true;
+private boolean 	use_debug_server;
 private String		server_host;
 private String		server_port;
 
@@ -149,6 +149,7 @@ BumpRunManager()
    server_host = null;
    server_port = null;
    source_map = new HashMap<String,File>();
+   use_debug_server = true;
 
    thread_filters = new HashMap<BumpThread,SwingEventListenerList<BumpThreadFilter>>();
 
@@ -160,6 +161,16 @@ BumpRunManager()
       default:
 	 break;
     }
+   
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case JAVA :
+	 break;
+      case PYTHON :
+	 use_debug_server = false;
+	 break;
+      default :
+	 break;
+   }
 }
 
 
@@ -292,7 +303,7 @@ String startDebugArgs(String id)
    startDebugServer();
 
    if (server_host == null) return null;
-
+   
    String p = BoardSetup.getSetup().getLibraryPath("bandaid.jar");
    if (p == null) return null;
 
@@ -977,33 +988,33 @@ private class LaunchConfig implements BumpLaunchConfig {
    void update(Element xml) {
       Element type = IvyXml.getChild(xml,"TYPE");
       if (type != null) {
-         String ctyp = IvyXml.getAttrString(type,"NAME");
-         config_type = BumpLaunchConfigType.UNKNOWN;
-         for (BumpLaunchConfigType bclt : BumpLaunchConfigType.values()) {
-            if (ctyp.equals(bclt.getEclipseName())) config_type = bclt;
-          }
+	 String ctyp = IvyXml.getAttrString(type,"NAME");
+	 config_type = BumpLaunchConfigType.UNKNOWN;
+	 for (BumpLaunchConfigType bclt : BumpLaunchConfigType.values()) {
+	    if (ctyp.equals(bclt.getEclipseName())) config_type = bclt;
+	  }
        }
       config_name = IvyXml.getAttrString(xml,"NAME");
       is_working = IvyXml.getAttrBool(xml,"WORKING");
-      project_name = getAttribute(xml,"org.eclipse.jdt.launching.PROJECT_ATTR");
-      main_class = getAttribute(xml,"org.eclipse.jdt.launching.MAIN_TYPE");
-      program_args = getAttribute(xml,"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS");
-      java_args = getAttribute(xml,"org.eclipse.jdt.launching.VM_ARGUMENTS");
-      test_case = getAttribute(xml,"org.eclipse.jdt.junit.TESTNAME");
-      use_contracts = getBoolean(xml,"edu.brown.cs.bubbles.bedrock.CONTRACTS",true);
-      use_assertions = getBoolean(xml,"edu.brown.cs.bubbles.bedrock.ASSERTIONS",true);
+      project_name = getAttribute(xml,"PROJECT_ATTR");
+      main_class = getAttribute(xml,"MAIN_TYPE");
+      program_args = getAttribute(xml,"PROGRAM_ARGUMENTS");
+      java_args = getAttribute(xml,"VM_ARGUMENTS");
+      test_case = getAttribute(xml,"TESTNAME");
+      use_contracts = getBoolean(xml,"CONTRACTS",true);
+      use_assertions = getBoolean(xml,"ASSERTIONS",true);
       remote_host = "localhost";
       remote_port = 8000;
-      String hmap = IvyXml.getAttrString(xml,"org.eclipse.jdt.launching.CONNECT_MAP");
+      String hmap = IvyXml.getAttrString(xml,"CONNECT_MAP");
       if (hmap != null) {
-         Matcher m1 = HOST_PATTERN.matcher(hmap);
-         Matcher m2 = PORT_PATTERN.matcher(hmap);
-         if (m1.find() && m2.find()) {
-            remote_host = m1.group(1);
-            remote_port = Integer.parseInt(m2.group(1));
-          }
+	 Matcher m1 = HOST_PATTERN.matcher(hmap);
+	 Matcher m2 = PORT_PATTERN.matcher(hmap);
+	 if (m1.find() && m2.find()) {
+	    remote_host = m1.group(1);
+	    remote_port = Integer.parseInt(m2.group(1));
+	  }
        }
-      String sim = getAttribute(xml,"org.eclipse.jdt.launching.STOP_IN_MAIN");
+      String sim = getAttribute(xml,"STOP_IN_MAIN");
       if (sim == null || sim.length() == 0) stop_in_main = false;
       else if ("1tTyY".indexOf(sim.charAt(0)) >= 0) stop_in_main = true;
       else stop_in_main = false;
@@ -1021,21 +1032,21 @@ private class LaunchConfig implements BumpLaunchConfig {
    @Override public int getRemotePort() 		{ return remote_port; }
    @Override public boolean isWorkingCopy()		{ return is_working; }
    @Override public boolean getStopInMain()		{ return stop_in_main; }
-   
+
    @Override public String getContractArgs() {
       String args = null;
-      
+
       BumpContractType bct = bump_client.getContractType(project_name);
       if (use_contracts && bct.useContractsForJava()) {
-         String libf = BoardSetup.getSetup().getLibraryPath("cofoja.jar");
-         args = "-javaagent:" + libf;
+	 String libf = BoardSetup.getSetup().getLibraryPath("cofoja.jar");
+	 args = "-javaagent:" + libf;
        }
-      
+
       if (use_assertions && bct.enableAssertions()) {
-         if (args == null) args = "-ea";
-         else args += " -ea";
+	 if (args == null) args = "-ea";
+	 else args += " -ea";
        }
-   
+
       return null;
     }
 
@@ -1062,49 +1073,49 @@ private class LaunchConfig implements BumpLaunchConfig {
 
    @Override public BumpLaunchConfig setProject(String pnm) {
       if (pnm == null) pnm = "";
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.PROJECT_ATTR",pnm);
+      Element x = bump_client.editRunConfiguration(getId(),"PROJECT_ATTR",pnm);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setMainClass(String cnm) {
       if (cnm == null) cnm = "";
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.MAIN_TYPE",cnm);
+      Element x = bump_client.editRunConfiguration(getId(),"MAIN_TYPE",cnm);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setArguments(String arg) {
       if (arg == null) arg = "";
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.PROGRAM_ARGUMENTS",arg);
+      Element x = bump_client.editRunConfiguration(getId(),"PROGRAM_ARGUMENTS",arg);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setVMArguments(String arg) {
       if (arg == null) arg = "";
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.VM_ARGUMENTS",arg);
+      Element x = bump_client.editRunConfiguration(getId(),"VM_ARGUMENTS",arg);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setTestName(String name) {
       if (name == null) name = "";
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.junit.TESTNAME",name);
+      Element x = bump_client.editRunConfiguration(getId(),"TESTNAME",name);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setJunitKind(String name) {
       if (name == null) name = "";
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.junit.TEST_KIND","org.eclipse.jdt.junit.loader." + name);
+      Element x = bump_client.editRunConfiguration(getId(),"TEST_KIND","org.eclipse.jdt.junit.loader." + name);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setRemoteHostPort(String host,int port) {
       String val = "{port=" + port + ", hostname=" + host + "}";
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.CONNECT_MAP",val);
+      Element x = bump_client.editRunConfiguration(getId(),"CONNECT_MAP",val);
       return getLaunchResult(x);
     }
 
    @Override public BumpLaunchConfig setStopInMain(boolean fg) {
       String val = Boolean.toString(fg);
-      Element x = bump_client.editRunConfiguration(getId(),"org.eclipse.jdt.launching.STOP_IN_MAIN",val);
+      Element x = bump_client.editRunConfiguration(getId(),"STOP_IN_MAIN",val);
       return getLaunchResult(x);
     }
 
@@ -1115,14 +1126,14 @@ private class LaunchConfig implements BumpLaunchConfig {
 
    private String getAttribute(Element xml,String id) {
       for (Element ae : IvyXml.children(xml,"ATTRIBUTE")) {
-         String anm = IvyXml.getAttrString(ae,"NAME");
-         if (id.equals(anm)) {
-            return IvyXml.getText(ae);
-          }
+	 String anm = IvyXml.getAttrString(ae,"NAME");
+	 if (id.equals(anm)) {
+	    return IvyXml.getText(ae);
+	  }
        }
       return null;
     }
-   
+
    private boolean getBoolean(Element xml,String id,boolean dflt) {
       String s = getAttribute(xml,id);
       if (s == null || s.length() == 0) return dflt;

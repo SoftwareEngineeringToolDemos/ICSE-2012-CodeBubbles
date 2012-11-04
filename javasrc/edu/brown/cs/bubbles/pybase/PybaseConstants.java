@@ -150,7 +150,8 @@ interface IFileData {
    IDocument getDocument();
    String getModuleName();
    void reload();
-   
+   long getLastDateLastModified();
+
    boolean hasChanged();
    void markChanged();
    boolean commit(boolean refresh,boolean save);
@@ -214,15 +215,15 @@ enum VisitorType {
    MODULE_DOCSTRING,
    INNER_DEFS,
    ALL;
-   
+
    public boolean match(VisitorType vt) {
       if (vt == this) return true;
       if (this == ALL) return vt != INNER_DEFS;
       if (vt == ALL) return this != INNER_DEFS;
       return false;
     }
-   
-}       // end of enum type VisitorType
+
+}	// end of enum type VisitorType
 
 
 enum FoundType {
@@ -232,7 +233,7 @@ enum FoundType {
 };
 
 
- 
+
 Set<ScopeType> ACCEPTED_METHOD_SCOPES = EnumSet.of(ScopeType.GLOBAL,
       ScopeType.METHOD, ScopeType.LAMBDA, ScopeType.LIST_COMP);
 Set<ScopeType> ACCEPTED_ALL_SCOPES = EnumSet.allOf(ScopeType.class);
@@ -343,9 +344,9 @@ enum ErrorSeverity {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Debugging constants                                                     */
-/*                                                                              */
+/*										*/
+/*	Debugging constants							*/
+/*										*/
 /********************************************************************************/
 
 enum PybaseDebugAction {

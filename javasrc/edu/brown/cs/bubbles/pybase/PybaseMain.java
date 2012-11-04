@@ -198,7 +198,7 @@ private void start()
       project_manager = new PybaseProjectManager(this,work_directory);
       pybase_editor = new PybaseEditor(this);
       pybase_search = new PybaseSearch(this);
-      pybase_debug = new PybaseDebugManager(this);
+      pybase_debug = PybaseDebugManager.getManager();
       project_manager.loadProjects();
     }
    catch (PybaseException e) {
@@ -227,6 +227,12 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-ws") && i+1 < args.length) {     // -ws <workspace>
 	    work_directory = new File(args[++i]);
+	    try {
+	       work_directory = work_directory.getCanonicalFile();
+	     }
+	    catch (IOException e) {
+	       work_directory = work_directory.getAbsoluteFile();
+	     }
 	  }
 	 else badArgs();
        }
@@ -257,10 +263,11 @@ public PybaseProject getProject(String p) throws PybaseException
    return project_manager.findProject(p);
 }
 
-public IFileData getFileData(String fnm,PybaseProject pp)
+public IFileData getFileData(String fnm)
 {
    PybaseFileManager pfm = PybaseFileManager.getFileManager();
-   return pfm.getFileData(null,fnm,pp);
+
+   return pfm.getFileData(new File(fnm));
 }
 
 PybasePreferences getSystemPreferences()		{ return system_prefs; }
@@ -268,7 +275,7 @@ PybasePreferences getSystemPreferences()		{ return system_prefs; }
 
 public File getWorkSpaceDirectory()			{ return work_directory; }
 
-File getRootDirectory() 				{ return root_directory; }
+public File getRootDirectory()		{ return root_directory; }
 
 
 
@@ -307,9 +314,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
 	    IvyXml.getAttrString(xml,"DIR"),xw);
     }
    else if (cmd.equals("EDITPROJECT")) {
-      project_manager.handleEditProject(proj,
-	    getElements(xml,"OPTION"),
-	    getElements(xml,"PATH"),xw);
+      project_manager.handleEditProject(proj,IvyXml.getChild(xml,"PROJECT"),xw);
     }
    else if (cmd.equals("CREATEPACKAGE")) {
       project_manager.handleCreatePackage(proj,
@@ -356,7 +361,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
 	    getElements(xml,"REGION"),xw);
     }
    else if (cmd.equals("OPENEDITOR")) { }
-   else if (cmd.equals("JAVASEARCH")) {
+   else if (cmd.equals("PATTERNSEARCH")) {
       pybase_search.handlePatternSearch(proj,IvyXml.getAttrString(xml,"PATTERN"),
 	    IvyXml.getAttrEnum(xml,"FOR",SearchFor.NONE),
 	    IvyXml.getAttrBool(xml,"DEFS",true),
@@ -413,6 +418,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
 	    IvyXml.getAttrBool(xml,"IMPORTS",false),
 	    IvyXml.getAttrBool(xml,"PACKAGE",false),
 	    IvyXml.getAttrBool(xml,"TOPDECLS",false),
+	    IvyXml.getAttrBool(xml,"MAIN",false),
 	    IvyXml.getAttrBool(xml,"ALL",false),xw);
     }
    else if (cmd.equals("SEARCH")) {
@@ -472,7 +478,13 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
 	    IvyXml.getAttrBool(xml,"SUSPENDVM",false),
 	    IvyXml.getAttrBool(xml,"TRACE",false));
     }
-   else if (cmd.equals("ADDEXCEPTIONBREAKPOINT")) { }
+   else if (cmd.equals("ADDEXCEPTIONBREAKPOINT")) {
+      pybase_debug.setExceptionBreakpoint(proj,IvyXml.getAttrString(xml,"CLASS"),
+					     IvyXml.getAttrBool(xml,"CAUGHT",false),
+					     IvyXml.getAttrBool(xml,"UNCAUGHT",true),
+					     IvyXml.getAttrBool(xml,"CHECKED",false),
+					     IvyXml.getAttrBool(xml,"SUSPENDVM",false));
+    }
    else if (cmd.equals("EDITBREAKPOINT")) {
       pybase_debug.editBreakpoint(IvyXml.getAttrString(xml,"ID"),
 	    IvyXml.getAttrString(xml,"PROP"),
@@ -494,44 +506,45 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
     }
    else if (cmd.equals("DEBUGACTION")) {
       pybase_debug.debugAction(IvyXml.getAttrString(xml,"LAUNCH"),
-            IvyXml.getAttrString(xml,"TARGET"),
-            IvyXml.getAttrString(xml,"PROCESS"),
-            IvyXml.getAttrString(xml,"THREAD"),
-            IvyXml.getAttrString(xml,"FRAME"),
-            IvyXml.getAttrEnum(xml,"ACTION",PybaseDebugAction.NONE),xw);
+	    IvyXml.getAttrString(xml,"TARGET"),
+	    IvyXml.getAttrString(xml,"PROCESS"),
+	    IvyXml.getAttrString(xml,"THREAD"),
+	    IvyXml.getAttrString(xml,"FRAME"),
+	    IvyXml.getAttrEnum(xml,"ACTION",PybaseDebugAction.NONE),xw);
     }
    else if (cmd.equals("CONSOLEINPUT")) {
       pybase_debug.consoleInput(IvyXml.getAttrString(xml,"LAUNCH"),
-            IvyXml.getTextElement(xml,"INPUT"));
+	    IvyXml.getTextElement(xml,"INPUT"));
     }
    else if (cmd.equals("GETSTACKFRAMES")) {
       pybase_debug.getStackFrames(IvyXml.getAttrString(xml,"LAUNCH"),
-            IvyXml.getAttrString(xml,"THREAD"),
-            IvyXml.getAttrInt(xml,"COUNT",-1),
-            IvyXml.getAttrInt(xml,"DEPTH",0),xw);
+	    IvyXml.getAttrString(xml,"THREAD"),
+	    IvyXml.getAttrInt(xml,"COUNT",-1),
+	    IvyXml.getAttrInt(xml,"DEPTH",0),xw);
     }
    else if(cmd.equals("VARVAL")) {
       pybase_debug.getVariableValue(IvyXml.getAttrString(xml,"THREAD"),
-            IvyXml.getAttrString(xml,"FRAME"),
-            IvyXml.getTextElement(xml,"VAR"),
-            IvyXml.getAttrInt(xml,"DEPTH",1),xw);
+	    IvyXml.getAttrString(xml,"FRAME"),
+	    IvyXml.getTextElement(xml,"VAR"),
+	    IvyXml.getAttrInt(xml,"DEPTH",1),xw);
     }
    else if(cmd.equals("VARDETAIL")) {
       pybase_debug.getVariableValue(IvyXml.getAttrString(xml,"THREAD"),
-            IvyXml.getAttrString(xml,"FRAME"),
-            IvyXml.getTextElement(xml,"VAR"),-1,xw);
+	    IvyXml.getAttrString(xml,"FRAME"),
+	    IvyXml.getTextElement(xml,"VAR"),-1,xw);
     }
    else if (cmd.equals("EVALUATE")) {
       pybase_debug.evaluateExpression(proj,IvyXml.getAttrString(xml,"BID","*"),
-            IvyXml.getTextElement(xml,"EXPR"),
-            IvyXml.getAttrString(xml,"THREAD"),
-            IvyXml.getAttrString(xml,"FRAME"),
-            IvyXml.getAttrBool(xml,"IMPLICIT",false),
-            IvyXml.getAttrBool(xml,"BREAK",true),
-            IvyXml.getAttrString(xml,"REPLYID"),xw);
+	    IvyXml.getTextElement(xml,"EXPR"),
+	    IvyXml.getAttrString(xml,"THREAD"),
+	    IvyXml.getAttrString(xml,"FRAME"),
+	    IvyXml.getAttrBool(xml,"IMPLICIT",false),
+	    IvyXml.getAttrBool(xml,"BREAK",true),
+	    IvyXml.getAttrString(xml,"REPLYID"),xw);
     }
    else if (cmd.equals("MONITOR")) { }
    else if (cmd.equals("PREFERENCES")) { }
+   else if (cmd.equals("FINDHIERARCHY")) { }
    else if (cmd.equals("GETHOST")) {
       handleGetHost(xw);
     }
@@ -544,7 +557,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
 
    PybaseMain.logD("Result = " + xw.toString());
    String rslt = xw.toString();
-   
+
    xw.close();
    return rslt;
 }

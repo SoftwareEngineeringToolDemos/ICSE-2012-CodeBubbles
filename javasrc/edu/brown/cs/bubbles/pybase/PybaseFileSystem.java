@@ -400,8 +400,8 @@ public static IDocument getDocFromFile(java.io.File f,boolean loadIfNotInWorkspa
 public static Object getCustomReturnFromFile(java.io.File f,boolean loadIfNotInWorkspace,
 						Class<? extends Object> returnType) throws IOException
 {
-   IFileData fd = PybaseFileManager.getFileManager().getFileData(f,null,null);
-   IDocument doc = fd.getDocument();
+   IFileData fd = PybaseFileManager.getFileManager().getFileData(f);
+   IDocument doc = (fd == null ? null : fd.getDocument());
 
    if (doc != null) {
       if (returnType == null || returnType == IDocument.class) {

@@ -250,6 +250,13 @@ public static void setPropertyDirectory(String dir)
 }
 
 
+static File getPropertyDirectory()
+{
+   return base_directory;
+}
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -749,7 +756,7 @@ private void loadProperties(String id)
    prop_file = loadIfPossible(id);
    loadIfPossible(id + "." + BOARD_ARCH);
 
-   if (id.equals("System") || id.equals("Board")) return;	// these need to be inited before we can use them  
+   if (id.equals("System") || id.equals("Board")) return;       // these need to be inited before we can use them
 
    String s = BoardSetup.getSetup().getLanguage().toString().toLowerCase();
    loadIfPossible(id + "." + s);

@@ -25,6 +25,8 @@
 
 package edu.brown.cs.bubbles.burp;
 
+import edu.brown.cs.bubbles.board.BoardLog;
+
 import javax.swing.undo.UndoableEdit;
 import javax.swing.text.Document;
 
@@ -154,10 +156,14 @@ void removeGlobal()
 /*										*/
 /********************************************************************************/
 
-void addDependencies(List<BurpChangeData> dep0)
+void addDependencies(List<BurpChangeData> dep0,List<BurpChangeData> done)
 {
    depend_upons = null;
-   if (dep0 != null && !dep0.isEmpty()) depend_upons = new ArrayList<BurpChangeData>(dep0);
+   if (dep0 != null && !dep0.isEmpty()) {
+      depend_upons = new ArrayList<BurpChangeData>(dep0);
+      if (done == null) done = new ArrayList<BurpChangeData>();
+      done.addAll(dep0);
+    }
    Set<BurpEditorData> eddeps = new HashSet<BurpEditorData>();
 
    if (next_editor != null) {
@@ -166,9 +172,13 @@ void addDependencies(List<BurpChangeData> dep0)
        }
     }
 
-   for (BurpChangeData cd = next_global; 
-         cd != null && cd != this && !eddeps.isEmpty(); 
-         cd = cd.next_global) {
+   // THIS CODE NEEDS TO BE MODIFIED SO THTAT DEPENDENCIES ARE NEVER ADDED MORE
+   // THAN ONCE
+
+   for (BurpChangeData cd = next_global;
+	 cd != null && cd != this && !eddeps.isEmpty();
+	 cd = cd.next_global) {
+      if (done != null && done.contains(cd)) continue;
       Set<BurpEditorData> rem = new HashSet<BurpEditorData>();
       for (BurpEditorData ed : eddeps) {
 	 if (cd.next_editor.containsKey(ed)) rem.add(ed);
@@ -179,7 +189,9 @@ void addDependencies(List<BurpChangeData> dep0)
 	 eddeps.removeAll(rem);
 	 if (depend_upons == null) depend_upons = new ArrayList<BurpChangeData>();
 	 if (!depend_upons.contains(cd)) depend_upons.add(cd);
-	 cd.addDependencies(null);
+         if (done == null) done = new ArrayList<BurpChangeData>();
+         done.add(cd);
+	 cd.addDependencies(null,done);
        }
     }
 }
@@ -242,14 +254,23 @@ boolean canRedo()
 
 void undo()
 {
+   BoardLog.logD("BURP","UNDO " + this + " " + base_edit.getUndoPresentationName() + " " + depend_upons);
+
    if (depend_upons != null) {
       for (BurpChangeData cd : depend_upons) {
 	 if (cd.canUndo()) cd.undo();
+	 else {
+	    BoardLog.logD("BURP","Can't undo dependency " + cd + " " + cd.depend_upons);
+	  }
        }
     }
-   
-   if (base_edit.canUndo()) base_edit.undo();
-   
+
+   if (base_edit.canUndo()) {
+      base_edit.undo();
+      BoardLog.logD("BURP","Finished UNDO " + this);
+    }
+   else BoardLog.logD("BURP","Can't UNDO " + this);
+
    for_history.resetCurrentChange(this,prior_global,false);
    for (Map.Entry<BurpEditorData,BurpChangeData> ent : prior_editor.entrySet()) {
       BurpEditorData ed = ent.getKey();
@@ -263,13 +284,13 @@ void undo()
 void redo()
 {
    base_edit.redo();
-   
+
    for_history.resetCurrentChange(prior_global,this,true);
    for (Map.Entry<BurpEditorData,BurpChangeData> ent : next_editor.entrySet()) {
       BurpEditorData ed = ent.getKey();
       ed.setCurrentChange(this);
     }
-   
+
    if (depend_upons != null) {
       for (int i = depend_upons.size()-1; i >= 0; --i) {
 	 BurpChangeData cd = depend_upons.get(i);

@@ -114,6 +114,12 @@ private void setupLogger()
       case SERVER :
 	 String wsn = bp.getProperty(BOARD_PROP_ECLIPSE_WS);
 	 if (wsn != null) wsd = new File(wsn);
+	 if (wsd != null && !wsd.exists()) {
+	    f1 = BoardSetup.getPropertyBase();
+	    f2 = new File(f1,"logs");
+	    f2.mkdirs();
+	    wsd = f2;	
+	  }
 	 break;
     }
    if (wsd == null) use_stderr = true;
@@ -181,8 +187,9 @@ private void setupLogger()
 	 debug_writer = new PrintWriter(fw,true);
        }
       catch (IOException e) {
-	 System.err.println("BOARD: Problem creating log file: " + e);
+	 System.err.println("BOARD: Problem creating log file " + debug_log + ": " + e);
 	 use_stderr = true;
+	 is_setup = false;
 	 // problem creating debug output, might want to try a different location
        }
     }

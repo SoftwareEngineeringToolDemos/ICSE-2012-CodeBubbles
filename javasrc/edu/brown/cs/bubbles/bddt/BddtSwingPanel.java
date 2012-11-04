@@ -237,7 +237,7 @@ private class InfoListener extends MouseAdapter {
 
    @Override public void mousePressed(MouseEvent e) {
       is_tracking = true;
-      for_button.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+      BudaCursorManager.setTemporaryCursor(for_button,Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
 
    @Override public void mouseReleased(MouseEvent e) {
@@ -246,7 +246,7 @@ private class InfoListener extends MouseAdapter {
 	 launch_control.getProcess().requestSwingData(e.getXOnScreen(),e.getYOnScreen());
        }
       is_tracking = false;
-      for_button.setCursor(Cursor.getDefaultCursor());
+      BudaCursorManager.resetDefaults(for_button);
     }
 
 }	// end of inner class InfoListener

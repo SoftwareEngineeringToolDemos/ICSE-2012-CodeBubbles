@@ -17,5 +17,6 @@
 <entry key="Bema.plugin.21">edu.brown.cs.bubbles.bedu.course.BeduCourseFactory</entry>
 <entry key="Bema.plugin.30">edu.brown.cs.bubbles.bnote.BnoteFactory</entry>
 <entry key="Bema.plugin.31">edu.brown.cs.bubbles.bbook.BbookFactory</entry>
+<entry key="Bema.plugin.32">edu.brown.cs.bubbles.bhelp.BhelpFactory</entry>
 <entry key="Bema.web.url">http://conifer.cs.brown.edu:8180/mint/mint</entry>
 </properties>

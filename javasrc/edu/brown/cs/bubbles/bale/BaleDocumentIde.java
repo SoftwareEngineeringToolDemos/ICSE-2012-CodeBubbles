@@ -427,7 +427,6 @@ boolean canSave()			{ return is_dirty; }
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Fragment management methods						*/

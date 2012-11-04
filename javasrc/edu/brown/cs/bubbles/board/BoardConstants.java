@@ -412,7 +412,35 @@ String [] BOARD_LIBRARY_EXTRAS = new String [] {
    "LiLaConfiguration.ini",
    "bbookbkg.gif",
    "keybindings.csv",
+   "mouseusage.html",
    "cofoja.jar",
+   "pydev.jar",
+   "helpdemos.xml",
+   "helpdoc.xml",
+};
+
+
+String [] BOARD_LIBRARY_URLS = new String [] {
+   "speech.properties",
+   "freetts/freetts.jar",
+   "freetts/jsapi.jar",
+   "freetts/cmu_time_awb.jar",
+   "freetts/cmu_us_kal.jar",
+   "freetts/cmudict04.jar",
+   "freetts/cmulex.jar",
+   "freetts/cmutimelex.jar",
+   "freetts/en_us.jar",
+   "freetts/freetts-jsapi10.jar",
+   "freetts/mbrola.jar",
+   "freetts/voices.txt",
+};
+
+String [] BOARD_CLASSPATH_FILES = new String [] {
+   "freetts/freetts.jar",
+   "freetts/jsapi.jar",
+   "freetts/en_us.jar",
+   "freetts/freetts-jsapi10.jar",
+   "freetts/mbrola.jar",
 };
 
 

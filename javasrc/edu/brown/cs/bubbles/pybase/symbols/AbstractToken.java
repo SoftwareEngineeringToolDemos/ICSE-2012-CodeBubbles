@@ -99,7 +99,6 @@ public AbstractToken(String rep,String doc,String args,String parentPackage,Toke
    if (doc != null) token_doc = doc;
    else token_doc = "";
 
-
    if (parentPackage != null) parent_package = parentPackage;
    else parent_package = "";
 

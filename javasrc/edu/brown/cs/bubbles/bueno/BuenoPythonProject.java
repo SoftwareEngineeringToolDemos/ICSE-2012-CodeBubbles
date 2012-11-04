@@ -97,8 +97,25 @@ private BuenoPythonProject(String nm) throws BuenoException
 {
    this();
    project_name = nm;
-   Element xml = BumpClient.getBump().getProjectData(nm);
-   if (xml == null) throw new BuenoException("Project " + nm + " not defined");
+   loadProject();
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Project setup methods							*/
+/*										*/
+/********************************************************************************/
+
+private void loadProject() throws BuenoException
+{
+   project_dir = null;
+   project_paths = new Vector<PathData>();
+   project_options = new HashMap<String,OptionData>();
+
+   Element xml = BumpClient.getBump().getProjectData(project_name);
+   if (xml == null) throw new BuenoException("Project " + project_name + " not defined");
    project_dir = new File(IvyXml.getAttrString(xml,"PATH"));
    for (Element pelt : IvyXml.children(xml,"PATH")) {
       PathData pd = new PathData(pelt);
@@ -110,6 +127,7 @@ private BuenoPythonProject(String nm) throws BuenoException
       project_options.put(od.getKey(),od);
     }
 }
+
 
 
 
@@ -125,7 +143,7 @@ JPanel getProjectCreator()
 }
 
 
-private void createProject()
+private boolean createProject()
 {
    BumpClient bc = BumpClient.getBump();
    if (project_dir == null) {
@@ -133,7 +151,16 @@ private void createProject()
       project_dir = new File(f1,project_name);
     }
 
-   bc.createProject(project_name,project_dir);
+   if (!bc.createProject(project_name,project_dir)) return false;
+
+   try {
+      loadProject();
+    }
+   catch (BuenoException e) {
+      return false;
+    }
+
+   return true;
 }
 
 
@@ -152,17 +179,26 @@ private void updateProject()
    for (PathData pd : project_paths) {
       xw.begin("PATH");
       if (!pd.isLibrary()) {
-         xw.field("USER",true);
+	 xw.field("USER",true);
        }
       xw.field("DIRECTORY",pd.getDirectory().getPath());
       xw.end("PATH");
     }
    xw.end("PROJECT");
-   
+
    BumpClient bc = BumpClient.getBump();
    bc.editProject(project_name,xw.toString());
    xw.close();
 }
+
+
+
+private void updateFiles()
+{
+   BumpClient bc = BumpClient.getBump();
+   bc.compile(false,false,true);
+}
+
 
 
 
@@ -171,60 +207,93 @@ private class ProjectCreator extends SwingGridPanel implements ActionListener, U
    private JTextField name_field;
    private JTextField file_field;
    private JTextField source_field;
+   private JButton create_button;
 
    ProjectCreator() {
       beginLayout();
       addBannerLabel("Create PYBLES Python Project");
       name_field = addTextField("Name",null,this,this);
-      file_field = addFileField("Project Directory",((File) null),JFileChooser.DIRECTORIES_ONLY,this,null);
-      source_field = addFileField("External Source",((File) null),JFileChooser.DIRECTORIES_ONLY,this,null);
+      file_field = null;
+      // file_field = addFileField("Project Directory",((File) null),JFileChooser.DIRECTORIES_ONLY,this,this);
+      source_field = addFileField("External Source",((File) null),JFileChooser.DIRECTORIES_ONLY,this,this);
       addSeparator();
       addBottomButton("CANCEL","CANCEL",this);
-      addBottomButton("Create","CREATE",this);
+      create_button = addBottomButton("CREATE","CREATE",this);
       addBottomButtons();
+      checkStatus();
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       String cmd = e.getActionCommand();
       if (cmd.equals("CANCEL")) {
-         removeBubble();
+	 removeBubble();
        }
       else if (cmd.equals("CREATE")) {
-         project_name = name_field.getText();
-         String dnm = file_field.getText();
-         if (dnm != null) project_dir = new File(dnm);
-         removeBubble();
-         
-         createProject();
-        
-         String sdir = source_field.getText();
-         File sfil = null;
-         if (sdir == null) {
-            sfil = new File(project_dir,"src");
-          }
-         else {
-            sfil = new File(sdir);
-          }
-         if (sfil != null) {
-            PathData pd = new PathData(sfil,false);
-            project_paths.add(pd);
-          }
-         
-         updateProject();
+	 removeBubble();
+	 project_name = name_field.getText().trim();
+	 project_dir = getProjectFile();
+	 if (createProject()) {
+	    String sdir = source_field.getText().trim();
+	    File sfil = null;
+	    if (sdir != null && sdir.length() > 0) {
+	       sfil = new File(sdir);
+	       project_paths.clear();
+	       PathData pd = new PathData(sfil,false);
+	       project_paths.add(pd);
+	       updateProject();
+	     }
+	  }
+	 updateFiles();
        }
+      else checkStatus();
     }
 
    @Override public void undoableEditHappened(UndoableEditEvent e) {
       if (e.getSource() == name_field) {
-         String txt = name_field.getText();
-         file_field.setText(txt);
+	 String txt = name_field.getText().trim();
+	 if (file_field != null) file_field.setText(txt);
        }
+      checkStatus();
     }
 
    private void removeBubble() {
       BudaBubble bb = BudaRoot.findBudaBubble(this);
       if (bb != null) bb.setVisible(false);
     }
+
+   private File getProjectFile() {
+      String pfx = name_field.getText().trim();
+      String dnm = null;
+      if (file_field != null) {
+	 dnm = file_field.getText().trim();
+	 if (dnm.length() == 0) dnm = null;
+       }
+      if (dnm != null) {
+	 File f1 = new File(dnm);
+	 if (f1.isAbsolute()) return f1;
+	 else pfx = dnm;
+       }
+      File f1 = new File(BoardSetup.getSetup().getDefaultWorkspace());
+      return new File(f1,pfx);
+    }
+
+
+   private void checkStatus() {
+      boolean isok = true;
+      String pnm = name_field.getText().trim();
+      if (!pnm.matches("\\w+")) isok = false;
+      File f1 = getProjectFile();
+      File f2 = f1.getParentFile();
+      if (f1.exists() || !f2.exists() || !f2.isDirectory()) isok = false;
+
+      String snm = source_field.getText().trim();
+      if (snm != null && snm.length() > 0) {
+	 File f = new File(snm);
+	 if (!f.exists() || !f.isDirectory()) isok = false;
+       }
+      create_button.setEnabled(isok);
+    }
+
 
 }	// end of inner class ProjectCreator
 
@@ -262,7 +331,7 @@ private class ProjectEditor extends SwingGridPanel implements ActionListener {
 	 removeBubble();
        }
       else if (cmd.equals("ACCEPT")) {
-         updateProject();
+	 updateProject();
        }
     }
 
@@ -352,11 +421,12 @@ private class PackagePanel extends SwingGridPanel implements ActionListener, Lis
 /********************************************************************************/
 
 private static Map<String,String> error_descriptions;
-private static String [] severity_set = new String [] { "IGNORE", "INFO", "WARNING", "ERROR" };
+private static String [] severity_set = new String [] { "IGNORE", "WARNING", "ERROR" };
+private static Map<String,String> error_values;
 
 static {
    error_descriptions = new LinkedHashMap<String,String>();
-   error_descriptions.put("ASSSIGNMENT_TO_BUILT_IN_SYMBOL","Assignment to a built in name");
+   error_descriptions.put("ASSIGNMENT_TO_BUILT_IN_SYMBOL","Assignment to a built in name");
    error_descriptions.put("DUPLICATED_SIGNATURE","Duplicate function/method signature");
    error_descriptions.put("INDENTATION_PROBLEM","Problem with indentation");
    error_descriptions.put("NO_EFFECT_STATEMENT","Statement with no effect");
@@ -369,6 +439,11 @@ static {
    error_descriptions.put("UNUSED_VARIABLE","Unused variable");
    error_descriptions.put("UNUSED_WILD_IMPORT","Unused in wild import");
    error_descriptions.put("SYNTAX_ERROR","Syntax error");
+
+   error_values = new HashMap<String,String>();
+   error_values.put("IGNORE","NONE");
+   error_values.put("WARNING","WARNING");
+   error_values.put("ERROR","ERROR");
 }
 
 
@@ -377,7 +452,7 @@ private class OptionPanel extends SwingGridPanel implements ActionListener {
    OptionPanel() {
       addSectionLabel("Error Settings");
       for (Map.Entry<String,String> ent : error_descriptions.entrySet()) {
-	 OptionData od = project_options.get(ent.getKey());
+	 OptionData od = project_options.get("ErrorType." + ent.getKey());
 	 if (od != null) {
 	    addChoice(ent.getValue(),severity_set,od.getValue(),this);
 	  }
@@ -386,9 +461,22 @@ private class OptionPanel extends SwingGridPanel implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
       String what = evt.getActionCommand();
+      JComboBox op = (JComboBox) evt.getSource();
+      String v = (String) op.getSelectedItem();
+      v = error_values.get(v);
       for (Map.Entry<String,String> ent : error_descriptions.entrySet()) {
 	 if (ent.getValue().equals(what)) {
-	    // process option
+	    BumpClient bc = BumpClient.getBump();
+	    IvyXmlWriter xw = new IvyXmlWriter();
+	    xw.begin("PROJECT");
+	    xw.field("NAME",project_name);
+	    xw.begin("OPTION");
+	    xw.field("KEY","ErrorType." + ent.getKey());
+	    xw.field("VALUE",v);
+	    xw.end("OPTION");
+	    xw.end("PROJECT");
+	    bc.editProject(project_name,xw.toString());
+	    xw.close();
 	  }
        }
     }
@@ -428,17 +516,17 @@ private static class PathData {
       path_directory = new File(IvyXml.getAttrString(xml,"DIR"));
       is_library = false;
     }
-   
+
    PathData(File dir,boolean lib) {
       path_directory = dir;
       is_library = false;
     }
-    
-    
+
+
 
    boolean isLibrary()			{ return is_library; }
-   File getDirectory()                  { return path_directory; }
-   
+   File getDirectory()			{ return path_directory; }
+
    @Override public String toString() {
       return path_directory.toString();
     }
@@ -461,7 +549,11 @@ private static class OptionData {
 
    OptionData(Element xml) {
       if (IvyXml.isElement(xml,"SEVERITY")) {
-	 option_name = IvyXml.getAttrString(xml,"TYPE");
+	 option_name = "ErrorType." + IvyXml.getAttrString(xml,"TYPE");
+	 option_value = IvyXml.getAttrString(xml,"VALUE");
+       }
+      else if (IvyXml.isElement(xml,"PROP")) {
+	 option_name = IvyXml.getAttrString(xml,"KEY");
 	 option_value = IvyXml.getAttrString(xml,"VALUE");
        }
     }

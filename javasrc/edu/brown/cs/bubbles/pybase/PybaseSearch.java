@@ -28,6 +28,7 @@ import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
 import edu.brown.cs.bubbles.pybase.symbols.Found;
 import edu.brown.cs.bubbles.pybase.symbols.GenAndTok;
 import edu.brown.cs.bubbles.pybase.symbols.SourceToken;
+import edu.brown.cs.bubbles.pybase.symbols.NodeUtils;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
@@ -42,9 +43,11 @@ import org.python.pydev.parser.jython.ast.ImportFrom;
 import org.python.pydev.parser.jython.ast.Module;
 import org.python.pydev.parser.jython.ast.Name;
 import org.python.pydev.parser.jython.ast.NameTok;
+import org.python.pydev.parser.jython.ast.Attribute;
 import org.python.pydev.parser.jython.ast.expr_contextType;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -114,10 +117,10 @@ void handlePatternSearch(String proj,String pat,SearchFor sf,
    for (ISemanticData sd : sds) {
       PybaseScopeItems scp = sd.getGlobalScope();
       List<SourceToken> rslt = getMatches(sd,scp,sp);
-      if (rslt == null) continue;
+      if (rslt == null || rslt.size() == 0) continue;
       Collections.sort(rslt,new TokenComparer());
       for (SourceToken t : rslt) {
-	 PybaseUtil.outputSearchMatch(sd,t,xw);
+	 PybaseUtil.outputSearchMatch(sd,null,t,xw);
        }
     }
 }
@@ -212,14 +215,17 @@ void handleFindAll(String proj,String file,int start,int end,
    if (pp == null) throw new PybaseException("Can't find project " + proj);
    ISemanticData sd = null;
    IFileData ifd = null;
-   for (IFileData xfd : pp.getAllFiles()) {
-      if (xfd.getFile().getPath().equals(file)) {
-	 ifd = xfd;
-	 sd = pp.getParseData(xfd);
-	 break;
+   if (file != null) {
+      try {
+	 File f1 = new File(file);
+	 file = f1.getCanonicalPath();
        }
+      catch (IOException e) { }
     }
-   if (sd == null || ifd == null) throw new PybaseException("Can't find file " + file);
+
+   sd = pp.getSemanticData(file);
+   if (sd == null) throw new PybaseException("Can't find file " + file);
+   ifd = sd.getFileData();
 
    FindTokenVisitor ftv = new FindTokenVisitor(ifd,start,end);
    SimpleNode ftok = null;
@@ -233,9 +239,10 @@ void handleFindAll(String proj,String file,int start,int end,
    Found f = sd.getGlobalScope().findByToken(ftok);
    if (f != null) {
       AbstractToken g = f.getSingle().getGenerator();
+      PybaseUtil.outputSearchFor(ftok,g,xw);
       if (defs) {
 	 if (system || g instanceof SourceToken) {
-	    PybaseUtil.outputSearchMatch(sd,g,xw);
+	    PybaseUtil.outputSearchMatch(sd,g,g,xw);
 	  }
        }
       if (refs) {
@@ -247,14 +254,14 @@ void handleFindAll(String proj,String file,int start,int end,
 	       trefs = sd.getGlobalScope().findAllRefs(g);
 	    }
 	    if (g1 instanceof SourceToken && !defs && g1.getType() == TokenType.ATTR) {
-	       PybaseUtil.outputSearchMatch(sd,g,xw);
+	       PybaseUtil.outputSearchMatch(sd,g,g,xw);
 	     }
 	    for (AbstractToken t1 : trefs) {
 	       if (!system && !(t1 instanceof SourceToken)) continue;
 	       if (t1 instanceof SourceToken) {
 		  if (!checkReadWrite(sd,g,(SourceToken) t1,ronly,wonly)) continue;
 		}
-	       PybaseUtil.outputSearchMatch(sd,t1,xw);
+	       PybaseUtil.outputSearchMatch(sd,g,t1,xw);
 	     }
 	  }
        }
@@ -298,7 +305,7 @@ private boolean checkReadWrite(ISemanticData sd,AbstractToken src,SourceToken st
 
 /********************************************************************************/
 /*										*/
-/*	Hnadle finding fully qualified name					*/
+/*	Handle finding fully qualified name					*/
 /*										*/
 /********************************************************************************/
 
@@ -309,6 +316,13 @@ void getFullyQualifiedName(String proj,String file,int start,int end,
    if (pp == null) throw new PybaseException("Can't find project " + proj);
    ISemanticData sd = null;
    IFileData ifd = null;
+   if (file != null) {
+      try {
+	 File f1 = new File(file);
+	 file = f1.getCanonicalPath();
+       }
+      catch (IOException e) { }
+    }
    for (IFileData xfd : pp.getAllFiles()) {
       if (xfd.getFile().getPath().equals(file)) {
 	 ifd = xfd;
@@ -326,14 +340,42 @@ void getFullyQualifiedName(String proj,String file,int start,int end,
     }
    catch (Exception e) { }
    if (ftok == null) throw new PybaseException("No symbol at location");
+   
+   String rslt = null;
 
    Found f = sd.getGlobalScope().findByToken(ftok);
-   if (f == null) throw new PybaseException("No identifier at location");
-   GenAndTok gat = f.getSingle();
+   if (f == null) {
+      if (ftok.parent instanceof Attribute) {
+	 Attribute a = (Attribute) ftok.parent;
+	 if (ftok == a.attr) {
+	    Found f1 = sd.getGlobalScope().findByToken(a.value);
+	    GenAndTok gat1 = f1.getSingle();
+	    AbstractToken t1 = gat1.getToken();
+	    switch (t1.getType()) {
+	       case CLASS :
+	       case IMPORT :
+	       case RELATIVE_IMPORT :
+	       case BUILTIN :
+	       case OBJECT_FOUND_INTERFACE :
+		  rslt = t1.getAsAbsoluteImport();
+		  rslt += "." + ftok.getImage().toString();
+		  break;
+	       default :
+		  break;
+	    }
+	 }
+      }
+   }
+   else {
+      GenAndTok gat = f.getSingle();
+      rslt = gat.getToken().getAsAbsoluteImport();
+   }
 
-   xw.begin("FULLYQUALIFIEDNAME");
-   xw.field("NAME",gat.getToken().getAsAbsoluteImport());
-   xw.end();
+   if (rslt != null) {
+      xw.begin("FULLYQUALIFIEDNAME");
+      xw.field("NAME",rslt);
+      xw.end();
+   }
 }
 
 
@@ -346,7 +388,7 @@ void getFullyQualifiedName(String proj,String file,int start,int end,
 
 void getTextRegions(String proj,String bid,String file,String cls,
       boolean prefix,boolean statics,boolean compunit,boolean imports,
-      boolean pkg,boolean topdecls,boolean all,IvyXmlWriter xw)
+      boolean pkg,boolean topdecls,boolean main,boolean all,IvyXmlWriter xw)
 	throws PybaseException
 {
    PybaseProject pp = pybase_main.getProjectManager().findProject(proj);
@@ -369,6 +411,11 @@ void getTextRegions(String proj,String bid,String file,String cls,
        }
       if (file == null) throw new PybaseException("File must be given");
     }
+   try {
+      File f1 = new File(file);
+      file = f1.getCanonicalPath();
+    }
+   catch (IOException e) { }
 
    ISemanticData sd = pp.getSemanticData(file);
    if (sd == null) throw new PybaseException("Can't find file data for " + file);
@@ -385,7 +432,7 @@ void getTextRegions(String proj,String bid,String file,String cls,
 	 imports = true;
       }
    }
-      
+
    List<SimpleNode> rgns = null;
    SimpleNode root = sd.getRootNode();
 
@@ -428,7 +475,7 @@ void getTextRegions(String proj,String bid,String file,String cls,
        }
     }
    else {
-      RegionVisitor rv = new RegionVisitor(imports,statics);
+      RegionVisitor rv = new RegionVisitor(imports,statics,main);
       try {
 	 root.accept(rv);
        }
@@ -456,11 +503,13 @@ private class RegionVisitor extends Visitor {
 
    private boolean do_imports;
    private boolean do_evals;
+   private boolean main_eval;
    private List<SimpleNode> result_nodes;
 
-   RegionVisitor(boolean imp,boolean evls) {
+   RegionVisitor(boolean imp,boolean evls,boolean main) {
       do_imports = imp;
       do_evals = evls;
+      main_eval = main;
       result_nodes = new ArrayList<SimpleNode>();
     }
 
@@ -479,8 +528,12 @@ private class RegionVisitor extends Visitor {
 	  }
 	 else if (n instanceof Assign) ;
 	 else if (n instanceof FunctionDef) ;
-	 else {
-	    if (do_evals) result_nodes.add(n);
+	 else if (n instanceof ClassDef) ;
+	 else if (main_eval && NodeUtils.isIfMainNode(n)) {
+	    result_nodes.add(n);
+	  }
+	 else if (!main_eval && do_evals) {
+	    result_nodes.add(n);
 	  }
        }
       return super.unhandled_node(n);
@@ -708,7 +761,7 @@ private static class SearchPattern {
       int idx = pattern_string.indexOf("(");
       if (idx >= 0) pattern_string = pattern_string.substring(0,idx);
       if (pattern_string.contains("*")) {
-	 String rstr = convertWildcardToRegex(pattern_string);
+	 String rstr = PybaseUtil.convertWildcardToRegex(pattern_string);
 	 regex_pattern = Pattern.compile(rstr);
        }
       search_for = sf;
@@ -748,48 +801,6 @@ private static class SearchPattern {
 }	// end of inner class SearchPattern
 
 
-
-
-private static String convertWildcardToRegex(String s)
-{
-   if (s == null) return null;
-
-   StringBuffer nb = new StringBuffer(s.length()*8);
-   int brct = 0;
-   boolean qtfg = false;
-   boolean bkfg = false;
-   String star = null;
-
-   star = "\\w*";
-
-   nb.append('^');
-
-   for (int i = 0; i < s.length(); ++i) {
-      char c = s.charAt(i);
-      if (bkfg) {
-	 if (c == '\\') qtfg = true;
-	 else if (!qtfg && c == ']') bkfg = false;
-	 else { nb.append(c); qtfg = false; continue; }
-       }
-      if (c == '/' || c == '\\') {
-	 if (File.separatorChar == '\\') nb.append("\\\\");
-	 else nb.append(File.separatorChar);
-       }
-      else if (c == '@') nb.append(".*");
-      else if (c == '*') nb.append(star);
-      else if (c == '.') nb.append("\\.");
-      else if (c == '{') { nb.append("("); ++brct; }
-      else if (c == '}') { nb.append(")"); --brct; }
-      else if (brct > 0 && c == ',') nb.append('|');
-      else if (c == '?') nb.append(".");
-      else if (c == '[') { nb.append(c); bkfg = true; }
-      else nb.append(c);
-    }
-
-   nb.append('$');
-
-   return nb.toString();
- }
 
 
 }	// end of class PybaseSearch

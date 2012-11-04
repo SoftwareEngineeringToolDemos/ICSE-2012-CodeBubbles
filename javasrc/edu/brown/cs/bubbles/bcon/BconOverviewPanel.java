@@ -397,7 +397,7 @@ private class DrawingPanel extends JPanel implements BudaConstants.BudaBubbleOut
       ft = ft.deriveFont(Font.BOLD);
       setFont(ft);
       setToolTipText("Context panel");
-      setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+      BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       addMouseListener(new Mouser(this));
     }
 

@@ -527,6 +527,7 @@ private boolean isConditional()
 	 case NUMBER :
 	 case CHARLITERAL :
 	 case STRING :
+	 case LONGSTRING :
 	 case CONTINUE :
 	 case PASS :
 	 case RAISE :

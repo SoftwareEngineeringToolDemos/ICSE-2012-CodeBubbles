@@ -46,13 +46,13 @@ class BvcrVersionGIT extends BvcrVersionManager implements BvcrConstants
 
 private File		git_root;
 private String		git_command;
-private String		origin_name;
+private String		current_version;
 
 private static BoardProperties bvcr_properties = BoardProperties.getProperties("Bvcr");
 
 private static SimpleDateFormat GIT_DATE = new SimpleDateFormat("EEE MMM dd kk:mm:ss yyyy ZZZZZ");
 
-private static String GIT_LOG_FORMAT = "\"%H%x09%an%x09%ad%x09%s\"";
+private static String GIT_LOG_FORMAT = "%H%x09%h%x09%an%x09%ae%x09%ad%x09%P%x09%d%x09%s%n%b%n***EOF";
 
 
 
@@ -67,20 +67,27 @@ BvcrVersionGIT(BvcrProject bp)
    super(bp);
 
    git_command = bvcr_properties.getProperty("bvcr.git.command","git");
-   origin_name = bvcr_properties.getProperty("bvcr.git." + bp.getName() + ".origin");
+   current_version = bvcr_properties.getProperty("bvcr.git." + bp.getName() + ".origin");
 
    findGitRoot();
 
-   if (origin_name == null) {
-      origin_name = "";
+   if (current_version == null) {
+      current_version = "HEAD";
       String cmd = git_command + " branch -all";
       StringCommand sc = new StringCommand(cmd);
       String vers = sc.getContent();
-      StringTokenizer tok = new StringTokenizer(vers," \r\n\t*");
+      StringTokenizer tok = new StringTokenizer(vers," \r\n\t");
+      boolean star = false;
       while (tok.hasMoreTokens()) {
 	 String v = tok.nextToken();
-	 System.err.println("BVCR: FOUND BRANCH " + v);
-	 if (v.equals("origin")) origin_name = "origin";
+	 if (v.equals("*")) star = true;
+	 else {
+	    if (star) {
+	       System.err.println("BVCR: FOUND BRANCH " + v);
+	       current_version = v;
+	     }
+	    star = false;
+	  }
        }
     }
 }
@@ -130,7 +137,18 @@ String getRepositoryName()
 
 void getDifferences(BvcrDifferenceSet ds)
 {
-   String cmd = git_command  + " diff " + origin_name + " -r";
+   String cmd = git_command  + " diff ";
+
+   String v0 = ds.getStartVersion();
+   if (v0 != null) {
+      cmd += "-b ";
+      cmd += v0;
+      String v1 = ds.getEndVersion();
+      if (v1 != null) cmd += " " + v1;
+    }
+   else {
+      cmd += current_version + " -r";
+    }
 
    List<File> diffs = ds.getFilesToCompute();
    if (diffs == null) {
@@ -140,7 +158,11 @@ void getDifferences(BvcrDifferenceSet ds)
    else {
       cmd += " --";
       for (File f : diffs) {
-	 cmd += " " + f.getPath();
+	 try {
+	    f = f.getCanonicalFile();
+	  }
+	 catch (IOException e) { }
+	 cmd += " " + f.getAbsolutePath();
        }
     }
 
@@ -166,6 +188,9 @@ private void findGitRoot()
       if (!fp1.exists()) break;
       f = fp;
     }
+
+   System.err.println("BVCR: GIT root = " + f);
+
    git_root = f;
 }
 
@@ -179,23 +204,62 @@ private void findGitRoot()
 
 void findHistory(File f,IvyXmlWriter xw)
 {
-   StringCommand cmd = new StringCommand(git_command + " log --pretty=format:" + GIT_LOG_FORMAT);
+   String cmds = git_command + " log --reverse '--pretty=format:" + GIT_LOG_FORMAT + "'";
+   try {
+      f = f.getCanonicalFile();
+    }
+   catch (IOException e) { }
+   // cmds += " " + f.getAbsolutePath();
+   // parent version information is inaccurate in this case
 
-   BvcrFileVersion prior = null;
-   Collection<BvcrFileVersion> fvs = new ArrayList<BvcrFileVersion>();
+   StringCommand cmd = new StringCommand(cmds);
+
+   Map<String,BvcrFileVersion> fvs = new LinkedHashMap<String,BvcrFileVersion>();
+
    StringTokenizer tok = new StringTokenizer(cmd.getContent(),"\n\r");
    while (tok.hasMoreTokens()) {
       String ent = tok.nextToken();
       try {
-	 StringTokenizer ltok = new StringTokenizer(ent,"\t");
-	 String rev = ltok.nextToken();
-	 String auth = ltok.nextToken();
-	 Date d = GIT_DATE.parse(ltok.nextToken());
-	 String msg = ltok.nextToken("\n");
+	 String [] ldata = ent.split("\t",8);
+	 String rev = ldata[0];
+	 String srev = ldata[1];
+	 String auth = ldata[2];
+	 String email = ldata[3];
+	 Date d = GIT_DATE.parse(ldata[4]);
+	 String prev = ldata[5];
+	 String alts = ldata[6];
+	 String msg = ldata[7];
+	 String bdy = "";
+	
+	 if (email != null) {
+	    if (auth != null) auth += " (" + email + ")";
+	    else auth = email;
+	  }
+
 	 BvcrFileVersion fv = new BvcrFileVersion(f,rev,d,auth,msg);
-	 if (prior != null) prior.addPriorVersion(fv);
-	 prior = fv;
-	 fvs.add(fv);
+	 for (StringTokenizer ltok = new StringTokenizer(prev,"(, )"); ltok.hasMoreTokens(); ) {
+	    String pid = ltok.nextToken();
+	    BvcrFileVersion pv = fvs.get(pid);
+	    if (pv != null) fv.addPriorVersion(pv);
+	    else {
+	       System.err.println("BVCR: Can't find prior version " + pv);
+	     }
+	  }
+	 if (srev != null && srev.length() > 0) fv.addAlternativeId(srev,null);
+	 if (alts != null && alts.length() > 0) {
+	    for (StringTokenizer ltok = new StringTokenizer(alts,"(, )"); ltok.hasMoreTokens(); ) {
+	       String nm = ltok.nextToken();
+	       fv.addAlternativeName(nm);
+	     }
+	  }
+	 fvs.put(rev,fv);
+	 while (tok.hasMoreTokens()) {
+	    String bdl = tok.nextToken();
+	    if (bdl.equals("***EOF")) break;
+	    bdy += bdl + "\n";
+	   }
+	 bdy = bdy.trim();
+	 if (bdy.length() > 2) fv.addVersionBody(bdy);
        }
       catch (Throwable e) {
 	 System.err.println("BVCR: Problem parsing log entry: " + e);
@@ -204,7 +268,7 @@ void findHistory(File f,IvyXmlWriter xw)
 
    xw.begin("HISTORY");
    xw.field("FILE",f.getPath());
-   for (BvcrFileVersion fv : fvs) {
+   for (BvcrFileVersion fv : fvs.values()) {
       fv.outputXml(xw);
     }
    xw.end("HISTORY");

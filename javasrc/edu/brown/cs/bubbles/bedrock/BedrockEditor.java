@@ -1399,7 +1399,9 @@ private class FileData implements IBufferChangedListener {
 
    boolean hasChanged() 			{ return default_buffer.hasUnsavedChanges(); }
    String getCurrentContents()			{ return default_buffer.getContents(); }
-   int getLength()				{ return default_buffer.getLength(); }
+   int getLength() {				
+      return (default_buffer == null ? 0 : default_buffer.getLength());
+    }
 
    String getContents(String bid) {
       if (bid == null) {

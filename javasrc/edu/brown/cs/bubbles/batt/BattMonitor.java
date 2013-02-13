@@ -454,6 +454,10 @@ private class CommandHandler implements MintHandler {
 	       rply = for_batt.showSelectedTests(lst);
 	     }
 	  }
+	 else if (cmd.equals("UPDATE")) {
+	    for_batt.setUpdateTests();
+	    for_batt.doTests();
+	  }
 	 else if (cmd.equals("PING")) {
 	    rply = "PONG";
 	  }

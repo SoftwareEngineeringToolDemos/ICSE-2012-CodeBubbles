@@ -1,9 +1,9 @@
 /********************************************************************************/
-/*                                                                              */
-/*              BhelpContext.java                                               */
-/*                                                                              */
-/*      Global context for actions                                              */
-/*                                                                              */
+/*										*/
+/*		BhelpContext.java						*/
+/*										*/
+/*	Global context for actions						*/
+/*										*/
 /********************************************************************************/
 
 
@@ -24,49 +24,156 @@ class BhelpContext implements BhelpConstants
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storag                                                          */
-/*                                                                              */
+/*										*/
+/*	Private Storag								*/
+/*										*/
 /********************************************************************************/
 
-private Map<String,Object>      value_map;   
-private BudaBubbleArea          buda_area;
-private Robot                   event_robot;
-   
+private BhelpDemo		for_demo;
+private Map<String,Object>	value_map;
+private BudaBubbleArea		buda_area;
+private BudaRoot		buda_root;
+private Robot			event_robot;
+private Point			current_mouse;
+private boolean 		is_stopped;
+
+
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Constructors								*/
+/*										*/
 /********************************************************************************/
 
-BhelpContext(BudaBubbleArea bba)
+BhelpContext(BudaBubbleArea bba,BhelpDemo demo)
 {
+   for_demo = demo;
    value_map = new HashMap<String,Object>();
    buda_area = bba;
-   BudaRoot br = BudaRoot.findBudaRoot(bba);
+   buda_root = BudaRoot.findBudaRoot(bba);
+   is_stopped = false;
+
    try {
       event_robot = new Robot();
+      event_robot.setAutoDelay(0);
+      // event_robot.setAutoWaitForIdle(true);
     }
    catch (AWTException e) {
       BoardLog.logE("BHELP","ROBOT not available");
     }
-   
+
    Point pt = MouseInfo.getPointerInfo().getLocation();
-   SwingUtilities.convertPointFromScreen(pt,br);
+   SwingUtilities.convertPointFromScreen(pt,buda_root);
+   current_mouse = new Point(pt);
    setValue("StartPoint",pt);
+   setValue("BubbleArea",buda_root.getCurrentBubbleArea());
+   Rectangle r = buda_root.getCurrentBubbleArea().getViewport();
+   setValue("StartViewport",r);
 }
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-BudaBubbleArea getBubbleArea()          { return buda_area; }
-BudaRoot getBudaRoot()                  { return BudaRoot.findBudaRoot(buda_area); }
-Robot getRobot() throws BhelpException 
+BudaBubbleArea getBubbleArea()		{ return buda_area; }
+BudaRoot getBudaRoot()			{ return buda_root; }
+Point getMouse()			{ return new Point(current_mouse); }
+
+void setStopped()			{ is_stopped = true; }
+boolean isStopped()			{ return is_stopped; }
+
+
+
+private void setMouse(double x,double y)
+{
+   current_mouse.setLocation(x,y);
+
+   buda_root.setDemonstrationPoint(current_mouse);
+
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Robot methods								*/
+/*										*/
+/********************************************************************************/
+
+void mouseMove(int x,int y) throws BhelpException
+{
+   // BoardLog.logD("BHELP","MOVE MOUSE " + x + " " + y);
+
+   checkMouse();
+
+   Point sp = new Point(x,y);
+   SwingUtilities.convertPointToScreen(sp,buda_root);
+   getRobot().mouseMove(sp.x,sp.y);
+
+   setMouse(x,y);
+}
+
+
+boolean checkMouse()
+{
+   PointerInfo pi = MouseInfo.getPointerInfo();
+   Point cp = null;
+   if (pi == null) {
+      Rectangle r = buda_root.getBounds();
+      cp = new Point(r.width/2,r.height/2);
+    }
+   else {
+      cp = pi.getLocation();
+      SwingUtilities.convertPointFromScreen(cp,buda_root);
+    }
+
+   int diff = Math.abs(cp.x - current_mouse.x) + Math.abs(cp.y - current_mouse.y);
+   // BoardLog.logD("BHELP","TEST MOUSE " + cp + " " + current_mouse);
+   if (diff > 5) {
+      // BoardLog.logD("BHELP","CHECK MOUSE " + cp + " " + current_mouse);
+      for_demo.stopDemonstration();
+    }
+
+
+   return !is_stopped;
+}
+
+
+
+void mousePress(int btns) throws BhelpException
+{
+   getRobot().mousePress(btns);
+}
+
+
+void mouseRelease(int btns) throws BhelpException
+{
+   getRobot().mouseRelease(btns);
+}
+
+void delay(int ms) throws BhelpException
+{
+   getRobot().delay(ms);
+}
+
+void keyPress(int keycode) throws BhelpException
+{
+   getRobot().keyPress(keycode);
+}
+
+
+void keyRelease(int keycode) throws BhelpException
+{
+   getRobot().keyRelease(keycode);
+}
+
+
+
+private Robot getRobot() throws BhelpException
 {
    if (event_robot == null) throw new BhelpException("Event Simulator not available");
    return event_robot;
@@ -74,9 +181,9 @@ Robot getRobot() throws BhelpException
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Value methos                                                            */
-/*                                                                              */
+/*										*/
+/*	Value methods								*/
+/*										*/
 /********************************************************************************/
 
 void setValue(String name,BudaBubble bbl)
@@ -87,17 +194,34 @@ void setValue(String name,BudaBubble bbl)
 
 void setValue(String name,Point pt)
 {
-   if (name != null) value_map.put(name, pt);
+   if (name != null) value_map.put(name,new Point(pt));
 }
 
+
+void setValue(String name,Rectangle r)
+{
+   if (name != null) value_map.put(name,new Rectangle(r));
+}
+
+
+void setValue(String name,Component c)
+{
+   if (name != null) value_map.put(name,c);
+}
+
+
+
+
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
 Point getPoint(String var)
 {
+   if (var == null) return null;
+
    Object val = value_map.get(var);
    if (val == null) return null;
    if (val instanceof Point) return ((Point) val);
@@ -111,16 +235,77 @@ Point getPoint(String var)
       Rectangle r = BudaRoot.findBudaLocation(((Component) val));
       Point pt = new Point(r.x + r.width/2,r.y + r.height/2);
       pt = SwingUtilities.convertPoint(bba,pt,br);
+      return pt;
+    }
+
+   return null;
+}
+
+
+Rectangle getRectangle(String var)
+{
+   if (var == null) return null;
+
+   Object val = value_map.get(var);
+   if (val == null) return null;
+   if (val instanceof Point) {
+      Point pt = (Point) val;
+      return new Rectangle(pt.x,pt.y,1,1);
+    }
+   else if (val instanceof Rectangle) {
+      return ((Rectangle) val);
+    }
+   else if (val instanceof Component) {
+      Rectangle r = BudaRoot.findBudaLocation(((Component) val));
+      return r;
+    }
+
+   return null;
+}
+
+
+Component getComponent(String var)
+{
+   if (var == null) return null;
+
+   Object val = value_map.get(var);
+   if (val == null) return null;
+   if (val instanceof Component) {
+      return ((Component) val);
     }
    return null;
 }
-      
-      
+
+/********************************************************************************/
+/*										*/
+/*	Reset methods								*/
+/*										*/
+/********************************************************************************/
+
+void reset()
+{
+   Point pt = getPoint("StartPoint");
+   Rectangle r = getRectangle("StartViewport");
+   Component bba = getComponent("BubbleArea");
+
+   try {
+      if (pt != null) mouseMove(pt.x,pt.y);
+      BudaBubbleArea bbac = buda_root.getCurrentBubbleArea();
+      if (bba == bbac && r != null) {
+	 Rectangle r1 = bbac.getViewport();
+	 if (!r.equals(r1)) buda_root.setViewport(r.x,r.y);
+       }
+    }
+   catch (BhelpException e) { }
+}
 
 
 
 
-}       // end of class BhelpContext
+
+
+
+}	// end of class BhelpContext
 
 
 

@@ -102,7 +102,9 @@ public static void initialize(BudaRoot br)
 /*										*/
 /********************************************************************************/
 
-public Collection<BanalPackageNode> computePackageGraph(String proj,String pkg,boolean usemethods)
+public Collection<BanalPackageNode> computePackageGraph(String proj,String pkg,
+							   boolean usemethods,
+							   boolean sameclass)
 {
    BanalPackageGraph pg = null;
 
@@ -113,7 +115,9 @@ public Collection<BanalPackageNode> computePackageGraph(String proj,String pkg,b
       String cmd = "<BANAL DO='PACKAGEGRAPH'";
       if (proj != null) cmd += " PROJECT='" + proj + "'";
       if (pkg != null) cmd += " PACKAGE='" + pkg + "'";
-      cmd += " METHODS='" + usemethods + "' />";
+      cmd += " METHODS='" + usemethods + "'";
+      cmd += " SAMECLASS='" + sameclass + "'";
+      cmd += " />";
       mc.send(cmd,rply,MINT_MSG_FIRST_NON_NULL);
       Element e = rply.waitForXml();
       if (IvyXml.isElement(e,"RESULT")) {

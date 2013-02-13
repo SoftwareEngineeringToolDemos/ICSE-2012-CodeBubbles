@@ -41,8 +41,8 @@
    <target name='test' depends='compile'>
       <java classname='edu.brown.cs.bubbles.banal.BanalMain' fork='true'>
 	 <classpath refid='test.classpath' />
-	 <arg value="-p" />
-	 <arg value="bubbles" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr_vhr" />
       </java>
    </target>
 

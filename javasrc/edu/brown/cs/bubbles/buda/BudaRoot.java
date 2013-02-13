@@ -30,7 +30,8 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.ivy.swing.*;
 import edu.brown.cs.ivy.xml.IvyXml;
 
-import com.itextpdf.text.pdf.*;
+// import com.itextpdf.text.pdf.*;
+import gnu.jpdf.*;
 
 import org.w3c.dom.Element;
 
@@ -43,6 +44,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.*;
 import java.awt.print.*;
+import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 
@@ -80,12 +82,18 @@ private BudaChannelSet		cur_channels;
 private JPanel			channel_area;
 private BoardProperties 	buda_properties;
 private BudaShareManager	share_manager;
+private BudaDemonstration	demo_thread;
+private String			demo_text;
+private Point			demo_point;
 
 private static MouseEvent	last_mouse;
 
 private static SwingEventListenerList<BubbleViewCallback> view_callbacks;
 private static SwingEventListenerList<BudaFileHandler> file_handlers;
 
+private static Color DEMO_TEXT_COLOR = new Color(0x80ffff00);
+private static Font DEMO_TEXT_FONT = new Font(Font.SANS_SERIF,Font.BOLD,96);
+private static Color DEMO_POINT_COLOR = new Color(0x40ff0000);
 
 private static SearchBoxCreator search_creator = null;
 private static BudaMenu 	bubble_menu = null;
@@ -232,6 +240,9 @@ private void initialize(Element e)
    cur_channels = null;
    buda_properties = BoardProperties.getProperties("Buda");
    last_mouse = null;
+   demo_thread = null;
+   demo_text = null;
+   demo_point = null;
 
    setupSwing();
 
@@ -407,7 +418,7 @@ public static void registerHelp(Component c,BudaHelpClient h)
 public static void showHelp(MouseEvent e)
 {
    if (e == null) e = last_mouse;
-   
+
    Component c0 = SwingUtilities.getDeepestComponentAt((Component) e.getSource(),e.getX(),e.getY());
 
    for (Component c = c0; c != null; c = c.getParent()) {
@@ -418,6 +429,29 @@ public static void showHelp(MouseEvent e)
 	 return;
        }
     }
+}
+
+
+
+public void setDemonstration(BudaDemonstration demo,String text)
+{
+   BudaHover.removeHovers();
+
+   demo_thread = demo;
+   demo_text = text;
+   demo_point = null;
+   repaint();
+}
+
+
+public void setDemonstrationPoint(Point pt)
+{
+   if (pt == null) demo_point = null;
+   else {
+      if (demo_point == null) demo_point = new Point(pt);
+      else demo_point.setLocation(pt);
+      repaint();
+   }
 }
 
 
@@ -928,6 +962,39 @@ public static void addToolbarButton(String name, ActionListener l, String toolti
 
 /********************************************************************************/
 /*										*/
+/*	Painting methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public void paint(Graphics g)
+{
+   super.paint(g);
+
+   if (demo_thread != null) {
+      if (demo_point != null) {
+	 g.setColor(DEMO_POINT_COLOR);
+	 g.fillOval(demo_point.x - 10, demo_point.y - 10, 20, 20);
+       }
+      if (demo_text != null) {
+	 Rectangle r = getBounds();
+	 int h = r.height;
+	 r.x = 0;
+	 r.y = h - 100;
+	 r.height = 100;
+	 Graphics2D g2 = (Graphics2D) g;
+	 g2.setColor(DEMO_TEXT_COLOR);
+	 g2.setFont(DEMO_TEXT_FONT);
+	 SwingText.drawText(demo_text,g2,r);
+       }
+    }
+}
+
+
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Printing methods							*/
 /*										*/
 /********************************************************************************/
@@ -958,12 +1025,14 @@ public void exportViewportAsPdf(File file) throws Exception
 
 
 
-void exportAsPdf(File file,Rectangle bnds) throws Exception
+/*********************
+void OLDexportAsPdf(File file,Rectangle bnds) throws Exception
 {
    FileOutputStream fos = new FileOutputStream(file);
 
    bnds.width += 100;
    bnds.height += 100;
+
    com.itextpdf.text.Rectangle rr = new com.itextpdf.text.Rectangle(bnds.width,bnds.height);
 
    com.itextpdf.text.Document doc = new com.itextpdf.text.Document(rr,0,0,0,0);
@@ -980,8 +1049,53 @@ void exportAsPdf(File file,Rectangle bnds) throws Exception
 
    fos.close();
 }
+******************/
 
 
+
+void exportAsPdf2(File file,Rectangle bnds) throws Exception
+{
+   FileOutputStream fos = new FileOutputStream(file);
+
+   Paper pp = new Paper();
+   pp.setSize(bnds.width,bnds.height);
+   PageFormat pf = new PageFormat();
+   pf.setPaper(pp);
+
+   PDFJob job = new PDFJob(fos);
+   Graphics g2 = job.getGraphics(pf);
+   print(g2);
+   g2.dispose();
+   job.end();
+
+   fos.close();
+}
+
+
+void exportAsPdf(File file,Rectangle bnds) throws Exception
+{
+   FileOutputStream fos = new FileOutputStream(file);
+
+   BufferedImage bi;
+   Dimension sz = getSize();
+   bi = new BufferedImage(sz.width,sz.height,BufferedImage.TYPE_INT_RGB);
+   Graphics2D g2 = bi.createGraphics();
+   paint(g2);
+
+
+   Paper pp = new Paper();
+   pp.setSize(sz.width,sz.height);
+   PageFormat pf = new PageFormat();
+   pf.setPaper(pp);
+
+   PDFJob job = new PDFJob(fos);
+   Graphics p2 = job.getGraphics(pf);
+   p2.drawImage(bi,0,0,sz.width,sz.height,Color.BLACK,this);
+   p2.dispose();
+   job.end();
+
+   fos.close();
+}
 
 
 
@@ -1020,7 +1134,7 @@ void setCurrentViewport(int x,int y)
 }
 
 
-void setViewport(int x,int y)
+public void setViewport(int x,int y)
 {
    Rectangle v = bubble_view.getBounds();
    Rectangle a = bubble_area.getBounds();
@@ -1090,7 +1204,7 @@ void setScaleFactor(double sf,int cx,int cy)
    scale_factor = sf;
    bubble_area.setScaleFactor(sf);
    // cx,cy are the center in the original coordinate system
-   
+
    Rectangle vr = bubble_view.getViewRect();
    int x = (int) (cx*scale_factor - vr.width/2.0);
    // x = (int)(cx - vr.width/2.0/scale_factor);
@@ -1150,9 +1264,9 @@ private void setupGlobalActions()
 			KeyStroke.getKeyStroke(KeyEvent.VK_F1,0));
    registerKeyAction(new BudaExpose(this,bubble_area),"EXPOSE",
 			KeyStroke.getKeyStroke(KeyEvent.VK_F9,0));
-   registerKeyAction(new EscapeHandler(),"REMOVE_BUBBLE",
+   registerKeyAction(new EscapeHandler(),"REMOVE_BUBBLE_ESCAPE",
 			KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0));
-   registerKeyAction(new EscapeHandler(),"REMOVE_BUBBLE",
+   registerKeyAction(new RemoveHandler(),"REMOVE_BUBBLE",
 			KeyStroke.getKeyStroke(KeyEvent.VK_W,menudown));
    registerKeyAction(new SearchKeyHandler(true, true, true), "Group Adjacent Search",
 			KeyStroke.getKeyStroke(KeyEvent.VK_F10, menudown));
@@ -1285,6 +1399,11 @@ private class EscapeHandler extends AbstractAction {
    private static final long serialVersionUID = 1;
 
    @Override public void actionPerformed(ActionEvent e) {
+      if (demo_thread != null) {
+	 demo_thread.stopDemonstration();
+	 return;
+       }
+
       BudaBubbleArea bba = getCurrentBubbleArea();
       MouseEvent me = last_mouse;
       if (me != null) {
@@ -1297,6 +1416,27 @@ private class EscapeHandler extends AbstractAction {
     }
 
 }	// end of inner class EscapeHandler
+
+
+
+
+private class RemoveHandler extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubbleArea bba = getCurrentBubbleArea();
+      MouseEvent me = last_mouse;
+      if (me != null) {
+	 Component c = (Component) e.getSource();
+	 Point pt = SwingUtilities.convertPoint(c,me.getPoint(),bba);
+	 me = new MouseEvent(bba,me.getID(),me.getWhen(),me.getModifiers(),
+				pt.x,pt.y,me.getClickCount(),me.isPopupTrigger());
+       }
+      bba.removeCurrentBubble(me);
+    }
+
+}	// end of inner class RemoveHandler
 
 
 
@@ -2340,7 +2480,7 @@ private static class MouseEventQueue extends EventQueue {
       // only want mouse events for buttons other than 1
       if (!(e instanceof MouseEvent)) {
 	 if (e instanceof InputEvent) {
-	    BudaHover.handleKeyEvent();
+	    BudaHover.removeHovers();
 	    InputEvent ie = (InputEvent) e;
 	    BoardMetrics.noteActive(ie.getWhen());
 	  }

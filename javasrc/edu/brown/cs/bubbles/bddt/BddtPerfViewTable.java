@@ -217,8 +217,13 @@ private class PerfEventHandler implements BumpRunEventHandler {
    @Override public void handleLaunchEvent(BumpRunEvent evt)		{ }
 
    @Override public void handleProcessEvent(BumpRunEvent evt) {
-      if (evt.getProcess() != launch_control.getProcess()) 
+      if (evt.getProcess() != null &&
+	     evt.getProcess() != launch_control.getProcess())
 	 return;
+      else if (evt.getProcess() == null &&
+		  evt.getEventType() != BumpRunEventType.PROCESS_ADD)
+	 return;
+
       switch (evt.getEventType()) {
 	 case PROCESS_ADD :
 	    perf_model.clear();
@@ -262,8 +267,8 @@ private class PerfTable extends JTable implements BudaConstants.BudaBubbleOutput
       setOpaque(false);
       BudaCursorManager.setCursor(this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-         TableColumn tc = e.nextElement();
-         tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
+	 TableColumn tc = e.nextElement();
+	 tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
        }
       cell_drawer = new CellDrawer[getColumnModel().getColumnCount()];
       setToolTipText("");

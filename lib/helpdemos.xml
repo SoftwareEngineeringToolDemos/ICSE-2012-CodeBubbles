@@ -15,10 +15,11 @@
       <ACTION TYPE='SPEECH' TEXT='And right click on that bubble' />
       <ACTION TYPE='MOUSE' UP='true' DOWN='true' BUTTON='4' />
       <ACTION TYPE='SPEECH' WAIT='true' />
+      <ACTION TYPE='RESET' />
    </DEMO>
 
    <DEMO NAME='dragarea'>
-      <ACTION TYPE='SPEECH' WAIT='TRUE'>
+      <ACTION TYPE='SPEECH'>
 	 <TEXT>First move the mouse so it is over the bubble area background</TEXT>
       </ACTION>
       <ACTION TYPE='BACKGROUND' MOUSE='true' AREA='BUBBLEAREA' SET='point' />
@@ -28,17 +29,131 @@
       <ACTION TYPE='SPEECH'>
 	 <TEXT>Then you can draw the background around by moving the mouse</TEXT>
       </ACTION>
-      <ACTION TYPE='MOVE' TARGET='point'>
+      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.45' >
 	  <POINT X='0' Y='-300' />
 	  <POINT X='300' Y='0' />
 	  <POINT X='0' Y='300' />
 	  <POINT X='-300' Y='0' />
+	  <POINT X='0' Y='0' />
       </ACTION>
       <ACTION TYPE='SPEECH'>
 	 <TEXT>And release the mouse button when you are done</TEXT>
       </ACTION>
       <ACTION TYPE='MOUSE' UP='TRUE' BUTTON='4' />
-      <ACTION TYPE='MOVE' JUMP='true' TARGET='StartPoint' />
+      <ACTION TYPE='RESET' />
+   </DEMO>
+
+   <DEMO NAME='resizebubble'>
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>First move the mouse so it is over the border of a bubble.  You can
+		tell when this occurs by the cursor.</TEXT>
+      </ACTION>
+      <ACTION TYPE='BACKGROUND' MOUSE='true' AREA='BORDER_E' SET='point' />
+      <ACTION TYPE='MOVE' TARGET='point' />
+      <ACTION TYPE='SPEECH' TEXT="Push down with the left mouse button" />
+      <ACTION TYPE='MOUSE' DOWN='true' BUTTON='16' />
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>Then you can extend or shrink the size by moving the mouse</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.45' >
+	  <POINT X='200' Y='0' />
+	  <POINT X='-75' Y='0' />
+	  <POINT X='0' Y='0' />
+      </ACTION>
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>And release the mouse button when you are done</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOUSE' UP='TRUE' BUTTON='16' />
+      <ACTION TYPE='RESET' />
+   </DEMO>
+
+   <DEMO NAME='movebubble'>
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>First move the mouse so it is over the bubble you want to move.</TEXT>
+      </ACTION>
+      <ACTION TYPE='FINDBUBBLE' MOUSE='true' SET='point' />
+      <ACTION TYPE='MOVE' TARGET='point' />
+      <ACTION TYPE='SPEECH' TEXT="Push down with the right mouse button" />
+      <ACTION TYPE='MOUSE' DOWN='true' BUTTON='4' />
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>Then you can move the bubble to where you want it.</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.45' >
+	  <POINT X='300' Y='0' />
+	  <POINT X='0' Y='300' />
+	  <POINT X='-300' Y='0' />
+	  <POINT X='0' Y='0' />
+      </ACTION>
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>Release the mouse button when you are done</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOUSE' UP='TRUE' BUTTON='4' />
+      <ACTION TYPE='RESET' />
+   </DEMO>
+
+   <DEMO NAME='removebubble'>
+      <ACTION TYPE='SPEECH'>
+	 <TEXT>First move the mouse so it is over the bubble you want to remove.</TEXT>
+      </ACTION>
+      <ACTION TYPE='FINDBUBBLE' MOUSE='true' SET='bbl' />
+      <ACTION TYPE='MOVE' TARGET='bbl' />
+      <ACTION TYPE='SPEECH' WAIT='true'>
+	 <TEXT>Either click with the middle button or type escape or control W.</TEXT>
+      </ACTION>
+      <ACTION TYPE='KEY' CONTROL='true' KEY='W' />
+      <ACTION TYPE='SPEECH' WAIT='true'>
+	 <TEXT>This will make the window go away.  Note that a shadow window remains
+		to undo the deletion.  If you left click on the shadow, the window
+		will be restored.</TEXT>
+      </ACTION>
+      <ACTION TYPE='MOUSE' DOWN='true' UP='true' BUTTON='LEFT' />
+      <ACTION TYPE='RESET' />
    </DEMO>
 
 </HELPDEMOS>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

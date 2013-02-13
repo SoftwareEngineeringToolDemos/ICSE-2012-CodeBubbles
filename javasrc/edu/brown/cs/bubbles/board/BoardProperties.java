@@ -406,6 +406,34 @@ public float getFloat(String prop,float dflt)
 
 
 /**
+ * Return the value of the float property with the given name or -1 if it doesn't exist.
+ **/
+
+public double getDouble(String prop)
+{
+   return getDouble(prop, -1);
+}
+
+
+/**
+ * Return the value of the integer property with the given name or the given default value
+ * if it doesn't.
+ **/
+
+public double getDouble(String prop,double dflt)
+{
+   String s = getProperty(prop);
+   if (s != null && s.length() > 0) {
+      try {
+	 return Double.parseDouble(s);
+       }
+      catch (NumberFormatException e) {}
+    }
+   return dflt;
+}
+
+
+/**
  * Return the value of the color with the given name or black if it doesn't exist
  **/
 

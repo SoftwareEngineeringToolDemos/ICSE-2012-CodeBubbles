@@ -115,6 +115,13 @@ String getRepositoryName()
 void getDifferences(BvcrDifferenceSet ds)
 {
    String cmd = svn_command  + " diff";
+   
+   String v0 = ds.getStartVersion();
+   if (v0 != null) {
+      cmd += " -r " + v0;
+      String v1 = ds.getEndVersion();
+      if (v1 != null) cmd += ":" + v1;
+    }
 
    List<File> diffs = ds.getFilesToCompute();
    if (diffs == null) {

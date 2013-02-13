@@ -55,22 +55,22 @@ public BuenoClassDialog(BudaBubble source,Point locale,BuenoType typ,
 			    BuenoBubbleCreator newer)
 {
    super(source,locale,known,insert,newer,typ);
-   
+
    String prj = property_set.getStringProperty(BuenoKey.KEY_PROJECT);
-   if (prj == null) prj = insertion_point.getProject();  
-   
+   if (prj == null) prj = insertion_point.getProject(); 
+
    BumpContractType bct = BumpClient.getBump().getContractType(prj);
-   
+
    if (bct == null) return;
-   
+
    if (bct.useContractsForJava()) {
-      String imp = "import com.google.java.contract.*";
+      String imp = "import com.google.java.contract.*;";
       property_set.addToArrayProperty(BuenoKey.KEY_IMPORTS,imp);
     }
-   
+
    if (bct.useJunit()) {
-      String imp = "import org.junit.*";
-      property_set.addToArrayProperty(BuenoKey.KEY_IMPORTS,imp);    
+      String imp = "import org.junit.*;";
+      property_set.addToArrayProperty(BuenoKey.KEY_IMPORTS,imp);
     }
 }
 

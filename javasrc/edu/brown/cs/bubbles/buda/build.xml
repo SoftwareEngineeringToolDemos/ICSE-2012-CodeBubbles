@@ -14,13 +14,13 @@
       <path id='bubbles.classpath'>
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='Lobo/**/*.jar' />
       </path>
       <path id='test.classpath'>
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='Lobo/**/*.jar' />
       </path>
    </target>

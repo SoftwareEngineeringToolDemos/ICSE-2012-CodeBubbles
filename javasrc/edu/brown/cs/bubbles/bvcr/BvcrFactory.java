@@ -26,15 +26,22 @@ package edu.brown.cs.bubbles.bvcr;
 
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bale.*;
+import edu.brown.cs.bubbles.bass.*;
+
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.exec.*;
 
 import org.w3c.dom.*;
 import java.util.*;
 import java.io.*;
+import java.awt.event.*;
+import java.awt.Point;
+import javax.swing.*;
 
 
-public class BvcrFactory implements BvcrConstants, MintConstants
+public class BvcrFactory implements BvcrConstants, BaleConstants, MintConstants
 {
 
 
@@ -87,6 +94,16 @@ public static void setup()
 public static void initialize(BudaRoot br)
 {
    getFactory().startBvcrServer();
+   getFactory().setupCallbacks();
+}
+
+
+private void setupCallbacks()
+{
+   BvcrContexter bc = new BvcrContexter();
+
+   BaleFactory.getFactory().addContextListener(bc);
+   BassFactory.getFactory().addPopupHandler(bc);
 }
 
 
@@ -138,6 +155,28 @@ Element getHistoryForFile(String proj,String file)
 
 
 
+Element getFileDifferences(String proj,String file,String v0,String v1)
+{
+   if (!server_running) return null;
+
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
+   MintDefaultReply rply = new MintDefaultReply();
+   String cmd = "<BVCR DO='FILEDIFFS'";
+   cmd += " PROJECT='" + proj + "'";
+   cmd += " FILE='" + file + "'";
+   if (v0 != null) cmd += " FROM='" + v0 + "'";
+   if (v1 != null) cmd += " TO='" + v1 + "'";
+   cmd += " />";
+   mc.send(cmd,rply,MINT_MSG_FIRST_NON_NULL);
+   Element e = rply.waitForXml();
+
+   return e;
+}
+
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -153,7 +192,7 @@ void startBvcrServer()
 
    synchronized (this) {
       if (server_running) return;
-      
+
       long mxmem = Runtime.getRuntime().maxMemory();
       mxmem = Math.min(512*1024*1024L,mxmem);
 
@@ -208,6 +247,84 @@ void startBvcrServer()
 }
 
 
+/********************************************************************************/
+/*										*/
+/*	Action for showing method history					*/
+/*										*/
+/********************************************************************************/
+
+private class BvcrContexter implements BaleContextListener, BassConstants.BassPopupHandler {
+
+   @Override public BudaBubble getHoverBubble(BaleContextConfig cfg) {
+      return null;
+    }
+
+   @Override public String getToolTipHtml(BaleContextConfig cfg) {
+      return null;
+    }
+
+   @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu menu) {
+      menu.add(new HistoryAction(cfg));
+    }
+
+   @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,String name,
+	    	BassName forname) {
+      BumpLocation loc = null;
+      if (forname == null) {
+	 String proj = null;
+	 int idx = name.indexOf(":");
+	 if (idx > 0) {
+	    proj = name.substring(0,idx);
+	    name = name.substring(idx+1);
+	 }
+	 List<BumpLocation> locs = null;
+	 locs = BumpClient.getBump().findClassDefinition(proj,name);
+	 if (locs != null && locs.size() > 0) {
+	    loc = locs.get(0);
+	 }
+      }
+      else {
+	 switch (forname.getNameType()) {
+	    case FILE :
+	    case CLASS :
+	       loc = forname.getLocation();
+	       break;
+	    default :
+	       break;
+	 }
+      }
+      if (loc != null) {
+	 if (loc.getProject() != null && loc.getFile() != null) {
+	    menu.add(new HistoryAction(bb,where,loc));
+	 }
+      }
+    }
+
+}	// end of inner class BvcrContexter
+
+
+private class HistoryAction extends AbstractAction {
+
+   private BvcrHistoryDisplay history_manager;
+
+   private static final long serialVersionUID = 1;
+
+   HistoryAction(BaleContextConfig cfg) {
+      super("Investigate Code History");
+      history_manager = new BvcrHistoryDisplay(cfg);
+    }
+
+   HistoryAction(BudaBubble bb,Point where,BumpLocation loc) {
+      super("Investigate File History");
+      history_manager = new BvcrHistoryDisplay(bb,where,loc);
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BudaRoot.hideSearchBubble(evt);
+      history_manager.process();
+    }
+
+}	// end of inner class HistoryAction
 
 
 }	// end of class BvcrFactory

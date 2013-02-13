@@ -133,12 +133,12 @@ public List<BattTest> getAllTestCases(String mthd)
    for (BattTestCase btc : batt_model.getAllTests()) {
       UseMode um = btc.usesMethod(mthd);
       switch (um) {
-         case UNKNOWN :
+	 case UNKNOWN :
 	 case INDIRECT :
 	 case DIRECT :
 	    all.add(btc);
 	    break;
-         case NONE :
+	 case NONE :
 	 default:
 	    break;
        }
@@ -266,6 +266,15 @@ void setTestMode(TestMode md)
    BoardSetup bs = BoardSetup.getSetup();
    MintControl mc = bs.getMintControl();
    mc.send("<BATT DO='SETMODE' VALUE='" + md.toString() + "' />");
+}
+
+
+
+void findNewTests()
+{
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
+   mc.send("<BATT DO='UPDATE' />");
 }
 
 
@@ -432,7 +441,7 @@ private static class BattContexter implements BaleContextListener {
 		for (BumpLocation cloc : cntrs) {
 		   String prms = cloc.getParameters();
 		   if (Modifier.isPublic(loc.getModifiers()) && prms.equals("()")) cok = true;
-	       	 }
+		 }
 		if (cok) classes.add(cnm);
 	      }
 	     else if (nm.equals(tcnm) && Modifier.isPublic(loc.getModifiers()) && !isinner) {
@@ -446,7 +455,7 @@ private static class BattContexter implements BaleContextListener {
 		if (fok) classes.add(cnm);
 	      }
 	   }
-        }
+	}
 
        String mnm = mthd;
        int idx = mnm.indexOf("(");

@@ -348,7 +348,7 @@ void setGroup(BudaBubbleGroup bg)
 }
 
 
-BudaBubbleGroup getGroup()			{ return bubble_group; }
+public BudaBubbleGroup getGroup()		{ return bubble_group; }
 
 
 void saveGroup()				{ original_group = bubble_group; }

@@ -160,12 +160,15 @@ void simulateHover(MouseEvent e)
       help_area.setText(txt);
    }
 
+   int dx = BUDA_PROPERTIES.getInt("Buda.help.delta.x");
+   int dy = BUDA_PROPERTIES.getInt("Buda.help.delta.y");
+
    BudaRoot root = BudaRoot.findBudaRoot(for_component);
    if (root == null) return;
    Container rootpanel = root.getLayeredPane();
    Point pt = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),rootpanel);
-   pt.x -= 5;
-   pt.y -= 5;
+   pt.x -= dx;
+   pt.y -= dy;
 
    rootpanel.remove(scroll_area);
    rootpanel.add(scroll_area);
@@ -195,7 +198,6 @@ void simulateHover(MouseEvent e)
       // System.err.println("POINT " + p0 + " " + scroll_area.getWidth() + " " + scroll_area.getHeight());
       if (p0.x >= 0 && p0.x < scroll_area.getWidth() && p0.y >= 0 && p0.y < scroll_area.getHeight()) return;
     }
-   // System.err.println("CLEAR HOVER");
    scroll_area.setVisible(false);
 }
 
@@ -279,12 +281,13 @@ private class HelpArea extends JEditorPane {
 /*										*/
 /********************************************************************************/
 
-private static class HyperListener implements HyperlinkListener {
+private class HyperListener implements HyperlinkListener {
 
    @Override public void hyperlinkUpdate(HyperlinkEvent e) {
       if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 	 URL u = e.getURL();
 	 if (u == null) {
+	    endHover(null);
 	    String d = e.getDescription();
 	    int idx = d.indexOf(":");
 	    if (idx < 0) return;
@@ -336,6 +339,7 @@ private class Mouser extends MouseAdapter implements KeyListener {
 
 
 
+
 /********************************************************************************/
 /*										*/
 /*	Main program to generate a HTML To-Do page from the help file		*/
@@ -369,6 +373,12 @@ public static void main(String [] args)
       pw = new PrintWriter(new FileWriter("helptext.html"));
       pw.println("<html><head>");
       pw.println("<title>The Code Bubbles How-To Page</title>");
+      pw.println("<script type='text/javascript'>");
+      pw.println("function demo(x) {");
+      pw.println("var xmlhttp = new XMLHttpRequest();");
+      pw.println("xmlhttp.open('GET','http://localhost:19888/' + x,false);");
+      pw.println("xmlhttp.send(null); }");
+      pw.println("</script>");
       pw.println("</head>");
       pw.println("<body>");
       pw.println("<h1 align='center'>The Code Bubbles How-To Page</h1>");
@@ -487,6 +497,9 @@ private static class ParseHandler extends HTMLEditorKit.ParserCallback {
       else if (t == HTML.Tag.A) {
 	 String v = a.getAttribute(HTML.Attribute.HREF).toString();
 	 if (v.startsWith("showme:")) {
+	    int idx = v.indexOf(":");
+	    String what = v.substring(idx+1);
+	    html_buffer.append("<form><input onclick='demo(\"" + what + "\");' type='button' value='Show Me' /></form>");
 	    parse_state = ParseState.SHOWME;
 	    return;
 	  }
@@ -571,22 +584,3 @@ private static class ParseHandler extends HTMLEditorKit.ParserCallback {
 
 
 /* end of BudaHelp.java */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

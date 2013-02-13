@@ -37,7 +37,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
-import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.*;
 
 import org.w3c.dom.Element;
 
@@ -79,7 +79,8 @@ private SwingEventListenerList<BaleContextListener> context_listeners;
 
 private static BaleFactory	the_factory;
 
-private static BumpClient      bump_client = null;
+private static BumpClient	bump_client = null;
+private static long		format_time = 0;
 
 private static boolean		is_setup = false;
 
@@ -132,6 +133,8 @@ public static void setup()
    BaleConfigurator bc = new BaleConfigurator();
    BudaRoot.addBubbleConfigurator("BALE",bc);
    BudaRoot.addPortConfigurator("BALE",bc);
+
+   BudaRoot.registerMenuButton("Import Java Formats",new FormatImporter());
 
    BuenoFactory.getFactory().addInsertionHandler(new BaleInserter());
 }
@@ -760,6 +763,9 @@ AttributeSet getAttributes(String id)
 {
    return bale_attributes.getAttributes(id);
 }
+
+
+static long getFormatTime()	{ return format_time; }
 
 
 /********************************************************************************/
@@ -1420,6 +1426,44 @@ private static String fixMessage(BumpProblem bp)
    if (idx >= 0) msg = msg.substring(0,idx);
    return msg;
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Import format handling							*/
+/*										*/
+/********************************************************************************/
+
+private static class FormatImporter implements BudaConstants.ButtonListener {
+
+   @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt) {
+      JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+      fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+      fc.setDialogTitle("Select Saved Eclipse XML Formats");
+      int sts = fc.showOpenDialog(bba);
+      if (sts != JFileChooser.APPROVE_OPTION) return;
+      File f = fc.getSelectedFile();
+      if (f == null) return;
+      Element xml = IvyXml.loadXmlFromFile(f);
+      if (xml == null) return;
+      IvyXmlWriter xw = new IvyXmlWriter();
+      xw.begin("OPTIONS");
+      Element n1 = IvyXml.getChild(xml,"profiles");
+      Element n2 = IvyXml.getChild(n1,"profile");
+      for (Element n3 : IvyXml.children(n2,"setting")) {
+	 xw.begin("OPTION");
+	 xw.field("NAME",IvyXml.getAttrString(n3,"id"));
+	 xw.field("VALUE",IvyXml.getAttrString(n3,"value"));
+	 xw.end("OPTION");
+       }
+
+      bump_client.loadPreferences(null,xw.toString());
+      xw.close();
+      format_time = System.currentTimeMillis();
+    }
+
+}	// end of inner class FormatImporter
 
 
 }	// end of class BaleFactory

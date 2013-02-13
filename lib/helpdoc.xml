@@ -6,6 +6,16 @@ To <b>scroll the bubble area</b>, drag with the <em>right</em> mouse button.  Al
 you can use the arrow keys while pressing the Control (Command on the Mac) key.
 <a href='showme:dragarea'>Show Me</a>
 <p>
+To <b>resize a bubble</b>, press the <em>left</em> mouse button on the proper border and then
+drag to make the bubble the desired size. <a href='showme:resizebubble'>Show Me</a>
+<p>
+To <b>move a bubble</b>, press the <em>right</em> mouse button and move
+the bubble to its desired location.  <a href='showme:movebubble'>Show Me</a>
+<p>
+To <b>remove a bubble</b>, click with the <em>middle</em> mouse button on the bubble or its border.
+Note that a remove bubble will replace this bubble and will slowly fade to nothingness. You can click
+on this remove bubble to restore the original bubble. <a href='showme:removebubble'>Show Me</a>
+<p>
 To <b>search over project code</b>, click with the <em>right</em> mouse button or
 use the control-O (command-O on the mac) key or the F10 key.  Using the right click will bring up the
 default menu; the others will not.
@@ -37,13 +47,14 @@ or to change the current task, hit F2.
 <TEXT><![CDATA[
 <html>
 To <b>resize this bubble</b>, press the <em>left</em> mouse button on the proper border and then
-drag to make the bubble the desired size.
+drag to make the bubble the desired size. <a href='showme:resizebubble'>Show Me</a>
 <p>
-To <b>move this bubble</b>, press the <em>right</em> mouse button and draw the bubble to its desired location.
+To <b>move this bubble</b>, press the <em>right</em> mouse button and move
+the bubble to its desired location.  <a href='showme:movebubble'>Show Me</a>
 <p>
 To <b>remove this bubble</b>, click with the <em>middle</em> mouse button on the bubble or its border.
 Note that a remove bubble will replace this bubble and will slowly fade to nothingness. You can click
-on this remove bubble to restore the original bubble.
+on this remove bubble to restore the original bubble. <a href='showme:removebubble'>Show Me</a>
 
 ]]></TEXT>
 </HELP>
@@ -52,12 +63,14 @@ on this remove bubble to restore the original bubble.
 <TEXT><![CDATA[
 <html>
 To <b>resize this bubble</b>, press the <em>left</em> mouse button on the proper border and then
-drag to make the bubble the desired size.
+drag to make the bubble the desired size.  <a href='showme:resizebubble'>Show Me</a>
 <p>
-To <b>move this bubble</b>, press the <em>right</em> mouse button and draw the bubble to its desired location.
+To <b>move this bubble</b>, press the <em>right</em> mouse button and move the bubble to its desired location.
+<a href='showme:movebubble'>Show Me</a>
 <p>
 To <b>remove this bubble</b>, click with the <em>middle</em> mouse button on the bubble or its border.
 Alternatively, you can use <em>ESC</em> or <em>control-W</em> (command-W on the Mac).
+<a href='showme:removebubble'>Show Me</a>
 <p>
 To <b>make this bubble the current focus</b>, move the mouse inside it and/or <em>left</em>
 click on the appropriate field
@@ -93,6 +106,13 @@ the group.
 <p>
 To <b>merge two groups</b>, place the groups near each other and then move a single bubble so that it
 spans the groups and makes them one.
+<p>
+To <b>resize a bubble</b>, press the <em>left</em> mouse button on the proper border and then
+drag to make the bubble the desired size. <a href='showme:resizebubble'>Show Me</a>
+<p>
+To <b>remove a bubble</b>, click with the <em>middle</em> mouse button on the bubble or its border.
+Note that a remove bubble will replace this bubble and will slowly fade to nothingness. You can click
+on this remove bubble to restore the original bubble. <a href='showme:removebubble'>Show Me</a>
 ]]></TEXT>
 </HELP>
 
@@ -100,13 +120,18 @@ spans the groups and makes them one.
 <TEXT><![CDATA[
 <html>
 To <b>move this bubble</b>, press down in the group border drag
-with the <em>right</em> mouse button and drag to its desired location.
+with the <em>right</em> mouse button and drag to its desired location.	Note that this
+will not merge the bubble with another group as would moving the bubble directly.
 <p>
 To <b>remove this bubble</b>, <em>double</em> click with the <em>middle</em> mouse
 button on the group area.  The remove bubble that remains will restore this bubble.
+<a href='showme:removebubble'>Show Me</a>
 <p>
 To <b>merge this bubble into a group</b> move that bubble (using right-drag inside the bubble,
 not on the bubble halo, until it joins the group.
+<p>
+To <b>resize this bubble</b>, press the <em>left</em> mouse button on the proper border and then
+drag to make the bubble the desired size. <a href='showme:resizebubble'>Show Me</a>
 ]]></TEXT>
 </HELP>
 
@@ -141,7 +166,7 @@ are not part of a group.  It will not move bubbles out of a group.
 
 <HELP KEY='topbar' WHEN='When in the top bar'>
 <TEXT><![CDATA[
-<html>				
+<html>
 To <b>create a working set</b>, click with the <em>left</em> mouse button in the area above the current view,
 where "Create Task..." is displayed.  Alternatively, use the <em>right</em> mouse button to bring up a context
 menu by clicking where there is no working set and choose "Create Working Set".
@@ -162,7 +187,7 @@ option.  Alternatively, you can choose "Export as PDF" to produce a image file f
 
 <HELP KEY='topbarworkingset' WHEN='When in the top bar'>
 <TEXT><![CDATA[
-<html>				
+<html>
 To <b>change the name of a working set</b>, click on the current name with the <em>left</em> mouse button and then
 use keyboard editing to enter a new name.
 <p>

@@ -75,6 +75,7 @@ private Map<String,BattTestCase> test_cases;
 private Set<BattTestCase> run_tests;
 private boolean 	test_request;
 private boolean 	test_busy;
+private boolean 	find_new;
 private BattThread	server_thread;
 private Set<String>	error_classes;
 private IvyExec 	current_test;
@@ -110,6 +111,7 @@ private BattMain(String [] args)
    server_thread = null;
    test_request = false;
    test_busy = false;
+   find_new = false;
    error_classes = new HashSet<String>();
    current_test = null;
 
@@ -350,6 +352,12 @@ void stopTests()
 }
 
 
+void setUpdateTests()
+{
+   find_new = true;
+}
+
+
 
 
 /********************************************************************************/
@@ -416,6 +424,7 @@ void processTests() throws InterruptedException
    boolean rpt = true;
 
    while (rpt) {
+      boolean listonly = false;
       synchronized (run_tests) {
 	 System.err.println("BATT: Process tests " + run_tests.size());
 	 if (run_tests.size() == 0 && server_thread == null) return;
@@ -424,16 +433,23 @@ void processTests() throws InterruptedException
 	    run_tests.wait(10000);
 	    if (++ct > 5) return;
 	  }
-	 tests = new HashSet<String>();
-	 for (BattTestCase btc : run_tests) {
-	    String cnm = btc.getClassName();
-	    if (cnm != null) tests.add(cnm);
+	 if (find_new) {
+	    tests = null;
+	    find_new = false;
+	    if (run_tests.size() == 0) listonly = true;
+	  }
+	 else {
+	    tests = new HashSet<String>();
+	    for (BattTestCase btc : run_tests) {
+	       String cnm = btc.getClassName();
+	       if (cnm != null) tests.add(cnm);
+	     }
 	  }
 	 test_busy = true;
 	 test_request = false;
        }
 
-      processRun(false,tests);
+      processRun(listonly,tests);
 
       synchronized (run_tests) {
 	 test_busy = false;
@@ -456,6 +472,8 @@ void doneProcessing()
 
 private boolean canRunAny(Collection<BattTestCase> tests)
 {
+   if (find_new) return true;
+
    Set<String> testclass = new HashSet<String>();
    for (BattTestCase btc : tests) {
       testclass.add(btc.getClassName());

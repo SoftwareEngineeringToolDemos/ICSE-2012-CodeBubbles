@@ -162,7 +162,7 @@ public void addToArrayProperty(BuenoKey k,String v)
     }
    if (rslt != null) {
       rslt.add(v);
-      put(k,v);
+      put(k,rslt);
     }
 }
 

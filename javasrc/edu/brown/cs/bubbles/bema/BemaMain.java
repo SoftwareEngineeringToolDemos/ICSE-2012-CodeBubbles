@@ -107,6 +107,7 @@ private boolean 	allow_debug;
 private boolean 	use_lila;
 private boolean 	use_web;
 private String		use_workspace;
+private boolean 	new_workspace;
 private Element 	load_config;
 private String []	java_args;
 private RunMode 	run_mode;
@@ -132,6 +133,7 @@ private BemaMain(String [] args)
    skip_splash = false;
    allow_debug = false;
    use_workspace = null;
+   new_workspace = false;
    use_web = false;
    java_args = args;
    use_lila = false;
@@ -185,6 +187,9 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-w") && i+1 < ln) {       // -workspace <ws>
 	    use_workspace = args[++i];
+	  }
+	 else if (args[i].startsWith("-n")) {                   // -new
+	    new_workspace = true;
 	  }
 	 else if (args[i].startsWith("-nosp")) {                // -nosplash
 	    skip_splash = true;
@@ -251,7 +256,8 @@ private void start()
    if (skip_splash) bs.setSkipSplash();
    if (allow_debug) bs.setAllowDebug();
    if (use_lila) bs.setUseLila();
-   if (use_workspace != null) bs.setDefaultWorkspace(use_workspace);
+   if (new_workspace) bs.setCreateWorkspace(use_workspace);
+   else if (use_workspace != null) bs.setDefaultWorkspace(use_workspace);
    if (run_mode != null) bs.setRunMode(run_mode);
    if (course_name != null) bs.setCourseName(course_name);
    bs.setJavaArgs(java_args);

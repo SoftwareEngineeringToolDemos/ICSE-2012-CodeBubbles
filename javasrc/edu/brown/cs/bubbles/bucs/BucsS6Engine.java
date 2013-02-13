@@ -212,7 +212,7 @@ private String createSearchRequest()
    xw.field("FORMAT","NONE");
    xw.field("LOCAL",false);
    xw.field("REMOTE",true);
-   xw.field("KODERS",true);
+   xw.field("OHLOH",true);
    xw.field("WHAT","METHOD");
    xw.writeXml(sgn);
 

@@ -51,6 +51,8 @@ public class BhelpFactory implements BhelpConstants
 /********************************************************************************/
 
 private Map<String,BhelpDemo>	demo_map;
+private BudaRoot                buda_root;
+private BhelpWebServer          web_server;
 
 private static BhelpFactory	the_factory = null;
 
@@ -71,6 +73,7 @@ public synchronized static BhelpFactory getFactory()
 
 private BhelpFactory(BudaRoot br)
 {
+   buda_root = br;
    demo_map = new HashMap<String,BhelpDemo>();
    InputStream ins = BoardProperties.getLibraryFile(HELP_RESOURCE);
    if (ins != null) {
@@ -81,6 +84,12 @@ private BhelpFactory(BudaRoot br)
        }
     }
    BudaRoot.addHyperlinkListener("showme",new Hyperlinker());
+   
+   try {
+      web_server = new BhelpWebServer();
+      web_server.process();
+    }
+   catch (IOException e) { }
 }
 
 
@@ -101,8 +110,7 @@ public static void setup()
 public static void initialize(BudaRoot br)
 {
    the_factory = new BhelpFactory(br);
-   // register help with Buda or via keys or via web interface
-   
+
    br.registerKeyAction(new TestAction(),"Test Help Sequence",
          KeyStroke.getKeyStroke(KeyEvent.VK_SLASH,
                InputEvent.SHIFT_DOWN_MASK|InputEvent.ALT_DOWN_MASK));
@@ -119,6 +127,10 @@ public static void initialize(BudaRoot br)
 
 public void startDemonstration(Component comp,String name)
 {
+   if (comp == null) {
+      comp = buda_root.getCurrentBubbleArea();
+    }
+   
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(comp);
    if (bba == null) {
       BudaRoot br = BudaRoot.findBudaRoot(comp);

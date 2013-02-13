@@ -201,6 +201,7 @@ private void setupPanel()
    menu.add(m1);
 
    menu.add(new StopAction());
+   menu.add(new UpdateAction());
 
    menu.add(getFloatBubbleAction());
 
@@ -540,7 +541,23 @@ private class ModeAction extends JRadioButtonMenuItem implements ActionListener 
       BattFactory.getFactory().setTestMode(test_mode);
       current_mode = test_mode;
     }
-   
+
+}	// end of inner class ModeAction
+
+
+
+private class UpdateAction extends JRadioButtonMenuItem implements ActionListener {
+
+
+   UpdateAction() {
+      super("Update Test Set");
+      addActionListener(this);
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BattFactory.getFactory().findNewTests();
+    }
+
 }	// end of inner class ModeAction
 
 
@@ -558,7 +575,7 @@ private class RunAction extends JRadioButtonMenuItem implements ActionListener {
    @Override public void actionPerformed(ActionEvent e) {
       current_runtype = run_type;
     }
-   
+
 }	// end of inner class RunAction
 
 

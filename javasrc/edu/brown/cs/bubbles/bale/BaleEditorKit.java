@@ -2447,10 +2447,6 @@ private static void handleSearchAction(ActionEvent e,Collection<BumpLocation> lo
 
 
 
-
-
-
-
 /********************************************************************************/
 /*										*/
 /*	Error handling actions							*/

@@ -549,6 +549,7 @@ private BudaShare [] createShareArray()
    else {
       overview_area.setFakeWorkingSet(false);
       if (fake_chevron_button != null) remove(fake_chevron_button);
+      fake_chevron_button = null;
     }
 }
 

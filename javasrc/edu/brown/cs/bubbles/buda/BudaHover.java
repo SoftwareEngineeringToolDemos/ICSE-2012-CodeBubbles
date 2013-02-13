@@ -70,8 +70,10 @@ private JViewport	use_viewport;
 private Point		view_point;
 private boolean 	doing_hover;
 
+
 private static Map<BudaHover,Boolean> all_hovers = new WeakHashMap<BudaHover,Boolean>();
 private static int	num_hover = 0;
+private static boolean	hovers_enabled = true;
 
 private static final int HOVER_TIME = 500;
 
@@ -178,6 +180,8 @@ public abstract void endHover(MouseEvent e);
 
 void simulateHover(MouseEvent e)
 {
+   if (!hovers_enabled) return;
+   
    try {
       handleHover(e);
       doing_hover = true;
@@ -197,7 +201,7 @@ void simulateHover(MouseEvent e)
       last_mouse = null;
     }
 
-   if (last_mouse == null) return;
+   if (last_mouse == null || !hovers_enabled) return;
 
    long now = System.currentTimeMillis();
 
@@ -315,13 +319,20 @@ private class Comper extends ComponentAdapter implements HierarchyListener {
 }	// end of inner class Comper
 
 
-static void handleKeyEvent()
+public static void removeHovers()
 {
    if (num_hover > 0) {
       for (BudaHover bh : all_hovers.keySet()) {
 	 bh.clearHover(null);
        }
     }
+}
+
+public static void enableHovers(boolean fg)
+{
+   if (!fg) removeHovers();
+   
+   hovers_enabled = fg;
 }
 
 

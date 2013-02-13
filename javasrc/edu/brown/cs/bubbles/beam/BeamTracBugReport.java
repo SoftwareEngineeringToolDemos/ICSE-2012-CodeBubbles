@@ -101,10 +101,12 @@ void addPanel()
 private class BugReportListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
+      String url = null;
+
       try {
 	 BoardProperties bp = BoardProperties.getProperties("Beam");
 
-	 String url = bp.getProperty("Beam.tracbug.url");
+	 url = bp.getProperty("Beam.tracbug.url");
 	 if (url == null || url.length() == 0) return;
 	 if (!url.endsWith("/")) url += "/";
 	 url += "newticket";
@@ -166,6 +168,11 @@ private class BugReportListener implements ActionListener {
       catch (Throwable t) {
 	 // TODO: handle unsupported operation exception where desktop api not supported.
 	 BoardLog.logE("BEAM","Problem with bug report",t);
+	 if (url != null) {
+	    JOptionPane.showMessageDialog(for_root,"<html><p>This version of Java does not support" +
+					     " the desktop API.  Please use your browser to navigate" +
+					     " to " + url);
+	  }
        }
    }
 

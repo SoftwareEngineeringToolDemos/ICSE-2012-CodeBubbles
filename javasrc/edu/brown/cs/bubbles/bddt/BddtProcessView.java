@@ -222,14 +222,14 @@ private class ProcessHandler implements BumpRunEventHandler
       BumpProcess blp;
       switch (evt.getEventType()) {
 	 case PROCESS_ADD :
-	    blp=evt.getProcess();
-	    if (blp!=null) {
+	    blp = evt.getProcess();
+	    if (blp != null) {
 	       active_processes.add(blp);
 	     }
 	    break;
 	 case PROCESS_REMOVE :
-	    blp=evt.getProcess();
-	    if (blp!=null) {
+	    blp = evt.getProcess();
+	    if (blp != null) {
 	       active_processes.remove(blp);
 	     }
 	    break;

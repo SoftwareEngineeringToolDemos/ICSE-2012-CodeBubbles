@@ -111,7 +111,14 @@ String getRepositoryName()
 void getDifferences(BvcrDifferenceSet ds)
 {
    String cmd = cvs_command  + " diff";
-
+   
+   String v0 = ds.getStartVersion();
+   if (v0 != null) {
+      cmd += " -r " + v0;
+      String v1 = ds.getEndVersion();
+      if (v1 != null) cmd += " -r " + v1;
+    }
+   
    List<File> diffs = ds.getFilesToCompute();
    if (diffs == null) {
       cmd += " " + cvs_root.getPath();

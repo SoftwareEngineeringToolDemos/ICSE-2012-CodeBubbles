@@ -117,9 +117,9 @@ private boolean checkEclipse()
 /*										*/
 /********************************************************************************/
 
-private String computePackageGraph(String proj,String pkg,boolean mthds)
+private String computePackageGraph(String proj,String pkg,boolean mthds,boolean samecls)
 {
-   BanalPackageGraph pg = new BanalPackageGraph(proj,pkg,mthds);
+   BanalPackageGraph pg = new BanalPackageGraph(proj,pkg,mthds,samecls);
    BanalStaticLoader bsl = new BanalStaticLoader(project_manager,pg);
    bsl.process();
 
@@ -252,7 +252,8 @@ private class CommandHandler implements MintHandler {
 	    String proj = IvyXml.getAttrString(e,"PROJECT");
 	    String pkg = IvyXml.getAttrString(e,"PACKAGE");
 	    boolean mthds = IvyXml.getAttrBool(e,"METHODS");
-	    rply = computePackageGraph(proj,pkg,mthds);
+	    boolean samec = IvyXml.getAttrBool(e,"SAMECLASS");
+	    rply = computePackageGraph(proj,pkg,mthds,samec);
 	  }
 	 else if (cmd.equals("PING")) {
 	    rply = "PONG";

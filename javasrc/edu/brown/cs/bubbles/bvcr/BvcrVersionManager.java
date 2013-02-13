@@ -135,6 +135,25 @@ abstract void findHistory(File f,IvyXmlWriter xw);
 
 /********************************************************************************/
 /*										*/
+/*	File differencing commands						*/
+/*										*/
+/********************************************************************************/
+
+void findFileDiffs(BvcrMain bm,File f,String vfr,String vto,IvyXmlWriter xw)
+{
+   BvcrDifferenceSet ds = new BvcrDifferenceSet(bm,for_project);
+   ds.setForFileDifference(f,vfr,vto);
+
+   getDifferences(ds);
+
+   ds.outputXml(xw);
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Methods to run commands and provide the output				*/
 /*										*/
 /********************************************************************************/
@@ -223,9 +242,10 @@ protected class XmlCommand extends StringCommand {
 
 private static final Pattern LINE_PAT = Pattern.compile("@@ \\-(\\d+),(\\d+) \\+(\\d+),(\\d+) @@.*");
 private static final Pattern LINE_PAT1 = Pattern.compile("@@ \\-(\\d+) \\+(\\d+) @@.*");
+private static final Pattern LINE_PAT2 = Pattern.compile("@@@ \\-(\\d+),(\\d+) \\-(\\d+),(\\d+) \\+(\\d+),(\\d+) @@@.*");
 private static final Pattern SOURCE_PAT = Pattern.compile("\\-\\-\\- (\\S+)\\s+\\(revision (\\w+)\\)");
 
-private static final Pattern GIT_INDEX = Pattern.compile("index ([0-9a-f.]+)\\s.*");
+private static final Pattern GIT_INDEX = Pattern.compile("index ([0-9a-f.]+)(\\s|,).*");
 private static final Pattern GIT_SOURCE = Pattern.compile("\\-\\-\\- a[/\\\\](\\S+)");
 
 
@@ -264,20 +284,25 @@ protected class DiffAnalyzer implements CommandCallback {
 	 case '\\' :
 	    break;
 	 case '@' :
-	    Matcher m = LINE_PAT.matcher(ln);
-	    if (m.matches()) {
-	       source_line = Integer.parseInt(m.group(1));
-	       target_line = Integer.parseInt(m.group(3));
+	    Matcher m4 = LINE_PAT.matcher(ln);
+	    Matcher m5 = LINE_PAT1.matcher(ln);
+	    Matcher m6 = LINE_PAT2.matcher(ln);
+	    if (m4.matches()) {
+	       source_line = Integer.parseInt(m4.group(1));
+	       target_line = Integer.parseInt(m4.group(3));
 	       del_count = 0;
 	     }
-	    else {
-	       m = LINE_PAT1.matcher(ln);
-	       if (m.matches()) {
-		  source_line = Integer.parseInt(m.group(1));
-		  target_line = Integer.parseInt(m.group(2));
-		}
-	       else source_line = 0;
+	    else if (m5.matches()) {
+	       source_line = Integer.parseInt(m5.group(1));
+	       target_line = Integer.parseInt(m5.group(2));
+	       del_count = 0;
 	     }
+	    else if (m6.matches()) {
+	       source_line = Integer.parseInt(m6.group(1));
+	       target_line = Integer.parseInt(m6.group(5));
+	       del_count = 0;
+	     }
+	    else source_line = 0;
 	    break;
 	 case '-' :
 	    if (source_line == 0) {
@@ -286,11 +311,13 @@ protected class DiffAnalyzer implements CommandCallback {
 	       if (m1.matches()) {
 		  String fil = m1.group(1);
 		  String ver = m1.group(2);
+		  // System.err.println("BVCR: start file " + fil + " " + ver);
 		  diff_set.beginFile(fil,ver);
 		}
 	       else if (m2.matches()) {
 		  String fil = m2.group(1);
 		  File f = new File(getRootDirectory(),fil);
+		  // System.err.println("BVCR: start git file " + fil + " " + getRootDirectory() + " " + f);
 		  diff_set.beginFile(f.getPath(),base_version);
 		}
 	     }

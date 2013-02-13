@@ -121,6 +121,7 @@ private void addFixes(int id,String [] args,IvyXmlWriter xw)
 {
    switch (id) {
       case IProblem.UndefinedMethod :
+	 if (args == null) return;
 	 xw.begin("FIX");
 	 xw.field("TYPE","NEW_METHOD");
 	 xw.field("CLASS",args[0]);

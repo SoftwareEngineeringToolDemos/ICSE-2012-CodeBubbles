@@ -136,6 +136,13 @@ BumpProcess getProcess()			{ return cur_process; }
 String getProject()				{ return launch_config.getProject(); }
 BddtBubbleManager getBubbleManager()		{ return bubble_manager; }
 
+boolean matchProcess(BumpProcess p)
+{
+   if (cur_process == p) return true;
+   if (p != null && cur_process == null) return true;
+   return false;
+}
+
 
 
 /********************************************************************************/

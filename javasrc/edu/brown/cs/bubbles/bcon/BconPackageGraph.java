@@ -63,7 +63,7 @@ private boolean 	auto_collapse;
 private Map<String,Set<ArcType>> collapse_nodes;
 
 private static boolean use_methods = true;
-
+private static boolean same_class = false;
 
 static Map<PackageRelationType,ArcType> relation_map;
 
@@ -276,7 +276,7 @@ private boolean testCollapse(String nm,ArcType typ)
    return typs.contains(typ);
 }
 
-		
+	
 
 private String findCollapse(String nm,ArcType typ)
 {
@@ -317,7 +317,7 @@ private BanalPackageNode getParentNode(BanalPackageNode nd)
 	 return par;
        }
     }
-   
+
    for (BanalPackageLink lnk : nd.getOutLinks()) {
       BanalPackageNode par = lnk.getToNode();
       if (lnk.getTypes().containsKey(PackageRelationType.CLASSMETHOD) &&
@@ -393,7 +393,10 @@ Collection<BconGraphNode> getNodes()
    synchronized (this) {
       if (!need_recompute) return cur_nodes;
       if (all_nodes == null || all_nodes.isEmpty()) {
-	 all_nodes = BanalFactory.getFactory().computePackageGraph(for_project,for_package,use_methods);
+	 all_nodes = BanalFactory.getFactory().computePackageGraph(for_project,
+								      for_package,
+								      use_methods,
+								      same_class);
 	 include_set = null;
        }
 
@@ -804,14 +807,14 @@ private abstract class GraphNode implements BconGraphNode {
 
    protected void addLocalLinks(BanalPackageNode cls) {
       for (BanalPackageLink bpl : cls.getOutLinks()) {
-         if (useEdge(bpl)) {
-            String nm = bpl.getToNode().getName();
-            GraphNode tgn = active_nodes.get(nm);
-            if (tgn != null) {
-               if (tgn.linkExists(this)) tgn.addLinkData(bpl,this,false);
-               else addLinkData(bpl,tgn,true);
-             }
-          }
+	 if (useEdge(bpl)) {
+	    String nm = bpl.getToNode().getName();
+	    GraphNode tgn = active_nodes.get(nm);
+	    if (tgn != null) {
+	       if (tgn.linkExists(this)) tgn.addLinkData(bpl,this,false);
+	       else addLinkData(bpl,tgn,true);
+	     }
+	  }
        }
     }
 
@@ -825,14 +828,14 @@ private abstract class GraphNode implements BconGraphNode {
       GraphArc ga = (GraphArc) out_arcs.get(tgn);
       if (ga != null) ga.addLink(bpl,fwd);
       else {
-         if (prior_arcs != null) ga = (GraphArc) prior_arcs.get(tgn);
-         else if (check_arcs) {
-            prior_arcs = out_arcs;
-            out_arcs = new HashMap<GraphNode,BconGraphArc>();
-          }
-         if (ga == null) ga = new GraphArc(this,tgn,bpl);
-         else ga.invalidate(bpl);
-         out_arcs.put(tgn,ga);
+	 if (prior_arcs != null) ga = (GraphArc) prior_arcs.get(tgn);
+	 else if (check_arcs) {
+	    prior_arcs = out_arcs;
+	    out_arcs = new HashMap<GraphNode,BconGraphArc>();
+	  }
+	 if (ga == null) ga = new GraphArc(this,tgn,bpl);
+	 else ga.invalidate(bpl);
+	 out_arcs.put(tgn,ga);
        }
     }
 
@@ -983,25 +986,25 @@ private class GraphArc implements BconGraphArc {
 
    @Override public BconRelationData getRelationTypes() {
       if (relation_data != null) return relation_data;
-   
+
       RelationData rslt = new RelationData();
       for (BanalPackageLink bpl : forward_links) {
-         for (Map.Entry<PackageRelationType,Integer> ent : bpl.getTypes().entrySet()) {
-            PackageRelationType k = ent.getKey();
-            ArcType at = relation_map.get(k);
-            if (at != null && arc_options.contains(at)) {
-               rslt.addLink(at,ent.getValue(),false);
-             }
-          }
+	 for (Map.Entry<PackageRelationType,Integer> ent : bpl.getTypes().entrySet()) {
+	    PackageRelationType k = ent.getKey();
+	    ArcType at = relation_map.get(k);
+	    if (at != null && arc_options.contains(at)) {
+	       rslt.addLink(at,ent.getValue(),false);
+	     }
+	  }
        }
       for (BanalPackageLink bpl : backward_links) {
-         for (Map.Entry<PackageRelationType,Integer> ent : bpl.getTypes().entrySet()) {
-            PackageRelationType k = ent.getKey();
-            ArcType at = relation_map.get(k);
-            if (at != null && arc_options.contains(at)) {
-               rslt.addLink(at,ent.getValue(),true);
-             }
-          }
+	 for (Map.Entry<PackageRelationType,Integer> ent : bpl.getTypes().entrySet()) {
+	    PackageRelationType k = ent.getKey();
+	    ArcType at = relation_map.get(k);
+	    if (at != null && arc_options.contains(at)) {
+	       rslt.addLink(at,ent.getValue(),true);
+	     }
+	  }
        }
       relation_data = rslt;
       flip_flop = relation_data.shouldFlip();
@@ -1010,8 +1013,8 @@ private class GraphArc implements BconGraphArc {
 
    @Override public boolean isInnerArc() {
       if (forward_links.size() != 0) {
-         BanalPackageLink lnk = forward_links.get(0);
-         if (!lnk.getFromNode().getName().equals(from_node.getFullName())) return true;
+	 BanalPackageLink lnk = forward_links.get(0);
+	 if (!lnk.getFromNode().getName().equals(from_node.getFullName())) return true;
        }
       return false;
     }
@@ -1234,7 +1237,7 @@ private boolean useSubEdge(BanalPackageLink lnk)
 	    break;
       }
    }
-   
+
    return false;
 }
 

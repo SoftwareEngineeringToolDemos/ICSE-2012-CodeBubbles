@@ -404,6 +404,15 @@ public void setDefaultWorkspace(String ws)
    else has_changed = true;
 }
 
+
+public void setCreateWorkspace(String ws)
+{
+   create_workspace = true;
+   if (ws != null) default_workspace = ws;
+   else has_changed = true;
+}
+
+
 /**
  * Returns the workspace this bubbles instance is using
  * @return
@@ -412,6 +421,7 @@ public String getDefaultWorkspace()
 {
    return default_workspace;
 }
+
 
 /**
  *	Set the java arguments to be used when restarting the system.  This is used
@@ -979,12 +989,7 @@ public boolean doSetup()
 	  }
 	 if (has_changed || wd.hasChanged()) {
 	    if (create_workspace) {
-	       File wf = new File(default_workspace);
-	       if (!wf.exists()) {
-		  wf.mkdirs();
-		  BoardLog.setup();	// might need to restart logging
-		}
-	       create_workspace = false;
+	       createWorkspace();
 	     }
 	    saveProperties();
 	  }
@@ -1154,9 +1159,7 @@ private void handleSetup()
       System.exit(1);
     }
    if (create_workspace) {
-      File wf = new File(default_workspace);
-      if (!wf.exists()) wf.mkdirs();
-      create_workspace = false;
+      createWorkspace();
    }
 
    saveProperties();
@@ -1487,7 +1490,7 @@ private void loadUrlLibraries()
 	 c.disconnect();
        }
       catch (IOException e) {
-	 BoardLog.logE("BOARD","Problem loading url library " + s,e);
+	 BoardLog.logE("BOARD","Problem loading url library " + s + " @ " + urlbase,e);
        }
     }
 }
@@ -1747,6 +1750,19 @@ private boolean checkDates()
    return false;
 }
 
+
+
+private void createWorkspace()
+{
+   File wf = new File(default_workspace);
+   if (!wf.exists()) {
+      wf.mkdirs();
+      File xf = new File(wf,BOARD_ECLIPSE_WS_DATA);
+      xf.mkdir();
+      BoardLog.setup();     // might need to restart logging
+    }
+   create_workspace = false;
+}
 
 
 

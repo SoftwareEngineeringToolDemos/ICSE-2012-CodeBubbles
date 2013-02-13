@@ -51,7 +51,7 @@ private String			package_name;
 private Map<String,ClassData>	class_nodes;
 private Map<String,MethodData>	method_nodes;
 private AtomicInteger		id_counter;
-
+private boolean 		same_class;
 
 
 
@@ -61,7 +61,7 @@ private AtomicInteger		id_counter;
 /*										*/
 /********************************************************************************/
 
-BanalPackageGraph(String proj,String pkg,boolean usemethods)
+BanalPackageGraph(String proj,String pkg,boolean usemethods,boolean sameclass)
 {
    project_name = proj;
    package_name = pkg;
@@ -70,6 +70,7 @@ BanalPackageGraph(String proj,String pkg,boolean usemethods)
 
    if (usemethods) method_nodes = new HashMap<String,MethodData>();
    else method_nodes = null;
+   same_class = sameclass;
 }
 
 
@@ -395,7 +396,7 @@ void outputXml(IvyXmlWriter xw)
 {
    BanalClass fc = frm.getOwnerClass();
    BanalClass tc = cld.getOwnerClass();
-   if (!isClassRelevant(tc) || tc == fc) return;
+   if (!isClassRelevant(tc) || (tc == fc && !same_class)) return;
 
    LinkData ld = findLink(frm,cld);
    if (ld != null) ld.addRelation(PackageRelationType.CALLS);
@@ -406,7 +407,7 @@ void outputXml(IvyXmlWriter xw)
 @Override public void visitAlloc(BanalMethod bm,BanalClass allocd)
 {
    BanalClass fc = bm.getOwnerClass();
-   if (!isClassRelevant(allocd) || fc == allocd) return;
+   if (!isClassRelevant(allocd) || (fc == allocd && !same_class)) return;
 
    LinkData ld = findLink(bm,allocd);
    if (ld != null) ld.addRelation(PackageRelationType.ALLOCATES);
@@ -417,7 +418,7 @@ void outputXml(IvyXmlWriter xw)
 @Override public void visitCatch(BanalMethod bm,BanalClass exc)
 {
    BanalClass fc = bm.getOwnerClass();
-   if (!isClassRelevant(exc) || fc == exc) return;
+   if (!isClassRelevant(exc) || (fc == exc && !same_class)) return;
 
    LinkData ld = findLink(bm,exc);
    if (ld != null) ld.addRelation(PackageRelationType.CATCHES);

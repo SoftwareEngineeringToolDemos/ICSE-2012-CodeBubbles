@@ -230,7 +230,8 @@ private class ProgressDisplay extends JLabel {
       int w = (int)(sz.width * part_done / 100.0);
 
       g.setColor(todo_color);
-      g.fillRect(0,w,sz.width-w,sz.height);
+      // g.fillRect(0,w,sz.width-w,sz.height);
+      g.fillRect(0,0,sz.width,sz.height);
 
       g.setColor(done_color);
       g.fillRect(0,0,w,sz.height);

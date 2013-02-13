@@ -54,11 +54,11 @@ class BattNewTestBubble implements BattConstants, BuenoConstants
 private NewTestMode		test_mode;
 private String			method_name;
 private BumpLocation		method_data;
-private BattTestBubbleCallback  user_callback;
-private String                  button_name;
+private BattTestBubbleCallback	user_callback;
+private String			button_name;
 private String			in_project;
 private String			in_class;
-private boolean			create_class;
+private boolean 		create_class;
 
 
 
@@ -91,7 +91,7 @@ BattNewTestBubble(BattTestBubbleCallback cbk)
    button_name = cbk.getButtonName();
    in_class = cbk.getClassName();
    create_class = cbk.getCreateClass();
-   
+
    String nm = method_data.getSymbolName();
    int idx = nm.lastIndexOf(".");
    if (idx >= 0) nm = nm.substring(idx+1);
@@ -136,9 +136,9 @@ BattNewTestPanel createNewTestPanel()
    for (int i = 0; i < 3; ++i) nta.addTestCase();
    return nta;
 }
-   
-         
-         
+
+
+
 
 
 
@@ -149,7 +149,7 @@ private String getTestMethodName()
    if (idx > 0) mnm = mnm.substring(0,idx);
    idx = mnm.lastIndexOf(".");
    if (idx > 0) mnm = mnm.substring(idx+1);
-   
+
    BumpClient bc = BumpClient.getBump();
 
    for (int i = 1; i < 100; ++i) {
@@ -178,7 +178,7 @@ private void createNewTestMethod(String fnm,String nm,String ipnm,String icnm,bo
    String mnm = nm.substring(idx+1);
    if (cnts == null) cnts = "// insert test code here";
    if (icnm != null) cnm = icnm;
-   
+
    if (newcls) {
       String xnm = null;
       if (cnm.endsWith("Test")) {
@@ -205,8 +205,22 @@ private void createNewTestMethod(String fnm,String nm,String ipnm,String icnm,bo
       props.put(BuenoKey.KEY_IMPORTS, "import org.junit.*;");
       BuenoLocation loc = BuenoFactory.getFactory().createLocation(ipnm,cnm,pkg,false);
       BuenoFactory.getFactory().createNew(BuenoType.NEW_CLASS, loc, props);
-    } 
-      
+
+      loc = BuenoFactory.getFactory().createLocation(ipnm,cnm,null,true);
+
+      props = new BuenoProperties();
+      props.put(BuenoKey.KEY_ADD_COMMENT,Boolean.TRUE);
+      props.put(BuenoKey.KEY_COMMENT,"Default Constrcutor for test class " + cnm);
+      String cxnm = cnm;
+      int cidx = cxnm.lastIndexOf(".");
+      if (cidx > 0) cxnm = cxnm.substring(cidx+1);
+      props.put(BuenoKey.KEY_NAME,cxnm);
+      props.put(BuenoKey.KEY_MODIFIERS,Modifier.PUBLIC);
+      props.put(BuenoKey.KEY_CONTENTS,"\n");
+
+      BuenoFactory.getFactory().createNew(BuenoType.NEW_CONSTRUCTOR,loc,props);
+    }
+
    String anm = null;
    // anm should be last test in class, or null if there are none
    BuenoLocation loc = BuenoFactory.getFactory().createLocation(ipnm,cnm,anm,true);
@@ -239,19 +253,19 @@ private class CallMethodBubble extends BudaBubble implements ActionListener, Sta
    CallMethodBubble(String fnm) {
       test_area = new NewTestArea(this);
       for (int i = 0; i < 3; ++i) {		   // initial test cases
-         test_area.addTestCase();
+	 test_area.addTestCase();
        }
-   
+
       JPanel pnl = new JPanel(new BorderLayout());
       pnl.setOpaque(false);
       pnl.add(test_area.getPanel(),BorderLayout.CENTER);
-   
+
       JLabel top = new JLabel("Test Cases for " + fnm);
       top.setOpaque(false);
-   
+
       top.setHorizontalAlignment(JLabel.CENTER);
       pnl.add(top,BorderLayout.NORTH);
-   
+
       generate_button = new JButton(button_name);
       generate_button.addActionListener(this);
       generate_button.setEnabled(false);
@@ -260,9 +274,9 @@ private class CallMethodBubble extends BudaBubble implements ActionListener, Sta
       bx.add(generate_button);
       bx.add(Box.createHorizontalGlue());
       pnl.add(bx,BorderLayout.SOUTH);
-   
+
       setInteriorColor(new Color(0xf0d0a0));
-   
+
       setContentPane(pnl);
     }
 
@@ -278,14 +292,14 @@ private class CallMethodBubble extends BudaBubble implements ActionListener, Sta
       List<BattCallTest> cases = new ArrayList<BattCallTest>(test_area.getActiveTests());
       int sz = cases.size();
       if (sz == 0) return;
-      
+
       if (user_callback.handleTestCases(cases)) return;
-      
+
       String rslt = ckr.generateCallTestCode(cases);
       if (rslt == null) return;
-      
+
       if (user_callback != null) {
-         user_callback.handleTestCases(rslt);
+	 user_callback.handleTestCases(rslt);
        }
       // create new method
       // bring up bubble on that method
@@ -341,30 +355,30 @@ private class NewTestArea implements BattNewTestPanel {
       int idx = test_cases.size()-1;
       if (idx < 0) needtest = true;
       else if (!test_cases.get(idx).isEmpty()) needtest = true;
-   
+
       if (needtest) {
-         addTestCase();
-         BudaBubble bb = BudaRoot.findBudaBubble(test_panel);
-         Dimension sz = bb.getPreferredSize();
-         bb.setSize(sz);
+	 addTestCase();
+	 BudaBubble bb = BudaRoot.findBudaBubble(test_panel);
+	 Dimension sz = bb.getPreferredSize();
+	 bb.setSize(sz);
        }
     }
 
    void addTestCase() {
       NewTestCase ntc = null;
       switch (test_mode) {
-         case INPUT_OUTPUT :
-            ntc = new CallTestCase(this);
-            break;
-         case CALL_SEQUENCE :
-            ntc = null;
-            break;
+	 case INPUT_OUTPUT :
+	    ntc = new CallTestCase(this);
+	    break;
+	 case CALL_SEQUENCE :
+	    ntc = null;
+	    break;
 	 case USER_CODE:
 	    break;
        }
       if (ntc != null) {
-         test_cases.add(ntc);
-         ntc.setup();
+	 test_cases.add(ntc);
+	 ntc.setup();
        }
     }
 
@@ -373,19 +387,19 @@ private class NewTestArea implements BattNewTestPanel {
       int ntest = 0;
       boolean valid = true;
       for (NewTestCase tc : test_cases) {
-         if (tc.isEmpty()) continue;
-         if (!tc.validate(bc)) valid = false;
-         else ++ntest;
+	 if (tc.isEmpty()) continue;
+	 if (!tc.validate(bc)) valid = false;
+	 else ++ntest;
        }
       if (ntest == 0) valid = false;
       return valid;
     }
-   
+
    @Override public List<BattCallTest> getActiveTests() {
       List<BattCallTest> ltc = new ArrayList<BattCallTest>();
       BattNewTestChecker bc = new BattNewTestChecker();
       for (NewTestCase tc : test_cases) {
-         if (!tc.isEmpty() && tc.validate(bc)) ltc.add(tc);
+	 if (!tc.isEmpty() && tc.validate(bc)) ltc.add(tc);
        }
       return ltc;
     }
@@ -428,7 +442,7 @@ private abstract class NewTestCase implements BattCallTest, CaretListener, Actio
    @Override public String getTestOp() {
       return test_op.getSelectedItem().toString();
     }
-   
+
    boolean isEmpty() {
       String ta = getTestInput();
       String tb = getTestOutput();

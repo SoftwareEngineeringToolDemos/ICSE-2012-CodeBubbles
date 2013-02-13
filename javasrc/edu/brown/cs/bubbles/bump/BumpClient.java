@@ -898,6 +898,8 @@ public boolean createProject()
    return getStatusReply("CREATEPROJECT",null,null,null,0);
 }
 
+
+
 public boolean createProject(String nm,File dir)
 {
    waitForIDE();
@@ -1083,7 +1085,7 @@ public List<BumpLocation> findClassInitializers(String proj,String clsn,File fil
    if (clsn != null) flds += " CLASS='" + clsn + "'";
    if (filn != null) flds += " FILE='" + filn + "'";
    if (main) flds += " MAIN='TRUE'";
-   
+
    Element xml = getXmlReply("FINDREGIONS",proj,flds,null,0);
 
    return getSearchResults(proj,xml,false);
@@ -2256,7 +2258,7 @@ public BumpProcess startDebug(BumpLaunchConfig cfg,String id)
    if (cfg == null) return null;
 
    String q = "NAME='" + cfg.getId() +"' MODE='debug'";
-   
+
    String xtr = null;
    switch (cfg.getConfigType()) {
       case JAVA_APP :
@@ -2838,6 +2840,21 @@ private void grabPreferences()
     }
 }
 
+
+
+/**
+ *	Load a default options specification for formatting, etc.
+ **/
+
+public void loadPreferences(String proj,String xml)
+{
+   // first have eclipse set the properties
+   sendMessage("SETPREFERENCES",proj,null,xml);
+
+   // then restore options when done
+   option_map.clear();
+   grabPreferences();
+}
 
 
 /**

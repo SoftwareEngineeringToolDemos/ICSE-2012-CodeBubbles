@@ -219,6 +219,21 @@ private void findHistory(String proj,String file,IvyXmlWriter xw)
 
 
 /********************************************************************************/
+/*                                                                              */
+/*      Basic command to find version differences                               */
+/*                                                                              */
+/********************************************************************************/
+
+private void findFileDiffs(String proj,String file,String vfr,String vto,IvyXmlWriter xw) 
+{
+   File f = new File(file);
+   bvcr_control.findFileDiffs(proj,f,vfr,vto,xw);
+}
+
+
+
+
+/********************************************************************************/
 /*										*/
 /*	Handle messages from eclipse						*/
 /*										*/
@@ -304,45 +319,56 @@ private class CommandHandler implements MintHandler {
       String cmd = args.getArgument(0);
       Element e = msg.getXml();
       String rply = null;
-
+   
       System.err.println("BVCR: RECEIVED COMMAND " + cmd + ": " + msg.getText());
-
+   
       try {
-	 if (cmd == null) return;
-	 else if (cmd.equals("FINDCHANGES")) {
-	    synchronized (this) {
-	       String proj = IvyXml.getAttrString(e,"PROJECT");
-	       String file = IvyXml.getAttrString(e,"FILE");
-	       IvyXmlWriter xw = new IvyXmlWriter();
-	       findChanges(proj,file,xw);
-	       rply = xw.toString();
-	     }
-	  }
-	 else if (cmd.equals("HISTORY")) {
-	    synchronized (this) {
-	       String proj = IvyXml.getAttrString(e,"PROJECT");
-	       String file = IvyXml.getAttrString(e,"FILE");
-	       IvyXmlWriter xw = new IvyXmlWriter();
-	       findHistory(proj,file,xw);
-	       rply = xw.toString();
-	     }
-	  }
-	 else if (cmd.equals("PING")) {
-	    rply = "PONG";
-	  }
-	 else if (cmd.equals("EXIT")) {
-	    serverDone();
-	  }
+         if (cmd == null) return;
+         else if (cmd.equals("FINDCHANGES")) {
+            synchronized (this) {
+               String proj = IvyXml.getAttrString(e,"PROJECT");
+               String file = IvyXml.getAttrString(e,"FILE");
+               IvyXmlWriter xw = new IvyXmlWriter();
+               findChanges(proj,file,xw);
+               rply = xw.toString();
+             }
+          }
+         else if (cmd.equals("HISTORY")) {
+            synchronized (this) {
+               String proj = IvyXml.getAttrString(e,"PROJECT");
+               String file = IvyXml.getAttrString(e,"FILE");
+               IvyXmlWriter xw = new IvyXmlWriter();
+               findHistory(proj,file,xw);
+               rply = xw.toString();
+             }
+          }
+         else if (cmd.equals("FILEDIFFS")) {
+            synchronized (this) {
+               String proj = IvyXml.getAttrString(e,"PROJECT");
+               String file = IvyXml.getAttrString(e,"FILE");
+               String vfrom = IvyXml.getAttrString(e,"FROM");
+               String vto = IvyXml.getAttrString(e,"TO");
+               IvyXmlWriter xw = new IvyXmlWriter();
+               findFileDiffs(proj,file,vfrom,vto,xw);
+               rply = xw.toString();
+             }
+          }
+         else if (cmd.equals("PING")) {
+            rply = "PONG";
+          }
+         else if (cmd.equals("EXIT")) {
+            serverDone();
+          }
        }
       catch (Throwable t) {
-	 System.err.println("BVCR: Problem processing BVCR command: " + t);
-	 t.printStackTrace();
+         System.err.println("BVCR: Problem processing BVCR command: " + t);
+         t.printStackTrace();
        }
-
+   
       if (rply != null) {
-	 rply = "<RESULT>" + rply + "</RESULT>";
+         rply = "<RESULT>" + rply + "</RESULT>";
        }
-
+   
       msg.replyTo(rply);
     }
 

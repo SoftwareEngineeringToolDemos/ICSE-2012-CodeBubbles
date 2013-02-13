@@ -20,7 +20,7 @@
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jmf/**/*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
@@ -42,7 +42,7 @@
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jmf/**/*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='javax.servlet.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
@@ -65,7 +65,7 @@
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jmf/**/*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='javax.servlet.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
@@ -94,7 +94,7 @@
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jmf/**/*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='javax.servlet.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
@@ -359,6 +359,19 @@
       </java>
    </target>
 
+   <target name='testserver4' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <jvmarg value="-Xmx1024m" />
+	 <arg value="-S" />
+	 <arg value="-W" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/twitter' />
+      </java>
+   </target>
+
    <target name='javajar' depends='compile'>
       <jar destfile="bubbles.jar" manifest='manifest.mf'>
 	 <fileset dir='${IVYJAR1}' includes= '${IVYJAR2}' />
@@ -367,7 +380,7 @@
 	 <fileset dir='${BUBBLES}/lib' includes='bedrock.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='ivy.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='version.xml' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/templates' includes='*.template' />
@@ -408,7 +421,7 @@
 	 <fileset dir='${BUBBLES}/lib' includes='bedrock.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='ivy.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='version.xml' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/templates' includes='*.template' />
@@ -501,7 +514,7 @@
 	 <fileset dir='${BUBBLES}/lib' includes='bedrock.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='ivy.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='version.xml' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/templates' includes='*.template' />
@@ -549,7 +562,7 @@
 	 <fileset dir='${BUBBLES}/lib' includes='bedrock.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='ivy.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='version.xml' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/templates' includes='*.template' />
@@ -594,7 +607,7 @@
 	 <fileset dir='${BUBBLES}/lib' includes='bedrock.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='ivy.jar' />
 	 <fileset dir='external' includes='version.xml' />
-	 <fileset dir='${BUBBLES}/lib/' includes='iText.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
 	 <fileset dir='${BUBBLES}/lib/templates' includes='*.template' />

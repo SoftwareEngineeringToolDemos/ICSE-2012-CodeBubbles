@@ -33,6 +33,7 @@ import edu.brown.cs.bubbles.bump.BumpConstants.BumpRunEvent;
 import edu.brown.cs.bubbles.bump.BumpConstants.BumpRunModel;
 
 import javax.swing.text.*;
+import javax.swing.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -154,15 +155,37 @@ private void addText(BumpProcess process,TextMode mode,String message)
    ConsoleDocument doc = getDocument(pid,false);
 
    if (doc != null && message != null) {
-      doc.addText(mode,message);
+      // doc.addText(mode,message);
+      ConsoleAdder ca = new ConsoleAdder(doc,mode,message);
+      SwingUtilities.invokeLater(ca);
     }
 }
 
 
+private class ConsoleAdder implements Runnable {
+
+   private ConsoleDocument console_document;
+   private TextMode text_mode;
+   private String add_message;
+
+   ConsoleAdder(ConsoleDocument doc,TextMode md,String msg) {
+      console_document = doc;
+      text_mode = md;
+      add_message = msg;
+    }
+
+   @Override public void run() {
+      console_document.addText(text_mode,add_message);
+    }
+
+}	// end of inner class ConsoleAdder
+
+
+
 /********************************************************************************/
-/*                                                                              */
-/*      Input methods                                                           */
-/*                                                                              */
+/*										*/
+/*	Input methods								*/
+/*										*/
 /********************************************************************************/
 
 void clearConsole(BumpProcess bp)
@@ -185,27 +208,27 @@ void handleInput(Document d,String input)
    BddtLaunchControl blc = null;
    synchronized (launch_consoles) {
       for (Map.Entry<BddtLaunchControl,ConsoleDocument> ent : launch_consoles.entrySet()) {
-         if (ent.getValue() == d) {
-            blc = ent.getKey();
-            bp = blc.getProcess();
-            break;
-          }
+	 if (ent.getValue() == d) {
+	    blc = ent.getKey();
+	    bp = blc.getProcess();
+	    break;
+	  }
        }
     }
-   if (bp == null) return; 
-   
+   if (bp == null) return;
+
    BumpClient bc = BumpClient.getBump();
    bc.consoleInput(bp.getLaunch(),input);
    queueConsoleMessage(bp,TextMode.STDIN,false,input);
 }
-      
-   
+
+
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Creation methods                                                        */
-/*                                                                              */
+/*										*/
+/*	Creation methods							*/
+/*										*/
 /********************************************************************************/
 
 

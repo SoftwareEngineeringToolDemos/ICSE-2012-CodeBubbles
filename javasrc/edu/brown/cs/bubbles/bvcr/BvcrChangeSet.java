@@ -219,6 +219,8 @@ private static class SubInputStream extends FilterInputStream {
 
 
 
+
+
 /********************************************************************************/
 /*										*/
 /*	Methods to add all the changes in a change set for a user		*/
@@ -271,10 +273,10 @@ private static class FileChanges {
    void outputXml(IvyXmlWriter xw) {
       xw.begin("CHANGESET");
       for (Map.Entry<String,BvcrDifferenceFile> ent : change_items.entrySet()) {
-         xw.begin("USERCHANGE");
-         xw.field("USER",ent.getKey());
-         ent.getValue().outputXml(xw);
-         xw.end("USERCHANGE");
+	 xw.begin("USERCHANGE");
+	 xw.field("USER",ent.getKey());
+	 ent.getValue().outputXml(xw);
+	 xw.end("USERCHANGE");
        }
       xw.end("CHANGESET");
     }

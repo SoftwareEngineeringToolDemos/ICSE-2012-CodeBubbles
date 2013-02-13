@@ -452,7 +452,8 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       bedrock_project.openProject(proj,IvyXml.getAttrBool(xml,"FILES",false),
 				     IvyXml.getAttrBool(xml,"PATHS",false),
 				     IvyXml.getAttrBool(xml,"CLASSES",false),
-				     IvyXml.getAttrBool(xml,"OPTIONS",false),xw);
+				     IvyXml.getAttrBool(xml,"OPTIONS",false),
+				     IvyXml.getAttrString(xml,"BACKGROUND"),xw);
     }
    else if (cmd.equals("EDITPROJECT")) {
       bedrock_project.editProject(proj,IvyXml.getAttrBool(xml,"LOCAL"),
@@ -750,6 +751,9 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if (cmd.equals("PREFERENCES")) {
       bedrock_project.handlePreferences(proj,xw);
+    }
+   else if (cmd.equals("SETPREFERENCES")) {
+      bedrock_project.handleSetPreferences(proj,IvyXml.getChild(xml,"profile"),xw);
     }
    else if (cmd.equals("LOGLEVEL")) {
       log_level = IvyXml.getAttrEnum(xml,"LEVEL",BedrockLogLevel.ERROR);

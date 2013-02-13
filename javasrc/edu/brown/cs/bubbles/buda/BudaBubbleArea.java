@@ -29,7 +29,7 @@ import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
 
 import edu.brown.cs.bubbles.board.*;
 
-import edu.brown.cs.ivy.swing.SwingEventListenerList;
+import edu.brown.cs.ivy.swing.*;
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
@@ -101,7 +101,6 @@ private static final long serialVersionUID = 1;
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Constructors								*/
@@ -149,7 +148,7 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    middle_color = new Color((top_color.getRed() + bottom_color.getRed())/2,
 			       (top_color.getGreen() + bottom_color.getGreen())/2,
 			       (top_color.getBlue() + bottom_color.getBlue())/2);
-
+   
    Element shape = IvyXml.getChild(cfg,"SHAPE");
    int w = (int) IvyXml.getAttrDouble(shape,"WIDTH",BUBBLE_DISPLAY_WIDTH);
    int h = (int) IvyXml.getAttrDouble(shape,"HEIGHT",BUBBLE_DISPLAY_HEIGHT);
@@ -157,6 +156,9 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    int h0 = IvyXml.getAttrInt(cfg,"MAXY") + 100;
    if (w > BUBBLE_DISPLAY_WIDTH && w > w0) w = Math.max(w0,BUBBLE_DISPLAY_WIDTH);
    if (h > BUBBLE_DISPLAY_HEIGHT && h > h0) h = Math.max(h0,BUBBLE_DISPLAY_HEIGHT);
+   w = Math.max(w,BUBBLE_DISPLAY_WIDTH);
+   h = Math.max(h,BUBBLE_DISPLAY_HEIGHT);
+   
    base_size = new Dimension(w,h);
 
    setSize(w,h);
@@ -267,6 +269,10 @@ public Collection<BudaBubble> getBubblesInRegion(Rectangle r)
 
 
 
+
+
+
+
 void removeCurrentBubble(MouseEvent e)
 {
    MouseRegion mr = last_mouse;
@@ -283,6 +289,10 @@ void removeCurrentBubble(MouseEvent e)
    if (bb != null) userRemoveBubble(bb);
    else if (grp != null) userRemoveGroup(grp);
 }
+
+
+
+
 
 
 
@@ -724,7 +734,7 @@ Collection<BudaWorkingSetImpl> getWorkingSets()
 /*										*/
 /********************************************************************************/
 
-void moveBubble(BudaBubble bb,Point loc,boolean fg)
+public void moveBubble(BudaBubble bb,Point loc,boolean fg)
 {
    move_animator.moveBubble(bb,loc,fg);
 }
@@ -1064,12 +1074,25 @@ public int getRegionSpace()
 }
 
 
+public BudaHelpRegion getHelpRegion(Point pt)
+{
+   return new MouseRegion(pt);
+}
+
+
+
 
 /********************************************************************************/
 /*										*/
 /*	Painting methods							*/
 /*										*/
 /********************************************************************************/
+
+@Override public void print(Graphics g) 
+{
+   super.print(g);
+}
+
 
 @Override public void paint(Graphics g)
 {
@@ -2126,7 +2149,7 @@ private class Mouser extends MouseAdapter {
 /*										*/
 /********************************************************************************/
 
-private class MouseRegion {
+private class MouseRegion implements BudaHelpRegion {
 
    private BudaRegion region_type;
    private BudaBubble in_bubble;
@@ -2135,9 +2158,14 @@ private class MouseRegion {
    private Point mouse_loc;
 
    MouseRegion(MouseEvent e) {
-      int x = e.getX();
-      int y = e.getY();
+      this(e.getX(),e.getY());
+    }
 
+   MouseRegion(Point pt) {
+      this(pt.x,pt.y);
+    }
+
+   MouseRegion(int x,int y) {
       if (scale_factor != 1.0) {
 	 x = (int)(x / scale_factor);
 	 y = (int)(y / scale_factor);
@@ -2192,10 +2220,11 @@ private class MouseRegion {
        }
     }
 
-   BudaRegion getRegion()		{ return region_type; }
-   BudaBubble getBubble()		{ return in_bubble; }
-   BudaBubbleGroup getGroup()		{ return in_group; }
-   BudaBubbleLink getLink()		{ return in_link; }
+   @Override public BudaRegion getRegion()	{ return region_type; }
+   @Override public BudaBubble getBubble()	{ return in_bubble; }
+   @Override public BudaBubbleGroup getGroup()	{ return in_group; }
+   @Override public BudaBubbleLink getLink()	{ return in_link; }
+
    Point getLocation()			{ return mouse_loc; }
 
 }	// end of inner class MouseRegion

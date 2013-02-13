@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -51,6 +51,8 @@ private int			target_start;
 private List<String>		del_lines;
 private List<String>		add_lines;
 private Set<File>		files_todo;
+private String			start_version;
+private String			end_version;
 
 
 
@@ -70,6 +72,8 @@ BvcrDifferenceSet(BvcrMain bm,BvcrProject proj)
    del_lines = null;
    add_lines = null;
    files_todo = null;
+   start_version = null;
+   end_version = null;
 }
 
 
@@ -98,10 +102,31 @@ boolean computationNeeded()
 List<File> getFilesToCompute()
 {
    if (files_todo == null) return null; 	// indicate all
- 
+
    ArrayList<File> rslt = new ArrayList<File>(files_todo);
    return rslt;
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle specific version for specific file				*/
+/*										*/
+/********************************************************************************/
+
+void setForFileDifference(File f,String v0,String v1)
+{
+   files_todo = new HashSet<File>();
+   files_todo.add(f);
+   start_version = v0;
+   end_version = v1;
+}
+
+
+String getStartVersion()			{ return start_version; }
+String getEndVersion()				{ return end_version; }
+
 
 
 

@@ -54,7 +54,7 @@ class BvcrFileManager implements BvcrConstants, BumpConstants.BumpChangeHandler
 /********************************************************************************/
 
 private Set<File>	active_files;
-private DifferenceMap   difference_map;
+private DifferenceMap	difference_map;
 private List<BvcrAnnotation> active_annots;
 
 
@@ -94,15 +94,15 @@ BvcrFileManager()
 @Override public void handleFileChanged(String proj,String file)	{ }
 @Override public void handleFileAdded(String proj,String file)		{ }
 @Override public void handleFileRemoved(String proj,String file)	{ }
-@Override public void handleProjectOpened(String proj)                  { }
+@Override public void handleProjectOpened(String proj)			{ }
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Methods for setting up annotations                                      */
-/*                                                                              */
+/*										*/
+/*	Methods for setting up annotations					*/
+/*										*/
 /********************************************************************************/
 
 private void setupAnnotations(String proj,File f)
@@ -111,34 +111,34 @@ private void setupAnnotations(String proj,File f)
    for (Iterator<BvcrAnnotation> it = active_annots.iterator(); it.hasNext(); ) {
       BvcrAnnotation ba = it.next();
       if (ba.getFile().equals(f)) {
-         it.remove();
-         bf.removeAnnotation(ba);
+	 it.remove();
+	 bf.removeAnnotation(ba);
        }
     }
-   
+
    Map<String,BvcrDifferenceFile> diffs = difference_map.get(f);
    if (diffs == null) return;
    BitSet lineset = new BitSet();
    for (BvcrDifferenceFile bdf : diffs.values()) {
       for (BvcrFileChange bfc : bdf.getChanges()) {
-         int ln = bfc.getSourceLine();
-         String [] dels = bfc.getDeletedLines();
-         int ct = (dels == null ? 1 : dels.length);
-         if (ct == 0) ct = 1;
-         for (int i = 0; i < ct; ++i) {
-            lineset.set(ln+i);
-          }
+	 int ln = bfc.getSourceLine();
+	 String [] dels = bfc.getDeletedLines();
+	 int ct = (dels == null ? 1 : dels.length);
+	 if (ct == 0) ct = 1;
+	 for (int i = 0; i < ct; ++i) {
+	    lineset.set(ln+i);
+	  }
        }
     }
-   
+
    for (int ln = lineset.nextSetBit(0); ln >= 0; ln = lineset.nextSetBit(ln+1)) {
       try {
-         BvcrAnnotation annot = new BvcrAnnotation(proj,f,ln);
-         active_annots.add(annot);
-         bf.addAnnotation(annot);
+	 BvcrAnnotation annot = new BvcrAnnotation(proj,f,ln);
+	 active_annots.add(annot);
+	 bf.addAnnotation(annot);
        }
       catch (BadLocationException e) {
-         BoardLog.logD("BVCR","Problem setting up annotation: " + e);
+	 BoardLog.logD("BVCR","Problem setting up annotation: " + e);
        }
     }
 }
@@ -146,51 +146,51 @@ private void setupAnnotations(String proj,File f)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Tool tip methods                                                        */
-/*                                                                              */
+/*										*/
+/*	Tool tip methods							*/
+/*										*/
 /********************************************************************************/
 
 private String computeToolTipText(String proj,File f,int lno)
 {
    Map<String,BvcrDifferenceFile> diffs = difference_map.get(f);
    if (diffs == null) return null;
-   
+
    StringBuffer buf = new StringBuffer();
-   
+
    for (Map.Entry<String,BvcrDifferenceFile> ent : diffs.entrySet()) {
       String user = ent.getKey();
       BvcrDifferenceFile bdf = ent.getValue();
-      
+
       for (BvcrFileChange bfc : bdf.getChanges()) {
-         int ln = bfc.getSourceLine();
-         String [] dels = bfc.getDeletedLines();
-         int ct = (dels == null ? 1 : dels.length);
-         if (ct == 0) ct = 1;
-         if (lno >= ln && lno < lno+ct) {
-            if (buf.length() > 0) buf.append("<br>");
-            buf.append("Change by user " + user);
-            String [] ins = bfc.getAddedLines();
-            if (dels != null && ins != null) {
-               buf.append(" Replaced " + dels.length + " with " + ins.length);
-             }
-            else if (dels != null) {
-               buf.append(" Deleted " + dels.length);
-             }
-            else if (ins != null) {
-               buf.append(" Inserted " + ins.length);
-             }
-          }
+	 int ln = bfc.getSourceLine();
+	 String [] dels = bfc.getDeletedLines();
+	 int ct = (dels == null ? 1 : dels.length);
+	 if (ct == 0) ct = 1;
+	 if (lno >= ln && lno < lno+ct) {
+	    if (buf.length() > 0) buf.append("<br>");
+	    buf.append("Change by user " + user);
+	    String [] ins = bfc.getAddedLines();
+	    if (dels != null && ins != null) {
+	       buf.append(" Replaced " + dels.length + " with " + ins.length);
+	     }
+	    else if (dels != null) {
+	       buf.append(" Deleted " + dels.length);
+	     }
+	    else if (ins != null) {
+	       buf.append(" Inserted " + ins.length);
+	     }
+	  }
        }
-    }  
-   
+    }
+
    if (buf.length() > 0) return buf.toString();
-   
+
    return null;
-} 
+}
 /********************************************************************************/
 /*										*/
-/*	Handle getting update information on a file		                */
+/*	Handle getting update information on a file				*/
 /*										*/
 /********************************************************************************/
 
@@ -208,23 +208,23 @@ private class Updater implements Runnable {
 
    @Override public void run() {
       if (!annots_ready) {
-         Element e = BvcrFactory.getFactory().getChangesForFile(for_project,for_file.getPath());
-         if (e == null) return;
-         int ctr = 0;
-         Element cs = IvyXml.getChild(e,"CHANGESET");
-         for (Element uc : IvyXml.children(cs,"USERCHANGE")) {
-            String unm = IvyXml.getAttrString(uc,"USER");
-            BvcrDifferenceFile bdf = new BvcrDifferenceFile(uc);
-            difference_map.add(for_file,unm,bdf);
-            ++ctr;
-          }
-         if (ctr > 0) {
-            annots_ready = true;
-            SwingUtilities.invokeLater(this);
-          }
+	 Element e = BvcrFactory.getFactory().getChangesForFile(for_project,for_file.getPath());
+	 if (e == null) return;
+	 int ctr = 0;
+	 Element cs = IvyXml.getChild(e,"CHANGESET");
+	 for (Element uc : IvyXml.children(cs,"USERCHANGE")) {
+	    String unm = IvyXml.getAttrString(uc,"USER");
+	    BvcrDifferenceFile bdf = new BvcrDifferenceFile(uc);
+	    difference_map.add(for_file,unm,bdf);
+	    ++ctr;
+	  }
+	 if (ctr > 0) {
+	    annots_ready = true;
+	    SwingUtilities.invokeLater(this);
+	  }
        }
       else {
-         setupAnnotations(for_project,for_file);
+	 setupAnnotations(for_project,for_file);
        }
     }
 
@@ -233,44 +233,43 @@ private class Updater implements Runnable {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Holder of all difference                                                */
-/*                                                                              */
+/*										*/
+/*	Holder of all difference						*/
+/*										*/
 /********************************************************************************/
 
 private class DifferenceMap extends HashMap<File,Map<String,BvcrDifferenceFile>> {
-   
-   DifferenceMap() {
-    }
-   
+
+   DifferenceMap() { }
+
    void add(File file,String user,BvcrDifferenceFile dif) {
       if (dif == null) return;
       Map<String,BvcrDifferenceFile> m1 = get(file);
       if (m1 == null) {
-         m1 = new HashMap<String,BvcrDifferenceFile>();
-         put(file,m1);
+	 m1 = new HashMap<String,BvcrDifferenceFile>();
+	 put(file,m1);
        }
       m1.put(user,dif);
     }
-   
-}       // end of inner class DifferenceMap
-      
+
+}	// end of inner class DifferenceMap
+
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Annotation definition                                                   */
-/*                                                                              */
+/*										*/
+/*	Annotation definition							*/
+/*										*/
 /********************************************************************************/
 
 private class BvcrAnnotation implements BaleAnnotation {
-   
+
    private String for_project;
    private File for_file;
    private int line_number;
    private Position file_pos;
-   
+
    BvcrAnnotation(String proj,File f,int line) throws BadLocationException {
       for_project = proj;
       for_file = f;
@@ -279,27 +278,27 @@ private class BvcrAnnotation implements BaleAnnotation {
       int off = bfo.findLineOffset(line);
       file_pos = bfo.createPosition(off);
     }
-   
-   @Override public File getFile()              { return for_file; }
-   @Override public int getDocumentOffset()     { return file_pos.getOffset(); }
-   @Override public Icon getIcon()              { return null; }
-   @Override public Color getLineColor()        { return null; }
-   @Override public int getPriority()           { return 5; }
-   
-   
-   @Override public boolean getForceVisible(BudaBubble bb)      { return false; }
+
+   @Override public File getFile()		{ return for_file; }
+   @Override public int getDocumentOffset()	{ return file_pos.getOffset(); }
+   @Override public Icon getIcon()		{ return null; }
+   @Override public Color getLineColor()	{ return null; }
+   @Override public int getPriority()		{ return 5; }
+
+
+   @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
    @Override public void addPopupButtons(Component c,JPopupMenu m) { }
-   
+
    @Override public Color getBackgroundColor() {
       // compute background color based on user
       return Color.RED;
     }
-   
+
    @Override public String getToolTip() {
       return computeToolTipText(for_project,for_file,line_number);
     }
-   
-}       // end of inner class BvcrAnnotation
+
+}	// end of inner class BvcrAnnotation
 
 
 

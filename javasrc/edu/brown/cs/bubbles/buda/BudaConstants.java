@@ -1272,6 +1272,23 @@ interface BudaHelpClient {
 }	// end of inner interface BudaHelpClient
 
 
+interface BudaDemonstration {
+
+   void stopDemonstration();
+
+}	// end of inner interface BudaDemonstration
+
+
+interface BudaHelpRegion {
+
+   BudaRegion getRegion();
+   BudaBubble getBubble();
+   BudaBubbleGroup getGroup();
+   BudaBubbleLink getLink();
+
+}	// end of interface BudaHelpRegion
+
+
 
 }	// end of interface BudaConstants
 

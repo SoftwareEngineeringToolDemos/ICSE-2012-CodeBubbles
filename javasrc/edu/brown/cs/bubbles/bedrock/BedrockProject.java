@@ -113,7 +113,7 @@ void initialize()
 {
    if (projects_inited) return;
 
-   IvyXmlWriter xw = new IvyXmlWriter();                // force loading
+   IvyXmlWriter xw = new IvyXmlWriter();		// force loading
    xw.close();
 
    IWorkspace ws = ResourcesPlugin.getWorkspace();
@@ -230,14 +230,22 @@ void listProjects(IvyXmlWriter xw)
 
 
 
-void openProject(String name,boolean fil,boolean pat,boolean cls,boolean opt,IvyXmlWriter xw)
+void openProject(String name,boolean fil,boolean pat,boolean cls,boolean opt,
+		    String bkg,IvyXmlWriter xw)
 	throws BedrockException
 {
    IProject p = findProject(name);
 
    attachProject(p);
 
-   if (xw != null) outputProject(p,fil,pat,cls,opt,xw);
+   if (bkg != null) {
+      ProjectThread pt = new ProjectThread(bkg,p,fil,pat,cls,opt);
+      pt.start();
+      if (xw != null) outputProject(p,false,false,false,false,xw);
+    }
+   else if (xw != null) {
+      outputProject(p,fil,pat,cls,opt,xw);
+    }
 }
 
 
@@ -274,6 +282,43 @@ void buildProject(String proj,boolean clean,boolean full,boolean refresh,IvyXmlW
       throw new BedrockException("Problem finding errors",e);
     }
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Thread to compute and output project definitions			*/
+/*										*/
+/********************************************************************************/
+
+private class ProjectThread extends Thread {
+
+   private IProject for_project;
+   private boolean do_files;
+   private boolean do_patterns;
+   private boolean do_classes;
+   private boolean do_options;
+   private String return_id;
+
+   ProjectThread(String bkg,IProject p,boolean fil,boolean pat,boolean cls,boolean opt) {
+      super("Bedrock_GetProjectInfo");
+      return_id = bkg;
+      for_project = p;
+      do_files = fil;
+      do_patterns = pat;
+      do_classes = cls;
+      do_options = opt;
+    }
+
+   @Override public void run() {
+      IvyXmlWriter xw = our_plugin.beginMessage("PROJECTDATA");
+      xw.field("BACKGROUND",return_id);
+      outputProject(for_project,do_files,do_patterns,do_classes,do_options,xw);
+      our_plugin.finishMessage(xw);
+    }
+
+}	// end of inner class ProjectThread
+
 
 
 
@@ -806,6 +851,34 @@ void handlePreferences(String proj,IvyXmlWriter xw)
     }
 
    xw.end("PREFERENCES");
+}
+
+
+
+@SuppressWarnings("unchecked")
+void handleSetPreferences(String proj,Element xml,IvyXmlWriter xw)
+{
+   Map<Object,Object> opts;
+
+   if (proj == null) {
+      opts = JavaCore.getOptions();
+    }
+   else {
+      try {
+	 IProject ip = findProject(proj);
+	 IJavaProject ijp = JavaCore.create(ip);
+	 opts = ijp.getOptions(true);
+       }
+      catch (BedrockException e) {
+	 opts = JavaCore.getOptions();
+       }
+    }
+
+   for (Element opt : IvyXml.children(xml,"OPTION")) {
+      String nm = IvyXml.getAttrString(opt,"NAME");
+      String vl = IvyXml.getAttrString(opt,"VALUE");
+      opts.put(nm,vl);
+    }
 }
 
 

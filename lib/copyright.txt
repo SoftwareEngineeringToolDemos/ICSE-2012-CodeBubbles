@@ -20,10 +20,7 @@ Most of the code in this project is included under the Eclipse Public License v1
 
  These include:
 
- itextpdf :: GNU AFFERO GENERAL PUBLIC LICENSE
-            (http://itextpdf.com/terms-of-use/index.php?page=AGPL)
-        The source for itext.jar is available from itextpdf.com.  If you are
-        unable to obtain it from there, we are able to provide it.
+ gnujpdf :: LPGL
 
  smack ::   APACHE-LICENSE 2.0
         See http://www.igniterealtime.org/projects/smack

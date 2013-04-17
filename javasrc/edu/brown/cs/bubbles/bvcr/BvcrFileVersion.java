@@ -98,7 +98,7 @@ BvcrFileVersion(Element xml,Map<String,BvcrFileVersion> versions)
       String id = IvyXml.getAttrString(e,"ID");
       BvcrFileVersion ov = versions.get(id);
       if (ov == null) {
-	 if (prior_names != null) prior_names = new ArrayList<String>();
+	 if (prior_names == null) prior_names = new ArrayList<String>();
 	 prior_names.add(id);
        }
       else addPriorVersion(ov);

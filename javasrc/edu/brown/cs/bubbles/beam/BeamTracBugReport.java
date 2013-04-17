@@ -103,6 +103,12 @@ private class BugReportListener implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String url = null;
 
+      if (Desktop.isDesktopSupported()) {
+	 JOptionPane.showMessageDialog(for_root,"<html><p>This will take you to our bug-reporting web site." +
+				    "<p>Please log in as yourself or anonymously as " +
+				    "codebubbles (no password).");
+       }
+
       try {
 	 BoardProperties bp = BoardProperties.getProperties("Beam");
 
@@ -171,7 +177,8 @@ private class BugReportListener implements ActionListener {
 	 if (url != null) {
 	    JOptionPane.showMessageDialog(for_root,"<html><p>This version of Java does not support" +
 					     " the desktop API.  Please use your browser to navigate" +
-					     " to " + url);
+					     " to " + url + "<p>Log in as user 'codebubbles' (no" +
+					     " password).");
 	  }
        }
    }

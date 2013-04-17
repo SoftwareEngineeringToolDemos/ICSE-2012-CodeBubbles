@@ -66,6 +66,8 @@ private static Random static_random = new Random();
 
 static boolean upload(String data,String user,String rid,SecretKey key)
 {
+   if (user == null || rid == null) return false;
+
    try {
       BvcrUpload bu = new BvcrUpload();
       bu.processUpload(data,user,rid,key);
@@ -120,7 +122,7 @@ private BvcrUpload()
 /*										*/
 /********************************************************************************/
 
-@SuppressWarnings("resource") 
+@SuppressWarnings("resource")
 private void processUpload(String data,String uid,String rid,SecretKey key) throws IOException
 {
    String url = getRepoUrl() + "savebvcr.php";
@@ -355,7 +357,7 @@ private static int pipe(InputStream in,OutputStream out) throws IOException
     }
    out.flush();
    buf = null;
-   
+
    return total;
 }
 

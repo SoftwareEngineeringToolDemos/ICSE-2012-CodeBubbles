@@ -384,7 +384,6 @@ private void log(LogLevel lvl,String src,String msg,Throwable t)
    String txt = src + ":" + key + ": " + msg;
 
    synchronized (this) {
-      if (debug_writer != null) debug_writer.println(txt);
       if (use_stderr) System.err.println(txt);
 
       if (t != null) {

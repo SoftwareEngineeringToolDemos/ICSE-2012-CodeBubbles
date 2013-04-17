@@ -222,7 +222,7 @@ private class AsmClassVisitor implements ClassVisitor {
    @Override public void visitSource(String src,String dbg)		{ }
 
    @Override public FieldVisitor visitField(int access,String name,String desc,String sign,
-					       Object val) {
+        				       Object val) {
       AsmField af = new AsmField(asm_data,name);
       user_visitor.visitClassField(af,findClass(desc,true),sign,access,val);
       return new AsmFieldVisitor(af);

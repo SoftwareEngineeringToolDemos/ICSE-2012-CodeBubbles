@@ -114,7 +114,7 @@ private void ensureRunning()
    for ( ; ; ) {
       String r = getStringReply("PING",null,null,null,5000);
       if (r != null && r.startsWith("<RESULT>")) {
-	 r = r.substring(8);	
+	 r = r.substring(8);
 	 int idx = r.indexOf("<");
 	 if (idx >= 0) r = r.substring(0,idx);
       }
@@ -153,11 +153,9 @@ private void ensureRunning()
 
    String cmd = "'" + efp + "'";
    if (!board_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,false)) {
-      cmd += " -application edu.brown.cs.bubbles.bedrock.application -nosplash";
+      cmd += " -application edu.brown.cs.bubbles.bedrock.application";
     }
-   else {
-      cmd += " -nosplash";
-    }
+   cmd += " -nosplash";
    if (ws != null) cmd += " -data '" + ws + "'";
 
    String eopt = board_properties.getProperty(BOARD_PROP_ECLIPSE_OPTIONS);
@@ -174,6 +172,8 @@ private void ensureRunning()
    cmd += " -vmargs '-Dedu.brown.cs.bubbles.MINT=" + mint_name + "'";
    eopt = board_properties.getProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS);
    if (eopt != null) cmd += " " + eopt;
+   
+   BoardLog.logD("BUMP","Start Eclipse: " + cmd);
 
    try {
       IvyExec ex = new IvyExec(cmd);

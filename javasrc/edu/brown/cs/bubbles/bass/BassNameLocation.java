@@ -383,7 +383,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       default:
 	 break;
    }
-
+												
    return null;
 }
 

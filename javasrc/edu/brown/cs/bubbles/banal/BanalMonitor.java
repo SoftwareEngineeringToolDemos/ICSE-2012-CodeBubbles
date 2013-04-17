@@ -139,6 +139,28 @@ private String computePackageGraph(String proj,String pkg,boolean mthds,boolean 
 
 
 /********************************************************************************/
+/*                                                                              */
+/*      Compute the package hierarchy                                           */
+/*                                                                              */
+/********************************************************************************/
+
+private String computePackageHierarchy(String proj)
+{
+   BanalPackageHierarchy pg = new BanalPackageHierarchy(project_manager,proj);
+   BanalStaticLoader bsl = new BanalStaticLoader(project_manager,pg);
+   bsl.process();
+   
+   IvyXmlWriter xw = new IvyXmlWriter();
+   pg.output(xw);
+   
+   return xw.toString();
+}
+
+
+
+
+
+/********************************************************************************/
 /*										*/
 /*	Eclipse access methods							*/
 /*										*/
@@ -254,6 +276,10 @@ private class CommandHandler implements MintHandler {
 	    boolean mthds = IvyXml.getAttrBool(e,"METHODS");
 	    boolean samec = IvyXml.getAttrBool(e,"SAMECLASS");
 	    rply = computePackageGraph(proj,pkg,mthds,samec);
+	  }
+         else if (cmd.equals("PACKAGEHIERARCHY")) {
+	    String proj = IvyXml.getAttrString(e,"PROJECT");
+	    rply = computePackageHierarchy(proj);
 	  }
 	 else if (cmd.equals("PING")) {
 	    rply = "PONG";

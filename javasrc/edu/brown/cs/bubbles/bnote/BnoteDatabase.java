@@ -145,9 +145,6 @@ synchronized BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,M
    if (eid == 0) return null;
 
    if (proj == null) proj = (String) values.get("PROJECT");
-   String unm = null;
-   if (values.get("USER") != null) unm = values.get("USER").toString();
-   if (unm == null) unm = System.getProperty("user.name");
 
    switch (type) {
       case NONE :
@@ -166,41 +163,84 @@ synchronized BnoteTask addEntry(String proj,BnoteTask task,BnoteEntryType type,M
       ti.noteUse();
     }
 
-   try {
-      PreparedStatement s = note_conn.prepareStatement("INSERT INTO Entry VALUES (?,?,?,?,?,DEFAULT)");
-      s.setLong(1,eid);
-      s.setString(2,proj);
-      if (task != null) s.setLong(3,task.getTaskId());
-      else s.setLong(3,0);
-      s.setString(4,type.toString());
-      s.setString(5,unm);
-      s.executeUpdate();
-      s.close();
-
-      for (Map.Entry<String,Object> ent : values.entrySet()) {
-	 if (ignore_fields.contains(ent.getKey())) continue;
-	 s = note_conn.prepareStatement("INSERT INTO Prop VALUES (?,?,?)");
-	 s.setLong(1,eid);
-	 s.setString(2,ent.getKey());
-	 s.setString(3,ent.getValue().toString());
-	 s.executeUpdate();
-	 s.close();
-       }
-    }
-   catch (SQLException e) {
-      BoardLog.logD("BNOTE","OPERATION FAILED: " + e);
-      note_conn = null;
-      BnoteConnect bcn = new BnoteConnect();
-      note_conn = bcn.getLogDatabase();
-      if (note_conn == null) {
-	 BoardLog.logE("BNOTE","Problem saving notebook entry " + eid + " " + proj + " " + type + " " + unm + " " + values.size(),e);
-      }
-      else addEntry(proj,task,type,values);
-    }
-
-   BoardLog.logD("BNOTE","OPERATION SUCCEEDED");
+   NodeInserter ni = new NodeInserter(eid,proj,values,task,type);
+   BoardThreadPool.start(ni);
 
    return task;
+}
+
+
+
+private synchronized void resetDatabase()
+{
+   BnoteConnect bcn = new BnoteConnect();
+   note_conn = bcn.getLogDatabase();
+}
+
+
+
+private class NodeInserter implements Runnable {
+
+   private long entry_id;
+   private String project_name;
+   private Map<String,Object> value_set;
+   private BnoteTask for_task;
+   private BnoteEntryType entry_type;
+
+   NodeInserter(long eid,String proj,Map<String,Object> values,BnoteTask task,
+	BnoteEntryType type) {
+      entry_id = eid;
+      project_name = proj;
+      value_set = values;
+      for_task = task;
+      entry_type = type;
+    }
+
+   @Override public void run() {
+      while (note_conn != null) {
+	 Connection c = note_conn;
+	 if (c == null) break;
+
+	 String unm = null;
+	 if (value_set.get("USER") != null) unm = value_set.get("USER").toString();
+	 if (unm == null) unm = System.getProperty("user.name");
+
+	 BoardLog.logD("BNOTE","ADD ENTRY WITH " + value_set.size() + " VALUES");
+
+	 try {
+	    PreparedStatement s = c.prepareStatement("INSERT INTO Entry VALUES (?,?,?,?,?,DEFAULT)");
+	    s.setLong(1,entry_id);
+	    s.setString(2,project_name);
+	    if (for_task != null) s.setLong(3,for_task.getTaskId());
+	    else s.setLong(3,0);
+	    s.setString(4,entry_type.toString());
+	    s.setString(5,unm);
+	    s.executeUpdate();
+	    s.close();
+
+	    for (Map.Entry<String,Object> ent : value_set.entrySet()) {
+	       if (ignore_fields.contains(ent.getKey())) continue;
+	       s = c.prepareStatement("INSERT INTO Prop VALUES (?,?,?)");
+	       s.setLong(1,entry_id);
+	       s.setString(2,ent.getKey());
+	       s.setString(3,ent.getValue().toString());
+	       s.executeUpdate();
+	       s.close();
+	     }
+	    BoardLog.logD("BNOTE","OPERATION SUCCEEDED");
+	    break;
+	  }
+	 catch (SQLException e) {
+	    BoardLog.logD("BNOTE","OPERATION FAILED: " + e);
+	    resetDatabase();
+	    if (note_conn == null) {
+	       BoardLog.logE("BNOTE","Problem saving notebook entry " + entry_id + " " +
+		     project_name + " " + entry_type + " " + unm + " " + value_set.size(),e);
+	       break;
+	     }
+	  }
+       }
+    }
 }
 
 
@@ -364,25 +404,46 @@ synchronized TaskImpl defineTask(String name,String proj,String desc)
    long tid = getNextId();
    if (tid == 0) return null;
 
-   String q = "INSERT INTO Task VALUES (?,?,?,?)";
+   ti = new TaskImpl(tid,name,proj,desc);
+   // if server, need to send new task message
+   all_tasks.add(ti);
 
-   try {
-      PreparedStatement s = note_conn.prepareStatement(q);
-      s.setLong(1,tid);
-      s.setString(2,name);
-      s.setString(3,desc);
-      s.setString(4,proj);
-      s.executeUpdate();
-      s.close();
-      ti = new TaskImpl(tid,name,proj,desc);
-      // if server, need to send new task message
-      all_tasks.add(ti);
-    }
-   catch (SQLException e) {
-      BoardLog.logE("BNOTE","Problem defining new task",e);
-    }
+   TaskInserter ins = new TaskInserter(ti);
+   BoardThreadPool.start(ins);
 
    return ti;
+}
+
+
+private class TaskInserter implements Runnable {
+
+   private TaskImpl for_task;
+
+   TaskInserter(TaskImpl ti) {
+      for_task = ti;
+    }
+
+   @Override public void run() {
+      String q = "INSERT INTO Task VALUES (?,?,?,?)";
+
+      while (note_conn != null) {
+	 try {
+	    PreparedStatement s = note_conn.prepareStatement(q);
+	    s.setLong(1,for_task.getTaskId());
+	    s.setString(2,for_task.getName());
+	    s.setString(3,for_task.getDescription());
+	    s.setString(4,for_task.getProject());
+	    s.executeUpdate();
+	    s.close();
+	    break;
+	  }
+	 catch (SQLException e) {
+	    BoardLog.logE("BNOTE","Problem defining new task",e);
+	    resetDatabase();
+	    if (note_conn == null) break;
+	  }
+       }
+    }
 }
 
 
@@ -644,7 +705,7 @@ private synchronized long getNextId()
 {
    if (note_conn == null) return 0;
 
-   if (id_count <= 0) {
+   while (id_count <= 0 && note_conn != null) {
       BoardLog.logD("BNOTE","GET NEXT ID");
       if (use_begin == null) {
 	 try {
@@ -675,9 +736,12 @@ private synchronized long getNextId()
 	    st.executeUpdate("COMMIT");
 	  }
 	 st.close();
+	 break;
        }
       catch (SQLException e) {
 	 BoardLog.logE("BNOTE","Problem getting more ids: ",e);
+	 resetDatabase();
+	 if (note_conn == null) break;
        }
     }
 

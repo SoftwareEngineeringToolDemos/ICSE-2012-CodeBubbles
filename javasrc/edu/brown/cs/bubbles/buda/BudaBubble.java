@@ -369,7 +369,7 @@ public boolean isFloating()			{ return is_float; }
 
 
 public boolean isFixed()			{ return is_fixed; }
-boolean isDocked()				{ return is_docked; }
+public boolean isDocked()			{ return is_docked; }
 public boolean isUserPos()			{ return is_userpos; }
 
 /**

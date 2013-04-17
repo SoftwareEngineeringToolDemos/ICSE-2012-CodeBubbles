@@ -218,28 +218,28 @@ private class PerfEventHandler implements BumpRunEventHandler {
 
    @Override public void handleProcessEvent(BumpRunEvent evt) {
       if (evt.getProcess() != null &&
-	     evt.getProcess() != launch_control.getProcess())
-	 return;
+             evt.getProcess() != launch_control.getProcess())
+         return;
       else if (evt.getProcess() == null &&
-		  evt.getEventType() != BumpRunEventType.PROCESS_ADD)
-	 return;
-
+        	  evt.getEventType() != BumpRunEventType.PROCESS_ADD)
+         return;
+   
       switch (evt.getEventType()) {
-	 case PROCESS_ADD :
-	    perf_model.clear();
-	    break;
-	 case PROCESS_PERFORMANCE :
-	    Element xml = (Element) evt.getEventData();
-	    base_samples = IvyXml.getAttrDouble(xml,"ACTIVE");
-	    total_samples = IvyXml.getAttrDouble(xml,"SAMPLES");
-	    base_time = IvyXml.getAttrDouble(xml,"TIME");
-	    for (Element itm : IvyXml.children(xml,"ITEM")) {
-	       PerfNode pn = findNode(IvyXml.getAttrString(itm,"NAME"));
-	       pn.update(itm);
-	     }
-	    break;
-	 default:
-	    break;
+         case PROCESS_ADD :
+            perf_model.clear();
+            break;
+         case PROCESS_PERFORMANCE :
+            Element xml = (Element) evt.getEventData();
+            base_samples = IvyXml.getAttrDouble(xml,"ACTIVE",0);
+            total_samples = IvyXml.getAttrDouble(xml,"SAMPLES",0);
+            base_time = IvyXml.getAttrDouble(xml,"TIME",0);
+            for (Element itm : IvyXml.children(xml,"ITEM")) {
+               PerfNode pn = findNode(IvyXml.getAttrString(itm,"NAME"));
+               pn.update(itm);
+             }
+            break;
+         default:
+            break;
        }
     }
 

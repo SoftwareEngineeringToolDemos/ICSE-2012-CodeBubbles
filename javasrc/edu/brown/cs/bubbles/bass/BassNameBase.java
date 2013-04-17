@@ -195,7 +195,9 @@ public String getNameHead()
       case INTERFACE :
       case ENUM :
       case THROWABLE :
-	 return getLocalName();
+	 String nm1 = getSymbolName();
+	 nm1 = nm1.replace('$','.');
+	 return nm1;
       case FIELDS :
       case METHOD :
       case CONSTRUCTOR :

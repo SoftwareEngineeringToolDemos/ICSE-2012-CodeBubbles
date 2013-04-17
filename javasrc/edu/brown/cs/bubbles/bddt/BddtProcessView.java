@@ -238,6 +238,7 @@ private class ProcessHandler implements BumpRunEventHandler
 	    break;
 	 case PROCESS_PERFORMANCE :
 	 case PROCESS_SWING :
+         case PROCESS_TRIE :
 	    break;
 	 default:
 	    break;

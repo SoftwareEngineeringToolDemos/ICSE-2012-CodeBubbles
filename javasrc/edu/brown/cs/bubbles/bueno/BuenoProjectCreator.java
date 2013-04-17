@@ -201,7 +201,8 @@ private class CreationActions implements ActionListener, UndoableEditListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
-      if (cmd.equals("CREATE") || cmd.equals("CREATE PROJECT")) {
+      if (cmd == null) ;
+      else if (cmd.equals("CREATE") || cmd.equals("CREATE PROJECT")) {
 	 if (createProject()) {
 	    JComponent c = (JComponent) evt.getSource();
 	    BudaBubble bb = BudaRoot.findBudaBubble(c);

@@ -49,7 +49,6 @@ String		BANDAID_THREAD = "BandaidMonitorThread";
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Timer constants 							*/
@@ -92,8 +91,6 @@ enum ClassType {
 
 
 
-
-
 /********************************************************************************/
 /*										*/
 /*	Instrumentation constants						*/
@@ -103,6 +100,12 @@ enum ClassType {
 int BANDAID_MAX_THREADS = 32768;	  // max thread ID is one less than this
 
 int BANDAID_MAX_DEPTH = 128;
+
+String TRACE_DATA_FILE = "tracedata.bandaid";
+
+int     TRACE_ENTER = 0x1;
+int     TRACE_EXIT = 0x2;
+int     TRACE_CONSTRUCTOR = 0x4;
 
 
 

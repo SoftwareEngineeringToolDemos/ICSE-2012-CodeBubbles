@@ -499,6 +499,8 @@ public Element saveFile(String pname,File file)
 {
    waitForIDE();
 
+   if (file == null) return null;
+
    String flds = "SAVE='T'";
    String fils = "<FILE NAME='" + file.getPath() + "' />";
 
@@ -809,7 +811,7 @@ public BumpContractType getContractType(String proj)
 
    Element xml = getXmlReply("OPENPROJECT",proj,qy,null,0);
 
-   if (!IvyXml.isElement(xml,"RESULT")) return null;
+   if (!IvyXml.isElement(xml,"RESULT")) return new ContractData(null);
 
    Element pe = IvyXml.getChild(xml,"PROJECT");
 
@@ -1256,14 +1258,20 @@ public List<BumpLocation> findAnnotations(String proj,String nm,boolean def,bool
  *	fields, methods, static initializers, and nested classes and interfaces.
  **/
 
-public List<BumpLocation> findAllDeclarations(String proj,String clsn)
+public List<BumpLocation> findAllDeclarations(String proj,File fil,String clsn)
 {
    waitForIDE();
 
-   clsn = localFixupName(clsn);
-   clsn = IvyXml.xmlSanitize(clsn);
+   String flds = "ALL='T'";
 
-   String flds = "CLASS='" + clsn + "' ALL='T'";
+   if (clsn != null) {
+      clsn = localFixupName(clsn);
+      clsn = IvyXml.xmlSanitize(clsn);
+      flds += " CLASS='" + clsn + "'";
+    }
+   if (fil != null) {
+      flds += " FILE='" + fil.getAbsolutePath() + "'";
+    }
    Element xml = getXmlReply("FINDREGIONS",proj,flds,null,0);
 
    return getSearchResults(proj,xml,false);
@@ -1709,6 +1717,18 @@ public Element rename(String proj,File file,int spos,int epos,String newname)
 
    return edits;
 }
+
+
+
+public boolean renameResource(String proj,File file,String newname)
+{
+   waitForIDE();
+
+   String rq = "FILE='" + file.getPath() + "' NEWNAME='" + newname + "'";
+
+   return getStatusReply("RENAMERESOURCE",proj,rq,null,0);
+}
+
 
 
 
@@ -3068,11 +3088,13 @@ protected class IDEHandler implements MintHandler {
 	  }
 	 else if (cmd.equals("BUILDDONE")) { }
 	 else if (cmd.equals("FILECHANGE")) { }
+	 else if (cmd.equals("PROJECTDATA")) { }
 	 else if (cmd.equals("PROJECTOPEN")) {
 	    String proj = IvyXml.getAttrString(e,"PROJECT");
 	    if (proj != null) handleProjectOpen(proj);
 	  }
 	 else if (cmd.equals("STOP")) {
+
 	    BoardLog.logI("BUMP","STOP received from eclipse");
 	    // possibly shut down if eclipse is running in foreground
 	  }

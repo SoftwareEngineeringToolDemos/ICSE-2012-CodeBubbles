@@ -179,12 +179,12 @@ private class ProjectHandler implements ActionListener {
       JComboBox cbx = (JComboBox) evt.getSource();
       String pnm = (String) cbx.getSelectedItem();
       if (pnm == null || pnm.equals("< Any Project >")) {
-	 if (current_project == null) return;
-	 current_project = null;
+         if (current_project == null) return;
+         current_project = null;
        }
       else if (pnm.equals(current_project)) return;
       else {
-	 current_project = pnm;
+         current_project = pnm;
        }
       resetTasks();
     }
@@ -513,24 +513,24 @@ private class DisplayHandler implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
       if (cmd.equals("Cancel")) {
-	 closeDialog(evt);
+         closeDialog(evt);
       }
       else {
-	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BbookQueryBubble.this);
-	 Rectangle r0 = BudaRoot.findBudaLocation(BbookQueryBubble.this);
-	 closeDialog(evt);
-	 Map<String,Object> props = new HashMap<String,Object>();
-	 if (current_project != null) props.put("PROJECT",current_project);
-	 if (current_task != null) props.put("TASK",current_task);
-	 if (current_user != null) props.put("USER",current_user);
-	 if (current_class != null) props.put("CLASS",current_class);
-	 if (current_method != null) props.put("METHOD",current_method);
-	 props.put("ORDERBY",current_order);
-	 BbookDisplayBuilder bld = new BbookDisplayBuilder(props);
-	 BudaBubble nbb = new BbookDisplayBubble(bld);
-	 if (bba != null && r0 != null) {
-	    bba.addBubble(nbb,null,r0.getLocation(),BudaConstants.PLACEMENT_LOGICAL);
-	  }
+         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BbookQueryBubble.this);
+         Rectangle r0 = BudaRoot.findBudaLocation(BbookQueryBubble.this);
+         closeDialog(evt);
+         Map<String,Object> props = new HashMap<String,Object>();
+         if (current_project != null) props.put("PROJECT",current_project);
+         if (current_task != null) props.put("TASK",current_task);
+         if (current_user != null) props.put("USER",current_user);
+         if (current_class != null) props.put("CLASS",current_class);
+         if (current_method != null) props.put("METHOD",current_method);
+         props.put("ORDERBY",current_order);
+         BbookDisplayBuilder bld = new BbookDisplayBuilder(props);
+         BudaBubble nbb = new BbookDisplayBubble(bld);
+         if (bba != null && r0 != null) {
+            bba.addBubble(nbb,null,r0.getLocation(),BudaConstants.PLACEMENT_LOGICAL);
+          }
       }
    }
 

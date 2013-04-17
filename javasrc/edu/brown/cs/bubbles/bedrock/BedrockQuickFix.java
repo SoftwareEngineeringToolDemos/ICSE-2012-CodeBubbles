@@ -75,12 +75,8 @@ private List<IQuickAssistProcessor> quick_assists;
 BedrockQuickFix(BedrockPlugin bp)
 {
    our_plugin = bp;
-   quick_fixes = new ArrayList<IQuickFixProcessor>();
-   quick_fixes.add(new org.eclipse.jdt.internal.ui.text.correction.QuickFixProcessor());
-   quick_fixes.add(new org.eclipse.jdt.internal.ui.text.spelling.WordQuickFixProcessor());
-   quick_assists = new ArrayList<IQuickAssistProcessor>();
-   quick_assists.add(new org.eclipse.jdt.internal.ui.text.correction.QuickAssistProcessor());
-   quick_assists.add(new org.eclipse.jdt.internal.ui.text.correction.QuickTemplateProcessor());
+   quick_fixes = null;
+   quick_assists = null;
 }
 
 
@@ -148,6 +144,8 @@ private class WJob extends WorkbenchJob {
     }
 
    @Override public IStatus runInUIThread(IProgressMonitor m) {
+      loadFixers();
+
       try {
 	 for (IQuickFixProcessor qp : quick_fixes) {
 	    try {
@@ -220,7 +218,9 @@ private void outputProposals(IJavaCompletionProposal [] props,IvyXmlWriter xw)
 
    for (IJavaCompletionProposal p : props) {
       try {
-	 BedrockPlugin.logD("COMPLETION: " + p.getRelevance() + " " + p.getDisplayString() + " " + p);
+	 BedrockPlugin.logD("COMPLETION: " + p.getRelevance() + " " + p.getDisplayString() + " " +
+			       p.getAdditionalProposalInfo() + " " +
+			       p + " " + p.getClass());
        }
       catch (Throwable t) { }
       if (isUsable(p)) {
@@ -234,8 +234,10 @@ private boolean isUsable(IJavaCompletionProposal p)
 {
    if (p == null) return false;
 
-   if (p.getClass().getName().equals("org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal"))
+   if (p.getClass().getName().equals("org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal")) {
+
       return false;
+    }
 
    try {
       Class<?> pcc = p.getClass();
@@ -402,6 +404,43 @@ private static class ProblemContext implements IProblemLocation {
     }
 
 }	// end of inner class ProblemContext
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Load internal quick fixes						*/
+/*										*/
+/********************************************************************************/
+
+private void loadFixers()
+{
+   if (quick_fixes == null) {
+      quick_fixes = new ArrayList<IQuickFixProcessor>();
+      quick_assists = new ArrayList<IQuickAssistProcessor>();
+    }
+
+   if (quick_fixes.size() == 0) {
+      try {
+	 quick_fixes.add(new org.eclipse.jdt.internal.ui.text.correction.QuickFixProcessor());
+	 quick_fixes.add(new org.eclipse.jdt.internal.ui.text.spelling.WordQuickFixProcessor());
+       }
+      catch (NoClassDefFoundError e) {
+	 BedrockPlugin.logE("Problem loading quick fixes",e);
+       }
+    }
+
+   if (quick_assists.size() == 0) {
+      try {
+	 quick_assists.add(new org.eclipse.jdt.internal.ui.text.correction.QuickAssistProcessor());
+	 quick_assists.add(new org.eclipse.jdt.internal.ui.text.correction.QuickTemplateProcessor());
+       }
+      catch (NoClassDefFoundError e) {
+	 BedrockPlugin.logE("Problem loading quick assists",e);
+       }
+    }
+}
 
 
 

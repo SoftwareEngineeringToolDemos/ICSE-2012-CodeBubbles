@@ -359,7 +359,7 @@ private void createEntryBubble(BussEntry be,BudaRoot root,Rectangle loc)
       bb.setVisible(true);
       bb.setFixed(false);
       root.add(bb,new BudaConstraint(loc.x,loc.y));
-      Dimension d = bb.getPreferredSize();
+      Dimension d = bb.getSize();
       loc.y += d.height + 25;
       bbl.addLinks(bb);
       bb.markBubbleAsNew();

@@ -252,7 +252,7 @@ String getClassName()			{ return for_class; }
 
 private void addAllRegions(String proj,String cls)
 {
-   List<BumpLocation> locs = bump_client.findAllDeclarations(proj,cls);
+   List<BumpLocation> locs = bump_client.findAllDeclarations(proj,null,cls);
    if (locs != null) {
       for (BumpLocation bl : locs) {
 	 BconRegion br = new BconRegionLocation(bale_file,bl);

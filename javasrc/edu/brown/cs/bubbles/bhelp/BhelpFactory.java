@@ -51,8 +51,8 @@ public class BhelpFactory implements BhelpConstants
 /********************************************************************************/
 
 private Map<String,BhelpDemo>	demo_map;
-private BudaRoot                buda_root;
-private BhelpWebServer          web_server;
+private BudaRoot		buda_root;
+private BhelpWebServer		web_server;
 
 private static BhelpFactory	the_factory = null;
 
@@ -84,7 +84,7 @@ private BhelpFactory(BudaRoot br)
        }
     }
    BudaRoot.addHyperlinkListener("showme",new Hyperlinker());
-   
+
    try {
       web_server = new BhelpWebServer();
       web_server.process();
@@ -96,7 +96,7 @@ private BhelpFactory(BudaRoot br)
 
 /********************************************************************************/
 /*										*/
-/*	Setup methods (called by BEAM)						*/
+/*	Setup methods (called by BEMA)						*/
 /*										*/
 /********************************************************************************/
 
@@ -112,8 +112,8 @@ public static void initialize(BudaRoot br)
    the_factory = new BhelpFactory(br);
 
    br.registerKeyAction(new TestAction(),"Test Help Sequence",
-         KeyStroke.getKeyStroke(KeyEvent.VK_SLASH,
-               InputEvent.SHIFT_DOWN_MASK|InputEvent.ALT_DOWN_MASK));
+	 KeyStroke.getKeyStroke(KeyEvent.VK_SLASH,
+	       InputEvent.SHIFT_DOWN_MASK|InputEvent.ALT_DOWN_MASK));
 }
 
 
@@ -130,7 +130,7 @@ public void startDemonstration(Component comp,String name)
    if (comp == null) {
       comp = buda_root.getCurrentBubbleArea();
     }
-   
+
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(comp);
    if (bba == null) {
       BudaRoot br = BudaRoot.findBudaRoot(comp);
@@ -146,9 +146,9 @@ public void startDemonstration(Component comp,String name)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Hyperlink actions                                                       */
-/*                                                                              */
+/*										*/
+/*	Hyperlink actions							*/
+/*										*/
 /********************************************************************************/
 
 private class Hyperlinker implements HyperlinkListener {
@@ -160,26 +160,26 @@ private class Hyperlinker implements HyperlinkListener {
       String what = d.substring(idx+1);
       startDemonstration((Component) e.getSource(),what);
    }
-   
+
 }	// end of inner class Hyperlinker
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Test actions                                                            */
-/*                                                                              */
+/*										*/
+/*	Test actions								*/
+/*										*/
 /********************************************************************************/
 
 private static class TestAction extends AbstractAction {
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       BhelpFactory bf = BhelpFactory.getFactory();
       Component c = (Component) e.getSource();
       bf.startDemonstration(c,"testaction");
     }
-   
-}       // end of inner class TestAction
+
+}	// end of inner class TestAction
 
 
 }	// end of class BhelpFactory

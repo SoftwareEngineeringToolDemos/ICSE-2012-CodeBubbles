@@ -34,6 +34,7 @@ import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.bump.*;
 
 import javax.swing.*;
 
@@ -41,6 +42,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
 
 
 class BassCreator implements BassConstants, BuenoConstants, BassConstants.BassPopupHandler {
@@ -258,7 +260,13 @@ private class NewMethodAction extends NewAction implements BuenoConstants.BuenoB
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
       BudaBubble bb = BaleFactory.getFactory().createMethodBubble(proj,name);
-      if (bb != null) bba.add(bb,new BudaConstraint(p));
+      if (bb != null) {
+	 bba.add(bb,new BudaConstraint(p));
+	 File f1 = bb.getContentFile();
+	 if (f1 != null) BumpClient.getBump().saveFile(proj,f1);
+	 BudaRoot br = BudaRoot.findBudaRoot(bb);
+	 if (br != null) br.handleSaveAllRequest();
+       }
    }
 
 }	// end of inner class NewMethodAction
@@ -306,7 +314,7 @@ private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBub
       BoardMetrics.noteCommand("BASS","NewType");
       BudaRoot.hideSearchBubble(e);
       BuenoClassDialog bcd = new BuenoClassDialog(search_bubble,access_point,create_type,
-        					     property_set,for_location,this);
+						     property_set,for_location,this);
       bcd.showDialog();
     }
 
@@ -384,7 +392,7 @@ private class NewModuleAction extends NewAction implements BuenoConstants.BuenoB
       BoardMetrics.noteCommand("BASS","NewModule");
       BudaRoot.hideSearchBubble(e);
       BuenoPythonModuleDialog bpd = new BuenoPythonModuleDialog(search_bubble,access_point,
-      						 property_set,for_location,this);
+						 property_set,for_location,this);
       bpd.showDialog();
     }
 

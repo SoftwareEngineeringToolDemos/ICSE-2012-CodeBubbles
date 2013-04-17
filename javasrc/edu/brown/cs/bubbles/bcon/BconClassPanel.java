@@ -388,7 +388,7 @@ private void setupElements()
    int idx = cnm.indexOf("<");
    if (idx > 0) cnm = cnm.substring(0,idx);
 
-   List<BumpLocation> locs = bump_client.findAllDeclarations(for_project,cnm);
+   List<BumpLocation> locs = bump_client.findAllDeclarations(for_project,null,cnm);
    if (locs != null) {
       for (BumpLocation bl : locs) {
 	 BconRegion br = new BconRegionLocation(bale_file,bl);

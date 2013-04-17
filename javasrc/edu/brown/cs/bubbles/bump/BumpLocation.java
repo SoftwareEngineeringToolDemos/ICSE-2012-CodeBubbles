@@ -368,7 +368,7 @@ public static boolean compareParameters(String s0,String s1)
 
 
 
-private static List<String> getParameterList(String arr)
+public static List<String> getParameterList(String arr)
 {
    List<String> rslt = new ArrayList<String>();
    int start = -1;

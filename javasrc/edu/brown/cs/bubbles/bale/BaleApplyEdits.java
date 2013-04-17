@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -31,6 +31,7 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.bump.*;
 
 import edu.brown.cs.ivy.xml.IvyXml;
 
@@ -85,14 +86,22 @@ BaleApplyEdits(BaleDocument bd)
 
 void applyEdits(Element xml)
 {
+   applyLocalEdits(xml);
+   applyResourceEdits(xml);
+}
+
+
+
+private void applyLocalEdits(Element xml)
+{
    if (IvyXml.isElement(xml,"EDITS") || IvyXml.isElement(xml,"RESULT")) {
-      for (Element c : IvyXml.children(xml)) applyEdits(c);
+      for (Element c : IvyXml.children(xml)) applyLocalEdits(c);
     }
    else if (IvyXml.isElement(xml,"CHANGE")) {
       String typ = IvyXml.getAttrString(xml,"TYPE");
       if (typ == null) return;
       else if (typ.equals("COMPOSITE")) {
-	 for (Element c : IvyXml.children(xml)) applyEdits(c);
+	 for (Element c : IvyXml.children(xml)) applyLocalEdits(c);
        }
       else if (typ.equals("EDIT")) {
 	 Element r = IvyXml.getChild(xml,"RESOURCE");
@@ -128,6 +137,34 @@ void applyEdits(Element xml)
     }
 }
 
+
+
+private void applyResourceEdits(Element xml)
+{
+   if (IvyXml.isElement(xml,"EDITS") || IvyXml.isElement(xml,"RESULT")) {
+      for (Element c : IvyXml.children(xml)) applyResourceEdits(c);
+    }
+   if (IvyXml.isElement(xml,"CHANGE")) {
+      String typ = IvyXml.getAttrString(xml,"TYPE");
+      if (typ == null) return;
+      else if (typ.equals("COMPOSITE")) {
+	 for (Element c : IvyXml.children(xml)) applyResourceEdits(c);
+       }
+      else if (typ.equals("RENAMERESOURCE")) {
+	 Element r = IvyXml.getChild(xml,"RESOURCE");
+	 if (r != null) {
+	    String newname = IvyXml.getAttrString(xml,"NEWNAME");
+	    String proj = IvyXml.getAttrString(r,"PROJECT");
+	    File fil = new File(IvyXml.getAttrString(r,"LOCATION"));
+	    BaleDocumentIde bde = BaleFactory.getFactory().getDocument(proj,fil);
+	    bde.flushEdits();
+	    BumpClient bc = BumpClient.getBump();
+	    // bc.saveFile(proj,fil);
+	    bc.renameResource(proj,fil,newname);
+	  }
+       }
+    }
+}
 
 
 

@@ -29,7 +29,7 @@
       <ACTION TYPE='SPEECH'>
 	 <TEXT>Then you can draw the background around by moving the mouse</TEXT>
       </ACTION>
-      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.45' >
+      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.33' >
 	  <POINT X='0' Y='-300' />
 	  <POINT X='300' Y='0' />
 	  <POINT X='0' Y='300' />
@@ -55,7 +55,7 @@
       <ACTION TYPE='SPEECH'>
 	 <TEXT>Then you can extend or shrink the size by moving the mouse</TEXT>
       </ACTION>
-      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.45' >
+      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.33' >
 	  <POINT X='200' Y='0' />
 	  <POINT X='-75' Y='0' />
 	  <POINT X='0' Y='0' />
@@ -78,7 +78,7 @@
       <ACTION TYPE='SPEECH'>
 	 <TEXT>Then you can move the bubble to where you want it.</TEXT>
       </ACTION>
-      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.45' >
+      <ACTION TYPE='MOVE' TARGET='point' DELAY='0.33' >
 	  <POINT X='300' Y='0' />
 	  <POINT X='0' Y='300' />
 	  <POINT X='-300' Y='0' />

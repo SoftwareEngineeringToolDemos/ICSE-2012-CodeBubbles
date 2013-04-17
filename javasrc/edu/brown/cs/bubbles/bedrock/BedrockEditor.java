@@ -1,4 +1,5 @@
-/********************************************************************************/ /*										   */
+/********************************************************************************/
+/*										*/
 /*		BedrockEditor.java						*/
 /*										*/
 /*	Handle editor-related commands for Bubbles				*/
@@ -577,6 +578,26 @@ void rename(String proj,String bid,String file,int start,int end,String name,Str
 
 
 
+void renameResource(String proj,String bid,String file,String newname,IvyXmlWriter xw)
+	throws BedrockException
+{
+   FileData fd = file_map.get(file);
+   ICompilationUnit icu;
+
+   icu = fd.getEditableUnit(bid);
+   icu = icu.getPrimary();
+
+   try {
+      icu.rename(newname,true,new NullProgressMonitor());
+    }
+   catch (JavaModelException e) {
+      throw new BedrockException("Problem renaming compilation unit: " + e,e);
+    }
+}
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Method extraction commands						*/
@@ -928,6 +949,31 @@ private String baseClassName(String s)
 
    return buf.toString();
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Private buffer commands 						*/
+/*										*/
+/********************************************************************************/
+
+void createPrivateBuffer(String proj,String bid,String file) throws BedrockException
+{
+   FileData fd = findFile(proj,file,null,null);
+   if (fd == null) throw new BedrockException("File not found");
+   fd.createPrivateBuffer(bid);
+}
+
+
+
+void removePrivateBuffer(String proj,String bid,String file) throws BedrockException
+{
+   FileData fd = findFile(proj,file,null,null);
+   if (fd != null) fd.removePrivateBuffer(bid);
+}
+
+
 
 
 /********************************************************************************/
@@ -1397,9 +1443,12 @@ private class FileData implements IBufferChangedListener {
    void clearElider(String bid) 		{ getBuffer(bid).clearElider(); }
    BedrockElider getElider(String bid)		{ return getBuffer(bid).getElider(); }
 
-   boolean hasChanged() 			{ return default_buffer.hasUnsavedChanges(); }
+   boolean hasChanged() {
+      if (default_buffer == null) return false;
+      return default_buffer.hasUnsavedChanges();
+    }
    String getCurrentContents()			{ return default_buffer.getContents(); }
-   int getLength() {				
+   int getLength() {
       return (default_buffer == null ? 0 : default_buffer.getLength());
     }
 
@@ -1428,10 +1477,26 @@ private class FileData implements IBufferChangedListener {
       synchronized (buffer_map) {
 	 BufferData bd = buffer_map.get(sid);
 	 if (bd == null) {
-	    bd = new BufferData(this,sid,comp_unit);
+	    bd = new BufferData(this,sid,comp_unit,false);
 	    buffer_map.put(sid,bd);
 	  }
 	 return bd;
+       }
+    }
+
+   private BufferData createPrivateBuffer(String sid) throws BedrockException {
+      synchronized (buffer_map) {
+	 BufferData bd = buffer_map.get(sid);
+	 if (bd != null) throw new BedrockException("Private Id already in use");
+	 bd = new BufferData(this,sid,comp_unit,true);
+	 buffer_map.put(sid,bd);
+	 return bd;
+       }
+    }
+
+   private void removePrivateBuffer(String sid) {
+      synchronized (buffer_map) {
+	 buffer_map.remove(sid);
        }
     }
 
@@ -1561,8 +1626,9 @@ private class BufferData {
    private BedrockElider elision_data;
    private CopyOwner copy_owner;
    private CompilationUnit last_ast;
+   private boolean is_private;
 
-   BufferData(FileData fd,String bid,ICompilationUnit base) {
+   BufferData(FileData fd,String bid,ICompilationUnit base,boolean pvt) {
       BedrockPlugin.logD("Create buffer for " + fd.getFileName() + " " + bid);
       file_data = fd;
       bedrock_id = bid;
@@ -1571,6 +1637,7 @@ private class BufferData {
       current_id = null;
       elision_data = null;
       last_ast = null;
+      is_private = pvt;
       copy_owner = new CopyOwner(file_data,bedrock_id);
     }
 
@@ -1581,7 +1648,8 @@ private class BufferData {
 	 // comp_unit.getSource() being null causes NullPointerException
 	 if (comp_unit.getSource() != null)
 	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
-	 comp_unit.getBuffer().addBufferChangedListener(file_data);
+	 if (!is_private)
+	    comp_unit.getBuffer().addBufferChangedListener(file_data);
 	 is_changed = true;
        }
       catch (JavaModelException e) {
@@ -1607,7 +1675,7 @@ private class BufferData {
       ICompilationUnit icu = getEditableUnit();
       CompilationUnit cu = null;
       try {
-	 copy_owner.setId(id);
+	 if (!is_private) copy_owner.setId(id);
 	 cu = icu.reconcile(AST.JLS3,true,true,null,null);
 	 if (cu == null) cu = last_ast;
 	 else last_ast = cu;
@@ -1657,7 +1725,7 @@ private class BufferData {
    BedrockElider checkElider()			{ return elision_data; }
    void clearElider()				{ elision_data = null; }
    synchronized BedrockElider getElider() {
-      if (elision_data == null) {
+      if (elision_data == null && !is_private) {
 	 elision_data = new BedrockElider();
        }
       return elision_data;
@@ -1668,6 +1736,7 @@ private class BufferData {
     }
 
    synchronized void commit(boolean refresh,boolean save) throws JavaModelException {
+      if (is_private) return;
       if (comp_unit != null) {
 	 if (save) {
 	    BedrockPlugin.log("COMMITING " + file_data.getFileName() + " " +

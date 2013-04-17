@@ -434,7 +434,7 @@ private void setupPackage(String nm,String load)
    if (load != null) {
       // setup class loader for load jar file
       // use this instead of Class.forName();
-      // see taiga.core.CoreClassLoader
+      // see URLClassLoader
     }
 
    try {

@@ -148,7 +148,7 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    middle_color = new Color((top_color.getRed() + bottom_color.getRed())/2,
 			       (top_color.getGreen() + bottom_color.getGreen())/2,
 			       (top_color.getBlue() + bottom_color.getBlue())/2);
-   
+
    Element shape = IvyXml.getChild(cfg,"SHAPE");
    int w = (int) IvyXml.getAttrDouble(shape,"WIDTH",BUBBLE_DISPLAY_WIDTH);
    int h = (int) IvyXml.getAttrDouble(shape,"HEIGHT",BUBBLE_DISPLAY_HEIGHT);
@@ -158,7 +158,7 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    if (h > BUBBLE_DISPLAY_HEIGHT && h > h0) h = Math.max(h0,BUBBLE_DISPLAY_HEIGHT);
    w = Math.max(w,BUBBLE_DISPLAY_WIDTH);
    h = Math.max(h,BUBBLE_DISPLAY_HEIGHT);
-   
+
    base_size = new Dimension(w,h);
 
    setSize(w,h);
@@ -1088,7 +1088,7 @@ public BudaHelpRegion getHelpRegion(Point pt)
 /*										*/
 /********************************************************************************/
 
-@Override public void print(Graphics g) 
+@Override public void print(Graphics g)
 {
    super.print(g);
 }
@@ -1216,6 +1216,24 @@ void paintOverview(Graphics2D g)
        }
     }
 }
+
+
+
+
+@Override public void repaint(long tm, int x, int y, int width, int height)
+{
+   if (scale_factor == 1.0 || (x == 0 && y == 0)) {
+      super.repaint(tm,x,y,width,height);
+    }
+   else {
+      int x0 = (int)(x * scale_factor);
+      int y0 = (int)(y * scale_factor);
+      int w0 = (int)(width * scale_factor);
+      int h0 = (int)(height * scale_factor);
+      super.repaint(tm,x0,y0,w0,h0);
+    }
+}
+
 
 
 
@@ -1690,7 +1708,7 @@ private Point setDockedLocation(BudaBubble bb)
 public boolean setBubbleFloating(BudaBubble bb, boolean fg)
 {
    synchronized(active_bubbles) {
-      if(!active_bubbles.contains(bb)) return false;
+      if (!active_bubbles.contains(bb)) return false;
     }
 
    if (bb.isFloating() == fg && !bb.isUserPos()) return false;
@@ -2912,6 +2930,9 @@ private class BubbleManager implements ComponentListener, ContainerListener {
 	 if (bb.isShowing()) {
 	    localAddBubble(bb,true);
 	    updateOverview();
+	  }
+	 else {
+	    BoardLog.logD("BUDA", "Non-showing bubble added: " + bb);
 	  }
        }
     }

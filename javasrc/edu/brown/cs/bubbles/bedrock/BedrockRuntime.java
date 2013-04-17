@@ -194,6 +194,9 @@ void getNewRunConfiguration(String proj,String name,String clone,String typ,IvyX
    if (config != null) {
       config.setAttribute(BEDROCK_LAUNCH_ID_PROP,"L_" + System.identityHashCode(config));
       config.removeAttribute(BEDROCK_LAUNCH_ORIGID_PROP);
+      if (cln == null) {
+	 config.setAttribute("org.eclipse.jdt.launching.STOP_IN_MAIN",true);
+       }
       working_configs.add(config);
       BedrockUtil.outputLaunch(config,xw);
     }

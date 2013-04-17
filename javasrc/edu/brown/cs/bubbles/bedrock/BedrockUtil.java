@@ -53,7 +53,7 @@ import org.eclipse.text.edits.*;
 import java.io.File;
 import java.util.*;
 import java.net.URL;
-
+import java.util.regex.*;
 
 
 class BedrockUtil implements BedrockConstants {
@@ -1159,6 +1159,7 @@ private static void outputSymbol(IJavaElement elt,String what,String nm,String k
 	  }
        }
       catch (JavaModelException e) { }
+      catch (NoClassDefFoundError e) { }
     }
 
    xw.field("SOURCE","USERSOURCE");
@@ -1747,6 +1748,8 @@ static void outputChange(Change chng,IvyXmlWriter xw)
    xw.begin("CHANGE");
    xw.field("NAME",chng.getName());
 
+   BedrockPlugin.logD("CHANGE: " + chng + " " + chng.getClass().getName());
+
    if (chng instanceof CompositeChange) {
       CompositeChange cc = (CompositeChange) chng;
       xw.field("TYPE","COMPOSITE");
@@ -1756,6 +1759,7 @@ static void outputChange(Change chng,IvyXmlWriter xw)
       xw.field("TYPE","NULL");
     }
    else if (chng instanceof ResourceChange) {
+      ResourceChange rc = (ResourceChange) chng;
       if (chng instanceof DeleteResourceChange) {
 	 xw.field("TYPE","DELETERESOURCE");
        }
@@ -1766,6 +1770,28 @@ static void outputChange(Change chng,IvyXmlWriter xw)
 	 RenameResourceChange rrc = (RenameResourceChange) chng;
 	 xw.field("TYPE","RENAMERESOURCE");
 	 xw.field("NEWNAME",rrc.getNewName());
+       }
+      else {
+	 String typ = rc.getName();
+	 Pattern p1 = Pattern.compile("Rename compilation unit '([^']*)' to '([^']*)'");
+	 Matcher m1 = p1.matcher(typ);
+	 if (m1.matches()) {
+	    xw.field("TYPE","RENAMERESOURCE");
+	    xw.field("OLDNAME",m1.group(1));
+	    xw.field("NEWNAME",m1.group(2));
+	  }
+	 else {
+	    BedrockPlugin.logD("UNKNOWN RESOURCE CHANGE: " + typ + " " + chng.getClass().getName());
+	  }
+       }
+      Object o = rc.getModifiedElement();
+      if (o instanceof IResource) {
+	 IResource ir = (IResource) o;
+	 BedrockUtil.outputResource(ir,xw);
+       }
+      else if (o instanceof ICompilationUnit) {
+	 IResource ir = ((ICompilationUnit) o).getResource();
+	 BedrockUtil.outputResource(ir,xw);
        }
     }
    else if (chng instanceof TextEditBasedChange) {
@@ -1780,6 +1806,9 @@ static void outputChange(Change chng,IvyXmlWriter xw)
     }
    else if (chng instanceof UndoTextFileChange) {
       xw.field("TYPE","UNDO");
+    }
+   else {
+      xw.field("CLASSTYPE",chng.getClass().getName());
     }
 
    Object [] aff = chng.getAffectedObjects();

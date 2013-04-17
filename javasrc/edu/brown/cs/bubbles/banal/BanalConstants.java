@@ -120,6 +120,23 @@ interface BanalPackageLink {
 }
 
 
+
+/********************************************************************************/
+/*										*/
+/*	Hierarchy interfaces							*/
+/*										*/
+/********************************************************************************/
+
+interface BanalHierarchyNode {
+
+   String getName();
+   int getLevel();
+   int getCycle();
+   
+}	// end of inner class BanalHierarchyNode
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Database constants							*/

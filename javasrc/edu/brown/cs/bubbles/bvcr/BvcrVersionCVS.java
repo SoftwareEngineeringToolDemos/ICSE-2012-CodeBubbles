@@ -111,14 +111,14 @@ String getRepositoryName()
 void getDifferences(BvcrDifferenceSet ds)
 {
    String cmd = cvs_command  + " diff";
-   
+
    String v0 = ds.getStartVersion();
    if (v0 != null) {
       cmd += " -r " + v0;
       String v1 = ds.getEndVersion();
       if (v1 != null) cmd += " -r " + v1;
     }
-   
+
    List<File> diffs = ds.getFilesToCompute();
    if (diffs == null) {
       cmd += " " + cvs_root.getPath();
@@ -175,11 +175,15 @@ void findHistory(File f,IvyXmlWriter xw)
    String msg = null;
    BvcrFileVersion prior = null;
    Collection<BvcrFileVersion> fvs = new ArrayList<BvcrFileVersion>();
+   String headversion = null;
 
    while (tok.hasMoreTokens()) {
       String ln = tok.nextToken();
       if (rev == null) {
 	 if (ln.startsWith("revision ")) rev = ln.substring(9).trim();
+	 else if (ln.startsWith("head: ")) {
+	    headversion = ln.substring(6);
+	  }
        }
       else {
 	 if (ln.startsWith("date: ")) {
@@ -200,9 +204,13 @@ void findHistory(File f,IvyXmlWriter xw)
 		}
 	     }
 	  }
-	 else if (ln.startsWith("----------------------------")) {
+	 else if (ln.startsWith("----------------------------") ||
+		     ln.startsWith("===================================================")) {
 	    if (auth != null && d != null) {
 	       BvcrFileVersion fv = new BvcrFileVersion(f,rev,d,auth,msg);
+	       if (headversion != null && headversion.equals(rev)) {
+		  fv.addAlternativeName("HEAD");
+		}
 	       if (prior != null) prior.addPriorVersion(fv);
 	       prior = fv;
 	       fvs.add(fv);

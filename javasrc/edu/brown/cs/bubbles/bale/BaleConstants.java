@@ -511,7 +511,8 @@ Stroke BALE_BUD_LINE_STROKE = new BasicStroke(1f,BasicStroke.CAP_BUTT,BasicStrok
  *	The font to be used in the crumb bar
  **/
 String BALE_CRUMB_FONT = "Bale.crumb.font";
-// Font BALE_CRUMB_FONT = BoardFont.getFont(Font.SANS_SERIF,Font.PLAIN,9);
+
+
 
 /**
  *  Boolean which determines whether the crumb bar should show method names
@@ -522,7 +523,6 @@ String BALE_CRUMB_SHOW_METHOD = "Bale.crumb.showmethod";
  *	The font used for methods in the crumb bar
  **/
 String BALE_CRUMB_METHOD_FONT = "Bale.crumb.font";
-// Font BALE_CRUMB_METHOD_FONT = BoardFont.getFont(Font.SANS_SERIF, Font.BOLD, 9);
 
 
 /**
@@ -559,6 +559,12 @@ Color BALE_CRUMB_METHOD_COLOR = new Color(50,50,50);
  *	The background color when the mouse rolls over an area of the crumb bar.
  **/
 Color BALE_CRUMB_ROLLOVER_COLOR = new Color(84,84,84,100);
+
+
+/**
+ *	Help icon for the crumb bar
+ **/
+String BALE_CRUMB_HELP_ICON = "crumbhelp.png";
 
 
 

@@ -1063,9 +1063,10 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
 	 for (IJavaElement ije : aps) {
 	    IJavaProject xjp = ije.getJavaProject();
 	    try {
-	       xjp.findType(cls);
-	       ijp = xjp;
-	       break;
+	       if (xjp.findType(cls) != null) {
+		  ijp = xjp;
+		  break;
+		}
 	     }
 	    catch (JavaModelException e) { }
 	  }

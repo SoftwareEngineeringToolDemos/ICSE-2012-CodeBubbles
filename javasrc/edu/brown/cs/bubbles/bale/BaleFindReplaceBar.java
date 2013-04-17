@@ -123,8 +123,6 @@ BaleFindReplaceBar(BaleEditorPane edt,boolean dorep)
    last_dir = 1;
    current_caret_position = edt.getCaretPosition();
 
-   editor_pane.addCaretListener(new HighlightCanceler());
-
    SwingGridPanel topbox = new SwingGridPanel();
 
    text_field = createTextField(10);
@@ -188,7 +186,10 @@ BaleFindReplaceBar(BaleEditorPane edt,boolean dorep)
     }
    catch (BadLocationException e) {
       my_highlight_tag = new Object();
+      BoardLog.logE("BALE","Problem creating highlight tag",e);
     }
+
+   editor_pane.addCaretListener(new HighlightCanceler());
 
    setReplace(dorep);
 }
@@ -488,6 +489,9 @@ private void replaceAll()
 
 private void clearHighlights()
 {
+   if (my_highlighter == null) return;	// can be called before constructor completes
+   if (my_highlight_tag == null) return;
+
    try {
       my_highlighter.changeHighlight(my_highlight_tag, 0, 0);
     }
@@ -535,7 +539,7 @@ private void clearHighlights()
 @Override public void caretUpdate(CaretEvent e)
 {
    JTextField tfld = (JTextField) e.getSource();
-  
+
    if (tfld == text_field) {
       String txt = tfld.getText();
       if (txt.equals(search_for)) return;

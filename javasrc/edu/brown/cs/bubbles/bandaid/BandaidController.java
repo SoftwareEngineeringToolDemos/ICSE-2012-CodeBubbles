@@ -74,6 +74,7 @@ private Thread			monitor_thread;
 private BitSet			ignore_thread;
 private BitSet			use_thread;
 private boolean 		thread_default;
+private String                  base_directory;
 
 private Map<String,ClassType>	class_map;
 private Map<String,ClassType>	package_map;
@@ -126,6 +127,7 @@ private BandaidController(String args,Instrumentation inst)
    start_time = System.currentTimeMillis();
    host_name = "localhost";
    port_number = BANDAID_PORT;
+   base_directory = null;
 
    setupClassTypes();
 
@@ -158,6 +160,7 @@ private BandaidController(String args,Instrumentation inst)
    defineAgent(new BandaidAgentDeadlock(this));
    defineAgent(new BandaidAgentHistory(this));
    defineAgent(new BandaidAgentSwing(this));
+   defineAgent(new BandaidAgentTrie(this));
 
    scanArgs(args);
 
@@ -254,11 +257,14 @@ private void scanArgs(String args)
 	  }
 	 catch (NumberFormatException e) { }
        }
-      else if (arg.equals("All")) {
+      else if (args.equals("base")) {
+         base_directory = val;
+       }
+      else if (arg.equalsIgnoreCase("All")) {
 	 addAllAgents();
        }
-      else if (agent_names.containsKey(arg)) {
-	 active_agents.add(agent_names.get(arg));
+      else if (agent_names.containsKey(arg.toUpperCase())) {
+	 active_agents.add(agent_names.get(arg.toUpperCase()));
        }
       else {
 	 System.err.println("BANDAID: Unknown argument: " + arg);
@@ -294,7 +300,7 @@ private void setHost(String h)
 
 private void defineAgent(BandaidAgent agt)
 {
-   agent_names.put(agt.getName(),agt);
+   agent_names.put(agt.getName().toUpperCase(),agt);
 }
 
 
@@ -375,6 +381,9 @@ boolean useThread()
 }
 
 
+String getBaseDirectory()               { return base_directory; }
+
+
 
 /********************************************************************************/
 /*										*/
@@ -418,7 +427,7 @@ private void processRequest(String rqst)
        }
     }
 
-   BandaidAgent agt = agent_names.get(who);
+   BandaidAgent agt = agent_names.get(who.toUpperCase());
    if (agt != null && cmd != null) {
       agt.handleCommand(cmd,args);
     }

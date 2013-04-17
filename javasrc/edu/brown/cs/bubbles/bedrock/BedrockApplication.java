@@ -215,18 +215,27 @@ static Display getDisplay()
 	 ec.start();
 	 sts = PlatformUI.createAndRunWorkbench(base_display,new WbAdvisor());
        }
-      catch (Throwable t) { }
+      catch (Throwable t) {
+	 System.err.println("BEDROCK: Start status: " + t);
+	 t.printStackTrace();
+       }
       if (base_display == null) {
 	 try {
 	    IWorkbench wb = PlatformUI.getWorkbench();
 	    base_display = wb.getDisplay();
 	  }
-	 catch (Throwable t) { }
+	 catch (Throwable t) {
+	    System.err.println("BEDROCK: Start1 status: " + t);
+	    t.printStackTrace();
+	  }
        }
+
+      BedrockPlugin.logD("BEDROCK SETUP STATUS " + sts);
 
       // this fails with RETURN_UNSTARTABLE
       if (sts == PlatformUI.RETURN_OK) return IApplication.EXIT_OK;
-      else if (sts == PlatformUI.RETURN_RESTART) return IApplication.EXIT_RELAUNCH;
+      else if (sts == PlatformUI.RETURN_RESTART || base_display == null)
+	 return IApplication.EXIT_RELAUNCH;
       else {
 	 exit_ok = false;
 	 BedrockPlugin.logD("BEDROCK: START STATUS = " + sts);
@@ -465,6 +474,7 @@ private class EndChecker extends Thread {
 	    String resp = bp.finishMessageWait(xw,600000);
 	    if (resp != null) ctr = 0;
 	    else if (++ctr >= 2) {
+	       System.err.println("BEDROCK: End checker stopping");
 	       xw = bp.beginMessage("STOP");
 	       bp.finishMessage(xw);
 	       bp.forceExit();

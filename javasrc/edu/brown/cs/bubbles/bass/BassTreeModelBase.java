@@ -224,8 +224,21 @@ private TreeLeaf insertNode(BassName nm,TreeLeaf last)
       Branch cn = new Branch(comps[0],p);
       p.addChild(cn);
       return null;
-   }
+    }
 
+   computeBranchType(nm,p);
+
+   TreeLeaf tl = new TreeLeaf(nm,p);
+   p.addChild(tl);
+   ++leaf_count;
+
+   return tl;
+}
+
+
+
+private static void computeBranchType(BassName nm,Branch p)
+{
    switch (nm.getNameType()) {
       case INTERFACE :
 	 p.setBranchType(BranchNodeType.INTERFACE);
@@ -245,13 +258,7 @@ private TreeLeaf insertNode(BassName nm,TreeLeaf last)
       default :
 	 p.setBranchType(BranchNodeType.CLASS);
 	 break;
-   }
-
-   TreeLeaf tl = new TreeLeaf(nm,p);
-   p.addChild(tl);
-   ++leaf_count;
-
-   return tl;
+    }
 }
 
 
@@ -374,14 +381,14 @@ void rebuild()
    try {
       root_node.addAllNames(dels);
 
-      for(BassName ba : for_repository.getAllNames()) {
+      for (BassName ba : for_repository.getAllNames()) {
 	 if(dels.remove(ba)) continue;
 	 adds.add(ba);
        }
-      for(BassName ba : dels) {
+      for (BassName ba : dels) {
 	 removeNode(ba);
        }
-      for(BassName ba : adds){
+      for (BassName ba : adds) {
 	 root_node.addNode(ba,true);
       }
 
@@ -744,9 +751,20 @@ private static class Branch extends BassTreeImpl {
 	    if (nm.startsWith(pat)) return null;
 	 }
 	 Branch bb = new Branch(comps[0],parent);
+	 computeBranchType(bn,bb);
 	 parent.addChild(bb);
 	 return bb;
-      }
+       }
+      else if ((bn.getNameType() == BassNameType.CLASS || bn.getNameType() == BassNameType.INTERFACE ||
+	          bn.getNameType() == BassNameType.ENUM)
+	       && bn.getClassName() != null && 
+	       parent.getBranchType() == BranchNodeType.PACKAGE) {
+	 // System.err.println("CHECK " + parent.getFullName() + " " + bn.getName() + " " + bn.getClassName());
+	 if (parent.getFullName().endsWith(bn.getName())) {
+	    computeBranchType(bn,parent);
+	 }
+       }
+	       
 
       TreeLeaf tl = parent.insertChild(bn);
       ++leaf_count;

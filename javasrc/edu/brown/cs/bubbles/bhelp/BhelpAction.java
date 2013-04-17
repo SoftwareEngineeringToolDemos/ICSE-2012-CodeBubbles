@@ -117,6 +117,20 @@ void executeStopped(BhelpContext ctx) throws BhelpException
 
 
 
+private static boolean isChangeableBubble(BudaBubble bb,String type) 
+{
+   if (bb.isTransient()) return false;
+   if (bb.isDocked()) return false;
+   if (bb.isUserPos()) return false;
+   if (type == null) return true;
+   String cnm = bb.getClass().getName();
+   if (cnm.contains(type)) return true;
+
+   return false;
+ }
+
+
+
 /********************************************************************************/
 /*										*/
 /*	FindBubble action							*/
@@ -175,6 +189,7 @@ private static class FindBubbleAction extends BhelpAction {
 	 Rectangle r1 = BudaRoot.findBudaLocation(bb);
 	 if (!rv.contains(r1)) continue;
 	 if (!checkBubbleType(bb)) continue;
+	 // should detect if bb is actually visible on the screen or if it is obscured
 	 double score = pt.distance(r1.x + r1.width/2, r1.y + r1.height/2);
 	 if (rslt == null || score < best) {
 	    rslt = bb;
@@ -186,12 +201,7 @@ private static class FindBubbleAction extends BhelpAction {
     }
 
    private boolean checkBubbleType(BudaBubble bb) {
-      if (bb.isTransient()) return false;
-      if (bubble_type == null) return true;
-      String cnm = bb.getClass().getName();
-      if (cnm.contains(bubble_type)) return true;
-
-      return false;
+      return isChangeableBubble(bb,bubble_type);
     }
 
 }	// end of inner class FindBubbleAction
@@ -215,6 +225,7 @@ private static class FindBackgroundAction extends BhelpAction {
    private String  near_var;
    private String area_type;
    private String result_variable;
+   private String bubble_type;
 
    FindBackgroundAction(Element xml) {
       super(xml);
@@ -226,47 +237,56 @@ private static class FindBackgroundAction extends BhelpAction {
       area_type = IvyXml.getAttrString(xml,"AREA");
       result_variable = IvyXml.getAttrString(xml,"SET");
       near_var = IvyXml.getAttrString(xml,"NEAR");
+      bubble_type = IvyXml.getAttrString(xml,"CLASS");
     }
 
    @Override void executeAction(BhelpContext ctx) throws BhelpException {
       BudaRoot br = ctx.getBudaRoot();
       Rectangle r = br.getBounds();
-   
+
       Point pt = null;
       if (near_current) {
-         pt = ctx.getMouse();
-         if (pt.x < 0) pt.x = 0;
-         if (pt.y < 0) pt.y = 0;
-         if (pt.x > br.getWidth()) pt.x = br.getWidth();
-         if (pt.y > br.getHeight()) pt.y = br.getHeight();
-         // pt = MouseInfo.getPointerInfo().getLocation();
-         // SwingUtilities.convertPointFromScreen(pt,br);
+	 pt = ctx.getMouse();
+	 if (pt.x < 0) pt.x = 0;
+	 if (pt.y < 0) pt.y = 0;
+	 if (pt.x > br.getWidth()) pt.x = br.getWidth();
+	 if (pt.y > br.getHeight()) pt.y = br.getHeight();
+	 // pt = MouseInfo.getPointerInfo().getLocation();
+	 // SwingUtilities.convertPointFromScreen(pt,br);
        }
       else if (near_var != null) pt = ctx.getPoint(near_var);
       if (pt == null) {
-         int x = r.x + r.width/2;
-         int y = r.y + r.height/2;
-         if (near_left) x = 0;
-         else if (near_right) x = r.x + r.width;
-         if (near_top) y = 0;
-         else if (near_bottom) y = r.y + r.height;
-         pt = new Point(x,y);
+	 int x = r.x + r.width/2;
+	 int y = r.y + r.height/2;
+	 if (near_left) x = 0;
+	 else if (near_right) x = r.x + r.width;
+	 if (near_top) y = 0;
+	 else if (near_bottom) y = r.y + r.height;
+	 pt = new Point(x,y);
        }
-   
+
       int delta = 1;		// pixel delta for search
       int incr = 1;		// current increment
-      for (int i = 0; i < 100000; ++i) {
-         if (checkPoint(ctx,pt)) break;
-         pt.x += incr * delta;
-         if (checkPoint(ctx,pt)) break;
-         pt.y += incr * delta;
-         int v = Math.abs(incr) + 1;
-         if (incr > 0) incr = -v;
-         else incr = v;
+      for (int i = 0; i < 40000; ++i) {
+	 if (checkPoint(ctx,pt)) break;
+	 boolean fnd = false;
+	 for (int j = 0; j < Math.abs(incr); ++j) {
+	    pt.x += (incr > 0 ? delta : -delta);
+	    if (checkPoint(ctx,pt)) { fnd = true; break; }
+	  }
+	 if (fnd) break;
+	 for (int j = 0; j < Math.abs(incr); ++j) {
+	    pt.y += (incr > 0 ? delta : -delta);
+	    if (checkPoint(ctx,pt)) { fnd = true; break; }
+	  }
+	 if (fnd) break;
+	 int v = Math.abs(incr) + 1;
+	 if (incr > 0) incr = -v;
+	 else incr = v;
        }
-   
+
       if (!checkPoint(ctx,pt)) throw new BhelpException("No space found");
-   
+
       ctx.setValue(result_variable,pt);
     }
 
@@ -307,9 +327,16 @@ private static class FindBackgroundAction extends BhelpAction {
 	    if (cnm.contains("BudaOverviewBar")) return true;
 	  }
 	 else if (area_type.startsWith("BORDER") || area_type.equals("LINK")) {
-	    if (bhr != null && bhr.getRegion().toString().equals(area_type)) return true;
-	    else if (bhr != null)
+	    if (bhr != null && bhr.getRegion().toString().equals(area_type)) {
+	       if (area_type.startsWith("BORDER")) {
+		  BudaBubble bb = bhr.getBubble();
+		  if (bb != null && isChangeableBubble(bb,bubble_type)) 
+		     return true;
+	        }
+	     }
+	    else if (bhr != null) {
 	       return false;
+	    }
 	  }
        }
       return false;
@@ -356,61 +383,61 @@ private static class MoveMouseAction extends BhelpAction {
    @Override void executeAction(BhelpContext ctx) throws BhelpException {
       Point st = ctx.getMouse();
       Point tg = ctx.getPoint(target_name);
-   
+
       Path2D.Float path = new Path2D.Float();
       path.moveTo(st.getX(),st.getY());
       if (point_list != null) {
-         for (Point p : point_list) {
-            path.lineTo(st.getX() + p.x, st.getY() + p.y);
-         }
+	 for (Point p : point_list) {
+	    path.lineTo(st.getX() + p.x, st.getY() + p.y);
+	 }
       }
       if (tg != null) path.lineTo(tg.getX(),tg.getY());
-   
+
       double x0 = 0;
       double y0 = 0;
       double [] coords = new double[6];
       for (PathIterator pi = path.getPathIterator(null,1); !pi.isDone(); pi.next()) {
-         switch (pi.currentSegment(coords)) {
-            case PathIterator.SEG_MOVETO :
-               x0 = coords[0];
-               y0 = coords[1];
-               break;
-            case PathIterator.SEG_LINETO :
-               moveMouse(ctx,x0,y0,coords[0],coords[1]);
-               x0 = coords[0];
-               y0 = coords[1];
-               break;
-            case PathIterator.SEG_CLOSE :
-               break;
-            default :
-               break;
-          }
+	 switch (pi.currentSegment(coords)) {
+	    case PathIterator.SEG_MOVETO :
+	       x0 = coords[0];
+	       y0 = coords[1];
+	       break;
+	    case PathIterator.SEG_LINETO :
+	       moveMouse(ctx,x0,y0,coords[0],coords[1]);
+	       x0 = coords[0];
+	       y0 = coords[1];
+	       break;
+	    case PathIterator.SEG_CLOSE :
+	       break;
+	    default :
+	       break;
+	  }
        }
     }
 
    private void moveMouse(BhelpContext ctx,double x0,double y0,double x1,double y1)
-        throws BhelpException {
+	throws BhelpException {
       if (is_jump) {
-         ctx.mouseMove((int) x1,(int) y1);
-         return;
+	 ctx.mouseMove((int) x1,(int) y1);
+	 return;
        }
-   
+
       double delay = 0;
       double len = Point.distance(x0,y0,x1,y1);
       double steps = Math.ceil(len);
       for (int i = 0; i <= steps; ++i) {
-         double d = i;
-         if (steps > 0) d /= steps;
-         double x = x0 + d * (x1-x0);
-         double y = y0 + d * (y1-y0);
-         ctx.mouseMove((int) x,(int) y);
-         delay += delay_time;
-         if (delay >= 1) {
-            int di = (int) delay;
-            delay -= di;
-            ctx.delay(di);
-          }
-         if (ctx.isStopped()) break;
+	 double d = i;
+	 if (steps > 0) d /= steps;
+	 double x = x0 + d * (x1-x0);
+	 double y = y0 + d * (y1-y0);
+	 ctx.mouseMove((int) x,(int) y);
+	 delay += delay_time;
+	 if (delay >= 1) {
+	    int di = (int) delay;
+	    delay -= di;
+	    ctx.delay(di);
+	  }
+	 if (ctx.isStopped()) break;
        }
     }
 
@@ -434,13 +461,13 @@ private static class MousePressAction extends BhelpAction {
       super(xml);
       String btns = IvyXml.getAttrString(xml,"BUTTON");
       if (btns != null && btns.length() > 0 && Character.isDigit(btns.charAt(0))) {
-         mouse_buttons = IvyXml.getAttrInt(xml,"BUTTON",1);
+	 mouse_buttons = IvyXml.getAttrInt(xml,"BUTTON",1);
        }
       else if (btns != null) {
-         mouse_buttons = 0;
-         if (btns.contains("LEFT")) mouse_buttons |= InputEvent.BUTTON1_MASK;
-         if (btns.contains("RIGHT")) mouse_buttons |= InputEvent.BUTTON3_MASK;
-         if (btns.contains("MIDDLE")) mouse_buttons |= InputEvent.BUTTON2_MASK;
+	 mouse_buttons = 0;
+	 if (btns.contains("LEFT")) mouse_buttons |= InputEvent.BUTTON1_MASK;
+	 if (btns.contains("RIGHT")) mouse_buttons |= InputEvent.BUTTON3_MASK;
+	 if (btns.contains("MIDDLE")) mouse_buttons |= InputEvent.BUTTON2_MASK;
        }
       mouse_up = IvyXml.getAttrBool(xml,"UP");
       mouse_down = IvyXml.getAttrBool(xml,"DOWN",!mouse_up);
@@ -464,20 +491,20 @@ private static class MousePressAction extends BhelpAction {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      KeyAction class                                                         */
-/*                                                                              */
+/*										*/
+/*	KeyAction class 							*/
+/*										*/
 /********************************************************************************/
 
 private static class KeyAction extends BhelpAction {
-   
+
    private boolean do_control;
    private boolean do_shift;
    private boolean do_alt;
-   private int     key_code;
+   private int	   key_code;
    private boolean do_press;
    private boolean do_release;
-   
+
    KeyAction(Element xml) {
       super(xml);
       do_control = IvyXml.getAttrBool(xml,"CONTROL");
@@ -487,38 +514,38 @@ private static class KeyAction extends BhelpAction {
       do_press = IvyXml.getAttrBool(xml,"DOWN");
       do_release = IvyXml.getAttrBool(xml,"UP");
       if (!do_press && !do_release) {
-         do_press = true;
-         do_release = true;
+	 do_press = true;
+	 do_release = true;
        }
       String knm = IvyXml.getAttrString(xml,"KEY");
       if (key_code == 0 && knm != null) {
-         if (!knm.startsWith("VK_")) knm = "VK_" + knm;
-         try {
-            Field f = KeyEvent.class.getField(knm);
-            key_code = f.getInt(null);
-          }
-         catch (Throwable t) {
-            BoardLog.logE("BHELP","Problem with key name: " + knm + ": " + t);
-          }
+	 if (!knm.startsWith("VK_")) knm = "VK_" + knm;
+	 try {
+	    Field f = KeyEvent.class.getField(knm);
+	    key_code = f.getInt(null);
+	  }
+	 catch (Throwable t) {
+	    BoardLog.logE("BHELP","Problem with key name: " + knm + ": " + t);
+	  }
        }
     }
-   
+
    @Override void executeAction(BhelpContext ctx) throws BhelpException {
       if (do_press) {
-         if (do_control) ctx.keyPress(KeyEvent.VK_CONTROL);
-         if (do_shift) ctx.keyPress(KeyEvent.VK_SHIFT);
-         if (do_alt) ctx.keyPress(KeyEvent.VK_ALT);
-         if (key_code != 0) ctx.keyPress(key_code);
+	 if (do_control) ctx.keyPress(KeyEvent.VK_CONTROL);
+	 if (do_shift) ctx.keyPress(KeyEvent.VK_SHIFT);
+	 if (do_alt) ctx.keyPress(KeyEvent.VK_ALT);
+	 if (key_code != 0) ctx.keyPress(key_code);
        }
       if (do_release) {
-         if (key_code != 0) ctx.keyRelease(key_code);
-         if (do_alt) ctx.keyRelease(KeyEvent.VK_ALT);
-         if (do_shift) ctx.keyRelease(KeyEvent.VK_SHIFT);
-         if (do_control) ctx.keyRelease(KeyEvent.VK_CONTROL);
+	 if (key_code != 0) ctx.keyRelease(key_code);
+	 if (do_alt) ctx.keyRelease(KeyEvent.VK_ALT);
+	 if (do_shift) ctx.keyRelease(KeyEvent.VK_SHIFT);
+	 if (do_control) ctx.keyRelease(KeyEvent.VK_CONTROL);
        }
     }
-   
-}       // end of inner class KeyAction
+
+}	// end of inner class KeyAction
 
 
 
@@ -618,22 +645,22 @@ private static class SpeechAction extends BhelpAction {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Reset Action                                                            */
-/*                                                                              */
+/*										*/
+/*	Reset Action								*/
+/*										*/
 /********************************************************************************/
 
 private static class ResetAction extends BhelpAction {
-   
+
    ResetAction(Element xml) {
       super(xml);
     }
-   
+
    @Override void executeAction(BhelpContext ctx) throws BhelpException {
       ctx.reset();
     }
 
-}       // end of inner class ResetAction
+}	// end of inner class ResetAction
 
 
 

@@ -92,7 +92,8 @@ private void scanArgs(String [] args)
          if (args[i].startsWith("-m") && i+1 < args.length) {   // -m <mint handle>
             mint_handle = args[++i];
           }
-         else if (args[i].startsWith("-S")) ;                   // -SERVER            
+         else if (args[i].startsWith("-S")) {                   // -SERVER     
+          }
          else badArgs();
        }
       else {
@@ -121,8 +122,10 @@ private void process()
 {
    the_monitor = new BanalMonitor(this,mint_handle);
    the_monitor.server();
+   
    System.exit(0);
 }
+
 
 
 

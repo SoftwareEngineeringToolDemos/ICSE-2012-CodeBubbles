@@ -337,7 +337,8 @@ String HELP_TUTORIAL_URL = "http://www.cs.brown.edu/people/spr/codebubbles/tutor
 String HELP_TUTORIAL_KEY = "Beam.help.tutorial";
 String HELP_TODO_URL = "http://www.cs.brown.edu/people/spr/codebubbles/todohelp.html";
 String HELP_TODO_KEY = "Beam.help.todo";
-
+String HELP_MAIL_URL = "spr+bubbles@cs.brown.edu";
+String HELP_MAIL_KEY = "Beam.help.mailto";
 
 
 }	 // end in interface BeamConstants

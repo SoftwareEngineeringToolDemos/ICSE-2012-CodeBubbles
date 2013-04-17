@@ -32,6 +32,7 @@ package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.burp.*;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -279,8 +280,22 @@ private static class EditBasedFixup implements Fixup {
       File file = for_fix.getFile();
       BaleFileOverview bfo = BaleFactory.getFactory().getFileOverview(proj,file);
       BaleDocumentIde bd = (BaleDocumentIde) bfo;
-      BaleApplyEdits app = new BaleApplyEdits(bd);
-      app.applyEdits(edit_fix.getEdits());
+      
+      BurpHistory bh = null;
+      BaleEditorPane htxt = null;
+      if (evt.getSource() instanceof BaleEditorPane) {
+         bh = BurpHistory.getHistory();
+         htxt = (BaleEditorPane) evt.getSource();
+         bh.beginEditAction(htxt);
+       }
+      
+      try {
+         BaleApplyEdits app = new BaleApplyEdits(bd);
+         app.applyEdits(edit_fix.getEdits());
+       }
+      finally {
+         if (bh != null) bh.endEditAction(htxt);
+       }
     }
 
 }	// end of inner class EditBasedFixup

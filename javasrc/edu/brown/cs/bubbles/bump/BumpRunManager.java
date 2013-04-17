@@ -28,6 +28,7 @@ package edu.brown.cs.bubbles.bump;
 import edu.brown.cs.bubbles.bandaid.BandaidConstants;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.BoardProperties;
 
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.mint.*;
@@ -161,7 +162,7 @@ BumpRunManager()
       default:
 	 break;
     }
-   
+
    switch (BoardSetup.getSetup().getLanguage()) {
       case JAVA :
 	 break;
@@ -303,7 +304,7 @@ String startDebugArgs(String id)
    startDebugServer();
 
    if (server_host == null) return null;
-   
+
    String p = BoardSetup.getSetup().getLibraryPath("bandaid.jar");
    if (p == null) return null;
 
@@ -311,7 +312,15 @@ String startDebugArgs(String id)
    args += "host=" + server_host;
    args += ";port=" + server_port;
    if (id != null) args += ";id=" + id;
-   args += ";enable;All";
+   args += ";enable";
+   
+   BoardProperties bp = BoardProperties.getProperties("Bandaid");
+   String agts = bp.getProperty("Bandaid.agents");
+   if (agts == null) agts = "All";
+   agts = agts.replace(",",";");
+   agts = agts.replace(" ",";");
+   agts = agts.replace(":",";");
+   args += ";" + agts;
 
    return args;
 }
@@ -1037,6 +1046,8 @@ private class LaunchConfig implements BumpLaunchConfig {
       String args = null;
 
       BumpContractType bct = bump_client.getContractType(project_name);
+      if (bct == null) return null;
+
       if (use_contracts && bct.useContractsForJava()) {
 	 String libf = BoardSetup.getSetup().getLibraryPath("cofoja.jar");
 	 args = "-javaagent:" + libf;
@@ -1295,59 +1306,72 @@ private class ProcessData implements BumpProcess {
    void handleBandaidData(long when,Element xml) {
       Map<String,ThreadData> ths = new HashMap<String,ThreadData>();
       for (ThreadData td : active_threads.values()) {
-	 if (td.getProcess() == this) ths.put(td.getName(),td);
+         if (td.getProcess() == this) ths.put(td.getName(),td);
        }
-
+   
       Element x = IvyXml.getChild(xml,"STATES");
       for (Element tc : IvyXml.children(x,"THREAD")) {
-	 String nm = IvyXml.getAttrString(tc,"NAME");
-	 ThreadData td = ths.get(nm);
-	 if (td != null && td.handleBandaidData(tc)) {
-	    ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
-	    for (BumpRunEventHandler reh : event_handlers) {
-	       try {
-		  reh.handleThreadEvent(evt);
-		}
-	       catch (Throwable t) {
-		  BoardLog.logE("BUMP","Problem handling state event",t);
-		}
-	     }
-	  }
+         String nm = IvyXml.getAttrString(tc,"NAME");
+         ThreadData td = ths.get(nm);
+         if (td != null && td.handleBandaidData(tc)) {
+            ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
+            for (BumpRunEventHandler reh : event_handlers) {
+               try {
+        	  reh.handleThreadEvent(evt);
+        	}
+               catch (Throwable t) {
+        	  BoardLog.logE("BUMP","Problem handling state event",t);
+        	}
+             }
+          }
        }
-
+   
       Element dx = IvyXml.getChild(xml,"DEADLOCKS");
       if (dx != null) {
-	 for (Element de : IvyXml.children(dx,"DEADLOCK")) {
-	    for (Element te : IvyXml.children(de,"THREAD")) {
-	       String nm = IvyXml.getAttrString(te,"NAME");
-	       ThreadData td = ths.get(nm);
-	       if (td != null && td.handleBandaidDeadlock()) {
-		  ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
-		  for (BumpRunEventHandler reh : event_handlers) {
-		     try {
-			reh.handleThreadEvent(evt);
-		      }
-		     catch (Throwable t) {
-			BoardLog.logE("BUMP","Problem handling deadlock state event",t);
-		      }
-		   }
-		}
-	     }
-	  }
+         for (Element de : IvyXml.children(dx,"DEADLOCK")) {
+            for (Element te : IvyXml.children(de,"THREAD")) {
+               String nm = IvyXml.getAttrString(te,"NAME");
+               ThreadData td = ths.get(nm);
+               if (td != null && td.handleBandaidDeadlock()) {
+        	  ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
+        	  for (BumpRunEventHandler reh : event_handlers) {
+        	     try {
+        		reh.handleThreadEvent(evt);
+        	      }
+        	     catch (Throwable t) {
+        		BoardLog.logE("BUMP","Problem handling deadlock state event",t);
+        	      }
+        	   }
+        	}
+             }
+          }
        }
-
+   
       Element px = IvyXml.getChild(xml,"CPUPERF");
       if (px != null) {
-	 // BoardLog.logD("BUMP","CPU PERF: " + IvyXml.convertXmlToString(px));
-	 ProcessPerfEvent ppe = new ProcessPerfEvent(this,px);
-	 for (BumpRunEventHandler reh : event_handlers) {
-	    try {
-	       reh.handleProcessEvent(ppe);
-	     }
-	    catch (Throwable t) {
-	       BoardLog.logE("BUMP","Problem handling performance event",t);
-	     }
-	  }
+         // BoardLog.logD("BUMP","CPU PERF: " + IvyXml.convertXmlToString(px));
+         ProcessPerfEvent ppe = new ProcessPerfEvent(this,px);
+         for (BumpRunEventHandler reh : event_handlers) {
+            try {
+               reh.handleProcessEvent(ppe);
+             }
+            catch (Throwable t) {
+               BoardLog.logE("BUMP","Problem handling performance event",t);
+             }
+          }
+       }
+      Element tx = IvyXml.getChild(xml,"TRIE");
+      if (tx != null) {
+         // BoardLog.logD("BUMP","TRIE DATA: " + IvyXml.convertXmlToString(tx));
+         ProcessTrieEvent pte = new ProcessTrieEvent(this,tx);
+         for (BumpRunEventHandler reh : event_handlers) {
+            try {
+               reh.handleProcessEvent(pte);
+             }
+            catch (Throwable t) {
+               BoardLog.logE("BUMP","Problem handling trie event",t);
+             }
+          }   
        }
    }
 
@@ -1817,7 +1841,6 @@ private class ValueData implements BumpRunValue {
 /*										*/
 /********************************************************************************/
 
-
 private class StepUserFilter implements BumpThreadFilter {
 
    private BumpThreadStack initial_stack;
@@ -1897,7 +1920,7 @@ private class BandaidHandler implements MintHandler {
       long now = args.getLongArgument(1);
       Element xml = args.getXmlArgument(2);
       ProcessData pd = named_processes.get(pid);
-
+   
       if (pd == null) return;
       pd.handleBandaidData(now,xml);
     }
@@ -1991,6 +2014,37 @@ private static class ProcessPerfEvent extends BaseEvent {
    @Override public long getWhen()			{ return 0; }
    @Override public Object getEventData()		{ return cpu_data; }
 
+}	// end of inner class ProcessPerfEvent
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Trie management							*/
+/*										*/
+/********************************************************************************/
+
+private static class ProcessTrieEvent extends BaseEvent {
+   
+   private ProcessData for_process;
+   private Element trie_data;
+   
+   ProcessTrieEvent(ProcessData pd,Element cpudata) {
+      for_process = pd;
+      trie_data = cpudata;
+    }
+   
+   @Override public BumpRunEventType getEventType()	{ return BumpRunEventType.PROCESS_TRIE; }
+   @Override public BumpProcess getProcess()		{ return for_process; }
+   @Override public BumpLaunch getLaunch()		{ return for_process.getLaunch(); }
+   @Override public BumpLaunchConfig getLaunchConfiguration() {
+      BumpLaunch bl = for_process.getLaunch();
+      if (bl == null) return null;
+      return bl.getConfiguration();
+    }
+   @Override public long getWhen()			{ return 0; }
+   @Override public Object getEventData()		{ return trie_data; }
+   
 }	// end of inner class ProcessPerfEvent
 
 

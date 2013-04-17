@@ -82,6 +82,7 @@ void addPanel()
    btn.setFont(ft);
    btn.setOpaque(false);
    btn.add(new HelpHomeAction());
+   btn.add(new HelpMailAction());
    btn.add(new HelpVideoAction());
    btn.add(new HelpWikiAction());
    btn.add(new HelpTutorialAction());
@@ -265,6 +266,41 @@ private class HelpMouseAction extends AbstractAction {
 
 }	// end of inner class HelpMouseAction
 
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Mail question								*/
+/*										*/
+/********************************************************************************/
+
+private class HelpMailAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   HelpMailAction() {
+      super("Ask a Question");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardProperties bp = BoardProperties.getProperties("Beam");
+      String addr = bp.getProperty(HELP_MAIL_KEY,HELP_MAIL_URL);
+      int idx = addr.indexOf("@");
+      addr = addr.substring(0,idx) + "+bubbles" + addr.substring(idx);
+      String full = "mailto:" + addr + "?subject=Bubbles%20Question&body=Your%20Question%20Here";
+
+      try {
+	 URI u = new URI(full);
+	 Desktop.getDesktop().mail(u);
+       }
+      catch (Throwable t) {
+	 BoardLog.logE("BEAM","Problem sending help mail " + full,t);
+       }
+    }
+
+}	// end of inner class HelpMailAction
 
 
 

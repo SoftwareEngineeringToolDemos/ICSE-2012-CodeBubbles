@@ -60,7 +60,7 @@ private final static int	BUFFER_SIZE = 50;
 
 BandaidAgentHistory(BandaidController bc)
 {
-   super(bc,"HISTORY");
+   super(bc,"History");
 
    thread_data = new HashMap<String,ThreadData>();
    stop_data = new HashMap<String,StopData>();
@@ -82,16 +82,16 @@ BandaidAgentHistory(BandaidController bc)
 {
    if (cmd.equalsIgnoreCase("DUMP")) {
       try {
-         BandaidXmlWriter xw = new BandaidXmlWriter();
-         xw.begin("BANDAID");
-         xw.field("HISTORY",the_control.getProcessId());
-         xw.field("THREAD",args);
-         if (generateHistory(xw,args)) {
-            xw.end();
-            the_control.sendMessage(xw.toString());
-          }
+	 BandaidXmlWriter xw = new BandaidXmlWriter();
+	 xw.begin("BANDAID");
+	 xw.field("HISTORY",the_control.getProcessId());
+	 xw.field("THREAD",args);
+	 if (generateHistory(xw,args)) {
+	    xw.end();
+	    the_control.sendMessage(xw.toString());
+	  }
        }
-      catch (NumberFormatException e) { } 
+      catch (NumberFormatException e) { }
     }
 }
 

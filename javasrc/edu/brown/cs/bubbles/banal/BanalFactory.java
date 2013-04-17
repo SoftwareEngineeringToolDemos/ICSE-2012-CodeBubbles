@@ -134,6 +134,33 @@ public Collection<BanalPackageNode> computePackageGraph(String proj,String pkg,
 
 
 
+public Map<String,BanalHierarchyNode> computePackageHierarchy(String proj)
+{
+   BanalPackageHierarchy ph = null;
+   Map<String,BanalHierarchyNode> rslt = null;
+   
+   if (server_running) {
+      BoardSetup bs = BoardSetup.getSetup();
+      MintControl mc = bs.getMintControl();
+      MintDefaultReply rply = new MintDefaultReply();
+      String cmd = "<BANAL DO='PACKAGEHIERARCHY'";
+      if (proj != null) cmd += " PROJECT='" + proj + "'";
+      cmd += " />";
+      mc.send(cmd,rply,MINT_MSG_FIRST_NON_NULL);
+      Element e = rply.waitForXml();
+      if (IvyXml.isElement(e,"RESULT")) {
+	 BoardLog.logD("BANAL","Hierarchy reply: " + IvyXml.convertXmlToString(e));
+	 ph = new BanalPackageHierarchy(IvyXml.getChild(e,"HIERARCHY"));
+	 rslt = ph.getHierarchy();
+       }
+    }
+   
+   return rslt;
+}
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Server methods								*/

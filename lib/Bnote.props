@@ -24,7 +24,7 @@
 <entry key="Bnote.database.blob.postgresql">bytea</entry>
 
 <entry key="Bnote.notebook.database.type">embed</entry>
-<entry key="Bnote.notebook.database.name">$(BUBBLES)/ProgrammersLog</entry>
+<entry key="Bnote.notebook.database.name">$(WORK)/ProgrammersLog</entry>
 
 
 

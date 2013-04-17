@@ -794,6 +794,11 @@ private void loadProperties(String id)
    if (cnm != null) {
       loadIfPossible(id + "." + cnm);
     }
+   String anm = BoardSetup.getSetup().getCourseAssignment();
+   if (anm != null) {
+      loadIfPossible(id + "." + cnm + "." + anm);
+      loadIfPossible(id + "." + cnm + "@" + anm);
+    }
 }
 
 

@@ -36,9 +36,7 @@ import gnu.jpdf.*;
 import org.w3c.dom.Element;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkListener;
+import javax.swing.event.*;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -72,6 +70,7 @@ private BudaViewport		bubble_view;
 private BudaOverviewBar 	bubble_overview;
 private BudaTopBar		bubble_topbar;
 private double			scale_factor;
+private MouseScaler		mouse_scaler;
 private BudaBubble		search_bubble;
 private BudaBubble		docsearch_bubble;
 private int			panel_count;
@@ -233,6 +232,7 @@ private void initialize(Element e)
    addWindowListener(new WindowCloser());
 
    scale_factor = 1.0;
+   mouse_scaler = new MouseScaler();
    search_bubble = null;
    docsearch_bubble = null;
    panel_count = 0;
@@ -1201,6 +1201,19 @@ void setScaleFactor(double sf)
 
 void setScaleFactor(double sf,int cx,int cy)
 {
+   if (scale_factor == 1 && sf != 1) {
+      Component c = getGlassPane();
+      c.addMouseListener(mouse_scaler);
+      c.addMouseMotionListener(mouse_scaler);
+      c.setVisible(true);
+   }
+   else if (scale_factor != 1 && sf == 1) {
+      Component c = getGlassPane();
+      c.removeMouseListener(mouse_scaler);
+      c.removeMouseMotionListener(mouse_scaler);
+      c.setVisible(false);
+   }
+
    scale_factor = sf;
    bubble_area.setScaleFactor(sf);
    // cx,cy are the center in the original coordinate system
@@ -1243,6 +1256,63 @@ private class ViewportCallback implements BubbleAreaCallback {
 
 }	// end of inner class ViewportCallback
 
+
+
+private class MouseScaler extends MouseInputAdapter {
+
+   @Override public void mouseEntered(MouseEvent e) {
+      sendScaled(e);
+   }
+   @Override public void mouseClicked(MouseEvent e) {
+      sendScaled(e);
+   }
+   @Override public void mousePressed(MouseEvent e) {
+      sendScaled(e);
+   }
+   @Override public void mouseExited(MouseEvent e) {
+      sendScaled(e);
+   }
+   @Override public void mouseMoved(MouseEvent e) {
+      sendScaled(e);
+   }
+   @Override public void mouseDragged(MouseEvent e) {
+      sendScaled(e);
+   }
+   @Override public void mouseReleased(MouseEvent e) {
+      sendScaled(e);
+   }
+
+   private void sendScaled(MouseEvent e) {
+      Component c1 = e.getComponent();
+      JRootPane rp = (JRootPane) c1.getParent();
+      c1 = rp.getContentPane();
+      Component c = SwingUtilities.getDeepestComponentAt(c1,e.getX(),e.getY());
+      if (c == null) return;
+      Point pt = null;
+      BudaBubbleArea bba = null;
+      for (Component p = c; p != null; p = getParentComponent(p)) {
+	 if (p instanceof BudaBubbleArea) {
+	    bba = (BudaBubbleArea) p;
+	    break;
+	 }
+      }
+      if (bba != null && bba.getScaleFactor() != 1) {
+	 Point p1 = SwingUtilities.convertPoint(e.getComponent(),e.getPoint(),bba);
+	 double sf = bba.getScaleFactor();
+	 p1.x /= sf;
+	 p1.y /= sf;
+	 c = SwingUtilities.getDeepestComponentAt(bba,p1.x,p1.y);
+	 pt = SwingUtilities.convertPoint(bba,p1,c);
+      }
+      else {
+	 pt = SwingUtilities.convertPoint(e.getComponent(),e.getPoint(),c);
+      }
+      MouseEvent e1 = new MouseEvent(c,e.getID(),e.getWhen(),e.getModifiers(),pt.x,pt.y,e.getClickCount(),
+	       e.isPopupTrigger());
+      c.dispatchEvent(e1);
+   }
+
+}	// end of inner class MouseScaler
 
 
 
@@ -1306,6 +1376,8 @@ private void setupGlobalActions()
 			KeyStroke.getKeyStroke(KeyEvent.VK_UP, menudown));
    registerKeyAction(new PanHandler(0,1),"pan down",
 			KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, menudown));
+   registerKeyAction(new SaveHandler(),"save all",
+			KeyStroke.getKeyStroke(KeyEvent.VK_S,menudown));
    registerKeyAction(new MetricsHandler(),"force metrics dump",
 			KeyStroke.getKeyStroke(KeyEvent.VK_PRINTSCREEN, InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK));
    registerKeyAction(new HelpHandler(),"show help information",
@@ -1511,6 +1583,23 @@ private static class HelpHandler extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent e) {
       showHelp(null);
+    }
+
+}	// end of inner class HelpHandler
+
+
+
+
+private class SaveHandler extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   SaveHandler() {
+      super("Save All");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      handleSaveAllRequest();
     }
 
 }	// end of inner class HelpHandler
@@ -2476,7 +2565,6 @@ private static class MouseEventQueue extends EventQueue {
    private Component base_component = null;
 
    protected void dispatchEvent(AWTEvent e) {
-
       // only want mouse events for buttons other than 1
       if (!(e instanceof MouseEvent)) {
 	 if (e instanceof InputEvent) {
@@ -2542,12 +2630,6 @@ private static class MouseEventQueue extends EventQueue {
        }
 
       if (drag_area == null) base_component = null;
-      else {
-	 for (Component comp = base_component; comp != drag_area; comp = comp.getParent()) {
-	    // This causes the window to go gray, lets try it without
-	    // comp.setEnabled(false);
-	  }
-       }
     }
 
    private void clearDragArea() {

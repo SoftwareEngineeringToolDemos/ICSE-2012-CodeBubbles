@@ -106,7 +106,7 @@ protected void invalidateLayout()
       View v = getParent();
       if (v != null && v instanceof BaleViewBase) {
 	 BaleViewBase pv = (BaleViewBase) v;
-	 pv.invalidateLayout();
+	 if (pv.layout_valid) pv.invalidateLayout();
        }
     }
    finally { bd.baleReadUnlock(); }

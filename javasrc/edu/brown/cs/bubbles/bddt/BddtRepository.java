@@ -256,6 +256,7 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
 	 case PROCESS_PERFORMANCE :
 	 case PROCESS_CHANGE :
 	 case PROCESS_SWING :
+         case PROCESS_TRIE :
 	    break;
 	 default:
 	    break;

@@ -569,7 +569,9 @@ private static class DefaultKeyAction extends TextAction {
       BaleDocument bd = target.getBaleDocument();
       bd.baleWriteLock();
       try {
-	 Dimension d0 = target.getPreferredSize();
+	 Dimension d0 = target.getSize();
+	 if (d0.height >= BALE_MAX_GROW_HEIGHT) d0 = null;
+	 else d0 = target.getPreferredSize();
 
 	 String content = e.getActionCommand();
 	 int mod = e.getModifiers();
@@ -611,10 +613,12 @@ private static class DefaultKeyAction extends TextAction {
 		  new BaleCompletionContext(target,sel,c);
 		}
 
-	       Dimension d1 = target.getPreferredSize();
-	       if (d1.height > d0.height) {
-		  target.increaseSize(1);
-		}
+	       if (d0 != null) {
+		  Dimension d1 = target.getPreferredSize();
+		  if (d1.height > d0.height) {
+		     target.increaseSize(1);
+		   }
+	        }
 	     }
 	  }
        }
@@ -817,6 +821,9 @@ private static class NewlineAction extends TextAction {
       bd.baleWriteLock();
       try {
 	 String text = "\n";
+	 String posttext = null;
+	 int size = 1;
+	 int postsize = 0;
 	 int soff = target.getSelectionStart();
 	 int eoff = target.getSelectionEnd();
 	 BaleElement elt = bd.getCharacterElement(eoff);
@@ -824,13 +831,23 @@ private static class NewlineAction extends TextAction {
 	    switch (elt.getEndTokenState()) {
 	       case IN_COMMENT :
 	       case IN_FORMAL_COMMENT :
-		  text += " * ";
+		  text += " *";
 		  break;
 	       default:
 		  break;
 	     }
 	  }
-
+	 if (BALE_PROPERTIES.getBoolean("Bale.autoclose") && elt != null) {
+	    BaleElement e1 = elt.getPreviousCharacterElement(); 
+	    BaleElement e2 = elt.getNextCharacterElement();	
+	    while (e2 != null && e2.isEmpty() && !e2.isEndOfLine()) e2 = e2.getNextCharacterElement();
+	    if (e1 != null && e1.getTokenType() == BaleTokenType.LBRACE && 
+		     (e2 == null || e2.isEndOfLine() || e2.isComment())) {
+	       posttext= "\n}";
+	       postsize = 1;
+	     }
+	  }
+	       
 	 boolean grow = true;
 	 boolean rep = true;
 	 boolean ind = true;
@@ -858,8 +875,22 @@ private static class NewlineAction extends TextAction {
 	    int lno = bd.findLineNumber(soff+1);
 	    bd.fixLineIndent(lno);
 	  }
+	 if (posttext != null) {
+	    int noff = target.getSelectionStart();
+	    try {
+	       bd.insertString(noff, posttext, null);
+	       int nlno = bd.findLineNumber(noff+1);
+	       for (int i = 0; i < postsize; ++i) {
+		  bd.fixLineIndent(nlno+i);
+	        }
+	       size += postsize;
+	     }
+	    catch (BadLocationException ex) { }
+	    target.setSelectionStart(noff);
+	    target.setSelectionEnd(noff);
+	  }
 	 if (grow) {
-	    target.increaseSize(1);
+	    target.increaseSize(size);
 	  }
        }
       finally { bd.baleWriteUnlock(); }
@@ -2468,28 +2499,28 @@ private static class QuickFixAction extends TextAction {
       int soff = target.getSelectionStart();
       List<BumpProblem> probs = bd.getProblemsAtLocation(soff);
       if (probs == null) return;
-
+   
       List<BaleFixer> fixes = new ArrayList<BaleFixer>();
       for (BumpProblem bp : probs) {
-	 if (bp.getFixes() != null) {
-	    for (BumpFix bf : bp.getFixes()) {
-	       BaleFixer fixer = new BaleFixer(bp,bf);
-	       if (fixer.isValid()) fixes.add(fixer);
-	     }
-	  }
+         if (bp.getFixes() != null) {
+            for (BumpFix bf : bp.getFixes()) {
+               BaleFixer fixer = new BaleFixer(bp,bf);
+               if (fixer.isValid()) fixes.add(fixer);
+             }
+          }
        }
       if (fixes.isEmpty()) return;
-
+   
       BaleFixer fix = null;
       if (fixes.size() == 1) fix = fixes.get(0);
       else {
-	 Object [] fixalts = fixes.toArray();
-	 fix = (BaleFixer) JOptionPane.showInputDialog(target,"Select Quick Fix","Quick Fix Selector",
-							  JOptionPane.QUESTION_MESSAGE,
-							  null,fixalts,fixes.get(0));
+         Object [] fixalts = fixes.toArray();
+         fix = (BaleFixer) JOptionPane.showInputDialog(target,"Select Quick Fix","Quick Fix Selector",
+        						  JOptionPane.QUESTION_MESSAGE,
+        						  null,fixalts,fixes.get(0));
        }
       if (fix == null) return;
-
+   
       fix.actionPerformed(e);
       BoardMetrics.noteCommand("BALE","QuickFix");
     }

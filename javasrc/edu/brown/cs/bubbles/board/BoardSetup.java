@@ -115,6 +115,7 @@ private RunMode 	run_mode;
 private String		mint_name;
 private MintControl	mint_control;
 private String		course_name;
+private String		course_assignment;
 private File		library_dir;
 private BoardLanguage	board_language;
 
@@ -179,6 +180,7 @@ private BoardSetup()
    mint_name = null;
    mint_control = null;
    course_name = null;
+   course_assignment = null;
    library_dir = null;
    board_language = BoardLanguage.JAVA;
 
@@ -202,9 +204,10 @@ private BoardSetup()
 
    has_changed = false;
 
-   course_name = null;
-   if (course_name == null) course_name = System.getProperty("edu.brown.cs.bubbles.COURSE");
-   if (course_name == null) course_name = System.getenv("BUBBLES_COURSE");
+   String cnm = null;
+   if (cnm == null) cnm = System.getProperty("edu.brown.cs.bubbles.COURSE");
+   if (cnm == null) cnm = System.getenv("BUBBLES_COURSE");
+   if (cnm != null) setCourseName(cnm);
 
    setup_count = 0;
 }
@@ -217,7 +220,6 @@ private BoardSetup(String [] args)
 
    scanArgs(args);
 }
-
 
 
 
@@ -240,8 +242,8 @@ private void scanArgs(String [] args)
 	    force_setup = true;
 	    force_metrics = true;
 	  }
-	 else if (args[i].startsWith("-course") && i+1 < args.length) { // -course <name>
-	    course_name = args[++i];
+	 else if (args[i].startsWith("-course") && i+1 < args.length) { // -course <name[@assign]>
+	    setCourseName(args[++i]);
 	  }
 	 else if (args[i].startsWith("-c")) {                           // -collect
 	    force_metrics = true;
@@ -377,7 +379,20 @@ public void setUseLila()
 
 public void setCourseName(String nm)
 {
-   course_name = nm;
+   course_name = null;
+   course_assignment = null;
+
+   if (nm != null && nm.length() > 0) {
+      int idx = nm.indexOf("@");
+      if (idx > 1) {
+	 course_assignment = nm.substring(idx+1);
+	 if (course_assignment.length() == 0) course_assignment = null;
+	 course_name = nm.substring(0,idx);
+       }
+      else {
+	 course_name = nm;
+       }
+    }
 }
 
 
@@ -388,6 +403,13 @@ public void setCourseName(String nm)
 public String getCourseName()
 {
    return course_name;
+}
+
+
+
+public String getCourseAssignment()
+{
+   return course_assignment;
 }
 
 
@@ -1464,7 +1486,11 @@ private void loadUrlLibraries()
       for (StringTokenizer tok = new StringTokenizer(s,"/"); tok.hasMoreTokens(); ) {
 	 String nm = tok.nextToken();
 	 f = new File(f,nm);
-	 if (tok.hasMoreTokens() && !f.exists()) f.mkdir();
+	 if (tok.hasMoreTokens() && !f.exists()) {
+	    if (!f.mkdirs()) {
+	       BoardLog.logE("BOARD","Problem creating library directory: " + f);
+	     }
+	  }
        }
       long dlm = f.lastModified();
       try {
@@ -1923,8 +1949,10 @@ private void restartBubbles()
       args.add(idx++,"-nosetup");
       if (force_metrics) args.add(idx++,"-collect");
       if (course_name != null) {
+	 String cnm = course_name;
+	 if (course_assignment != null) cnm += "@" + course_assignment;
 	 args.add(idx++,"-course");
-	 args.add(idx++,course_name);
+	 args.add(idx++,cnm);
        }
       switch (board_language) {
 	 case PYTHON :

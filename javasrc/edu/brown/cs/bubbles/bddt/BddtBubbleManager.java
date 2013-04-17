@@ -81,8 +81,10 @@ BddtBubbleManager(BddtLaunchControl blc)
 
 void createExecBubble(BumpThread bt)
 {
+   boolean godown = bddt_properties.getBoolean("Bddt.grow.down");
+   
    BumpThreadStack stk = bt.getStack();
-   BudaBubble bb = createSourceBubble(stk,0,BubbleType.EXEC,false);
+   BudaBubble bb = createSourceBubble(stk,0,BubbleType.EXEC,false,godown);
    if (bb == null && stk != null && bddt_properties.getBoolean("Bddt.show.user.bubble")) {
       BumpStackFrame frm = stk.getFrame(0);
       if (frm != null) {
@@ -97,7 +99,7 @@ void createExecBubble(BumpThread bt)
 	    BumpStackFrame frame = stk.getFrame(i);
 	    if (bd != null && bd.getFrame() != null && matchFrameMethod(bd.getFrame(),frame)) break;
 	    if (frame.getFile() != null && frame.getFile().exists() && !frame.isSystem()) {
-	       bb = createSourceBubble(stk,i,BubbleType.EXEC,false);
+	       bb = createSourceBubble(stk,i,BubbleType.EXEC,false,godown);
 	       break;
 	    }
 	  }
@@ -109,18 +111,20 @@ void createExecBubble(BumpThread bt)
       if (bd == null || bd.getBubbleType() != BubbleType.EXEC) return;
       if (bddt_properties.getBoolean("Bddt.show.values")) {
 	 BddtStackView sv = new BddtStackView(launch_control,bt);
+         sv.expandFirst();
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
 	 if (bba == null || stk == null) return;
 	 BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
 	 bubble_map.put(sv,nbd);
-	 bba.addBubble(sv,bb,null,PLACEMENT_BELOW|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
+         int place = (godown ? PLACEMENT_RIGHT : PLACEMENT_BELOW);
+	 bba.addBubble(sv,bb,null,place|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
 	 bd.setAssocBubble(sv);
        }
     }
 }
 
 
-void createUserStackBubble(BubbleData bd)
+void createUserStackBubble(BubbleData bd,boolean godown)
 {
    if (bd == null) return;
    BudaBubble bb = bd.getBubble();
@@ -136,14 +140,15 @@ void createUserStackBubble(BubbleData bd)
       if (bba == null) return;
       BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
       bubble_map.put(sv,nbd);
-      bba.addBubble(sv,bb,null,PLACEMENT_BELOW|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
+      int place = (godown ? PLACEMENT_RIGHT : PLACEMENT_BELOW);
+      bba.addBubble(sv,bb,null,place|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
       bd.setAssocBubble(sv);
    }
 }
 
 
 
-private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ,boolean frc)
+private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ,boolean frc,boolean godown)
 {
    setupBubbleArea();
 
@@ -152,7 +157,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    BumpThread bt = stk.getThread();
 
    boolean libbbl = frc || bddt_properties.getBoolean("Bddt.show.library.bubbles");
-
+   
    // find user stack frame for the stack
    if (stk.getNumFrames() <= frm) return null;
    BumpStackFrame frame = stk.getFrame(frm);
@@ -165,7 +170,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 
    BubbleData bd = findClosestBubble(bt,stk,frame);
    if (bd != null && bd.match(bt,stk,frame)) {
-      if (bd.getBubbleType() == BubbleType.USER) createUserStackBubble(bd);
+      if (bd.getBubbleType() == BubbleType.USER) createUserStackBubble(bd,godown);
       bd.update(stk,frame);
       showBubble(bd.getBubble());
       return null;
@@ -173,29 +178,48 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 
    if (bd != null) {
       Rectangle r = BudaRoot.findBudaLocation(bd.getBubble());
-      if (r != null && bd.aboveLevel(bt,stk,frame) >= 0) {
-	 xpos = r.x + r.width + 40;
-	 ypos = r.y;
+      BudaBubble abb = bd.getAssocBubble();
+      if (abb != null) {
+	 Rectangle r1 = BudaRoot.findBudaLocation(abb);
+	 if (r == null) r = r1;
+	 else if (r1 != null) r = r.union(r1);
+       }
+      if (r != null && bd.aboveLevel(bt,stk,frame) >= 0) {              // calling bubble
+	 if (godown) {
+            xpos = r.x;
+            ypos = r.y + r.height + 40;
+          }
+         else {
+            xpos = r.x + r.width + 40;
+            ypos = r.y;
+          }
 	 link = bd.getBubble();
 	 linkline = bd.getLineNumber();
        }
       else if (r != null && bd.getBubbleType() == BubbleType.EXEC && bd.getThread() == bt) {
-	 xpos = r.x + r.width + 40;
-	 ypos = r.y;
+	 if (godown) {
+            xpos = r.x;
+            ypos = r.y + r.height + 40;
+          }
+         else {
+            xpos = r.x + r.width + 40;
+            ypos = r.y;
+          }
 	 link = bd.getBubble();
 	 linkline = bd.getLineNumber();
 	 linkto = false;
        }
-      else if (r != null) {
+      else if (r != null) {                     // new thread
 	 // xpos = r.x + r.width + 40;
 	 // ypos = r.y;
-	 xpos = r.x;
-	 ypos = r.y + r.height + 40;
-	 BudaBubble abb = bd.getAssocBubble();
-	 if (abb != null) {
-	    Rectangle rx = BudaRoot.findBudaLocation(abb);
-	    if (rx != null) ypos = Math.max(ypos,rx.y + rx.height + 40);
-	  }
+         if (godown) {
+            xpos = r.x + r.width + 40;
+            ypos = r.y;
+          }
+         else {
+            xpos = r.x;
+            ypos = r.y + r.height + 40;
+          }
        }
       else {
 	 xpos = 100;

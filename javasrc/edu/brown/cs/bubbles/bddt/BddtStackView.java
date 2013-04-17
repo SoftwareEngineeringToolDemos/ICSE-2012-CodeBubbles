@@ -282,6 +282,13 @@ private void detachHandler()
 boolean isStackValid()				{ return is_valid; }
 
 
+void expandFirst()
+{
+   value_component.getTree().expandRow(1);
+}
+
+
+
 
 /********************************************************************************/
 /*										*/

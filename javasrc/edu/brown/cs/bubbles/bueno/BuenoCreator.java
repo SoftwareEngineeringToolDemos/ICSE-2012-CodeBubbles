@@ -587,17 +587,8 @@ protected void classText(StringBuffer buf,BuenoProperties props)
    String nam = props.getStringProperty(BuenoKey.KEY_NAME);
 
    buf.append(typ + " " + nam);
-   String ext = props.getStringProperty(BuenoKey.KEY_EXTENDS);
-   if (ext != null) buf.append(" extends " + ext);
-   String [] impl = props.getImplements();
-   if (impl != null && impl.length > 0) {
-      ct = 0;
-      for (String im : impl) {
-	 if (ct++ == 0) buf.append(" implements ");
-	 else buf.append(", ");
-	 buf.append(im);
-       }
-    }
+   outputList(props.getExtends()," extends ",", ",buf);
+   outputList(props.getImplements()," implements ",", ",buf);
    buf.append(" {\n");
    buf.append("\n");
    buf.append("\n");
@@ -667,17 +658,10 @@ protected void innerClassText(StringBuffer buf,BuenoProperties props)
    String nam = props.getStringProperty(BuenoKey.KEY_NAME);
 
    buf.append(typ + " " + nam);
-   String ext = props.getStringProperty(BuenoKey.KEY_EXTENDS);
-   if (ext != null) buf.append(" extends " + ext);
-   String [] impl = props.getImplements();
-   if (impl != null && impl.length > 0) {
-      ct = 0;
-      for (String im : impl) {
-	 if (ct++ == 0) buf.append(" implements ");
-	 else buf.append(", ");
-	 buf.append(im);
-       }
-     }
+
+   outputList(props.getExtends()," extends ",", ",buf);
+   outputList(props.getImplements()," implements ",", ",buf);
+
    buf.append(" {\n");
    buf.append("\n");
    buf.append("\n");
@@ -856,8 +840,7 @@ private static String getValue(String key,BuenoProperties props,String eol)
       outputList(props.getThrows(),"throws ",", ",buf);
    }
    else if (key.equals("EXTENDS")) {
-      String v = props.getStringProperty(BuenoKey.KEY_EXTENDS);
-      if (v != null) buf.append(" extends " + v);
+      outputList(props.getExtends()," extends ",", ",buf);
    }
    else if (key.equals("IMPLEMENTS")) {
       outputList(props.getImplements()," implements ",", ",buf);

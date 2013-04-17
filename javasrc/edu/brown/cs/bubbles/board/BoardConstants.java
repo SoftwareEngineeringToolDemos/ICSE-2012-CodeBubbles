@@ -375,6 +375,8 @@ String [] BOARD_RESOURCE_PROPS =  new String [] {
    "Bgta.props", "Buda.props", "Bass.props", "Bted.props", "Board.props",
    "Board.x86.props", "Bddt.props", "Bcon.props", "Bueno.props", "Bvcr.props",
    "Batt.props", "Bedu.props", "Bnote.props", "Bbook.props", "Buda.python.props",
+   "Bandaid.props","Barr.props","Bass.props","Bdoc.java.props","Bdoc.python.props",
+   "Bhelp.props",
 };
 
 

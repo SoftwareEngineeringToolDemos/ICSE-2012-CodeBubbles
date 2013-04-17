@@ -49,6 +49,7 @@ private String				course_name;
 
 private static BeduCourseFactory	the_factory = null;
 
+		
 
 /********************************************************************************/
 /*										*/
@@ -116,6 +117,16 @@ private void initializeOptions()
 
 private void addSubmitButtons()
 {
+   String anm = BoardSetup.getSetup().getCourseAssignment();
+   if (anm != null) {
+      String prop = bedu_props.getProperty("Bedu.submit." + course_name + "." + anm);
+      if (prop != null) {
+	 String nm = "Bubble." + course_name + ".Submit " + anm;
+	 BudaRoot.registerMenuButton(anm,new Submitter(nm,prop));
+       }
+      return;
+    }
+
    Map<String,String> cmds = new TreeMap<String,String>();
    String pfx = "Bedu.submit." + course_name + ".";
    int pln = pfx.length();

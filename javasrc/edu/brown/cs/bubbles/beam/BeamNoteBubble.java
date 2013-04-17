@@ -184,8 +184,10 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 
    // if contents are null, then set the header part of the html with information about
    // the source of this bubble, date, dlm, title, etc.
+   
+   JScrollPane jsp = new JScrollPane(note_area);
 
-   setContentPane(note_area,note_area);
+   setContentPane(jsp,note_area);
 }
 
 

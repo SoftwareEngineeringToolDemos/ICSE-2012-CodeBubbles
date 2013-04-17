@@ -115,7 +115,10 @@ void executeDemo(BudaBubbleArea bba)
        if (doing_demo) return;		// can't do more than one
        doing_demo = true;
      }
-
+    BudaRoot br = demo_context.getBudaRoot();
+    br.setVisible(true);
+    br.toFront();
+    
     DemoRun dr = new DemoRun(demo_context);
     BoardMetrics.noteCommand("BHELP", "ShowDemo_" + demo_name);
     BoardThreadPool.start(dr);
@@ -133,6 +136,7 @@ private class DemoRun implements Runnable {
 
    @Override public void run() {
       BudaRoot br = using_context.getBudaRoot();
+      br.setVisible(true);
       br.setDemonstration(BhelpDemo.this,"How-To Demonstration");
       if (!allow_hovers) BudaHover.enableHovers(false);
 

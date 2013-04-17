@@ -395,7 +395,6 @@ private class ResizeListener extends ComponentAdapter {
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Popup menu handlers							*/

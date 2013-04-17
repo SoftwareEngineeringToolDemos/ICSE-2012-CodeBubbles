@@ -34,6 +34,7 @@
 <entry key="Bddt.show.values">true</entry>
 <entry key="Bddt.show.library.bubbles">false</entry>
 <entry key="Bddt.show.user.bubble">true</entry>
+<entry key="Bddt.grow.down">true</entry>
 <entry key="Evaluation.float">true</entry>
 <entry key="Interaction.float">true</entry>
 <entry key="Bddt.config.width">450</entry>

@@ -140,7 +140,7 @@ int MAX_LEAF_FOR_EXPANDALL = 32;
  *	than this, automatic expansion on type-in is ignored.  This number is
  *	chosen both for practicality purposes and for efficiency considerations.
  **/
-int MAX_LEAF_FOR_AUTO_EXPAND = 1024;
+int MAX_LEAF_FOR_AUTO_EXPAND = 128;
 
 
 /**

@@ -47,6 +47,7 @@ import javax.swing.text.*;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 import java.io.File;
 import java.util.*;
 import java.util.List;
@@ -120,8 +121,14 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
    problem_annotations = new HashMap<BumpProblem,ProblemAnnot>();
    breakpoint_annotations = new HashMap<BumpBreakpoint,BreakpointAnnot>();
    document_annotations = new HashSet<BaleAnnotation>();
+   Icon help = BoardImage.getIcon(BALE_CRUMB_HELP_ICON);
+   JLabel hlbl = new JLabel(help);
+   hlbl.addMouseListener(new HelpMouser());
+   hlbl.setBackground(BALE_PROPERTIES.getColor(BALE_EDITOR_TOP_COLOR));
+   hlbl.setOpaque(true);
 
-   addGBComponent(crumb_bar,0,0,3,1,1,0);
+   addGBComponent(crumb_bar,0,0,2,1,1,0);
+   addGBComponent(hlbl,2,0,1,1,0,0);
    addGBComponent(editor_viewport,1,1,2,1,10,10);
 
    setComponentZOrder(find_bar.getComponent(),0);
@@ -279,6 +286,21 @@ private void convertMouseEvent(MouseEvent e,Point p,Component c)
    Point pt = SwingUtilities.convertPoint(this,p,c);
    e.translatePoint(pt.x - e.getX(),pt.y - e.getY());
 }
+
+
+
+private class HelpMouser extends MouseAdapter {
+
+   @Override public void mouseClicked(MouseEvent evt) {
+      Component c = (Component) evt.getSource();
+      int ht = c.getHeight();
+      if (c.getWidth() - evt.getX() + evt.getY() <= ht) {
+	 BudaRoot.showHelp(evt);
+      }
+   }
+
+}	// end of inner class Mouser
+
 
 
 

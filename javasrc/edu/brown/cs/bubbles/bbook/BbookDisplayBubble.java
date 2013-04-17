@@ -38,6 +38,7 @@
 package edu.brown.cs.bubbles.bbook;
 
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -93,16 +94,41 @@ BbookDisplayBubble(BbookDisplayBuilder bld)
 
 private JComponent setupDisplay()
 {
-   String html = display_builder.generateHtml();
+   String html = "<html>Generating requested notebook display ...";
+      // display_builder.generateHtml();
 
    JEditorPane edp = new JEditorPane("text/html",html);
    edp.setEditable(false);
    edp.addHyperlinkListener(new Linker());
 
+   ComputeDisplay cd = new ComputeDisplay(edp);
+   BoardThreadPool.start(cd);
+   
    return edp;
 }
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Display computation                                                     */
+/*                                                                              */
+/********************************************************************************/
+
+private class ComputeDisplay implements Runnable {
+   
+   private JEditorPane editor_pane;
+   
+   ComputeDisplay(JEditorPane edt) {
+      editor_pane = edt;
+    }
+   
+   @Override public void run() {
+      String html = display_builder.generateHtml();
+      editor_pane.setText(html);
+    }
+      
+}
 
 /********************************************************************************/
 /*										*/

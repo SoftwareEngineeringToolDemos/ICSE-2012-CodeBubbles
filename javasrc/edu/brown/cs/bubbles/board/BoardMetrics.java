@@ -833,7 +833,7 @@ private void dumpOptions()
       last_options = System.currentTimeMillis();
     }
    catch (IOException e) {
-      BoardLog.logE("BOARD", "Error uploading option files");
+      BoardLog.logE("BOARD", "Error uploading option files: " + e);
     }
 }
 

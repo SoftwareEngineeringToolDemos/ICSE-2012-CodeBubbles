@@ -66,7 +66,7 @@ static {
 
 BandaidAgentSwing(BandaidController bc)
 {
-   super(bc,"SWING");
+   super(bc,"Swing");
 }
 
 

@@ -100,6 +100,7 @@ int getModifiers()
 
 
 String [] getParameters()		{ return getArrayProperty(BuenoKey.KEY_PARAMETERS); }
+String [] getExtends()			{ return getArrayProperty(BuenoKey.KEY_EXTENDS); }
 String [] getImplements()		{ return getArrayProperty(BuenoKey.KEY_IMPLEMENTS); }
 String [] getThrows()			{ return getArrayProperty(BuenoKey.KEY_THROWS); }
 String [] getImports()			{ return getArrayProperty(BuenoKey.KEY_IMPORTS); }

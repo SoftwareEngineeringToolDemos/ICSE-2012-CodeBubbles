@@ -620,6 +620,7 @@ private boolean loadXml(File f)
 		  URL url = u.toURL();
 		  HttpURLConnection c = (HttpURLConnection) url.openConnection();
 		  c.setIfModifiedSince(dlm);
+		  c.setInstanceFollowRedirects(true);
 		  int cd = c.getResponseCode();
 		  if (cd == HttpURLConnection.HTTP_OK) {
 		     long ndlm = c.getLastModified();

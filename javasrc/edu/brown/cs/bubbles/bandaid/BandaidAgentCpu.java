@@ -67,7 +67,7 @@ private StackTraceElement []	sys_stack;
 
 BandaidAgentCpu(BandaidController bc)
 {
-   super(bc,"CpuPerformance");
+   super(bc,"Cpu");
 
    last_sample = 0;
    last_delta = 0;

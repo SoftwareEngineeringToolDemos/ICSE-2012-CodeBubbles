@@ -238,21 +238,21 @@ protected class StringField extends JTextField implements ActionListener, CaretL
 
 
 protected class BooleanField extends JCheckBox implements ActionListener {
-   
+
    private BuenoKey   field_key;
    private static final long serialVersionUID = 1;
-   
+
    BooleanField(BuenoKey key) {
       setSelected(property_set.getBooleanProperty(key));
       setFont(button_font);
       field_key = key;
       addActionListener(this);
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       property_set.put(field_key,isSelected());
     }
-   
+
 }	// end of inner class BooleanField
 
 
@@ -334,7 +334,7 @@ private class DialogBubble extends BudaBubble {
 
    DialogBubble(JPanel pnl) {
       setContentPane(pnl,focus_field);
-      addMouseListener(new BudaConstants.FocusOnEntry(focus_field));
+      pnl.addMouseListener(new BudaConstants.FocusOnEntry(focus_field));
     }
 
 }	// end of inner class DialogBubble
@@ -417,8 +417,19 @@ protected void parseGenerics(StreamTokenizer tok) throws BuenoException
 protected void parseExtends(StreamTokenizer tok) throws BuenoException
 {
    if (checkNextToken(tok,"extends")) {
-      String typ = parseType(tok);
-      property_set.put(BuenoKey.KEY_EXTENDS,typ);
+      if (create_type == BuenoType.NEW_INTERFACE) {
+	 List<String> rslt = new ArrayList<String>();
+	 for ( ; ; ) {
+	    String typ = parseType(tok);
+	    rslt.add(typ);
+	    if (!checkNextToken(tok,',')) break;
+	  }
+	 property_set.put(BuenoKey.KEY_EXTENDS,rslt);
+       }
+      else {
+	 String typ = parseType(tok);
+	 property_set.put(BuenoKey.KEY_EXTENDS,typ);
+       }
     }
 }
 
@@ -427,6 +438,8 @@ protected void parseExtends(StreamTokenizer tok) throws BuenoException
 protected void parseImplements(StreamTokenizer tok) throws BuenoException
 {
    if (checkNextToken(tok,"implements")) {
+      if (create_type == BuenoType.NEW_INTERFACE)
+	 throw new BuenoException("Interfaces don't use implements");
       List<String> rslt = new ArrayList<String>();
       for ( ; ; ) {
 	 String typ = parseType(tok);

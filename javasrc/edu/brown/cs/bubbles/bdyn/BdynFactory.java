@@ -26,7 +26,6 @@ package edu.brown.cs.bubbles.bdyn;
 
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.banal.*;
 
 import org.w3c.dom.*;
 import java.util.*;
@@ -65,9 +64,11 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
-   BudaRoot.registerMenuButton("Bubble.Compute Package Hierarchy",
-         new HierarchyAction());
+   BudaRoot.registerMenuButton("Bubble.Show Task Visualization",new TaskAction());
+   
    getFactory().callback_set.setup();
+   
+   
 }
 
 /**
@@ -99,6 +100,14 @@ private BdynFactory()
 
 /********************************************************************************/
 /*                                                                              */
+/*      Window methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+
+
+/********************************************************************************/
+/*                                                                              */
 /*      Handle new processes                                                    */
 /*                                                                              */
 /********************************************************************************/
@@ -108,6 +117,13 @@ private void setupProcess(BumpRunEvent evt)
    BdynProcess bp = new BdynProcess(evt.getProcess());
    process_map.put(evt.getProcess(),bp);
 }
+
+
+BdynProcess getBdynProcess(BumpProcess bp)      
+{
+   return process_map.get(bp);
+}
+
 
 
 
@@ -146,6 +162,12 @@ private class ProcessHandler implements BumpRunEventHandler {
                bp.handleTrieEvent(xml);
              }
             break;
+         case PROCESS_TRACE :
+            if (bp != null) {
+               Element xml = (Element) evt.getEventData();
+               bp.handleTraceEvent(xml);
+             }
+            break;
          default :
             break;
        }
@@ -162,16 +184,36 @@ private class ProcessHandler implements BumpRunEventHandler {
 /*                                                                              */
 /********************************************************************************/
 
-private static class HierarchyAction implements BudaConstants.ButtonListener
-{
+private static class TaskAction implements BudaConstants.ButtonListener {
    
    @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt) {
-      BanalFactory bf = BanalFactory.getFactory();
-      bf.computePackageHierarchy(null);
+      BdynTaskWindow tw = new BdynTaskWindow();
+      BudaBubble bb = tw.getBubble();
+      bba.addBubble(bb,null,pt,BudaConstants.PLACEMENT_LOGICAL);
+      
+      Object proc = bba.getProperty("Bddt.process");
+      if (proc != null) {
+         BumpProcess bp = (BumpProcess) proc;
+         if (bp.isRunning()) tw.setProcess(bp);
+       }
     }
+   
+}       // end of inner class TaskAction
+
+
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Methods to handle callback information                                  */
+/*                                                                              */
+/********************************************************************************/
+
+BdynCallback getCallback(int id)
+{
+   return callback_set.getCallback(id);
 }
-
-
 
 }	// end of class BdynFactory
 

@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              BdynProcess.java                                                */
-/*                                                                              */
-/*      Maintain dynamic information for a single process                       */
-/*                                                                              */
+/*										*/
+/*		BdynProcess.java						*/
+/*										*/
+/*	Maintain dynamic information for a single process			*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 /* SVN: $Id$ */
@@ -38,19 +38,23 @@ class BdynProcess implements BdynConstants, BumpConstants
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
-private BumpProcess     for_process;
-private TrieNodeImpl    root_node;
-private double          base_samples;
-private double          total_samples;
-private double          base_time;
-private int             event_seq;
+private BumpProcess	for_process;
+private TrieNodeImpl	root_node;
+private double		base_samples;
+private double		total_samples;
+private double		base_time;
+private BdynEventTrace	event_trace;
+
+private int		event_seq;
+private int		trace_seq;
 
 private PriorityQueue<Element> queued_events;
+private PriorityQueue<Element> trace_events;
 private Map<Integer,ThreadData> thread_data;
 private Map<Integer,TrieNodeImpl> trie_data;
 
@@ -59,9 +63,9 @@ private Map<Integer,TrieNodeImpl> trie_data;
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Constructors								*/
+/*										*/
 /********************************************************************************/
 
 BdynProcess(BumpProcess bp)
@@ -72,31 +76,37 @@ BdynProcess(BumpProcess bp)
    total_samples = 0;
    base_time = 0;
    event_seq = 0;
-   queued_events = new PriorityQueue<Element>(10,new TrieComparator());
+   trace_seq = 0;
+   queued_events = new PriorityQueue<Element>(10,new EventComparator());
+   trace_events = new PriorityQueue<Element>(10,new EventComparator());
    thread_data = new HashMap<Integer,ThreadData>();
    trie_data = new HashMap<Integer,TrieNodeImpl>();
+
+   event_trace = new BdynEventTrace(bp);
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-TrieNode getTrieRoot()                  { return root_node; }
+TrieNode getTrieRoot()			{ return root_node; }
 
-double getBaseSamples()                 { return base_samples; }
-double getTotalSamples()                { return total_samples; }
-double getBaseTime()                    { return base_time; }
+double getBaseSamples() 		{ return base_samples; }
+double getTotalSamples()		{ return total_samples; }
+double getBaseTime()			{ return base_time; }
+BdynEventTrace getEventTrace()          { return event_trace; }
+
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Event Handlers                                                          */
-/*                                                                              */
+/*										*/
+/*	Event Handlers								*/
+/*										*/
 /********************************************************************************/
 
 synchronized void handleTrieEvent(Element xml)
@@ -105,11 +115,11 @@ synchronized void handleTrieEvent(Element xml)
    if (seqid == event_seq+1) {
       processTrieEvent(xml);
       while (!queued_events.isEmpty()) {
-         Element e1 = queued_events.element();
-         int sq = IvyXml.getAttrInt(e1,"SEQ");
-         if (sq != event_seq+1) break;
-         e1 = queued_events.remove();
-         processTrieEvent(e1);
+	 Element e1 = queued_events.element();
+	 int sq = IvyXml.getAttrInt(e1,"SEQ");
+	 if (sq != event_seq+1) break;
+	 e1 = queued_events.remove();
+	 processTrieEvent(e1);
        }
     }
    else {
@@ -119,8 +129,28 @@ synchronized void handleTrieEvent(Element xml)
 
 
 
-private static class TrieComparator implements Comparator<Element> {
-   
+synchronized void handleTraceEvent(Element xml)
+{
+   int seqid = IvyXml.getAttrInt(xml,"SEQ");
+   if (seqid == trace_seq+1) {
+      processTraceEvent(xml);
+      while (!trace_events.isEmpty()) {
+	 Element e1 = trace_events.element();
+	 int sq = IvyXml.getAttrInt(e1,"SEQ");
+	 if (sq != trace_seq+1) break;
+	 e1 = trace_events.remove();
+	 processTraceEvent(e1);
+       }
+    }
+   else {
+      trace_events.add(xml);
+    }
+}
+
+
+
+private static class EventComparator implements Comparator<Element> {
+
    @Override public int compare(Element e1,Element e2) {
       int i1 = IvyXml.getAttrInt(e1,"SEQ");
       int i2 = IvyXml.getAttrInt(e2,"SEQ");
@@ -128,16 +158,16 @@ private static class TrieComparator implements Comparator<Element> {
       if (i1 > i2) return 1;
       return 0;
     }
-   
-}       // end of inner class TrieComparator
+
+}	// end of inner class TrieComparator
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Trie Event Processing                                                   */
-/*                                                                              */
+/*										*/
+/*	Trie Event Processing							*/
+/*										*/
 /********************************************************************************/
 
 private void processTrieEvent(Element xml)
@@ -146,7 +176,7 @@ private void processTrieEvent(Element xml)
    total_samples = IvyXml.getAttrDouble(xml,"SAMPLES",0);
    base_time = IvyXml.getAttrDouble(xml,"TIME",0);
    event_seq = IvyXml.getAttrInt(xml,"SEQ",event_seq+1);
-  
+
    for (Element thel : IvyXml.children(xml,"THREAD")) {
       handleThreadData(thel);
     }
@@ -175,55 +205,84 @@ private void handleTrieNode(Element xml)
       tn = new TrieNodeImpl(xml);
       trie_data.put(id,tn);
       if (IvyXml.getAttrBool(xml,"ROOT")) {
-         root_node = tn;
+	 root_node = tn;
        }
     }
    else tn.update(xml);
 }
 
 
+
 /********************************************************************************/
-/*                                                                              */
-/*      Thread Information                                                      */
-/*                                                                              */
+/*										*/
+/*	Trace event processing							*/
+/*										*/
+/********************************************************************************/
+
+private void processTraceEvent(Element xml)
+{
+   trace_seq = IvyXml.getAttrInt(xml,"SEQ",trace_seq+1);
+   String trace = IvyXml.getText(xml);
+   if (trace == null) return;
+   StringTokenizer tok = new StringTokenizer(trace,"\r\n");
+   while (tok.hasMoreTokens()) {
+      String ln = tok.nextToken();
+      processTraceData(ln);
+    }
+}
+
+
+private void processTraceData(String s)
+{
+   // BoardLog.logD("BDYN","TRACE: " + s);
+
+   event_trace.addEntry(s);
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Thread Information							*/
+/*										*/
 /********************************************************************************/
 
 private class ThreadData {
-   
+
    private String thread_name;
    private String thread_id;
    private BumpThread for_thread;
-   
+
    ThreadData(Element xml) {
       thread_name = IvyXml.getAttrString(xml,"NAME");
       thread_id = IvyXml.getAttrString(xml,"TID");
       for (BumpThread th : for_process.getThreads()) {
-         if (th.getId().equals(thread_id) && th.getName().equals(thread_name)) {
-            for_thread = th;
-            break;
-          }
+	 if (th.getId().equals(thread_id) && th.getName().equals(thread_name)) {
+	    for_thread = th;
+	    break;
+	  }
        }
     }
-   
-   BumpThread getBumpThread()                   { return for_thread; }
-   
-}       // end of inner class ThreadData     
+
+   BumpThread getBumpThread()			{ return for_thread; }
+
+}	// end of inner class ThreadData
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Trie Node                                                               */
-/*                                                                              */
+/*										*/
+/*	Trie Node								*/
+/*										*/
 /********************************************************************************/
 
 private class TrieNodeImpl implements TrieNode {
-   
+
    private TrieNodeImpl parent_node;
    private List<TrieNodeImpl> child_nodes;
    private String class_name;
    private String method_name;
-   private int    line_number;
+   private int	  line_number;
    private String file_name;
    private int [] count_data;
    private Map<BumpThread,int []> thread_counts;
@@ -240,91 +299,91 @@ private class TrieNodeImpl implements TrieNode {
       setValues(xml);
       updateCounts(xml);
     }
-   
-   @Override public TrieNode getParent()        { return parent_node; }
+
+   @Override public TrieNode getParent()	{ return parent_node; }
    @Override public Collection<TrieNode> getChildren() {
       List<TrieNode> rslt = new ArrayList<TrieNode>();
       if (child_nodes != null) rslt.addAll(child_nodes);
       return rslt;
     }
-   @Override public int [] getCounts()          { return count_data; }
+   @Override public int [] getCounts()		{ return count_data; }
    @Override public Collection<BumpThread> getThreads() {
       List<BumpThread> rslt = new ArrayList<BumpThread>();
       if (thread_counts != null) {
-         rslt.addAll(thread_counts.keySet());
+	 rslt.addAll(thread_counts.keySet());
        }
       return rslt;
     }
    @Override public int [] getThreadCounts(BumpThread th) {
       return thread_counts.get(th);
     }
-   @Override public String getClassName()               { return class_name; }
-   @Override public String getMethodName()              { return method_name; }
-   @Override public int getLineNumber()                 { return line_number; }
-   @Override public String getFileName()                { return file_name; }
-   
+   @Override public String getClassName()		{ return class_name; }
+   @Override public String getMethodName()		{ return method_name; }
+   @Override public int getLineNumber() 		{ return line_number; }
+   @Override public String getFileName()		{ return file_name; }
+
    void update(Element xml) {
       if (parent_node == null && IvyXml.getAttrPresent(xml,"PARENT")) {
-         setValues(xml);
+	 setValues(xml);
        }
       updateCounts(xml);
     }
-   
+
    private void setValues(Element xml) {
       if (parent_node == null) {
-         int pid = IvyXml.getAttrInt(xml,"PARENT");
-         if (pid > 0) {
-            parent_node = trie_data.get(pid);
-            if (parent_node != null) parent_node.addChild(this);
-          }
+	 int pid = IvyXml.getAttrInt(xml,"PARENT");
+	 if (pid > 0) {
+	    parent_node = trie_data.get(pid);
+	    if (parent_node != null) parent_node.addChild(this);
+	  }
        }
       class_name = IvyXml.getAttrString(xml,"CLASS",class_name);
       method_name = IvyXml.getAttrString(xml,"METHOD",method_name);
       line_number = IvyXml.getAttrInt(xml,"LINE",line_number);
       file_name = IvyXml.getAttrString(xml,"FILE",file_name);
     }
-   
+
    private void addChild(TrieNodeImpl ch) {
       if (child_nodes == null) child_nodes = new ArrayList<TrieNodeImpl>(4);
       child_nodes.add(ch);
     }
-      
+
    private void updateCounts(Element xml) {
       count_data = getCounts(xml,count_data);
       for (Element th : IvyXml.children(xml,"THREAD")) {
-         int tid = IvyXml.getAttrInt(th,"ID");
-         ThreadData td = thread_data.get(tid);
-         BumpThread bt = (td == null ? null : td.getBumpThread());
-         if (bt != null) {
-            if (thread_counts == null) thread_counts = new HashMap<BumpThread,int []>();
-            int [] cts = thread_counts.get(bt);
-            if (cts == null) {
-               cts = getCounts(th,cts);
-               if (cts != null) thread_counts.put(bt,cts);
-             }
-            else getCounts(th,cts);
-          }
+	 int tid = IvyXml.getAttrInt(th,"ID");
+	 ThreadData td = thread_data.get(tid);
+	 BumpThread bt = (td == null ? null : td.getBumpThread());
+	 if (bt != null) {
+	    if (thread_counts == null) thread_counts = new HashMap<BumpThread,int []>();
+	    int [] cts = thread_counts.get(bt);
+	    if (cts == null) {
+	       cts = getCounts(th,cts);
+	       if (cts != null) thread_counts.put(bt,cts);
+	     }
+	    else getCounts(th,cts);
+	  }
        }
     }
-   
+
    private int [] getCounts(Element xml,int [] cts) {
       int rct = IvyXml.getAttrInt(xml,"RUN",0);
       int ict = IvyXml.getAttrInt(xml,"IO",0);
       int wct = IvyXml.getAttrInt(xml,"WAIT",0);
       if (rct > 0 || ict > 0 || wct > 0) {
-         if (cts == null) cts = new int[OP_COUNT];
-         cts[OP_RUN] = rct;
-         cts[OP_IO] = ict;
-         cts[OP_WAIT] = wct;
+	 if (cts == null) cts = new int[OP_COUNT];
+	 cts[OP_RUN] = rct;
+	 cts[OP_IO] = ict;
+	 cts[OP_WAIT] = wct;
        }
       return cts;
     }
-      
-}       // end of inner class TrieNode
+
+}	// end of inner class TrieNode
 
 
-   
-}       // end of class BdynProcess
+
+}	// end of class BdynProcess
 
 
 

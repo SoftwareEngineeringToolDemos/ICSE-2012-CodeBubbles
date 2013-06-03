@@ -34,9 +34,9 @@ public interface BdynConstants extends BumpConstants
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Trie Node access                                                        */
-/*                                                                              */
+/*										*/
+/*	Trie Node access							*/
+/*										*/
 /********************************************************************************/
 
 interface TrieNode {
@@ -45,7 +45,7 @@ interface TrieNode {
    int [] getCounts();
    Collection<BumpThread> getThreads();
    int [] getThreadCounts(BumpThread th);
-   
+
    String getClassName();
    String getMethodName();
    int getLineNumber();
@@ -55,9 +55,9 @@ interface TrieNode {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*     Array elements for counts                                                */
-/*                                                                              */
+/*										*/
+/*     Array elements for counts						*/
+/*										*/
 /********************************************************************************/
 
 int OP_RUN = 0;
@@ -68,27 +68,71 @@ int OP_COUNT = 3;
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Callback data                                                           */
-/*                                                                              */
+/*										*/
+/*	Callback data								*/
+/*										*/
 /********************************************************************************/
+
+
+enum CallbackType {
+   UNKNOWN,
+   EVENT,			// event handler
+   CONSTRUCTOR, 	// constructor for event recognition
+};
+
+
 
 interface BdynCallback {
    String getClassName();
    String getMethodName();
    int getId();
+   CallbackType getCallbackType();
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Files                                                                   */
-/*                                                                              */
+/*										*/
+/*	Graph data								*/
+/*										*/
+/********************************************************************************/
+
+interface BdynEntry {
+   long getStartTime();
+   long getEndTime();
+   BdynEntryThread getEntryThread();
+   BdynCallback getEntryTask();
+   BdynCallback getEntryTransaction();
+   
+}
+
+interface BdynEntryThread {
+   String getThreadName();
+}
+
+interface BdynEntryTask {
+   BdynCallback getTaskRoot();
+}
+
+
+class BdynRangeSet extends HashMap<BdynEntryThread,Set<BdynEntry>> { }
+
+
+interface BdynEventUpdater extends EventListener {
+   
+   void eventsAdded();
+   
+}
+
+
+/********************************************************************************/
+/*										*/
+/*	Files									*/
+/*										*/
 /********************************************************************************/
 
 String BDYN_CALLBACK_FILE = "callbacks.xml";
-String BDYN_BANDAID_FILE = "trace.bandaid";
+String BDYN_BANDAID_FILE = "tracedata.bandaid";
 
 
 }	// end of interface BdynConstants

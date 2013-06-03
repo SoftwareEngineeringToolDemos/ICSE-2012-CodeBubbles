@@ -24,7 +24,7 @@
 
 package edu.brown.cs.bubbles.bdyn;
 
- 
+
 import edu.brown.cs.ivy.swing.*;
 
 import java.util.*;
@@ -41,7 +41,7 @@ class BdynEventTrace implements BdynConstants
 /*										*/
 /********************************************************************************/
 
-private BumpProcess     for_process;
+private BumpProcess	for_process;
 private ThreadData	current_thread;
 private PriorityQueue<TraceEntry> pending_entries;
 private Map<Integer,ThreadData> thread_map;
@@ -87,12 +87,12 @@ BdynEventTrace(BumpProcess bp)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-void addUpdateListener(BdynEventUpdater up) 
+void addUpdateListener(BdynEventUpdater up)
 {
    update_listeners.add(up);
 }
@@ -127,9 +127,9 @@ List<BdynEntryThread> getActiveThreads()
 {
    return new ArrayList<BdynEntryThread>(active_threads);
 }
-  
 
-BumpProcess getProcess()                { return for_process; }
+
+BumpProcess getProcess()		{ return for_process; }
 
 
 
@@ -159,17 +159,17 @@ void addEntry(String s)
       tok.nextToken();
       long time = Long.parseLong(tok.nextToken());
       if (next_time != 0) {
-         int ct = 0;
+	 int ct = 0;
 	 while (!pending_entries.isEmpty() && pending_entries.peek().getTime() < next_time) {
 	    TraceEntry te = pending_entries.remove();
-            ++ct;
+	    ++ct;
 	    outputEntry(te);
 	  }
-         if (ct > 0) {
-            for (BdynEventUpdater eu : update_listeners) {
-               eu.eventsAdded();
-             }
-          }
+	 if (ct > 0) {
+	    for (BdynEventUpdater eu : update_listeners) {
+	       eu.eventsAdded();
+	     }
+	  }
        }
       next_time = time;
     }
@@ -193,7 +193,10 @@ private void outputEntry(TraceEntry te)
    ThreadData td = te.getThread();
    if (td == null) return;
 
+   System.err.println("TRACE: " + te);
+
    BdynCallback cb = bdyn_factory.getCallback(te.getEntryLocation());
+   if (cb == null) return;
    OutputTask ot = td.getCurrentTask();
 
    if (cb.getCallbackType() == CallbackType.CONSTRUCTOR) {
@@ -402,7 +405,7 @@ private static class TraceEntry {
 	 entry_loc = -entry_loc;
        }
       entry_time = Long.parseLong(args[ct++]);
-      if (cputime) Long.parseLong(args[ct++]);
+      if (cputime && ct < args.length) Long.parseLong(args[ct++]);
       entry_thread = td;
       if (ct < args.length) entry_o1 = Integer.parseInt(args[ct++]);
       else entry_o1 = 0;
@@ -416,6 +419,21 @@ private static class TraceEntry {
    int getObject1()			{ return entry_o1; }
    int getObject2()			{ return entry_o2; }
    boolean isExit()			{ return is_exit; }
+
+   @Override public String toString() {
+      StringBuffer buf = new StringBuffer();
+      buf.append(entry_loc);
+      if (is_exit) buf.append("^");
+      buf.append(" ");
+      buf.append(entry_time);
+      buf.append(" ");
+      buf.append(entry_thread.getOutputId());
+      buf.append(" ");
+      buf.append(entry_o1);
+      buf.append(" ");
+      buf.append(entry_o2);
+      return buf.toString();
+   }
 
 }	// end of inner class TraceEntry
 
@@ -467,8 +485,8 @@ private static class OutputEntry implements Comparable<OutputEntry>, BdynEntry {
    @Override public long getEndTime()		{ return finish_time; }
    ThreadData getThread()			{ return entry_thread; }
    @Override public BdynEntryThread getEntryThread()	{ return entry_thread; }
-   @Override public BdynCallback getEntryTask()	{ return entry_task; }
-   @Override public BdynCallback getEntryTransaction()  { return entry_transaction.getTaskRoot(); }
+   @Override public BdynCallback getEntryTask() { return entry_task; }
+   @Override public BdynCallback getEntryTransaction()	{ return entry_transaction.getTaskRoot(); }
 
    @Override public int compareTo(OutputEntry e) {
       long dl = start_time - e.start_time;

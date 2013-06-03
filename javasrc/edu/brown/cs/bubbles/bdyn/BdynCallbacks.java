@@ -52,6 +52,7 @@ private Map<String,CallbackMethod> callback_methods;
 private File callback_file;
 private Map<Integer,CallbackMethod> callback_index;
 private Map<String,Boolean> valid_methods;
+private Map<String,Boolean> user_classes;
 
 private static AtomicInteger callback_counter = new AtomicInteger();
 
@@ -89,6 +90,7 @@ BdynCallbacks()
    callback_methods = new HashMap<String,CallbackMethod>();
    callback_index = new HashMap<Integer,CallbackMethod>();
    valid_methods = new HashMap<String,Boolean>();
+   user_classes = new HashMap<String,Boolean>();
 }
 
 
@@ -158,10 +160,12 @@ private class CallbackLoader implements Runnable {
 
 private void setCallbacks()
 {
+   /**********************
    for (Iterator<Boolean> it = valid_methods.values().iterator(); it.hasNext(); ) {
       Boolean fg = it.next();
       if (fg == Boolean.TRUE) it.remove();
     }
+   **********************/
 
    Set<String> classes = new HashSet<String>();
 
@@ -176,7 +180,7 @@ private void setCallbacks()
 	    case EVENT :
 	       break;
 	  }
-	
+
 	 String rargs = "";
 	 int act = 0;
 	 if (!Modifier.isStatic(cm.getModifiers())) {
@@ -187,24 +191,25 @@ private void setCallbacks()
 	     }
 	    ++act;
 	  }
-	 String args = cm.getArgs();
-	 if (args != null) {
-	    List<String> prms = BumpLocation.getParameterList(args);
-	    for (String s : prms) {
-	       if (isUserClass(s)) {
-		  Element hxml = BumpClient.getBump().getTypeHierarchy(cm.getProject(), null, s, false);
-		  // System.err.println("HIERARCHY: " + IvyXml.convertXmlToString(hxml));
-		  addClasses(cm.getProject(),hxml,s,classes);
-		  rargs += Integer.toString(act);
-		  if (rargs.length() >= 2) break;
-		}
-	       else if (s.equals("double") || s.equals("long")) ++act;
-	       ++act;
-	       if (act > 9) break;
-	     }
-	  }
-	 // if (rags.length() == 0) remove the callback
-	 cm.setCallbackArgs(rargs);
+         if (cm.getCallbackArgs() == null) {
+            String args = cm.getArgs();
+            if (args != null) {
+               List<String> prms = BumpLocation.getParameterList(args);
+               for (String s : prms) {
+                  if (isUserClass(s)) {
+                     Element hxml = BumpClient.getBump().getTypeHierarchy(cm.getProject(), null, s, false);
+                     addClasses(cm.getProject(),hxml,s,classes);
+                     rargs += Integer.toString(act);
+                     if (rargs.length() >= 2) break;
+                   }
+                  else if (s.equals("double") || s.equals("long")) ++act;
+                  ++act;
+                  if (act > 9) break;
+                }
+             }
+            // if (rags.length() == 0) remove the callback
+            cm.setCallbackArgs(rargs);
+          }
        }
 
       for (String s : classes) {
@@ -263,7 +268,7 @@ private void addClasses(String proj,Element hxml,String cls,Set<String> classes)
 	  }
 	 break;
        }
-    }	
+    }
 }
 
 
@@ -272,9 +277,12 @@ private boolean isUserClass(String nm)
    if (nm == null) return false;
    if (primitive_types.contains(nm)) return false;
    nm = nm.replace('$', '.');
+   Boolean v = user_classes.get(nm);
+   if (v != null) return v;
    List<BumpLocation> defs = BumpClient.getBump().findTypes(null,nm);
-   if (defs == null || defs.size() == 0) return false;
-   return true;
+   boolean fg = (defs != null && defs.size() > 0);
+   user_classes.put(nm,fg);
+   return fg;
 }
 
 
@@ -333,6 +341,7 @@ private class CallbackUpdater implements Runnable {
 		  chld = false;
 		}
 	     }
+	    else chld = false;
 	  }
        }
       else {
@@ -425,15 +434,28 @@ void loadCallbacks()
 private boolean validate(CallbackMethod cm)
 {
    boolean cnst = false;
+   if (cm.getMethodName().contains("$")) return false;
+   if (cm.getMethodName().contains("<")) {
+      System.err.println("HANDLE " + cm.getMethodName());
+   }
    String pat = cm.getClassName().replace("$",".") + "." + cm.getMethodName();
    if (cm.getCallbackType() == CallbackType.CONSTRUCTOR) {
       cnst = true;
       pat = cm.getClassName().replace("$",".");
     }
+   else if (cm.getMethodName().equals("<init>")) {
+      cnst = true;
+      pat = cm.getClassName().replace("$", ".");
+   }
    // if (cm.getArgs() != null) pat += cm.getArgs();
 
    Boolean fg = valid_methods.get(pat);
    if (fg != null) return fg;
+
+   if (pat.startsWith("java.") || pat.startsWith("javax.")) {
+      valid_methods.put(pat,false);
+      return false;
+    }
 
    List<BumpLocation> locs = BumpClient.getBump().findMethods(cm.getProject(),pat,false,true,cnst,false);
    if (locs == null || locs.isEmpty()) {
@@ -541,7 +563,7 @@ private String getInternalType(String args,String ret)
       buf.append(getInternalType(s));
     }
    buf.append(")");
-   buf.append(getInternalType(ret));
+   if (ret != null) buf.append(getInternalType(ret));
    return buf.toString();
 }
 

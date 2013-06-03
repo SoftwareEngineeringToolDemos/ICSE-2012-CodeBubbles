@@ -152,6 +152,8 @@ private class ProcessHandler implements BumpRunEventHandler {
                if (tn != null) callback_set.updateCallbacks(tn);
              }
             break;
+         case PROCESS_CHANGE :
+            break;
          case PROCESS_PERFORMANCE :
             break;
          case PROCESS_SWING :

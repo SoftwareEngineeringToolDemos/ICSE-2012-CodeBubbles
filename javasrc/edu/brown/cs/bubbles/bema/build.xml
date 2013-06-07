@@ -151,8 +151,6 @@
    <target name='test' depends='compile'>
       <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
 	 <classpath refid='test.classpath' />
-	 <arg value='-w' />
-	 <arg value='/home/spr/Eclipse/bubblesx' />
       </java>
    </target>
 

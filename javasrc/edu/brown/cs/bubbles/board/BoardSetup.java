@@ -1056,6 +1056,8 @@ public boolean doSetup()
 
    setupProxy();
 
+   BoardFileSystemView.setupRemoteServer();
+
    return must_restart;
 }
 
@@ -1396,6 +1398,13 @@ private static boolean checkInstallDirectory(File ind)
 	 BoardLog.logX("BOARD","Missing library file " + inf);
        }
     }
+   File libt = new File(libb,"templates");
+   for (String s : BOARD_TEMPLATES) {
+      inf = new File(libt,s);
+      if (!inf.exists() || !inf.canRead()) {
+	 BoardLog.logX("BOARD","Missing template file " + inf);
+       }
+    }
 
    return true;
 }
@@ -1466,6 +1475,12 @@ private void checkJarLibraries()
 
    for (String s : BOARD_LIBRARY_EXTRAS) {
       extractLibraryResource(s,libd,auto_update);
+    }
+
+   File libt = new File(libd,"templates");
+   if (!libt.exists()) libt.mkdir();
+   for (String s : BOARD_TEMPLATES) {
+      extractLibraryResource(s,libt,auto_update);
     }
 
    File pyd = libd.getParentFile();

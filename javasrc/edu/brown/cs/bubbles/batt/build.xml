@@ -100,9 +100,9 @@
 	 <manifest>
 	    <attribute name='Premain-Class' value='edu.brown.cs.bubbles.batt.BattAgent' />
 	    <attribute name='Agent-Class' value='edu.brown.cs.bubbles.batt.BattAgent' />
-	    <attribute name='Can-RedefineClasses' value='true' />
-	    <attribute name='Can-RetransformClasses' value='false' />
-	    <attribute name='Can-Set-Native-Method-Prefix' value='false' />
+	    <attribute name='Can-Redefine-Classes' value='true' />
+	    <attribute name='Can-Retransform-Classes' value='true' />
+	    <attribute name='Can-Set-Native-Method-Prefix' value='true' />
 	    <attribute name='Sealed' value='false' />
 	 </manifest>
 	 <fileset dir='${BUBBLES}/java' includes='**/batt/BattAgent*.class' />

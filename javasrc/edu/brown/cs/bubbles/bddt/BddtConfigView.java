@@ -280,17 +280,17 @@ private class ModelHandler implements BumpConstants.BumpRunEventHandler {
 
    @Override public void handleLaunchEvent(BumpRunEvent evt) {
       switch (evt.getEventType()) {
-	 case LAUNCH_ADD :
-	 case LAUNCH_CHANGE :
-	    if (!evt.getLaunchConfiguration().isWorkingCopy()) {
-	       active_configs.add(evt.getLaunchConfiguration());
-	     }
-	    break;
-	 case LAUNCH_REMOVE :
-	    active_configs.remove(evt.getLaunchConfiguration());
-	    break;
-	 default:
-	    break;
+         case LAUNCH_ADD :
+         case LAUNCH_CHANGE :
+            if (!evt.getLaunchConfiguration().isWorkingCopy()) {
+               active_configs.add(evt.getLaunchConfiguration());
+             }
+            break;
+         case LAUNCH_REMOVE :
+            active_configs.remove(evt.getLaunchConfiguration());
+            break;
+         default:
+            break;
        }
       config_model.fireTableDataChanged();
     }

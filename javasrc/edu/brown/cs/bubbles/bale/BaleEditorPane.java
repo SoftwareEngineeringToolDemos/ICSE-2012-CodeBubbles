@@ -921,6 +921,15 @@ private String getHoverText(MouseEvent e)
       txt = BaleFactory.getFactory().getContextToolTip(bcc);
     }
 
+   if (txt == null && be != null && be.isIdentifier() && be.getName().contains("FieldId")) {
+      BumpClient bc = BumpClient.getBump();
+      String fullnm = null;
+      fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
+					    bd.mapOffsetToEclipse(loc),
+					    bd.mapOffsetToEclipse(loc));
+      if (fullnm != null) txt = fullnm;
+    }
+
    return txt;
 }
 
@@ -939,23 +948,26 @@ BudaBubble getHoverBubble(MouseEvent e)
    BudaBubble bb = null;
 
    if (be != null && be.isIdentifier() && be.getName().contains("CallId")) {
-
       BumpClient bc = BumpClient.getBump();
       String fullnm = null;
-
       fullnm  = bc.getFullyQualifiedName(bd.getProjectName(),bd.getFile(),
 					    bd.mapOffsetToEclipse(loc),
 					    bd.mapOffsetToEclipse(loc));
-      if (fullnm == null) return null;
+      if (fullnm != null) {
+	 BaleFactory bf = BaleFactory.getFactory();
+	 bb = bf.createMethodBubble(bd.getProjectName(),fullnm);
+       }
+    }
 
-      BaleFactory bf = BaleFactory.getFactory();
-      bb = bf.createMethodBubble(bd.getProjectName(),fullnm);
+   if (bb == null) {
+      bb = handleActiveHoverBubble(e);
     }
 
    if (bb == null) {
       BaleContextConfig bcc = new ContextData(loc,be);
       bb = BaleFactory.getFactory().getContextHoverBubble(bcc);
     }
+
 
    return bb;
 }
@@ -969,8 +981,6 @@ BaleElement getHoverElement(MouseEvent e)
    BaleElement be = bd.getCharacterElement(loc);
 
    if (be != null && be.isIdentifier()) return be;
-
-   // handle expressions if we can here
 
    return null;
 }
@@ -1020,6 +1030,20 @@ boolean handleActiveClick(MouseEvent e)
 
 
 
+BudaBubble handleActiveHoverBubble(MouseEvent e)
+{
+   for (ActiveRegion r : active_regions) {
+      if (r.contains(e.getX(),e.getY())) {
+	 BudaBubble bb = r.hoverBubble(e);
+	 if (bb != null) return bb;
+       }
+    }
+
+   return null;
+}
+
+
+
 private static class ActiveRegion {
 
    private Rectangle region_bounds;
@@ -1037,6 +1061,11 @@ private static class ActiveRegion {
       if (region_action == null) return false;
       region_action.handleClick(e);
       return true;
+    }
+
+   BudaBubble hoverBubble(MouseEvent e) {
+      if (region_action == null) return null;
+      return region_action.handleHoverBubble(e);
     }
 
 }	// end of inner class ActiveRegion
@@ -1064,10 +1093,10 @@ private class ActiveMouser extends MouseAdapter {
       if (set == over_region) return;
       if (base_cursor == null) base_cursor = getCursor();
       over_region = set;
-      if (set) 
-         BudaCursorManager.setTemporaryCursor(BaleEditorPane.this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-      else 
-         BudaCursorManager.setTemporaryCursor(BaleEditorPane.this,Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+      if (set)
+	 BudaCursorManager.setTemporaryCursor(BaleEditorPane.this,Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+      else
+	 BudaCursorManager.setTemporaryCursor(BaleEditorPane.this,Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
     }
 
 }	// end of inner class ActiveMouser

@@ -45,6 +45,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.List;
@@ -72,12 +73,13 @@ private JButton 		debug_button;
 private JButton 		save_button;
 private JButton 		revert_button;
 private JButton 		clone_button;
-private JComboBox		project_name;
-private JComboBox		start_class;
+private JComboBox<String>	project_name;
+private JComboBox<String>	start_class;
 private JCheckBox		stop_in_main;
 private JTextComponent		test_class;
 private JTextComponent		test_name;
 private JTextComponent		host_name;
+private JTextComponent		log_file;
 private SwingNumericField	port_number;
 private boolean 		doing_load;
 
@@ -180,7 +182,7 @@ private void setupPanel()
    test_name = null;
    host_name = null;
    port_number = null;
-
+   log_file = null;
 
    switch (launch_config.getConfigType()) {
       case JAVA_APP :
@@ -218,6 +220,8 @@ private void setupPanel()
       default:
 	 break;
     }
+
+   log_file = pnl.addFileField("Record Output",launch_config.getLogFile(),JFileChooser.FILES_ONLY,null,this);
    pnl.addSeparator();
    debug_button = pnl.addBottomButton("Debug","DEBUG",this);
    save_button = pnl.addBottomButton("Save","SAVE",this);
@@ -297,6 +301,22 @@ private String getNewName()
 @Override public String getConfigurator()
 {
    return "BDDT";
+}
+
+
+/********************************************************************************/
+/*										*/
+/*	Popup methods								*/
+/*										*/
+/********************************************************************************/
+
+@Override public void handlePopupMenu(MouseEvent e)
+{
+   JPopupMenu menu = new JPopupMenu();
+
+   menu.add(getFloatBubbleAction());
+
+   menu.show(this,e.getX(),e.getY());
 }
 
 
@@ -418,6 +438,12 @@ private String getNewName()
    else if (isArea(launch_name,doc)) {
       if (edit_config == null) edit_config = launch_config;
       edit_config = edit_config.setConfigName(launch_name.getText().trim());
+    }
+   else if (isArea(log_file,doc)) {
+      if (edit_config == null) edit_config = launch_config;
+      String nm = log_file.getText().trim();
+      if (nm.length() == 0) nm = null;
+      edit_config = edit_config.setLogFile(nm);
     }
 
    fixButtons();

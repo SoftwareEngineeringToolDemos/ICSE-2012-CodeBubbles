@@ -485,6 +485,7 @@ private void setupUpdate()
       copyFile(ins,ots);
     }
    catch (Throwable t) {
+      JOptionPane.showMessageDialog(null,"Problem doing update: " + t);
       System.err.println("BOARDUPDATE: Problem doing update: " + t);
 
       prog.setText("Update Problem: restoring old version");

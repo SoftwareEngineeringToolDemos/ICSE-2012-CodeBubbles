@@ -435,7 +435,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 
    IvyXmlWriter xw = new IvyXmlWriter();
    xw.begin("RESULT");
-   
+
    if (cmd.equals("PING")) {
       if (doing_exit || shutdown_mint) xw.text("EXIT");
       else if (PlatformUI.isWorkbenchRunning()) xw.text("PONG");
@@ -682,13 +682,13 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if (cmd.equals("CREATEPRIVATE")) {
       bedrock_editor.createPrivateBuffer(proj,
-            IvyXml.getAttrString(xml,"BID"),
-            IvyXml.getAttrString(xml,"FILE"));   
+	    IvyXml.getAttrString(xml,"BID"),
+	    IvyXml.getAttrString(xml,"FILE"));
     }
    else if (cmd.equals("REMOVEPRIVATE")) {
       bedrock_editor.removePrivateBuffer(proj,
-            IvyXml.getAttrString(xml,"BID"),
-            IvyXml.getAttrString(xml,"FILE"));
+	    IvyXml.getAttrString(xml,"BID"),
+	    IvyXml.getAttrString(xml,"FILE"));
     }
    else if (cmd.equals("GETCOMPLETIONS")) {
       bedrock_editor.getCompletions(proj,IvyXml.getAttrString(xml,"BID","*"),
@@ -768,7 +768,9 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       bedrock_project.handlePreferences(proj,xw);
     }
    else if (cmd.equals("SETPREFERENCES")) {
-      bedrock_project.handleSetPreferences(proj,IvyXml.getChild(xml,"profile"),xw);
+      Element pxml = IvyXml.getChild(xml,"profile");
+      if (pxml == null) pxml = IvyXml.getChild(xml,"OPTIONS");
+      bedrock_project.handleSetPreferences(proj,pxml,xw);
     }
    else if (cmd.equals("LOGLEVEL")) {
       log_level = IvyXml.getAttrEnum(xml,"LEVEL",BedrockLogLevel.ERROR);
@@ -1044,7 +1046,12 @@ static void log(BedrockLogLevel lvl,String msg,Throwable t)
 
    if (log_file != null) {
       log_file.println(pfx + msg);
-      if (t != null) t.printStackTrace(log_file);
+      if (t != null) {
+	 t.printStackTrace(log_file);
+	 Throwable r = null;
+	 for (r = t.getCause(); r != null && r.getCause() != null; r = r.getCause());
+	 if (r != null) r.printStackTrace(log_file);
+       }
     }
    if (use_stderr || log_file == null) {
       System.err.println(pfx + msg);

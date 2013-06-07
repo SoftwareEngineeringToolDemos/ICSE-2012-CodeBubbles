@@ -281,7 +281,7 @@ private static class HistoryData implements BddtHistoryData {
 
    private void historyStarted() {
       for (BddtHistoryListener bl : listener_list) {
-	 bl.handleHistoryStarted();
+         bl.handleHistoryStarted();
        }
     }
 

@@ -313,9 +313,11 @@ String startDebugArgs(String id)
    args += ";port=" + server_port;
    if (id != null) args += ";id=" + id;
    args += ";enable";
-   
+   File f = BoardSetup.getBubblesWorkingDirectory();
+   args += ";base=" + f.getPath();
+
    BoardProperties bp = BoardProperties.getProperties("Bandaid");
-   String agts = bp.getProperty("Bandaid.agents");
+   String agts = bp.getProperty("bandaid.agents");
    if (agts == null) agts = "All";
    agts = agts.replace(",",";");
    agts = agts.replace(" ",";");
@@ -895,6 +897,22 @@ private void handleTargetEvent(Element xml,long when)
 	    break;
        }
     }
+
+   if (kind == RunEventKind.TERMINATE) {
+      pd = active_processes.remove(pd.getId());
+      if (pd != null) {
+	 if (pd.getName() != null) named_processes.remove(pd.getName());
+	 ProcessEvent evt = new ProcessEvent(BumpRunEventType.PROCESS_REMOVE,pd);
+	 for (BumpRunEventHandler reh : event_handlers) {
+	    try {
+	       reh.handleProcessEvent(evt);
+	     }
+	    catch (Throwable t) {
+	       BoardLog.logE("BUMP","Problem handling process event",t);
+	     }
+	  }
+       }
+    }
 }
 
 
@@ -983,6 +1001,7 @@ private class LaunchConfig implements BumpLaunchConfig {
    private BumpLaunchConfigType config_type;
    private String test_case;
    private String remote_host;
+   private String log_file;
    private int	  remote_port;
    private boolean is_working;
    private boolean stop_in_main;
@@ -1010,6 +1029,7 @@ private class LaunchConfig implements BumpLaunchConfig {
       program_args = getAttribute(xml,"PROGRAM_ARGUMENTS");
       java_args = getAttribute(xml,"VM_ARGUMENTS");
       test_case = getAttribute(xml,"TESTNAME");
+      log_file = getAttribute(xml,"CAPTURE_IN_FILE");
       use_contracts = getBoolean(xml,"CONTRACTS",true);
       use_assertions = getBoolean(xml,"ASSERTIONS",true);
       remote_host = "localhost";
@@ -1038,6 +1058,7 @@ private class LaunchConfig implements BumpLaunchConfig {
    @Override public BumpLaunchConfigType getConfigType() { return config_type; }
    @Override public String getTestName()		{ return test_case; }
    @Override public String getRemoteHost()		{ return remote_host; }
+   @Override public String getLogFile() 		{ return log_file; }
    @Override public int getRemotePort() 		{ return remote_port; }
    @Override public boolean isWorkingCopy()		{ return is_working; }
    @Override public boolean getStopInMain()		{ return stop_in_main; }
@@ -1121,6 +1142,11 @@ private class LaunchConfig implements BumpLaunchConfig {
    @Override public BumpLaunchConfig setRemoteHostPort(String host,int port) {
       String val = "{port=" + port + ", hostname=" + host + "}";
       Element x = bump_client.editRunConfiguration(getId(),"CONNECT_MAP",val);
+      return getLaunchResult(x);
+    }
+
+   @Override public BumpLaunchConfig setLogFile(String arg) {
+      Element x = bump_client.editRunConfiguration(getId(),"CAPTURE_IN_FILE",arg);
       return getLaunchResult(x);
     }
 
@@ -1306,73 +1332,86 @@ private class ProcessData implements BumpProcess {
    void handleBandaidData(long when,Element xml) {
       Map<String,ThreadData> ths = new HashMap<String,ThreadData>();
       for (ThreadData td : active_threads.values()) {
-         if (td.getProcess() == this) ths.put(td.getName(),td);
+	 if (td.getProcess() == this) ths.put(td.getName(),td);
        }
-   
+
       Element x = IvyXml.getChild(xml,"STATES");
       for (Element tc : IvyXml.children(x,"THREAD")) {
-         String nm = IvyXml.getAttrString(tc,"NAME");
-         ThreadData td = ths.get(nm);
-         if (td != null && td.handleBandaidData(tc)) {
-            ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
-            for (BumpRunEventHandler reh : event_handlers) {
-               try {
-        	  reh.handleThreadEvent(evt);
-        	}
-               catch (Throwable t) {
-        	  BoardLog.logE("BUMP","Problem handling state event",t);
-        	}
-             }
-          }
+	 String nm = IvyXml.getAttrString(tc,"NAME");
+	 ThreadData td = ths.get(nm);
+	 if (td != null && td.handleBandaidData(tc)) {
+	    ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
+	    for (BumpRunEventHandler reh : event_handlers) {
+	       try {
+		  reh.handleThreadEvent(evt);
+		}
+	       catch (Throwable t) {
+		  BoardLog.logE("BUMP","Problem handling state event",t);
+		}
+	     }
+	  }
        }
-   
+
       Element dx = IvyXml.getChild(xml,"DEADLOCKS");
       if (dx != null) {
-         for (Element de : IvyXml.children(dx,"DEADLOCK")) {
-            for (Element te : IvyXml.children(de,"THREAD")) {
-               String nm = IvyXml.getAttrString(te,"NAME");
-               ThreadData td = ths.get(nm);
-               if (td != null && td.handleBandaidDeadlock()) {
-        	  ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
-        	  for (BumpRunEventHandler reh : event_handlers) {
-        	     try {
-        		reh.handleThreadEvent(evt);
-        	      }
-        	     catch (Throwable t) {
-        		BoardLog.logE("BUMP","Problem handling deadlock state event",t);
-        	      }
-        	   }
-        	}
-             }
-          }
+	 for (Element de : IvyXml.children(dx,"DEADLOCK")) {
+	    for (Element te : IvyXml.children(de,"THREAD")) {
+	       String nm = IvyXml.getAttrString(te,"NAME");
+	       ThreadData td = ths.get(nm);
+	       if (td != null && td.handleBandaidDeadlock()) {
+		  ThreadEvent evt = new ThreadEvent(BumpRunEventType.THREAD_CHANGE,td,when);
+		  for (BumpRunEventHandler reh : event_handlers) {
+		     try {
+			reh.handleThreadEvent(evt);
+		      }
+		     catch (Throwable t) {
+			BoardLog.logE("BUMP","Problem handling deadlock state event",t);
+		      }
+		   }
+		}
+	     }
+	  }
        }
-   
+
       Element px = IvyXml.getChild(xml,"CPUPERF");
       if (px != null) {
-         // BoardLog.logD("BUMP","CPU PERF: " + IvyXml.convertXmlToString(px));
-         ProcessPerfEvent ppe = new ProcessPerfEvent(this,px);
-         for (BumpRunEventHandler reh : event_handlers) {
-            try {
-               reh.handleProcessEvent(ppe);
-             }
-            catch (Throwable t) {
-               BoardLog.logE("BUMP","Problem handling performance event",t);
-             }
-          }
+	 // BoardLog.logD("BUMP","CPU PERF: " + IvyXml.convertXmlToString(px));
+	 ProcessPerfEvent ppe = new ProcessPerfEvent(this,px);
+	 for (BumpRunEventHandler reh : event_handlers) {
+	    try {
+	       reh.handleProcessEvent(ppe);
+	     }
+	    catch (Throwable t) {
+	       BoardLog.logE("BUMP","Problem handling performance event",t);
+	     }
+	  }
        }
       Element tx = IvyXml.getChild(xml,"TRIE");
       if (tx != null) {
-         // BoardLog.logD("BUMP","TRIE DATA: " + IvyXml.convertXmlToString(tx));
-         ProcessTrieEvent pte = new ProcessTrieEvent(this,tx);
-         for (BumpRunEventHandler reh : event_handlers) {
-            try {
-               reh.handleProcessEvent(pte);
-             }
-            catch (Throwable t) {
-               BoardLog.logE("BUMP","Problem handling trie event",t);
-             }
-          }   
+	 // BoardLog.logD("BUMP","TRIE DATA: " + IvyXml.convertXmlToString(tx));
+	 ProcessTrieEvent pte = new ProcessTrieEvent(this,tx);
+	 for (BumpRunEventHandler reh : event_handlers) {
+	    try {
+	       reh.handleProcessEvent(pte);
+	     }
+	    catch (Throwable t) {
+	       BoardLog.logE("BUMP","Problem handling trie event",t);
+	     }
+	  }
        }
+      Element rx = IvyXml.getChild(xml,"TRACE");
+      if (rx != null) {
+	 // BoardLog.logD("BUMP","TRACE DATA: " + IvyXml.convertXmlToString(rx));
+	 ProcessTraceEvent pre = new ProcessTraceEvent(this,rx);
+	 for (BumpRunEventHandler reh : event_handlers) {
+	    try {
+	       reh.handleProcessEvent(pre);
+	     }
+	    catch (Throwable t) {
+	       BoardLog.logE("BUMP","Problem handling trace event",t);
+	     }
+	  }    }
+
    }
 
 }	// end of inner class ProcessData
@@ -1920,7 +1959,7 @@ private class BandaidHandler implements MintHandler {
       long now = args.getLongArgument(1);
       Element xml = args.getXmlArgument(2);
       ProcessData pd = named_processes.get(pid);
-   
+
       if (pd == null) return;
       pd.handleBandaidData(now,xml);
     }
@@ -2020,20 +2059,20 @@ private static class ProcessPerfEvent extends BaseEvent {
 
 /********************************************************************************/
 /*										*/
-/*	Trie management							*/
+/*	Trie management 						*/
 /*										*/
 /********************************************************************************/
 
 private static class ProcessTrieEvent extends BaseEvent {
-   
+
    private ProcessData for_process;
    private Element trie_data;
-   
+
    ProcessTrieEvent(ProcessData pd,Element cpudata) {
       for_process = pd;
       trie_data = cpudata;
     }
-   
+
    @Override public BumpRunEventType getEventType()	{ return BumpRunEventType.PROCESS_TRIE; }
    @Override public BumpProcess getProcess()		{ return for_process; }
    @Override public BumpLaunch getLaunch()		{ return for_process.getLaunch(); }
@@ -2044,7 +2083,38 @@ private static class ProcessTrieEvent extends BaseEvent {
     }
    @Override public long getWhen()			{ return 0; }
    @Override public Object getEventData()		{ return trie_data; }
-   
+
+}	// end of inner class ProcessPerfEvent
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Trace management							*/
+/*										*/
+/********************************************************************************/
+
+private static class ProcessTraceEvent extends BaseEvent {
+
+   private ProcessData for_process;
+   private Element trace_data;
+
+   ProcessTraceEvent(ProcessData pd,Element tracedata) {
+      for_process = pd;
+      trace_data = tracedata;
+    }
+
+   @Override public BumpRunEventType getEventType()	{ return BumpRunEventType.PROCESS_TRACE; }
+   @Override public BumpProcess getProcess()		{ return for_process; }
+   @Override public BumpLaunch getLaunch()		{ return for_process.getLaunch(); }
+   @Override public BumpLaunchConfig getLaunchConfiguration() {
+      BumpLaunch bl = for_process.getLaunch();
+      if (bl == null) return null;
+      return bl.getConfiguration();
+    }
+   @Override public long getWhen()			{ return 0; }
+   @Override public Object getEventData()		{ return trace_data; }
+
 }	// end of inner class ProcessPerfEvent
 
 

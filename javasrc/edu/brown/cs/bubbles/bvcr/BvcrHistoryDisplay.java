@@ -72,7 +72,7 @@ private Map<HistoryNode,Color>	 node_color;
 private ColorMode		color_by;
 private HistoryBubble		history_bubble;
 private Component		author_display;
-private List<Region>            file_regions;
+private List<Region>		file_regions;
 
 private static final int	MAX_WIDTH = 90;
 private static final int	MAX_SPACES = 3;
@@ -159,7 +159,7 @@ private BvcrFileVersion loadVersionData()
    version_set = new HashMap<String,BvcrFileVersion>();
    root_versions = new ArrayList<BvcrFileVersion>();
    BvcrFileVersion cur = null;
-   
+
    Element e1 = for_factory.getHistoryForFile(for_project,file);
    e1 = IvyXml.getChild(e1,"HISTORY");
    if (e1 == null) return null;
@@ -173,7 +173,7 @@ private BvcrFileVersion loadVersionData()
       if (bfv.getPriorVersions(version_set).size() == 0 && !root_versions.contains(bfv))
 	 root_versions.add(bfv);
     }
-   
+
    return cur;
 }
 
@@ -181,89 +181,89 @@ private BvcrFileVersion loadVersionData()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Region computations                                                     */
-/*                                                                              */
+/*										*/
+/*	Region computations							*/
+/*										*/
 /********************************************************************************/
 
 private void setupRegions()
 {
    file_regions = new ArrayList<Region>();
-   
+
    List<BumpLocation> decls = BumpClient.getBump().findAllDeclarations(for_project,for_file,null);
    Segment s = new Segment();
    BaleFileOverview bov = BaleFactory.getFactory().getFileOverview(for_project,for_file);
    try {
       bov.getText(0,bov.getLength(),s);
     }
-   catch (BadLocationException e) { 
+   catch (BadLocationException e) {
     }
-   
+
    if (decls != null) {
       for (BumpLocation bl :decls) {
-         switch (bl.getSymbolType()) {
-            case CLASS :
-            case INTERFACE :
-            case ENUM :
-            case THROWABLE :
-               break;
-            case FIELD :
-            case ENUM_CONSTANT :
-               continue;
-            case FUNCTION :
-            case CONSTRUCTOR :
-            case STATIC_INITIALIZER :
-            case MAIN_PROGRAM :
-               break;
-            default :
-               continue;
-          }
-         int pos0 = bov.mapOffsetToJava(bl.getOffset());
-         int pos1 = bov.mapOffsetToJava(bl.getEndOffset());
-         try {
-            bov.getText(0,bov.getLength(),s);
-            int idx = pos0;
-            while (idx >= 0 && idx < s.length() && Character.isWhitespace(s.charAt(idx))) {
-               if (s.charAt(idx) == '\n') {
-                  pos0 = idx;
-                  break;
-                }
-               --idx;
-             }
-            idx = pos1;
-            while (idx < s.length()) {
-               if (s.charAt(idx) == '\n') {
-                  pos1 = idx;
-                  break;
-                }
-               ++idx;
-             }
-            while (idx < s.length() && Character.isWhitespace(s.charAt(idx))) {
-               if (s.charAt(idx) == '\n') pos1 = idx;
-               ++idx;
-             }
-          }
-         catch (BadLocationException e) {
-          }
-         
-         int ln0 = bov.findLineNumber(pos0);
-         int ln1 = bov.findLineNumber(pos1);
-         Region rgn = new Region(bl,ln0,ln1);
-         file_regions.add(rgn);
+	 switch (bl.getSymbolType()) {
+	    case CLASS :
+	    case INTERFACE :
+	    case ENUM :
+	    case THROWABLE :
+	       break;
+	    case FIELD :
+	    case ENUM_CONSTANT :
+	       continue;
+	    case FUNCTION :
+	    case CONSTRUCTOR :
+	    case STATIC_INITIALIZER :
+	    case MAIN_PROGRAM :
+	       break;
+	    default :
+	       continue;
+	  }
+	 int pos0 = bov.mapOffsetToJava(bl.getOffset());
+	 int pos1 = bov.mapOffsetToJava(bl.getEndOffset());
+	 try {
+	    bov.getText(0,bov.getLength(),s);
+	    int idx = pos0;
+	    while (idx >= 0 && idx < s.length() && Character.isWhitespace(s.charAt(idx))) {
+	       if (s.charAt(idx) == '\n') {
+		  pos0 = idx;
+		  break;
+		}
+	       --idx;
+	     }
+	    idx = pos1;
+	    while (idx < s.length()) {
+	       if (s.charAt(idx) == '\n') {
+		  pos1 = idx;
+		  break;
+		}
+	       ++idx;
+	     }
+	    while (idx < s.length() && Character.isWhitespace(s.charAt(idx))) {
+	       if (s.charAt(idx) == '\n') pos1 = idx;
+	       ++idx;
+	     }
+	  }
+	 catch (BadLocationException e) {
+	  }
+	
+	 int ln0 = bov.findLineNumber(pos0);
+	 int ln1 = bov.findLineNumber(pos1);
+	 Region rgn = new Region(bl,ln0,ln1);
+	 file_regions.add(rgn);
        }
     }
-   
+
    Collections.sort(file_regions);
 }
 
 
 
 private static class Region implements Comparable<Region> {
-   
+
    private int start_line;
    private int end_line;
    private String region_name;
-   
+
    Region(BumpLocation loc,int sln,int eln) {
       start_line = sln;
       end_line = eln;
@@ -273,7 +273,7 @@ private static class Region implements Comparable<Region> {
    int getStartLine()			{ return start_line; }
    int getEndLine()			{ return end_line; }
    String getName()			{ return region_name; }
-   
+
    @Override public int compareTo(Region r) {
       if (start_line < r.start_line) return -1;
       if (start_line > r.start_line) return 1;
@@ -281,8 +281,8 @@ private static class Region implements Comparable<Region> {
       if (end_line > r.end_line) return 1;
       return region_name.compareTo(r.region_name);
    }
-   
-}       // end of inner class Region
+
+}	// end of inner class Region
 
 
 
@@ -394,7 +394,7 @@ private void addToHistory(HistoryNode hn,BvcrFileVersion cv,HistoryMap map,Map<B
 private List<LineData> getLineHistory(HistoryNode root)
 {
    List<LineData> rslt = new ArrayList<LineData>();
-   
+
    if (root == null) return rslt;
 
    BaleFileOverview tfo = BaleFactory.getFactory().getFileOverview(for_project,for_file);
@@ -512,13 +512,13 @@ private class HistoryGather implements Runnable {
       BvcrFileVersion cur = loadVersionData();
       setupRegions();
       if (version_set == null || version_set.isEmpty()) return;
-   
+
       HistoryMap hmap = loadVersionDifferences(cur);
       HistoryNode root = buildHistory(hmap);
       List<LineData> lines = getLineHistory(root);
-   
+
       for (HistoryCallback cb : history_callbacks) {
-         cb.handleFileHistory(root,lines);
+	 cb.handleFileHistory(root,lines);
        }
     }
 
@@ -654,7 +654,7 @@ private class LineData {
 
    HistoryNode getCreationNode()		{ return create_node; }
    int getOriginalLineNumber()			{ return orig_number; }
-   
+
    int getLineAtNode(HistoryNode hn) {
       if (edit_nodes == null) return 0;
       Integer v = edit_nodes.get(hn);
@@ -771,13 +771,13 @@ private class ShowAuthorAction extends JRadioButtonMenuItem implements ActionLis
       super("Show Authors",(author_display != null && author_display.isVisible()));
       addActionListener(this);
    }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       if (author_display == null) return;
       boolean fg = author_display.isVisible();
       author_display.setVisible(!fg);
    }
-   
+
 }	// end of inner class ShowAuthorAction
 
 
@@ -870,29 +870,29 @@ private class HistoryGraph extends JPanel implements HistoryCallback {
       petal_model.addNode(n1);
       done.put(hn,n1);
       for (HistoryNode hn2 : hn.getPriorNodes()) {
-         Node n2 = addNode(hn2,done);
-         Arc a1 = new Arc(n1,n2);
-         petal_model.addArc(a1);
+	 Node n2 = addNode(hn2,done);
+	 Arc a1 = new Arc(n1,n2);
+	 petal_model.addArc(a1);
        }
       return n1;
     }
 
    @Override public void paint(Graphics g) {
       for (PetalNode pn : petal_model.getNodes()) {
-         if (pn instanceof Node) {
-            Node nn = (Node) pn;
-            HistoryNode hn = nn.getNode();
-            Color c = node_color.get(hn);
-            Component lbl = pn.getComponent();
-            lbl.setBackground(c);
-            int lum = (c.getRed() * 299 + c.getGreen() * 587 + c.getBlue() * 114)/1000;
-            if (lum > 125) lbl.setForeground(Color.BLACK);
-            else lbl.setForeground(Color.WHITE);          }
+	 if (pn instanceof Node) {
+	    Node nn = (Node) pn;
+	    HistoryNode hn = nn.getNode();
+	    Color c = node_color.get(hn);
+	    Component lbl = pn.getComponent();
+	    lbl.setBackground(c);
+	    int lum = (c.getRed() * 299 + c.getGreen() * 587 + c.getBlue() * 114)/1000;
+	    if (lum > 125) lbl.setForeground(Color.BLACK);
+	    else lbl.setForeground(Color.WHITE);	  }
        }
-      
+
       super.paint(g);
     }
-   
+
    private class Wheeler extends MouseAdapter {
 
       @Override public void mouseWheelMoved(MouseWheelEvent e) {
@@ -918,31 +918,31 @@ private class HistoryGraph extends JPanel implements HistoryCallback {
 	 if (c != null) getComponent().setBackground(c);
 	 for_node = hn;
        }
-      
-      HistoryNode getNode()             { return for_node; }
+
+      HistoryNode getNode()		{ return for_node; }
 
       @Override public String getToolTip(Point at) {
-         StringBuffer buf = new StringBuffer();
-         BvcrFileVersion fv = for_node.getVersion();
-         buf.append("<html><table>");
-         buf.append("<tr><td>File</td><td>");
-         buf.append(for_file);
-         buf.append("<tr><td>Id</td><td>");
-         buf.append(fv.getVersionId());
-         buf.append("</td></tr>");
-         buf.append("<tr><td>Date</td><td>");
-         buf.append(fv.getVersionTime());
-         buf.append("</td></tr>");
-         buf.append("<tr><td>Author</td><td>");
-         buf.append(fv.getAuthor());
-         buf.append("</td></tr>");
-         buf.append("<tr><td>Message</td><td><p>");
-         buf.append(fv.getFullMessage());
-         buf.append("</p></td></tr>");
-         buf.append("</table>");
-         return buf.toString();
+	 StringBuffer buf = new StringBuffer();
+	 BvcrFileVersion fv = for_node.getVersion();
+	 buf.append("<html><table>");
+	 buf.append("<tr><td>File</td><td>");
+	 buf.append(for_file);
+	 buf.append("<tr><td>Id</td><td>");
+	 buf.append(fv.getVersionId());
+	 buf.append("</td></tr>");
+	 buf.append("<tr><td>Date</td><td>");
+	 buf.append(fv.getVersionTime());
+	 buf.append("</td></tr>");
+	 buf.append("<tr><td>Author</td><td>");
+	 buf.append(fv.getAuthor());
+	 buf.append("</td></tr>");
+	 buf.append("<tr><td>Message</td><td><p>");
+	 buf.append(fv.getFullMessage());
+	 buf.append("</p></td></tr>");
+	 buf.append("</table>");
+	 return buf.toString();
       }
-      
+
     }	// end of inner class Node
 
    private class Arc extends PetalArcDefault {
@@ -1128,7 +1128,7 @@ private class LineDrawingArea extends JPanel {
       double narea = (node_order == null ? 0 : node_order.size());
       double xw = 0;
       if (narea > 0) xw = (sz.width - x0)/narea;
-      
+
       if (file_regions != null) {
 	 for (Region r : file_regions) {
 	    int sln = r.getStartLine();
@@ -1216,7 +1216,7 @@ private class LineDrawingArea extends JPanel {
 	     }
 	  }
        }
-      
+
       if (evt.getX() < x0) {
 	 int ln1 = Math.max(1,lno-5);
 	 int ln2 = Math.min(lno+5,file_data.getNumLines()-1);
@@ -1297,7 +1297,7 @@ private class LineDrawingArea extends JPanel {
 private String getChangeDescription(LineData ld,HistoryNode node)
 {
    int actualline = ld.getLineAtNode(node);
-   
+
    if (node.getPriorNodes().size() == 0) return "Initial Check In";
 
    for (HistoryNode hn : node_order.keySet()) {
@@ -1310,7 +1310,7 @@ private String getChangeDescription(LineData ld,HistoryNode node)
 	    int nadd = (add == null ? 0 : add.length);
 	    if (actualline >= chng.getSourceLine() &&
 		     actualline <= chng.getSourceLine() + nadd - ndel) {
-	       System.err.println("CHECK CHANGE " + actualline + " " + 
+	       System.err.println("CHECK CHANGE " + actualline + " " +
 			ld.getOriginalLineNumber() + " " +
 			chng.getSourceLine() + " " +
 			chng.getTargetLine() + " " +
@@ -1327,49 +1327,49 @@ private String getChangeDescription(LineData ld,HistoryNode node)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Author window                                                           */
-/*                                                                              */
+/*										*/
+/*	Author window								*/
+/*										*/
 /********************************************************************************/
 
 private class AuthorWindow extends JPanel implements HistoryCallback {
-   
+
    AuthorWindow(HistoryGather hg) {
       super(new FlowLayout(FlowLayout.CENTER,10,10));
       setPreferredSize(new Dimension(300,75));
       hg.addCallback(this);
     }
-   
+
    @Override public void handleFileHistory(HistoryNode root,List<LineData> lines) {
       Map<HistoryNode,Node> nodes = new HashMap<HistoryNode,Node>();
       Set<BvcrAuthor> authors = new TreeSet<BvcrAuthor>();
       addNode(root,nodes,authors);
       for (BvcrAuthor ba : authors) {
-         JLabel lbl = new JLabel(ba.getName());
-         Color c = ba.getColor();
-         lbl.setBackground(c);
-         int lum = (c.getRed() * 299 + c.getGreen() * 587 + c.getBlue() * 114)/1000;
-         if (lum > 125) lbl.setForeground(Color.BLACK);
-         else lbl.setForeground(Color.WHITE);
-         lbl.setOpaque(true);
-         lbl.setBorder(new EmptyBorder(3,10,3,10));
-         add(lbl);
+	 JLabel lbl = new JLabel(ba.getName());
+	 Color c = ba.getColor();
+	 lbl.setBackground(c);
+	 int lum = (c.getRed() * 299 + c.getGreen() * 587 + c.getBlue() * 114)/1000;
+	 if (lum > 125) lbl.setForeground(Color.BLACK);
+	 else lbl.setForeground(Color.WHITE);
+	 lbl.setOpaque(true);
+	 lbl.setBorder(new EmptyBorder(3,10,3,10));
+	 add(lbl);
        }
     }
-   
+
    private void addNode(HistoryNode hn,Map<HistoryNode,Node> done,Set<BvcrAuthor> authors) {
       Node n1 = done.get(hn);
       if (hn == null || n1 != null) return;
       done.put(hn,n1);
       BvcrAuthor ba = BvcrAuthor.getAuthor(hn.getVersion().getAuthor());
-      authors.add(ba); 
-      
+      authors.add(ba);
+
       for (HistoryNode hn2 : hn.getPriorNodes()) {
-         addNode(hn2,done,authors);
+	 addNode(hn2,done,authors);
        }
     }
-   
-}       // end of inner class AuthorWindow
+
+}	// end of inner class AuthorWindow
 
 
 /********************************************************************************/
@@ -1416,15 +1416,16 @@ private void recomputeColors()
    node_color = new HashMap<HistoryNode,Color>();
    switch (color_by) {
       case AUTHOR :
-         for (HistoryNode hn : node_order.keySet()) {
-            String au = hn.getVersion().getAuthor();
-            BvcrAuthor ba = BvcrAuthor.getAuthor(au);
-            Color c = ba.getColor();
-            node_color.put(hn,c);
-          }
+	 for (HistoryNode hn : node_order.keySet()) {
+	    String au = hn.getVersion().getAuthor();
+	    BvcrAuthor ba = BvcrAuthor.getAuthor(au);
+	    Color c = ba.getColor();
+	    node_color.put(hn,c);
+	  }
 	 break;
       default :
       case TIME :
+	 if (node_order == null) break;
 	 int nc = node_order.size();
 	 for (HistoryNode hn : node_order.keySet()) {
 	    float idx = node_order.get(hn);

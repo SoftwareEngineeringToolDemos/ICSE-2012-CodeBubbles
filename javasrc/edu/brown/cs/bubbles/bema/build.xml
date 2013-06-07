@@ -137,7 +137,9 @@
    </path>
 
    <target name='compile' depends='init'>
-      <javac srcdir='.' destdir='${BUBBLES}/java' debug='on' deprecation='on' includeantruntime='false'>
+      <javac srcdir='.' destdir='${BUBBLES}/java' source='1.6' target='1.6' debug='on'
+		deprecation='on' includeantruntime='false'
+		bootclasspath='/pro/java/linux/jdk1.6/jre/lib/rt.jar'>
 	 <classpath refid='bubbles.classpath' />
       </javac>
    </target>
@@ -382,6 +384,19 @@
 	 <arg value="BUBBLES_DEBUG_spr" />
 	 <arg value='-w' />
 	 <arg value='/home/spr/Eclipse/upod' />
+      </java>
+   </target>
+
+   <target name='testserver6' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <jvmarg value="-Xmx1024m" />
+	 <arg value="-S" />
+	 <arg value="-W" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/roamio' />
       </java>
    </target>
 

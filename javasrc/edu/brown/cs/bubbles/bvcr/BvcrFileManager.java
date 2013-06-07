@@ -122,6 +122,7 @@ private void setupAnnotations(String proj,File f)
    for (BvcrDifferenceFile bdf : diffs.values()) {
       for (BvcrFileChange bfc : bdf.getChanges()) {
 	 int ln = bfc.getSourceLine();
+	 if (ln <= 0) continue;
 	 String [] dels = bfc.getDeletedLines();
 	 int ct = (dels == null ? 1 : dels.length);
 	 if (ct == 0) ct = 1;

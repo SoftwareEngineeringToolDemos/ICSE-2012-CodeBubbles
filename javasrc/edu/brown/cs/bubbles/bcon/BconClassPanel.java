@@ -205,7 +205,7 @@ BconClassPanel(String proj,File f,String cls,boolean inner)
    Point pt = SwingUtilities.convertPoint(bbl,e.getPoint(),class_list);
    int row = class_list.locationToIndex(pt);
    if (row < 0) return;
-   BconRegion br = (BconRegion) list_model.getElementAt(row);
+   BconRegion br = list_model.getElementAt(row);
    if (br == null) return;
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(class_list);
    if (bba == null) return;
@@ -699,7 +699,7 @@ private static class RegionComparator implements Comparator<BconRegion> {
 /*										*/
 /********************************************************************************/
 
-private class ClassList extends JList {
+private class ClassList extends JList<BconRegion> {
 
    private static final long serialVersionUID = 1;
 
@@ -722,7 +722,7 @@ private class ClassList extends JList {
 
    @Override public String getToolTipText(MouseEvent evt) {
       int idx = locationToIndex(evt.getPoint());
-      BconRegion br = (BconRegion) list_model.getElementAt(idx);
+      BconRegion br = list_model.getElementAt(idx);
       if (br == null) return null;
       String txt = br.getRegionText();
       return "<html><pre>" + txt + "</pre></html>";
@@ -736,10 +736,10 @@ private class ClassList extends JList {
 private class ClassMouser extends MouseAdapter {
 
    @Override public void mouseClicked(MouseEvent e) {
-      JList lst = (JList) e.getSource();
+      JList<?> lst = (JList<?>) e.getSource();
       if (e.getClickCount() == 2) {
 	 int idx = lst.locationToIndex(e.getPoint());
-	 BconRegion br = (BconRegion) list_model.getElementAt(idx);
+	 BconRegion br = list_model.getElementAt(idx);
 	 if (br != null) br.createBubble(lst);
        }
     }
@@ -859,7 +859,7 @@ private class ClassPanel extends SwingGridPanel implements BudaConstants.BudaBub
 /*										*/
 /********************************************************************************/
 
-private class ClassListModel extends AbstractListModel {
+private class ClassListModel extends AbstractListModel<BconRegion> {
 
    private List<BconRegion> use_regions;
    private int cur_size;
@@ -873,7 +873,7 @@ private class ClassListModel extends AbstractListModel {
       is_valid = false;
     }
 
-   @Override public Object getElementAt(int idx) {
+   @Override public BconRegion getElementAt(int idx) {
       validate();
       if (idx < 0 || idx >= use_regions.size()) return null;
       return use_regions.get(idx);
@@ -920,7 +920,7 @@ private static class RegionRenderer extends DefaultListCellRenderer {
 
    RegionRenderer() { }
 
-   @Override public Component getListCellRendererComponent(JList l,Object v,int ldx,boolean issel,boolean hasfoc) {
+   @Override public Component getListCellRendererComponent(JList<?> l,Object v,int ldx,boolean issel,boolean hasfoc) {
       BconRegion br = (BconRegion) v;
 
       Color classcolor = bcon_props.getColor(BCON_CLASS_CLASS_COLOR,CLASS_COLOR);
@@ -1024,7 +1024,7 @@ private class ListMover extends TransferHandler {
    }
 
    @Override protected Transferable createTransferable(JComponent c) {
-      return new ListTransfer((JList) c);
+      return new ListTransfer((JList<?>) c);
     }
 
    @Override protected void exportDone(JComponent src,Transferable d,int act) {
@@ -1052,10 +1052,10 @@ private class ListMover extends TransferHandler {
 	 JList.DropLocation loc = (JList.DropLocation) sup.getDropLocation();
 	 String txt = lt.getText(getComponent());
 	 int idx = loc.getIndex();
-	 BconRegion br = (BconRegion) list_model.getElementAt(idx);
+	 BconRegion br = list_model.getElementAt(idx);
 	 if (lt.sameRegion(br)) return false;
 	 if (br == null && idx > 0) {
-	    br = (BconRegion) list_model.getElementAt(idx-1);
+	    br = list_model.getElementAt(idx-1);
 	    br.insertAfter(txt);
 	 }
 	 else if (br != null)
@@ -1080,18 +1080,16 @@ private class ListTransfer implements Transferable, BudaConstants.BudaDragBubble
    private List<BconRegion> list_regions;
    private boolean can_delete;
 
-   ListTransfer(JList lst) {
+   ListTransfer(JList<?> lst) {
       //TODO: if all regions correspond to names, then this should also provide
       //   BudaDragBubble functionality and access BudaRoot.getBubbleTransferFlavor()
 
       can_delete = false;
 
       list_regions = new ArrayList<BconRegion>();
-      Object [] sels = lst.getSelectedValues();
-      for (Object o : sels) {
-	 BconRegion br = (BconRegion) o;
-	 list_regions.add(br);
-       }
+      for (Object o : lst.getSelectedValuesList()) {
+	 list_regions.add((BconRegion) o);
+      }
     }
 
    @Override public Object getTransferData(DataFlavor f) {

@@ -362,7 +362,7 @@ private static class OptionChoice extends BoppOptionBase implements ActionListen
 
    private Map<String,String> choice_map;
    private Map<String,String> lookup_map;
-   private JComboBox combo_box;
+   private JComboBox<String> combo_box;
 
    OptionChoice(String pkgname,Element ox) {
       super(pkgname,ox);
@@ -386,7 +386,7 @@ private static class OptionChoice extends BoppOptionBase implements ActionListen
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
-      JComboBox cbx = (JComboBox) evt.getSource();
+      JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
       String v = (String) cbx.getSelectedItem();
       noteChange();
       setValue(v);
@@ -405,7 +405,7 @@ private static class OptionChoice extends BoppOptionBase implements ActionListen
    
    void reset() {
       if (combo_box != null) {
-	 combo_box.setSelectedItem(getValue());
+         combo_box.setSelectedItem(getValue());
       }
    }
 

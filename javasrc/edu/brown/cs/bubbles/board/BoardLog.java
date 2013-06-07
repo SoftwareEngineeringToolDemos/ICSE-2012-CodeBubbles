@@ -118,7 +118,7 @@ private void setupLogger()
 	    f1 = BoardSetup.getPropertyBase();
 	    f2 = new File(f1,"logs");
 	    f2.mkdirs();
-	    wsd = f2;	
+	    wsd = f2;
 	  }
 	 break;
     }
@@ -384,6 +384,7 @@ private void log(LogLevel lvl,String src,String msg,Throwable t)
    String txt = src + ":" + key + ": " + msg;
 
    synchronized (this) {
+      if (debug_writer != null) debug_writer.println(txt);
       if (use_stderr) System.err.println(txt);
 
       if (t != null) {

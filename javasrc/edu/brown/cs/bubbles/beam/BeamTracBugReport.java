@@ -169,7 +169,7 @@ private class BugReportListener implements ActionListener {
 	    url += "&description=" + URLEncoder.encode(desc,"UTF-8");
 	  }
 
-	 Desktop.getDesktop().browse(new URI(url));
+	 BeamFactory.showBrowser(new URI(url));
        }
       catch (Throwable t) {
 	 // TODO: handle unsupported operation exception where desktop api not supported.

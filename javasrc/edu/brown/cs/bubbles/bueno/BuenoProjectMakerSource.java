@@ -157,8 +157,8 @@ private class NewActions implements ActionListener, UndoableEditListener {
 @Override public boolean setupProject(BuenoProjectCreationControl ctrl,BuenoProjectProps props)
 {
    File dir = props.getFile(SRC_DIR);
-   List<File> srcs = new ArrayList<File>();
-   List<File> libs = new ArrayList<File>();
+   Set<File> srcs = new HashSet<File>();
+   Set<File> libs = new HashSet<File>();
    
    findFiles(dir,srcs,libs);
    Map<File,List<File>> roots = new HashMap<File,List<File>>();
@@ -202,9 +202,12 @@ private class NewActions implements ActionListener, UndoableEditListener {
 
 
 
-private void findFiles(File dir,List<File> srcs,List<File> libs)
+private void findFiles(File dir,Set<File> srcs,Set<File> libs)
 {
    if (dir.isDirectory()) {
+      if (dir.getName().equals("bBACKUP")) return;
+      else if (dir.getName().startsWith(".")) return;
+      else if (dir.getName().equals("node_modules")) return;
       if (dir.listFiles() != null) {
 	 for (File sf : dir.listFiles()) {
 	    findFiles(sf,srcs,libs);
@@ -214,8 +217,19 @@ private void findFiles(File dir,List<File> srcs,List<File> libs)
     }
    
    String pnm = dir.getPath();
+   try {
+      dir = dir.getCanonicalFile();
+   }
+   catch (IOException e) { }
+   
+   if (dir.length() < 10) return;
+   if (!dir.isFile()) return;
+   
    if (pnm.endsWith(".java")) srcs.add(dir.getAbsoluteFile());
-   else if (pnm.endsWith(".jar")) srcs.add(dir.getAbsoluteFile());
+   else if (pnm.endsWith(".jar")) {
+      if (!pnm.contains("javadoc") && !pnm.contains("source"))
+         libs.add(dir.getAbsoluteFile());
+   }
 }
   
 

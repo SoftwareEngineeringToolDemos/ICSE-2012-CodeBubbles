@@ -424,10 +424,11 @@ void processTests() throws InterruptedException
    boolean rpt = true;
 
    while (rpt) {
+      rpt = false;
       boolean listonly = false;
       synchronized (run_tests) {
 	 System.err.println("BATT: Process tests " + run_tests.size());
-	 if (run_tests.size() == 0 && server_thread == null) return;
+	 if (run_tests.size() == 0 && server_thread == null && !find_new) return;
 	 int ct = 0;
 	 while (!canRunAny(run_tests)) {
 	    run_tests.wait(10000);
@@ -436,7 +437,8 @@ void processTests() throws InterruptedException
 	 if (find_new) {
 	    tests = null;
 	    find_new = false;
-	    if (run_tests.size() == 0) listonly = true;
+	    if (run_tests.size() != 0) rpt = true;
+	    listonly = true;
 	  }
 	 else {
 	    tests = new HashSet<String>();
@@ -453,7 +455,7 @@ void processTests() throws InterruptedException
 
       synchronized (run_tests) {
 	 test_busy = false;
-	 rpt = test_request;
+	 rpt |= test_request;
 	 test_request = false;
        }
     }

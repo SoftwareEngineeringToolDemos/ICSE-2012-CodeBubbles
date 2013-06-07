@@ -49,8 +49,8 @@
 	 <manifest>
 	    <attribute name='Premain-Class' value='edu.brown.cs.bubbles.bandaid.BandaidController' />
 	    <attribute name='Agent-Class' value='edu.brown.cs.bubbles.bandaid.BandaidController' />
-	    <attribute name='Can-RedefineClasses' value='true' />
-	    <attribute name='Can-RetransformClasses' value='true' />
+	    <attribute name='Can-Redefine-Classes' value='true' />
+	    <attribute name='Can-Retransform-Classes' value='true' />
 	    <attribute name='Can-Set-Native-Method-Prefix' value='false' />
 	    <attribute name='Sealed' value='false' />
 	    <attribute name="Boot-Class-Path" value='bandaid.jar' />

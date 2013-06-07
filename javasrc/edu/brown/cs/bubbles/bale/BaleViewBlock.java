@@ -27,6 +27,7 @@ package edu.brown.cs.bubbles.bale;
 
 
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.buda.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -940,6 +941,8 @@ private class ElisionTrigger implements RegionAction {
       finally { bd.baleWriteUnlock(); }
     }
 
+   public BudaBubble handleHoverBubble(MouseEvent e)	      { return null; }
+
 }	// end of inner class ElisionTrigger
 
 
@@ -959,6 +962,17 @@ private class ExtractTrigger implements RegionAction {
       if (act != null) act.actionPerformed(ae);
 
       // TODO: Might want to do this explicitly rather than through the action
+    }
+
+   public BudaBubble handleHoverBubble(MouseEvent e) {
+      BaleEditorPane bep = getBaleEditorPane();
+      if (bep == null) return null;
+      Point pt = new Point(e.getX(),e.getY());
+      int pos = bep.viewToModel(pt);
+      if (pos < 0) return null;
+      BaleFragmentEditor bfe = BaleBudder.findFragmentBubble(bep,pos);
+      if (bfe == null) return null;
+      return new BaleEditorBubble(bfe);
     }
 
 }	// end of inner class ExtractTrigger

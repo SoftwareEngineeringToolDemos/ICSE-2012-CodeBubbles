@@ -27,6 +27,7 @@ package edu.brown.cs.bubbles.bandaid;
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.*;
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.commons.CodeSizeEvaluator;
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.TraceMethodVisitor;
+import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.Textifier;
 
 import java.util.*;
 import java.lang.instrument.*;
@@ -48,6 +49,8 @@ public class BandaidAgentSwing extends BandaidAgent implements BandaidConstants,
 /********************************************************************************/
 
 private static Map<Object,StackTraceElement []>     create_map;
+
+private static final int ASM_API = Opcodes.ASM5;
 
 private static final boolean do_debug = false;
 
@@ -109,6 +112,7 @@ BandaidAgentSwing(BandaidController bc)
 	 xw.end();
 	 the_control.sendMessage(xw.toString());
        }
+      scn.close();
     }
 }
 
@@ -233,8 +237,9 @@ private byte [] patchComponent(byte [] buf)
 {
    byte [] rsltcode = null;
    try {
-      ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
       ClassReader reader = new ClassReader(buf);
+      // ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
+      ClassWriter writer = new BandaidClassWriter("java/awt/Component",reader);
       ClassVisitor ins = new ComponentTransformer(writer);
       reader.accept(ins,ClassReader.SKIP_FRAMES);
       rsltcode = writer.toByteArray();
@@ -257,12 +262,12 @@ private byte [] patchComponent(byte [] buf)
 
 private CodeSizeEvaluator	size_eval;
 
-private class ComponentTransformer extends ClassAdapter {
+private class ComponentTransformer extends ClassVisitor {
 
    private String super_name;
 
    ComponentTransformer(ClassVisitor v) {
-      super(v);
+      super(ASM_API,v);
     }
 
    @Override public void visit(int v,int a,String nm,String sgn,String sup,String [] ifc) {
@@ -283,12 +288,12 @@ private class ComponentTransformer extends ClassAdapter {
 }	// end of inner class ComponentTransformer
 
 
-private class ComponentPatcher extends MethodAdapter {
+private class ComponentPatcher extends MethodVisitor {
 
    private String super_class;
 
    ComponentPatcher(MethodVisitor v,String sc) {
-      super(v);
+      super(ASM_API,v);
       super_class = sc;
     }
 
@@ -313,17 +318,18 @@ private class ComponentPatcher extends MethodAdapter {
 /*										*/
 /********************************************************************************/
 
-private static class Tracer extends TraceMethodVisitor {
+private static class Tracer extends MethodVisitor {
 
    private String method_name;
 
    Tracer(MethodVisitor v,String who) {
-      super(v);
+      super(ASM_API,new TraceMethodVisitor(v,new Textifier()));
       method_name = who;
     }
 
    @Override public void visitEnd() {
-      List<?> tx = getText();
+      TraceMethodVisitor tmv = (TraceMethodVisitor) this.mv;
+      List<?> tx = tmv.p.getText();
       System.err.println("TRACE METHOD " + method_name);
       for (Object o : tx) {
 	 System.err.print(o.toString());

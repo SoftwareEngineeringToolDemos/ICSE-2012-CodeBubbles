@@ -141,7 +141,7 @@ BgtaLoginBubble(Vector<BgtaManager> mans,BgtaRepository repo,BgtaLoginName name)
    for (ChatServer server : ChatServer.values()) {
 	serverStrings[servers++] = server.selector();
    }
-   JComboBox serverchoice = new JComboBox(serverStrings);
+   JComboBox<String> serverchoice = new JComboBox<String>(serverStrings);
    serverchoice.setFont(BoardFont.getFont(serverchoice.getFont().getFontName(),Font.PLAIN,10));
 
    user_field.addActionListener(new EnterListener(pass_field));
@@ -429,26 +429,26 @@ private static class LoginPanel extends JPanel implements BgtaConstants {
 private class ServerListener implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
-      JComboBox cb = (JComboBox) e.getSource();
+      JComboBox<?> cb = (JComboBox<?>) e.getSource();
       String selection = (String) cb.getSelectedItem();
       selected_server = ChatServer.GMAIL;
       if (selection.equals(ChatServer.BROWN.selector())) {
-	 selected_server = ChatServer.BROWN;
+         selected_server = ChatServer.BROWN;
        }
       else if (selection.equals(ChatServer.FACEBOOK.selector())) {
-	 selected_server = ChatServer.FACEBOOK;
+         selected_server = ChatServer.FACEBOOK;
        }
       else if (selection.equals(ChatServer.AIM.selector())) {
-	 selected_server = ChatServer.AIM;
+         selected_server = ChatServer.AIM;
        }
       else if (selection.equals(ChatServer.JABBER.selector())) {
-	 selected_server = ChatServer.JABBER;
+         selected_server = ChatServer.JABBER;
        }
       server_field.setText(selected_server.display());
       if (selected_server == ChatServer.FACEBOOK || selected_server == ChatServer.AIM)
-	 server_field.setVisible(false);
+         server_field.setVisible(false);
       else
-	 server_field.setVisible(true);
+         server_field.setVisible(true);
     }
 
 }  // end of inner class ServerListener

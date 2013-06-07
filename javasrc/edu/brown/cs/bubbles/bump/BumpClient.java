@@ -1130,6 +1130,7 @@ public List<BumpLocation> findClassDefinition(String proj,String clsn)
    waitForIDE();
 
    clsn = localFixupName(clsn);
+   if (clsn == null || clsn.length() == 0) return null;
 
    StringWriter sw = new StringWriter();
    sw.write("PATTERN='");
@@ -1176,7 +1177,7 @@ public List<BumpLocation> findPackage(String proj,String nm)
 {
    waitForIDE();
 
-   if (nm == null) return null;
+   if (nm == null || nm.length() == 0) return null;
    if (nm.indexOf("<") >= 0) return null;
 
    String q = "NAME='" + IvyXml.xmlSanitize(nm) + "'";
@@ -2222,6 +2223,8 @@ Element getNewRunConfiguration(String name,String clone,BumpLaunchConfigType typ
 
 Element editRunConfiguration(String id,String prop,String val)
 {
+   if (val == null) val = "";
+   
    String q = "LAUNCH='" + id + "' PROP='" + prop + "' VALUE='" + IvyXml.xmlSanitize(val) + "'";
    Element e = getXmlReply("EDITRUNCONFIG",null,q,null,0);
    return e;

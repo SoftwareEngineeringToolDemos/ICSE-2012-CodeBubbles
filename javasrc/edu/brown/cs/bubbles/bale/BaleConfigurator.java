@@ -38,6 +38,7 @@ import org.w3c.dom.Element;
 
 import javax.swing.text.BadLocationException;
 import java.io.File;
+import java.util.*;
 
 
 
@@ -104,6 +105,17 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	    break;
        }
     }
+   
+   Element eld = IvyXml.getChild(cnt, "ELISIONS");
+   if (eld != null && bb != null) {
+      List<BaleElisionData> elides = new ArrayList<BaleElisionData>();
+      for (Element ex : IvyXml.children(eld,"ELISION")) {
+	 ElideData ed = new ElideData(ex);
+	 elides.add(ed);
+       }
+      BaleDocument bd = (BaleDocument) bb.getContentDocument();
+      bd.applyElisions(elides);
+    }
 
    return bb;
 }
@@ -166,6 +178,30 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 @Override public void loadXml(BudaBubbleArea bba,Element root)		{ }
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Elision information                                                     */
+/*                                                                              */
+/********************************************************************************/
+
+private static class ElideData implements BaleElisionData {
+   
+   private int start_offset;
+   private int end_offset;
+   private String element_name;
+   
+   ElideData(Element xml) {
+      start_offset = IvyXml.getAttrInt(xml,"START");
+      end_offset = IvyXml.getAttrInt(xml,"END");
+      element_name = IvyXml.getAttrString(xml,"NAME");
+    }
+   
+   @Override public int getStartOffset()        { return start_offset; }
+   @Override public int getEndOffset()          { return end_offset; }
+   @Override public String getElementName()     { return element_name; }
+   
+}       // end of inner class ElideData
 
 
 

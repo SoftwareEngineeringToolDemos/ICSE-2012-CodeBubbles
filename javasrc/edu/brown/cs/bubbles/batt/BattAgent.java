@@ -139,6 +139,7 @@ private void scanArgs(String args)
 	    String host = cntf.substring(idx+1);
 	    int port = Integer.parseInt(cntf.substring(0,idx));
 	    host = fixHost(host);
+            @SuppressWarnings("resource")
 	    Socket s = new Socket(host,port);
 	    result_stream = s.getOutputStream();
 	  }

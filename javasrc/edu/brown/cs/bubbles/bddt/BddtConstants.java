@@ -157,7 +157,7 @@ String BDDT_CONFIG_BUTTON = "Bubble.Debug.Configurations";
 String BDDT_PROCESS_BUTTON = "Bubble.Debug.Current Processes";
 
 
-String BDDT_TOOLBAR_MENU_BUTTON = "DebugMenu";
+String BDDT_TOOLBAR_MENU_BUTTON = "DefaultMenu";
 String BDDT_TOOLBAR_RUN_BUTTON = "DebugRun";
 
 

@@ -184,7 +184,7 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 
    // if contents are null, then set the header part of the html with information about
    // the source of this bubble, date, dlm, title, etc.
-   
+
    JScrollPane jsp = new JScrollPane(note_area);
 
    setContentPane(jsp,note_area);
@@ -639,9 +639,8 @@ private static class HyperListener implements HyperlinkListener {
       if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 	 URL u = e.getURL();
 	 try {
-	    Desktop.getDesktop().browse(u.toURI());
+	    BeamFactory.showBrowser(u.toURI());
 	  }
-	 catch (IOException ex) { }
 	 catch (URISyntaxException ex) { }
        }
     }

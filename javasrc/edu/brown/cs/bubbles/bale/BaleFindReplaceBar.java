@@ -496,6 +496,7 @@ private void clearHighlights()
       my_highlighter.changeHighlight(my_highlight_tag, 0, 0);
     }
    catch (BadLocationException ble) {}
+   catch (NullPointerException e) { }
 }
 
 

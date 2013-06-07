@@ -79,6 +79,7 @@ static {
    prop_map.put("ASSERTIONS","edu.brown.cs.bubbles.bedrock.ASSERTIONS");
    prop_map.put("CONNECT_MAP","org.eclipse.jdt.launching.CONNECT_MAP");
    prop_map.put("STOP_IN_MAIN","org.eclipse.jdt.launching.STOP_IN_MAIN");
+   prop_map.put("CAPTURE_IN_FILE","org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE");
 }
 
 
@@ -393,8 +394,8 @@ void runProject(String cfg,String mode,boolean build,boolean reg,String vmarg,St
 	 xw.end("LAUNCH");
        }
     }
-   catch (CoreException e) {
-      throw new BedrockException("Launch failed: " + e);
+   catch (Throwable e) {
+      throw new BedrockException("Launch failed: " + e,e);
     }
 }
 
@@ -1251,9 +1252,11 @@ private void queueConsole(int pid,String txt,boolean err,boolean eof)
 
       ConsoleData cd = console_map.get(pid);
       if (cd != null) {
+	 BedrockPlugin.logD("Console append " + pid + " " + txt.length());
 	 cd.addWrite(txt,err,eof);
        }
       else {
+	 BedrockPlugin.logD("Console newapp " + pid + " " + txt.length());
 	 cd = new ConsoleData();
 	 cd.addWrite(txt,err,eof);
 	 console_map.put(pid,cd);
@@ -1316,7 +1319,7 @@ private class ConsoleThread extends Thread {
 	    synchronized (console_map) {
 	       while (console_map.isEmpty()) {
 		  try {
-		     console_map.wait();
+		     console_map.wait(10000);
 		   }
 		  catch (InterruptedException e) { }
 		}

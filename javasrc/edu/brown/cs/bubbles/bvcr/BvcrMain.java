@@ -406,12 +406,13 @@ void findChanges(String proj,File file,IvyXmlWriter xw)
 void findHistory(String proj,File file,IvyXmlWriter xw)
 {
    BvcrVersionManager bvm = manager_map.get(proj);
+   if (bvm == null) return;
    bvm.findHistory(file,xw);
 }
 
 
 
-void findFileDiffs(String proj,File file,String vfr,String vto,IvyXmlWriter xw) 
+void findFileDiffs(String proj,File file,String vfr,String vto,IvyXmlWriter xw)
 {
    BvcrVersionManager bvm = manager_map.get(proj);
    bvm.findFileDiffs(this,file,vfr,vto,xw);

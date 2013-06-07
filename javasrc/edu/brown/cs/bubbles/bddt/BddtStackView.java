@@ -453,7 +453,7 @@ private class SourceAction extends AbstractAction {
       // need to search for method location in system code, not just project
       // so add a new Bale method createSystemMethodBubble(proj,mid,file)
 
-      if (frm.getFile() != null && frm.getFile().exists()) {
+      if (launch_control.frameFileExists(frm)) {
 	 String proj = frm.getThread().getLaunch().getConfiguration().getProject();
 	 String mid = frm.getMethod() + frm.getSignature();
 	 bb = BaleFactory.getFactory().createMethodBubble(proj,mid);

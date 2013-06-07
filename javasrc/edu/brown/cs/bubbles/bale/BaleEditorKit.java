@@ -837,16 +837,11 @@ private static class NewlineAction extends TextAction {
 		  break;
 	     }
 	  }
-	 if (BALE_PROPERTIES.getBoolean("Bale.autoclose") && elt != null) {
-	    BaleElement e1 = elt.getPreviousCharacterElement(); 
-	    BaleElement e2 = elt.getNextCharacterElement();	
-	    while (e2 != null && e2.isEmpty() && !e2.isEndOfLine()) e2 = e2.getNextCharacterElement();
-	    if (e1 != null && e1.getTokenType() == BaleTokenType.LBRACE && 
-		     (e2 == null || e2.isEndOfLine() || e2.isComment())) {
-	       posttext= "\n}";
-	       postsize = 1;
-	     }
-	  }
+	 
+	 if (doAutoClose(bd,elt,soff,eoff)) {
+	    posttext= "\n}";
+	    postsize = 1;
+	 }
 	       
 	 boolean grow = true;
 	 boolean rep = true;
@@ -897,6 +892,40 @@ private static class NewlineAction extends TextAction {
     }
 
 }	// end of inner class NewlineAction
+
+
+
+private static boolean doAutoClose(BaleDocument bd,BaleElement elt,int soff,int eoff)
+{
+   if (!BALE_PROPERTIES.getBoolean("Bale.autoclose")) return false;
+   if (elt == null) return false;
+   BaleElement e1 = elt.getPreviousCharacterElement();
+   if (e1 == null || e1.getTokenType() != BaleTokenType.LBRACE) return false;
+   
+   int bct = 0;
+   int act = 0;
+   for (BaleElement e3 = elt.getNextCharacterElement(); e3 != null; e3 = e3.getNextCharacterElement()) {
+      if (e3.getTokenType() == BaleTokenType.LBRACE) ++bct;
+      else if (e3.getTokenType() == BaleTokenType.RBRACE) --bct;
+    }
+   for (BaleElement e4 = elt.getPreviousCharacterElement(); e4 != null; e4 = e4.getPreviousCharacterElement()) {
+      if (e4.getTokenType() == BaleTokenType.LBRACE) ++act;
+      else if (e4.getTokenType() == BaleTokenType.RBRACE) --act;
+    } 
+   System.err.println("TOKENS : " + act + " " + bct);
+   if (act+bct == 0) return false;
+   if (act + bct > 0) return true;
+   
+//   if (elt != null) {
+//      BaleElement e2 = elt.getNextCharacterElement();	
+//      while (e2 != null && e2.isEmpty() && !e2.isEndOfLine()) e2 = e2.getNextCharacterElement();
+//      if (e2 == null || e2.isEndOfLine() || e2.isComment()) {
+//	 return true;
+//       } 
+//    }
+   
+   return false;
+}
 
 
 
@@ -1794,7 +1823,7 @@ private static class RenameAction extends TextAction {
       if (be == null) return;
       if (!be.isIdentifier()) return;
       if (eoff != soff) {
-	 BaleElement xbe = bd.getCharacterElement(eoff);
+	 BaleElement xbe = bd.getCharacterElement(eoff-1);
 	 if (xbe != be) return;
        }
 
@@ -1831,11 +1860,8 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       int elno = bd.findLineNumber(epos);
       epos = bd.findLineOffset(elno+1)-1;
       String cnts;
-      Point p;
       try {
 	 cnts = bd.getText(spos,epos-spos);
-	 Rectangle r = target.modelToView(spos);
-	 p = new Point(r.x,r.y);
        }
       catch (BadLocationException ex) {
 	 BoardLog.logE("BALE","Problem getting extract text",ex);
@@ -1878,8 +1904,9 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       props.put(BuenoConstants.BuenoKey.KEY_CONTENTS,cnts);
       BuenoLocation loc = BuenoFactory.getFactory().createLocation(bd.getProjectName(),cls,aft,true);
 
-      BuenoMethodDialog bmd = new BuenoMethodDialog(bbl,p,props,loc,this);
+      BuenoMethodDialog bmd = new BuenoMethodDialog(bbl,null,props,loc,this);
       bmd.setLabel("Enter Signature of Extracted Method");
+      // need to set location for dialog
       bmd.showDialog();
     }
 

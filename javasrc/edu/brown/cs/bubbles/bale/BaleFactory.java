@@ -1441,7 +1441,7 @@ private static class FormatImporter implements BudaConstants.ButtonListener {
       JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
       fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
       fc.setDialogTitle("Select Saved Eclipse XML Formats");
-      int sts = fc.showOpenDialog(bba);
+      int sts = fc.showOpenDialog(BudaRoot.findBudaRoot(bba));
       if (sts != JFileChooser.APPROVE_OPTION) return;
       File f = fc.getSelectedFile();
       if (f == null) return;
@@ -1449,7 +1449,8 @@ private static class FormatImporter implements BudaConstants.ButtonListener {
       if (xml == null) return;
       IvyXmlWriter xw = new IvyXmlWriter();
       xw.begin("OPTIONS");
-      Element n1 = IvyXml.getChild(xml,"profiles");
+      Element n1 = xml;
+      if (!IvyXml.isElement(xml,"profiles")) n1 = IvyXml.getChild(xml,"profiles");
       Element n2 = IvyXml.getChild(n1,"profile");
       for (Element n3 : IvyXml.children(n2,"setting")) {
 	 xw.begin("OPTION");
@@ -1457,7 +1458,7 @@ private static class FormatImporter implements BudaConstants.ButtonListener {
 	 xw.field("VALUE",IvyXml.getAttrString(n3,"value"));
 	 xw.end("OPTION");
        }
-
+      xw.end("OPTIONS");
       bump_client.loadPreferences(null,xw.toString());
       xw.close();
       format_time = System.currentTimeMillis();

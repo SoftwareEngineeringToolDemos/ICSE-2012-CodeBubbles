@@ -109,8 +109,13 @@ void setDataFiles(Collection<BucsUserFile> fl)		{ data_files = new ArrayList<Buc
 
 void createSearchContext()
 {
+   BoardLog.logD("BUCS","Creating context");
+
    Element e = BumpClient.getBump().getProjectData(bump_location.getProject(),false,true,false,false);
-   if (e == null) return;
+   if (e == null) {
+      BoardLog.logD("BUCS","No project data available for context for " + bump_location.getProject());
+      return;
+    }
 
    List<File> classpaths = new ArrayList<File>();
    Element cpth = IvyXml.getChild(e,"CLASSPATH");
@@ -124,6 +129,12 @@ void createSearchContext()
 
       // skip standard java libraries
       if (onm.contains("/jdk") || onm.contains("\\jdk") || onm.contains("/jre") || onm.contains("\\jre")) continue;
+      if (onm.contains("JavaVirtualMachines")) continue;
+      if (onm.startsWith("/System/Library/Java")) continue;
+      if (onm.endsWith("/junit.jar") || onm.endsWith("\\junit.jar")) continue;
+      if (onm.contains("/eclipse/plugins/org.") || onm.contains("\\eclipse\\plugins\\org.")) continue;
+      BoardLog.logD("BUCS","Add context library " + onm);
+
       Element acc = IvyXml.getChild(pe,"ACCESS");
       if (acc != null) continue;
 
@@ -155,7 +166,7 @@ void createSearchContext()
       // send file to server and get remote name
 
       StringWriter sw = new StringWriter();
-      sw.write("<FILE EMBED='FALSE' XML='TRUE'>\n");
+      sw.write("<FILE EMBED='FALSE' XML='TRUE' LENGTH='" + tnm.length() + "' >\n");
       sw.write("<CONTENTS><![CDATA[");
 
       byte [] buf = new byte[8192];
@@ -168,6 +179,7 @@ void createSearchContext()
 	    String s1 = Integer.toHexString(v);
 	    if (s1.length() == 1) sw.write("0");
 	    sw.write(s1);
+	    if ((i%32) == 31) sw.write("\n");
 	  }
        }
       fis.close();
@@ -212,6 +224,7 @@ private String createSearchRequest()
    xw.field("FORMAT","NONE");
    xw.field("LOCAL",false);
    xw.field("REMOTE",true);
+   xw.field("GITHUB",true);
    xw.field("OHLOH",true);
    xw.field("WHAT","METHOD");
    xw.writeXml(sgn);
@@ -255,8 +268,6 @@ private String createSearchRequest()
        }
     }
    xw.end("TESTS");
-
-   // output context here
 
    xw.begin("KEYWORDS");
    for (String k : search_keys) {
@@ -348,7 +359,11 @@ private Element checkSignature()
 
 private Element sendMessageToS6(String cnts)
 {
+   BoardLog.logD("BUCS","SEND TO S6: " + cnts);
+
    byte [] cntb = cnts.getBytes();
+
+   BoardLog.logD("BUCS","SEND LENGTH: " + cntb.length);
 
    Element rslt = null;
 
@@ -371,8 +386,11 @@ private Element sendMessageToS6(String cnts)
       ins.close();
     }
    catch (IOException e) {
+      BoardLog.logD("BUCS","Error sending to S6",e);
       return null;
     }
+
+   BoardLog.logD("BUCS","RESULT FROM S6 = " + IvyXml.convertXmlToString(rslt));
 
    if (!IvyXml.isElement(rslt,"RESULT")) return null;
 

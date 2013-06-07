@@ -66,7 +66,7 @@ private Element 		frame_element;
 private int			frame_counter;
 private String			last_frameid;
 
-private Color                   background_color;
+private Color			background_color;
 private Color			outline_color;
 
 
@@ -117,10 +117,6 @@ BddtInteractionBubble(BddtLaunchControl ctrl)
    pnl.addGBComponent(input_field,1,1,0,1,10,0);
    JLabel prompt = new JLabel(BoardImage.getIcon("debug/interactprompt"));
    pnl.addGBComponent(prompt,0,1,1,1,0,0);
-
-   // JPanel pnl = new JPanel(new BorderLayout());
-   // pnl.add(scrl,BorderLayout.CENTER);
-   // pnl.add(input_field,BorderLayout.SOUTH);
 
    setContentPane(pnl,input_field);
    pnl.addMouseListener(new FocusOnEntry(input_field));
@@ -207,7 +203,7 @@ private void evaluate(String expr)
    buf.append("</div>");
 
    insertBeforeEnd(frame_element,buf.toString());
-   
+
    String txt = display_area.getText();
    System.err.println("RESULT: " + txt);
 }
@@ -252,6 +248,8 @@ private void insertBeforeEnd(Element e,String txt)
    HTMLDocument hd = (HTMLDocument) display_area.getDocument();
    try {
       hd.insertBeforeEnd(e,txt);
+      Rectangle r = display_area.modelToView(hd.getLength());
+      display_area.scrollRectToVisible(r);
     }
    catch (IOException ex) {
       BoardLog.logE("BDDT","Problem inserting evaluation output",ex);
@@ -266,9 +264,9 @@ private void insertBeforeEnd(Element e,String txt)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Implementations of widgets for drawing                                  */
-/*                                                                              */
+/*										*/
+/*	Implementations of widgets for drawing					*/
+/*										*/
 /********************************************************************************/
 
 private class InteractPanel extends SwingGridPanel {
@@ -276,7 +274,7 @@ private class InteractPanel extends SwingGridPanel {
    InteractPanel() {
       setOpaque(false);
     }
-   
+
    @Override public void paintComponent(Graphics g0) {
       Graphics2D g = (Graphics2D) g0;
       g.setColor(outline_color);
@@ -286,16 +284,16 @@ private class InteractPanel extends SwingGridPanel {
       super.paintComponent(g0);
     }
 
-}       // end of inner class InteractPanel
+}	// end of inner class InteractPanel
 
 
 
 private class InteractEditor extends JEditorPane {
-   
+
    InteractEditor(String typ,String cnts) {
       super(typ,cnts);
     }
-   
+
    @Override public void paintComponent(Graphics g0) {
       Graphics2D g = (Graphics2D) g0;
       g.setColor(background_color);
@@ -304,8 +302,11 @@ private class InteractEditor extends JEditorPane {
       g.fill(r);
       super.paintComponent(g);
     }
-   
-}       // end of inner class InteractEditor
+
+}	// end of inner class InteractEditor
+
+
+
 
 /********************************************************************************/
 /*										*/

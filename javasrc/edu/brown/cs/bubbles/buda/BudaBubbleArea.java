@@ -86,6 +86,7 @@ private BudaChannelSet	  channel_set;
 private Cursor		  palm_cursor;
 private boolean 	  first_time;
 private Dimension	  base_size;
+private Map<String,Object>      property_map;
 
 private Map<BudaBubble,Point> floating_bubbles;
 private Map<BudaBubble,BudaBubbleDock[]> docked_bubbles;
@@ -127,6 +128,8 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    cur_viewport = null;
    routes_valid = false;
    focus_bubble = null;
+   
+   property_map = new HashMap<String,Object>();
 
    bubble_manager = new BubbleManager();
    addContainerListener(bubble_manager);
@@ -627,6 +630,35 @@ String getFocusKey()
 {
    if (focus_bubble == null) return null;
    return focus_bubble.getContentKey();
+}
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Property methods                                                        */
+/*                                                                              */
+/********************************************************************************/
+
+/**
+ *      Set a property associated with this bubble area.
+ **/
+
+public void setProperty(String prop,Object v)
+{
+   if (v == null) property_map.remove(prop);
+   else property_map.put(prop,v);
+}
+
+
+
+/**
+ *      Retrieve a property associated with the bubble area.
+ **/
+
+public Object getProperty(String prop)
+{
+   return property_map.get(prop);
 }
 
 

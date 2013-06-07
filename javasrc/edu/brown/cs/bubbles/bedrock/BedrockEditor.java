@@ -511,7 +511,20 @@ void rename(String proj,String bid,String file,int start,int end,String name,Str
     }
    if (id == null) throw new BedrockException("Invalid element type to rename");
 
-   RenameJavaElementDescriptor renamer = new RenameJavaElementDescriptor(id);
+   RenameJavaElementDescriptor renamer;
+
+   RefactoringContribution rfc = RefactoringCore.getRefactoringContribution(id);
+   if (rfc == null) {
+      xw.begin("FAILURE");
+      xw.field("TYPE","SETUP");
+      xw.textElement("ID",id);
+      xw.end("FAILURE");
+      renamer = new RenameJavaElementDescriptor(id);
+    }
+   else {
+      renamer = (RenameJavaElementDescriptor) rfc.createDescriptor();
+    }
+
    renamer.setJavaElement(relt);
    renamer.setKeepOriginal(keeporig);
    renamer.setNewName(newname);
@@ -539,7 +552,9 @@ void rename(String proj,String bid,String file,int start,int end,String name,Str
       if (refactor == null) {
 	 xw.begin("FAILURE");
 	 xw.field("TYPE","CREATE");
+	 xw.textElement("RENAMER",renamer.toString());
 	 xw.textElement("REFACTOR",renamer.toString());
+	 xw.textElement("STATUS",sts.toString());
 	 xw.end("FAILURE");
 	 return;
        }

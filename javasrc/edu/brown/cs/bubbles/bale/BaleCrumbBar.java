@@ -328,6 +328,7 @@ private class CheckNames implements Runnable {
 private synchronized void handleResize()
 {
    int newwidth = getWidth();
+   int maxwidth = newwidth - 20;
    if (component_list == null) return;
    BaleCrumbBarComponent lastcomp;
 
@@ -340,13 +341,13 @@ private synchronized void handleResize()
 	 component_list.get(i).updateNatWidth();
        }
       lastcomp.updateNatWidth();
-      if (lastcomp.getWidthLocation() + lastcomp.addedWidthIfGrown() <= newwidth) {
+      if (lastcomp.getWidthLocation() + lastcomp.addedWidthIfGrown() <= maxwidth) {
 	 lastcomp.grow();
        }
 
       int unelliding = component_list.size()-1;
-      while (newwidth > lastcomp.getWidthLocation() && unelliding >= 0) {
-	 if (lastcomp.getWidthLocation() + component_list.get(unelliding).addedWidthIfGrown() <= newwidth) {
+      while (maxwidth > lastcomp.getWidthLocation() && unelliding >= 0) {
+	 if (lastcomp.getWidthLocation() + component_list.get(unelliding).addedWidthIfGrown() <= maxwidth) {
 	    component_list.get(unelliding).grow();
 	    unelliding--;
 	  }
@@ -356,11 +357,11 @@ private synchronized void handleResize()
 
    if (newwidth < recent_width || recent_width == 0) {
       int elliding = 0;
-      while (lastcomp.getWidthLocation() > newwidth && elliding < component_list.size()) {
+      while (lastcomp.getWidthLocation() > maxwidth && elliding < component_list.size()) {
 	 component_list.get(elliding).shrink();
 	 elliding++;
        }
-      if (lastcomp.getWidthLocation() > newwidth && elliding == component_list.size()) {
+      if (lastcomp.getWidthLocation() > maxwidth && elliding == component_list.size()) {
 	 lastcomp.shrink();
        }
     }

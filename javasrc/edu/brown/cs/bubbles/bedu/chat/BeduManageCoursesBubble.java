@@ -51,7 +51,7 @@ import edu.brown.cs.bubbles.buda.BudaConstants;
 
 
 class BeduManageCoursesBubble extends BudaBubble implements BeduConstants{
-private JComboBox	      combo_box;
+private JComboBox<Object>      combo_box;
 
 private static final long      serialVersionUID  = 1L;
 private static final Dimension DEFAULT_DIMENSION = new Dimension(400,200);
@@ -74,7 +74,7 @@ private ContentPane()
    setPreferredSize(DEFAULT_DIMENSION);
    BassRepository courserepo = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_COURSES);
    setLayout(new BorderLayout());
-   combo_box = new JComboBox();
+   combo_box = new JComboBox<Object>();
    combo_box.addItemListener(this);
    combo_box.addItem(ADD_STUDENT_STR);
    combo_box.addItem(ADD_TA_STR);

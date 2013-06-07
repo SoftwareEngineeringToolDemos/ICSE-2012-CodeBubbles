@@ -129,6 +129,9 @@ public static InputStream getLibraryFile(String name)
        }
     }
 
+   BoardProperties sp = getProperties("System");
+   String dir = sp.getProperty(BOARD_PROP_INSTALL_DIR);
+
    URL url = BoardProperties.class.getClassLoader().getResource(BOARD_RESOURCE_CHECK);
 
    // use jar version if available
@@ -136,12 +139,10 @@ public static InputStream getLibraryFile(String name)
       String nm = "lib/" + name;
       InputStream ins = BoardProperties.class.getClassLoader().getResourceAsStream(nm);
       if (ins != null) return ins;
+      dir = sp.getProperty(BOARD_PROP_JAR_DIR);
     }
 
    // use whats in the lib directory
-   BoardProperties sp = getProperties("System");
-   String dir = sp.getProperty(BOARD_PROP_INSTALL_DIR);
-   if (dir == null) return null;
    File f1 = new File(dir);
    File f2 = new File(f1,"lib");
    File f3 = new File(f2,pname);
@@ -149,7 +150,7 @@ public static InputStream getLibraryFile(String name)
    try {
       return new FileInputStream(f3);
     }
-   catch (IOException e) {}
+   catch (IOException e) { }
 
    return null;
 }

@@ -278,7 +278,8 @@ private class BvcrContexter implements BaleContextListener, BassConstants.BassPo
 	    name = name.substring(idx+1);
 	 }
 	 List<BumpLocation> locs = null;
-	 locs = BumpClient.getBump().findClassDefinition(proj,name);
+	 if (name.length() > 0) 
+	    locs = BumpClient.getBump().findClassDefinition(proj,name);
 	 if (locs != null && locs.size() > 0) {
 	    loc = locs.get(0);
 	 }

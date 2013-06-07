@@ -67,7 +67,7 @@ private BumpLocation	bump_location;
 private JPanel		test_panel;
 private JButton 	search_button;
 private JTextField	keyword_field;
-private JComboBox	type_field;
+private JComboBox<TestChoice> type_field;
 private JButton 	data_button;
 private TestChoice	test_type;
 private TestAction	iotest_action;
@@ -359,12 +359,12 @@ private class UserCodePanel implements CaretListener {
 
 private class TestCasePanel implements ListSelectionListener {
 
-   private JList list_component;
+   private JList<BattTest> list_component;
    private JScrollPane scroll_pane;
 
    TestCasePanel(Collection<BattTest> tests) {
       Vector<BattTest> vd = new Vector<BattTest>(tests);
-      list_component = new JList(vd);
+      list_component = new JList<BattTest>(vd);
       list_component.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
       list_component.setVisibleRowCount(10);
       list_component.addListSelectionListener(this);
@@ -386,16 +386,15 @@ private class TestCasePanel implements ListSelectionListener {
 
    List<BattTest> getUserTests() {
       List<BattTest> rslt = new ArrayList<BattTest>();
-      for (Object o : list_component.getSelectedValues()) {
-	 BattTest bt = (BattTest) o;
+      for (BattTest bt : list_component.getSelectedValuesList()) {
 	 rslt.add(bt);
        }
       return rslt;
     }
 
    boolean validate() {
-      Object [] v = list_component.getSelectedValues();
-      if (v == null || v.length == 0) return false;
+      List<BattTest> v = list_component.getSelectedValuesList();
+      if (v == null || v.size() == 0) return false;
 
       return true;
     }
@@ -570,19 +569,19 @@ private class SearchListener implements ActionListener, UndoableEditListener {
 
    @Override public void actionPerformed(ActionEvent e) {
       if (e.getSource() == type_field) {
-	 TestChoice tc = (TestChoice) type_field.getSelectedItem();
-	 if (tc == test_type) return;
-	 setupTestPanel(tc);
+         TestChoice tc = (TestChoice) type_field.getSelectedItem();
+         if (tc == test_type) return;
+         setupTestPanel(tc);
        }
       else if (e.getSource() == search_button) {
-	 doSearch();
+         doSearch();
        }
       else if (e.getSource() == data_button) {
-	 DataFilePanel dfp = new DataFilePanel();
-	 JOptionPane.showInputDialog(BucsTestCaseBubble.this,dfp);
+         DataFilePanel dfp = new DataFilePanel();
+         JOptionPane.showInputDialog(BucsTestCaseBubble.this,dfp);
        }
       else {
-	 checkStatus();
+         checkStatus();
        }
     }
 
@@ -687,7 +686,7 @@ private boolean editUserFile(BucsUserFile uf)
    JTextField lnm = pnl.addFileField("Local File",uf.getFileName(),JFileChooser.FILES_ONLY,null,null);
    JTextField rnm = pnl.addTextField("Remove File (/s6/ or s:)",uf.getAccessName(),null,null);
    int idx = (uf.getFileMode() == UserFileType.READ ? 0 : 1);
-   JComboBox typ = pnl.addChoice("Access",file_types,idx,null);
+   JComboBox<UserFileType> typ = pnl.addChoice("Access",file_types,idx,null);
 
    int fg = JOptionPane.showOptionDialog(this,pnl,"Edit User Data File",
 	 JOptionPane.OK_CANCEL_OPTION,

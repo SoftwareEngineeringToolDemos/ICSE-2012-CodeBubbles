@@ -74,7 +74,7 @@ private Thread			monitor_thread;
 private BitSet			ignore_thread;
 private BitSet			use_thread;
 private boolean 		thread_default;
-private String                  base_directory;
+private String			base_directory;
 
 private Map<String,ClassType>	class_map;
 private Map<String,ClassType>	package_map;
@@ -161,6 +161,7 @@ private BandaidController(String args,Instrumentation inst)
    defineAgent(new BandaidAgentHistory(this));
    defineAgent(new BandaidAgentSwing(this));
    defineAgent(new BandaidAgentTrie(this));
+   defineAgent(new BandaidAgentTracer(this));
 
    scanArgs(args);
 
@@ -229,7 +230,7 @@ private void scanArgs(String args)
 {
    if (args == null) return;
 
-   StringTokenizer tok = new StringTokenizer(args,":;");
+   StringTokenizer tok = new StringTokenizer(args,";");
    while (tok.hasMoreTokens()) {
       String arg = tok.nextToken();
       String val = null;
@@ -257,8 +258,8 @@ private void scanArgs(String args)
 	  }
 	 catch (NumberFormatException e) { }
        }
-      else if (args.equals("base")) {
-         base_directory = val;
+      else if (arg.equals("base")) {
+	 base_directory = val;
        }
       else if (arg.equalsIgnoreCase("All")) {
 	 addAllAgents();
@@ -323,12 +324,15 @@ private void setupClassTypes()
    package_map.put("org.w3c.",ClassType.SYSTEM);
    package_map.put("org.omg.",ClassType.SYSTEM);
    package_map.put("org.xml.",ClassType.SYSTEM);
-   package_map.put("edu.brown.cs.dyvise.dyper.",ClassType.SYSTEM);
    package_map.put("com.ibm.",ClassType.SYSTEM);
    package_map.put("com.sun.",ClassType.SYSTEM);
    package_map.put("com.apple.",ClassType.SYSTEM);
    package_map.put("org.postgresql.",ClassType.SYSTEM);
    package_map.put("jrockit.",ClassType.SYSTEM);
+
+   package_map.put("edu.brown.cs.dyvise.dyper.",ClassType.SYSTEM);
+   package_map.put("edu.brown.cs.bubbles.bandaid.",ClassType.SYSTEM);
+   package_map.put("org.eclipse.",ClassType.SYSTEM);
 
    package_map.put("java.io.",ClassType.SYSTEM_IO);
    package_map.put("java.net.",ClassType.SYSTEM_IO);
@@ -381,7 +385,7 @@ boolean useThread()
 }
 
 
-String getBaseDirectory()               { return base_directory; }
+String getBaseDirectory()		{ return base_directory; }
 
 
 
@@ -711,6 +715,7 @@ private class SocketClient {
       eom.getChars(0,eom.length(),char_trailer,0);
 
       try {
+	 @SuppressWarnings("resource")
 	 Socket cs = new Socket(host_name,port_number);
 	 output_stream = cs.getOutputStream();
 	 input_reader = new BufferedReader(new InputStreamReader(cs.getInputStream()));

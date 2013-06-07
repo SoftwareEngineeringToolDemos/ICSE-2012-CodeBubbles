@@ -35,9 +35,8 @@ import edu.brown.cs.bubbles.bump.BumpConstants.BumpRunModel;
 import javax.swing.text.*;
 import javax.swing.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.LinkedList;
+import java.util.*;
+import java.io.*;
 
 
 class BddtConsoleController implements BddtConstants {
@@ -51,6 +50,7 @@ class BddtConsoleController implements BddtConstants {
 /********************************************************************************/
 
 private Map<BddtLaunchControl,ConsoleDocument> launch_consoles;
+private Map<Object,File> log_files;
 private Map<String,ConsoleDocument> process_consoles;
 private AttributeSet stdout_attrs;
 private AttributeSet stderr_attrs;
@@ -58,7 +58,7 @@ private AttributeSet stdin_attrs;
 private LinkedList<ConsoleMessage> message_queue;
 
 
-enum TextMode { STDOUT, STDERR, STDIN };
+enum TextMode { STDOUT, STDERR, STDIN, EOF };
 
 
 
@@ -71,6 +71,7 @@ enum TextMode { STDOUT, STDERR, STDIN };
 BddtConsoleController()
 {
    launch_consoles = new HashMap<BddtLaunchControl,ConsoleDocument>();
+   log_files = new WeakHashMap<Object,File>();
    process_consoles = new HashMap<String,ConsoleDocument>();
    message_queue = new LinkedList<ConsoleMessage>();
 
@@ -101,6 +102,26 @@ void setupConsole(BddtLaunchControl blc)
    getDocument(blc);
 }
 
+
+void setLogFile(BddtLaunchControl blc,String fnm)
+{
+   if (fnm == null) log_files.remove(blc);
+   else {
+      File f = new File(fnm);
+      log_files.put(blc,f);
+    }
+}
+
+
+
+void setLogFile(BumpProcess bp,String fnm)
+{
+   if (fnm == null) log_files.remove(bp);
+   else {
+      File f = new File(fnm);
+      log_files.put(bp.getId(),f);
+    }
+}
 
 
 
@@ -135,7 +156,7 @@ private void processConsoleMessage(ConsoleMessage msg)
    if (msg.isEof()) {
       synchronized (launch_consoles) {
 	 if (bp != null)  {
-	    addText(bp,TextMode.STDOUT,"\n [ Process Terminated ]\n");
+	    addText(bp,TextMode.EOF,"\n [ Process Terminated ]\n");
 	    process_consoles.remove(bp.getId());
 	  }
        }
@@ -155,7 +176,6 @@ private void addText(BumpProcess process,TextMode mode,String message)
    ConsoleDocument doc = getDocument(pid,false);
 
    if (doc != null && message != null) {
-      // doc.addText(mode,message);
       ConsoleAdder ca = new ConsoleAdder(doc,mode,message);
       SwingUtilities.invokeLater(ca);
     }
@@ -237,7 +257,7 @@ private ConsoleDocument getDocument(BddtLaunchControl ctrl)
    synchronized (launch_consoles) {
       ConsoleDocument doc = launch_consoles.get(ctrl);
       if (doc == null) {
-	 doc = new ConsoleDocument();
+	 doc = new ConsoleDocument(log_files.get(ctrl));
 	 launch_consoles.put(ctrl,doc);
        }
       return doc;
@@ -262,7 +282,7 @@ private ConsoleDocument getDocument(String pid,boolean force)
 	  }
        }
       if (force) {
-	 doc = new ConsoleDocument();
+	 doc = new ConsoleDocument(log_files.get(pid));
 	 process_consoles.put(pid,doc);
        }
       return doc;
@@ -318,6 +338,7 @@ private class ConsoleHandler implements BumpConstants.BumpRunEventHandler {
 
    @Override public void handleConsoleMessage(BumpProcess bp,boolean err,boolean eof,String msg) {
       TextMode md = (err ? TextMode.STDERR : TextMode.STDOUT);
+      BoardLog.logD("BDDT","CONSOLE: " + md + " " + msg);
       queueConsoleMessage(bp,md,eof,msg);
    }
 
@@ -337,11 +358,15 @@ private class ConsoleDocument extends DefaultStyledDocument {
    private int		line_count;
    private int		max_length;
    private int		line_length;
+   private File 	log_file;
+   private Writer	log_writer;
 
-   ConsoleDocument() {
+   ConsoleDocument(File logfile) {
       line_count = 0;
       max_length = 0;
       line_length = 0;
+      log_file = logfile;
+      log_writer = null;
     }
 
    synchronized void clear() {
@@ -356,9 +381,27 @@ private class ConsoleDocument extends DefaultStyledDocument {
 	 BoardLog.logE("BDDT","Problem clearing console",e);
        }
       finally { writeUnlock(); }
+
+      log_writer = null;
+      try {
+	 if (log_file != null) log_writer = new FileWriter(log_file);
+       }
+      catch (IOException e) {
+	 BoardLog.logE("BDDT","Problem creating log writer: " + e);
+       }
     }
 
    synchronized void addText(TextMode mode,String txt) {
+      if (log_writer != null) {
+	 try {
+	    log_writer.write(txt);
+	  }
+	 catch (IOException e) {
+	    BoardLog.logE("BDDT","Problem writing log file: " + e);
+	    log_writer = null;
+	  }
+       }
+
       int lns = countLines(txt);
       writeLock();
       try {
@@ -398,6 +441,7 @@ private class ConsoleDocument extends DefaultStyledDocument {
 		  attrs = stderr_attrs;
 		  break;
 	       default :
+	       case EOF :
 	       case STDOUT :
 		  attrs = stdout_attrs;
 		  break;
@@ -414,6 +458,18 @@ private class ConsoleDocument extends DefaultStyledDocument {
 	  }
        }
       finally { writeUnlock(); }
+
+      if (mode == TextMode.EOF) finish();
+    }
+
+   private void finish() {
+      if (log_writer != null) {
+	 try {
+	    log_writer.close();
+	  }
+	 catch (IOException e) { }
+	 log_writer = null;
+       }
     }
 
    private int countLines(String txt) {
@@ -431,9 +487,6 @@ private class ConsoleDocument extends DefaultStyledDocument {
 
       return ct;
     }
-
-
-  // TODO: method to accept input and display in a different style
 
 }	// end of inner class ConsoleDocument
 

@@ -267,12 +267,14 @@ protected static class CvsDiffAnalyzer implements CommandCallback {
 	 case 'I' :                     // Index: <file>
 	    cur_file = ln.substring(7);
 	    source_line = 0;
+	    del_count = 0;
 	    break;
 	 case 'c' :                     // cvs diff: ...
 	 case '=' :                     // =============
 	 case 'd' :                     // diff -rxxx <filebase>
 	 default :
 	    source_line = 0;
+	    del_count = 0;
 	    break;
 	 case 'r' :                     // retrieving revision
 	    int idx1 = ln.lastIndexOf(" ");
@@ -281,7 +283,7 @@ protected static class CvsDiffAnalyzer implements CommandCallback {
 	    break;
 	 case '0' : case '1' : case '2' : case '3' : case '4' :
 	 case '5' : case '6' : case '7' : case '8' : case '9' :
-	    StringTokenizer tok = new StringTokenizer(ln,"acd,");
+	    StringTokenizer tok = new StringTokenizer(ln,"acd,",true);
 	    int ln0 = 0;
 	    int ln1 = 0;
 	    String op = null;
@@ -298,6 +300,7 @@ protected static class CvsDiffAnalyzer implements CommandCallback {
 	     }
 	    source_line = ln0;
 	    target_line = ln1;
+	    del_count = 0;
 	    break;
 	 case '<' :                     // < (source line)
 	    if (source_line != 0) {

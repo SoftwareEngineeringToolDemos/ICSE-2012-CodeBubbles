@@ -62,13 +62,13 @@ class BbookQueryBubble extends BudaBubble implements BbookConstants
 private BbookRegion	task_region;
 private String		current_project;
 private BnoteTask	current_task;
-private JComboBox	task_selector;
+private JComboBox<Object> task_selector;
 private String		current_user;
-private JComboBox	user_selector;
+private JComboBox<String> user_selector;
 private String		current_class;
 private String		current_method;
-private JComboBox	class_selector;
-private JComboBox	method_selector;
+private JComboBox<String> class_selector;
+private JComboBox<String> method_selector;
 private Orderings	current_order;
 
 private boolean 	show_users;
@@ -176,7 +176,7 @@ private void addProjectSelector(SwingGridPanel pnl)
 private class ProjectHandler implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
-      JComboBox cbx = (JComboBox) evt.getSource();
+      JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
       String pnm = (String) cbx.getSelectedItem();
       if (pnm == null || pnm.equals("< Any Project >")) {
          if (current_project == null) return;
@@ -236,12 +236,12 @@ private class TaskHandler implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       Object itm = task_selector.getSelectedItem();
       if (itm == null || itm.equals("< Any Task >")) {
-	 if (current_task == null) return;
-	 current_task = null;
+         if (current_task == null) return;
+         current_task = null;
        }
       else if (itm.equals(current_task)) return;
       else {
-	 current_task = (BnoteTask) itm;
+         current_task = (BnoteTask) itm;
        }
       resetUsers();
       resetNames();
@@ -262,7 +262,7 @@ private void addUserSelector(SwingGridPanel pnl)
 {
    if (!show_users) return;
 
-   user_selector = pnl.addChoice("User",new Object [0],0,new UserHandler());
+   user_selector = pnl.addChoice("User",new String [0],0,new UserHandler());
 
    resetUsers();
 }
@@ -297,12 +297,12 @@ private class UserHandler implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String unm = (String) user_selector.getSelectedItem();
       if (unm == null || unm.equals("< Any User >")) {
-	 if (current_user == null) return;
-	 current_user = null;
+         if (current_user == null) return;
+         current_user = null;
        }
       else if (unm.equals(current_user)) return;
       else {
-	 current_user = unm;
+         current_user = unm;
        }
       // reset next selectors
     }
@@ -321,8 +321,8 @@ private class UserHandler implements ActionListener {
 private void addNameSelector(SwingGridPanel pnl)
 {
    NameHandler nh = new NameHandler();
-   class_selector = pnl.addChoice("Class",new Object[0],0,nh);
-   method_selector = pnl.addChoice("Method",new Object[0],0,nh);
+   class_selector = pnl.addChoice("Class",new String[0],0,nh);
+   method_selector = pnl.addChoice("Method",new String[0],0,nh);
 
    resetNames();
 }
@@ -446,7 +446,7 @@ private void addClassSets(String nm,int idx,Map<String,Set<String>> found,Set<St
 private class NameHandler implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
-      JComboBox cbx = (JComboBox) evt.getSource();
+      JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
       if (evt.getActionCommand().equals("Class")) {
 	 current_class = (String) cbx.getSelectedItem();
 	 if (current_class != null && current_class == "< Any Class >") current_class = null;
@@ -470,7 +470,7 @@ private class NameHandler implements ActionListener {
 private class OrderHandler implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
-      JComboBox cbx = (JComboBox) evt.getSource();
+      JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
       current_order = (Orderings) cbx.getSelectedItem();
     }
 

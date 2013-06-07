@@ -477,7 +477,7 @@ private class StackNode extends CommonNode {
 
    void handlePopupMenu(JPopupMenu m) {
       checkFile();
-      if (file_name != null && file_name.exists() && line_number > 0) {
+      if (launch_control.fileExists(file_name) && line_number > 0) {
 	 m.add(new SourceAction(this));
        }
     }
@@ -485,7 +485,7 @@ private class StackNode extends CommonNode {
    void handleGoto() {
       checkFile();
       BudaBubble bb = null;
-      if (file_name != null && file_name.exists() && line_number > 0) {
+      if (launch_control.fileExists(file_name) && line_number > 0) {
 	 BaleFactory bf = BaleFactory.getFactory();
 	 BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,file_name);
 	 if (bfo != null) {
@@ -508,10 +508,10 @@ private class StackNode extends CommonNode {
 
    private void checkFile() {
       if (file_name == null) return;
-      if (file_name.exists()) return;
+      if (launch_control.fileExists(file_name)) return;
       BassFactory bsf = BassFactory.getFactory();
       File f = bsf.findActualFile(file_name);
-      if (f != null && f.exists()) file_name = f;
+      if (launch_control.fileExists(f)) file_name = f;
       else file_name = null;
     }
 

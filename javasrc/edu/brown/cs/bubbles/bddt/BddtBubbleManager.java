@@ -82,7 +82,7 @@ BddtBubbleManager(BddtLaunchControl blc)
 void createExecBubble(BumpThread bt)
 {
    boolean godown = bddt_properties.getBoolean("Bddt.grow.down");
-   
+
    BumpThreadStack stk = bt.getStack();
    BudaBubble bb = createSourceBubble(stk,0,BubbleType.EXEC,false,godown);
    if (bb == null && stk != null && bddt_properties.getBoolean("Bddt.show.user.bubble")) {
@@ -98,7 +98,7 @@ void createExecBubble(BumpThread bt)
 	 for (int i = 1; i < mx; ++i) {
 	    BumpStackFrame frame = stk.getFrame(i);
 	    if (bd != null && bd.getFrame() != null && matchFrameMethod(bd.getFrame(),frame)) break;
-	    if (frame.getFile() != null && frame.getFile().exists() && !frame.isSystem()) {
+	    if (launch_control.frameFileExists(frame) && !frame.isSystem()) {
 	       bb = createSourceBubble(stk,i,BubbleType.EXEC,false,godown);
 	       break;
 	    }
@@ -111,12 +111,12 @@ void createExecBubble(BumpThread bt)
       if (bd == null || bd.getBubbleType() != BubbleType.EXEC) return;
       if (bddt_properties.getBoolean("Bddt.show.values")) {
 	 BddtStackView sv = new BddtStackView(launch_control,bt);
-         sv.expandFirst();
+	 sv.expandFirst();
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
 	 if (bba == null || stk == null) return;
 	 BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
 	 bubble_map.put(sv,nbd);
-         int place = (godown ? PLACEMENT_RIGHT : PLACEMENT_BELOW);
+	 int place = (godown ? PLACEMENT_RIGHT : PLACEMENT_BELOW);
 	 bba.addBubble(sv,bb,null,place|PLACEMENT_GROUPED|PLACEMENT_EXPLICIT);
 	 bd.setAssocBubble(sv);
        }
@@ -157,7 +157,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    BumpThread bt = stk.getThread();
 
    boolean libbbl = frc || bddt_properties.getBoolean("Bddt.show.library.bubbles");
-   
+
    // find user stack frame for the stack
    if (stk.getNumFrames() <= frm) return null;
    BumpStackFrame frame = stk.getFrame(frm);
@@ -184,42 +184,42 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	 if (r == null) r = r1;
 	 else if (r1 != null) r = r.union(r1);
        }
-      if (r != null && bd.aboveLevel(bt,stk,frame) >= 0) {              // calling bubble
+      if (r != null && bd.aboveLevel(bt,stk,frame) >= 0) {		// calling bubble
 	 if (godown) {
-            xpos = r.x;
-            ypos = r.y + r.height + 40;
-          }
-         else {
-            xpos = r.x + r.width + 40;
-            ypos = r.y;
-          }
+	    xpos = r.x;
+	    ypos = r.y + r.height + 40;
+	  }
+	 else {
+	    xpos = r.x + r.width + 40;
+	    ypos = r.y;
+	  }
 	 link = bd.getBubble();
 	 linkline = bd.getLineNumber();
        }
       else if (r != null && bd.getBubbleType() == BubbleType.EXEC && bd.getThread() == bt) {
 	 if (godown) {
-            xpos = r.x;
-            ypos = r.y + r.height + 40;
-          }
-         else {
-            xpos = r.x + r.width + 40;
-            ypos = r.y;
-          }
+	    xpos = r.x;
+	    ypos = r.y + r.height + 40;
+	  }
+	 else {
+	    xpos = r.x + r.width + 40;
+	    ypos = r.y;
+	  }
 	 link = bd.getBubble();
 	 linkline = bd.getLineNumber();
 	 linkto = false;
        }
-      else if (r != null) {                     // new thread
+      else if (r != null) {			// new thread
 	 // xpos = r.x + r.width + 40;
 	 // ypos = r.y;
-         if (godown) {
-            xpos = r.x + r.width + 40;
-            ypos = r.y;
-          }
-         else {
-            xpos = r.x;
-            ypos = r.y + r.height + 40;
-          }
+	 if (godown) {
+	    xpos = r.x + r.width + 40;
+	    ypos = r.y;
+	  }
+	 else {
+	    xpos = r.x;
+	    ypos = r.y + r.height + 40;
+	  }
        }
       else {
 	 xpos = 100;
@@ -255,9 +255,9 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 
    String proj = launch_control.getProject();
    BudaBubble bb = null;
-   if (frame.getFile() != null && frame.getFile().exists()) {
+   if (frame.getFile() != null) {
       String mid = frame.getMethod() + frame.getSignature();
-      if (frame.isSystem()) {
+      if (frame.isSystem() && launch_control.frameFileExists(frame)) {
 	 bb = BaleFactory.getFactory().createSystemMethodBubble(proj,mid,frame.getFile(),frame.getLineNumber());
 	 if (bb == null) {
 	    if (libbbl) {

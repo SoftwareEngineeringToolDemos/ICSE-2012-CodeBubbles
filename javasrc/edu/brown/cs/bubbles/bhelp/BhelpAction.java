@@ -117,7 +117,7 @@ void executeStopped(BhelpContext ctx) throws BhelpException
 
 
 
-private static boolean isChangeableBubble(BudaBubble bb,String type) 
+private static boolean isChangeableBubble(BudaBubble bb,String type)
 {
    if (bb.isTransient()) return false;
    if (bb.isDocked()) return false;
@@ -265,6 +265,7 @@ private static class FindBackgroundAction extends BhelpAction {
 	 pt = new Point(x,y);
        }
 
+      Point pts = new Point(pt);
       int delta = 1;		// pixel delta for search
       int incr = 1;		// current increment
       for (int i = 0; i < 40000; ++i) {
@@ -285,7 +286,7 @@ private static class FindBackgroundAction extends BhelpAction {
 	 else incr = v;
        }
 
-      if (!checkPoint(ctx,pt)) throw new BhelpException("No space found");
+      if (!checkPoint(ctx,pt)) throw new BhelpException("No space found starting at " + pts);
 
       ctx.setValue(result_variable,pt);
     }
@@ -330,9 +331,9 @@ private static class FindBackgroundAction extends BhelpAction {
 	    if (bhr != null && bhr.getRegion().toString().equals(area_type)) {
 	       if (area_type.startsWith("BORDER")) {
 		  BudaBubble bb = bhr.getBubble();
-		  if (bb != null && isChangeableBubble(bb,bubble_type)) 
+		  if (bb != null && isChangeableBubble(bb,bubble_type))
 		     return true;
-	        }
+		}
 	     }
 	    else if (bhr != null) {
 	       return false;

@@ -44,13 +44,14 @@ import org.osgi.service.prefs.Preferences;
 import org.eclipse.jdt.core.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.IShellProvider;
-// import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.eclipse.ui.actions.NewProjectAction;
-// import org.eclipse.debug.ui.DebugUITools;
+
+import org.eclipse.debug.ui.*;
+import org.eclipse.jface.preference.*;
 
 import org.w3c.dom.*;
 
@@ -74,6 +75,7 @@ private BedrockPlugin our_plugin;
 private boolean projects_inited;
 private boolean projects_registered;
 private Set<IProject> open_projects;
+private boolean projects_setup;
 
 private static boolean		initial_build = false;
 private static boolean		initial_refresh = false;
@@ -98,6 +100,7 @@ BedrockProject(BedrockPlugin bp)
    our_plugin = bp;
    projects_inited = false;
    projects_registered = false;
+   projects_setup = false;
    open_projects = new HashSet<IProject>();
 }
 
@@ -138,7 +141,7 @@ void initialize()
 	       BedrockPlugin.logE("Problem doing initial build: " + e);
 	     }
 	  }
-	 attachProject(projs[i]);
+	 attachProject(projs[i],false);
        }
       else if (!PlatformUI.isWorkbenchRunning()) {
 	 try {
@@ -190,6 +193,8 @@ void terminate()
 
 void listProjects(IvyXmlWriter xw)
 {
+   setupProjects();
+
    IWorkspace ws = ResourcesPlugin.getWorkspace();
    IWorkspaceRoot wr = ws.getRoot();
    IProject[] projs = wr.getProjects();
@@ -236,7 +241,7 @@ void openProject(String name,boolean fil,boolean pat,boolean cls,boolean opt,
 {
    IProject p = findProject(name);
 
-   attachProject(p);
+   attachProject(p,false);
 
    if (bkg != null) {
       ProjectThread pt = new ProjectThread(bkg,p,fil,pat,cls,opt);
@@ -557,6 +562,8 @@ void createProject()
    Display.getDefault().asyncExec(new RunNewDialog(ww));
 }
 
+
+
 /**
  * Adds a project that is already in the workspace folder but is not
  * a member of the workspace yet
@@ -606,6 +613,8 @@ private static final class RunNewDialog implements Runnable {
 
 IProject findProject(String name) throws BedrockException
 {
+   setupProjects();
+
    if (name == null) return null;
    if (ignore_projects.contains(name)) return null;
 
@@ -647,7 +656,7 @@ static boolean useProject(String name)
 /*										*/
 /********************************************************************************/
 
-private void attachProject(IProject p)
+private void attachProject(IProject p,boolean setup)
 {
    if (!open_projects.contains(p)) {
       open_projects.add(p);
@@ -657,6 +666,8 @@ private void attachProject(IProject p)
       p.open(null);
       IJavaProject ijp = JavaCore.create(p);
       ijp.open(null);
+      if (setup) setupDefaults(ijp);
+      // ijp.setOption("org.eclipse.debug.ui.switch_perspective_on_suspend","never");
       // resolveAll(ijp);
     }
    catch (JavaModelException e) {
@@ -684,6 +695,43 @@ private void detachProject(IProject p)
    open_projects.remove(p);
 }
 
+
+
+private void setupProjects()
+{
+   // BedrockPlugin.logD("CHECK SETUP " + projects_setup + " " + PlatformUI.isWorkbenchRunning());
+
+   if (!projects_setup && PlatformUI.isWorkbenchRunning()) {
+      BedrockApplication.getDisplay();		     // wait for setup
+      IWorkspace ws = ResourcesPlugin.getWorkspace();
+      IWorkspaceRoot wr = ws.getRoot();
+      IProject[] projs = wr.getProjects();
+      for (IProject ip : projs) attachProject(ip,true);
+      projects_setup = true;
+    }
+}
+
+
+
+private void setupDefaults(IJavaProject ijp)
+{
+   try {
+      IPreferenceStore ps = DebugUITools.getPreferenceStore();
+      String s = ps.getString("org.eclipse.debug.ui.switch_perspective_on_suspend");
+      if (s == null || s.equals("prompt")) {
+	 ps.setValue("org.eclipse.debug.ui.switch_perspective_on_suspend","never");
+	 BedrockPlugin.logD("DEBUG PREF " + ps.getString("org.eclipse.debug.ui.switch_perspective_on_suspend"));
+       }
+      s = ps.getString("org.eclipse.debug.ui.save_dirty_editors_before_launch");
+      if (s == null || s.equals("prompt")) {
+	 ps.setValue("org.eclipse.debug.ui.save_dirty_editors_before_launch","always");
+	 BedrockPlugin.logD("DEBUG PREF " + ps.getString("org.eclipse.debug.ui.switch_perspective_on_suspend"));
+       }
+    }
+   catch (Throwable t) {
+      BedrockPlugin.logE("Problem seting defaults",t);
+    }
+}
 
 
 /********************************************************************************/
@@ -855,30 +903,57 @@ void handlePreferences(String proj,IvyXmlWriter xw)
 
 
 
-@SuppressWarnings("unchecked")
+
 void handleSetPreferences(String proj,Element xml,IvyXmlWriter xw)
 {
-   Map<Object,Object> opts;
-
    if (proj == null) {
-      opts = JavaCore.getOptions();
+      IWorkspace ws = ResourcesPlugin.getWorkspace();
+      IWorkspaceRoot wr = ws.getRoot();
+      IProject[] projs = wr.getProjects();
+      for (int i = 0; i < projs.length; ++i) {
+	 setProjectPreferences(projs[i],xml);
+       }
+      setProjectPreferences(null,xml);
     }
    else {
       try {
 	 IProject ip = findProject(proj);
-	 IJavaProject ijp = JavaCore.create(ip);
-	 opts = ijp.getOptions(true);
+	 setProjectPreferences(ip,xml);
        }
-      catch (BedrockException e) {
-	 opts = JavaCore.getOptions();
-       }
+      catch (BedrockException e) { }
     }
+}
+
+
+
+@SuppressWarnings("unchecked")
+private boolean setProjectPreferences(IProject ip,Element xml)
+{
+   Map<Object,Object> opts;
+   IJavaProject ijp = null;
+
+   if (ip != null) {
+      ijp = JavaCore.create(ip);
+      if (ijp == null) return false;
+      opts = ijp.getOptions(false);
+    }
+   else opts = JavaCore.getOptions();
 
    for (Element opt : IvyXml.children(xml,"OPTION")) {
       String nm = IvyXml.getAttrString(opt,"NAME");
       String vl = IvyXml.getAttrString(opt,"VALUE");
       opts.put(nm,vl);
     }
+
+   if (ijp != null) {
+      ijp.setOptions(opts);
+    }
+   else {
+      Hashtable<?,?> nopts = new Hashtable<Object, Object>(opts);
+      JavaCore.setOptions(nopts);
+    }
+
+   return true;
 }
 
 

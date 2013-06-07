@@ -420,8 +420,8 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
    try {
       se.search(pat,parts,scp,fh,null);
     }
-   catch (CoreException e) {
-      throw new BedrockException("Problem doing find all search: " + e,e);
+   catch (Throwable e) {
+      throw new BedrockException("Problem doing find all search for " + pat + ": " + e,e);
     }
 
    if (cls != null && defs) {		// need to add the actual class definition
@@ -1115,12 +1115,14 @@ void handleFindHierarchy(String proj,String pkg,String cls,boolean all,IvyXmlWri
 	    for (IPackageFragment ipf : ijp.getPackageFragments()) {
 	       for (ICompilationUnit icu : ipf.getCompilationUnits()) {
 		  IType ity = ((ITypeRoot) icu).findPrimaryType();
-		  rgn.add(ity);
-		  ++addct;
+		  if (ity != null) {
+		     rgn.add(ity);
+		     ++addct;
+		   }
 		}
 	     }
 	  }
-	 catch (JavaModelException e) {
+	 catch (Throwable e) {
 	    BedrockPlugin.logE("Problem getting package fragments: " + e);
 	  }
        }

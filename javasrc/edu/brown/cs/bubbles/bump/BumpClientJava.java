@@ -160,7 +160,18 @@ private void ensureRunning()
 
    String eopt = board_properties.getProperty(BOARD_PROP_ECLIPSE_OPTIONS);
    if (eopt != null) cmd += " " + eopt;
-   if (board_properties.getBoolean(BOARD_PROP_ECLIPSE_CLEAN)) {
+
+   boolean clean = board_properties.getBoolean(BOARD_PROP_ECLIPSE_CLEAN);
+   if (ws != null) {
+      File wf = new File(ws);
+      File cf = new File(wf,".clean");
+      if (cf.exists()) {
+	 clean = true;
+	 cf.delete();
+       }
+    }
+
+   if (clean) {
       if (!cmd.contains("-clean")) cmd += " -clean";
       board_properties.remove(BOARD_PROP_ECLIPSE_CLEAN);
       try {
@@ -172,8 +183,16 @@ private void ensureRunning()
    cmd += " -vmargs '-Dedu.brown.cs.bubbles.MINT=" + mint_name + "'";
    eopt = board_properties.getProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS);
    if (eopt != null) cmd += " " + eopt;
-   
+
    BoardLog.logD("BUMP","Start Eclipse: " + cmd);
+
+   // remove snapshots because we are going to refresh anyway
+   File f1 = new File(ws);
+   File f2 = new File(f1,".metadata");
+   File f3 = new File(f2,".plugins");
+   File f4 = new File(f3,"org.eclipse.core.resources");
+   File f5 = new File(f4,".snap");
+   if (f5.exists()) f5.delete();
 
    try {
       IvyExec ex = new IvyExec(cmd);

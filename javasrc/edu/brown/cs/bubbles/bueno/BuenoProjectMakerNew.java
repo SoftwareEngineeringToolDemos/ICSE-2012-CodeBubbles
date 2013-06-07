@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              BuenoProjectMakerNew.java                                       */
-/*                                                                              */
-/*      Create a new empty project                                              */
-/*                                                                              */
+/*										*/
+/*		BuenoProjectMakerNew.java					*/
+/*										*/
+/*	Create a new empty project						*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 /* SVN: $Id$ */
@@ -23,6 +23,8 @@
 
 
 package edu.brown.cs.bubbles.bueno;
+
+import edu.brown.cs.bubbles.board.BoardLog;
 
 import edu.brown.cs.ivy.swing.*;
 
@@ -40,9 +42,9 @@ class BuenoProjectMakerNew implements BuenoConstants, BuenoConstants.BuenoProjec
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
 private static final String PKG_NAME = "PackageName";
@@ -50,13 +52,13 @@ private static final String PKG_FIELD = "PackageField";
 
 
 private static final Pattern pkg_pat = Pattern.compile("(\\p{Alpha}\\w*\\.)*\\p{Alpha}\\w*");
-      
+
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Constructors								*/
+/*										*/
 /********************************************************************************/
 
 BuenoProjectMakerNew()
@@ -67,9 +69,9 @@ BuenoProjectMakerNew()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
 @Override public String getLabel()
@@ -85,28 +87,32 @@ BuenoProjectMakerNew()
    if (!pkg_pat.matcher(pnm).matches()) return false;
    return true;
 }
-   
+
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Interaction methods                                                     */
-/*                                                                              */
+/*										*/
+/*	Interaction methods							*/
+/*										*/
 /********************************************************************************/
 
 @Override public JPanel createPanel(BuenoProjectCreationControl ctrl,BuenoProjectProps props)
 {
    NewActions cact = new NewActions(ctrl,props);
-   
+
    SwingGridPanel pnl = new SwingGridPanel();
    pnl.beginLayout();
    JTextField pkgfld = pnl.addTextField("Package Name",props.getString(PKG_NAME),32,cact,cact);
    props.put(PKG_FIELD,pkgfld);
+   // let user choose the name of the initial class/interface
+   // possibly options to have default class (PkgMain, PkgConstants, ..._)
+   // possibly bring up new class dialog
+   // all user to specify project format file
    pnl.addSeparator();
 
    return pnl;
-}   
+}
 
 
 @Override public void resetPanel(BuenoProjectProps props)
@@ -120,24 +126,24 @@ BuenoProjectMakerNew()
 
 
 private class NewActions implements ActionListener, UndoableEditListener {
-   
+
    private BuenoProjectCreationControl project_control;
    private BuenoProjectProps project_props;
-   
+
    NewActions(BuenoProjectCreationControl ctrl,BuenoProjectProps props) {
       project_control = ctrl;
       project_props = props;
     }
-   
+
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
       if (cmd.equals("Package Name")) {
-         JTextField tfld = (JTextField) evt.getSource();
-         project_props.put(PKG_NAME,tfld.getText());
+	 JTextField tfld = (JTextField) evt.getSource();
+	 project_props.put(PKG_NAME,tfld.getText());
        }
       project_control.checkStatus();
     }
-   
+
    @Override public void undoableEditHappened(UndoableEditEvent evt) {
       JTextField tfld = (JTextField) project_props.get(PKG_FIELD);
       if (tfld != null && tfld.getDocument() == evt.getSource()) {
@@ -145,16 +151,16 @@ private class NewActions implements ActionListener, UndoableEditListener {
 	 project_control.checkStatus();
        }
     }
-   
-}       // end of inner class NewActions
+
+}	// end of inner class NewActions
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Project Creation methods                                                */
-/*                                                                              */
+/*										*/
+/*	Project Creation methods						*/
+/*										*/
 /********************************************************************************/
 
 @Override public boolean setupProject(BuenoProjectCreationControl ctrl,BuenoProjectProps props)
@@ -163,13 +169,16 @@ private class NewActions implements ActionListener, UndoableEditListener {
    File sdir = new File(pdir,"src");
    props.getSources().clear();
    props.getSources().add(sdir);
-   
-   if (!sdir.mkdir()) return false;
-   
+
+   if (!sdir.exists() && !sdir.mkdir()) {
+      JOptionPane.showMessageDialog(null,"Can't create source directory " + sdir);
+      return false;
+    }
+
    BuenoProperties bp = new BuenoProperties();
    String projnm = props.getString(PROJ_PROP_NAME);
    bp.put(BuenoKey.KEY_PROJECT,projnm);
-   
+
    String pnm = props.getString(PKG_NAME);
    if (pnm != null && pnm.length() > 0) {
       bp.put(BuenoKey.KEY_PACKAGE,pnm);
@@ -177,9 +186,13 @@ private class NewActions implements ActionListener, UndoableEditListener {
       while (tok.hasMoreTokens()) {
 	 sdir = new File(sdir,tok.nextToken());
        }
-      if (!sdir.mkdirs()) return false;
+      if (!sdir.mkdirs()) {
+	 JOptionPane.showMessageDialog(null,"Can't create project directory " + sdir);
+	 BoardLog.logX("BUENO","Problem creating project directory");
+	 return false;
+       }
     }
-   
+
    Reader rd = BuenoCreator.findTemplate("scratch",bp);
    if (rd != null) {
       StringBuffer buf = new StringBuffer();
@@ -190,15 +203,20 @@ private class NewActions implements ActionListener, UndoableEditListener {
 	 fw.write(buf.toString());
 	 fw.close();
        }
-      catch (IOException e) { }
+      catch (IOException e) {
+	 BoardLog.logE("BUENO","Problem with scratch template",e);
+       }
     }
-   
+   else {
+      BoardLog.logX("BUENO","Can't find scratch template");
+    }
+
    return true;
 }
 
 
 
-}       // end of class BuenoProjectMakerNew
+}	// end of class BuenoProjectMakerNew
 
 
 

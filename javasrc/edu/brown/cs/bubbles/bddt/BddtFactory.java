@@ -175,6 +175,7 @@ public void newDebugger(BumpLaunchConfig blc)
       debug_channels.setChannelName(label);
     }
    else bba = debug_channels.addChannel(label);
+   bba.setProperty("Bddt.debug",Boolean.TRUE);
 
    setCurrentLaunchConfig(blc);
 
@@ -244,6 +245,8 @@ private void setupDebugging(BudaRoot br)
    buda_root = br;
 
    debug_channels = new BudaChannelSet(br,BDDT_CHANNEL_TOP_COLOR,BDDT_CHANNEL_BOTTOM_COLOR);
+   BudaBubbleArea bba = debug_channels.getBubbleArea();
+   if (bba != null) bba.setProperty("Bddt.debug",Boolean.TRUE);
 
    SwingGridPanel pnl = new DebuggingPanel();
 
@@ -326,10 +329,16 @@ private class PanelHandler implements ActionListener {
       BudaRoot br = BudaRoot.findBudaRoot(btn);
       if (br == null) return;
       String cmd = e.getActionCommand();
+      if (cmd.equals("DEBUG") && debug_channels.isChannelEmpty()) cmd = "NEW";
       if (cmd.equals("DEBUG")) {
-	 BoardMetrics.noteCommand("BDDT","GotoDebug");
-	 if (br.getChannelSet() == debug_channels) br.setChannelSet(null);
-	 else br.setChannelSet(debug_channels);
+	 if (current_configuration == null) {
+	    createConfiguration();
+	  }
+	 else {
+	    BoardMetrics.noteCommand("BDDT","GotoDebug");
+	    if (br.getChannelSet() == debug_channels) br.setChannelSet(null);
+	    else br.setChannelSet(debug_channels);
+	  }
        }
       else if (cmd.equals("NEW")) {
 	 if (current_configuration == null) setCurrentLaunchConfig(null);
@@ -339,9 +348,15 @@ private class PanelHandler implements ActionListener {
 	    newDebugger(current_configuration);
 	  }
 	 else {
-	    // TOOD: Put up error message at this point
+	    createConfiguration();
 	  }
        }
+    }
+
+   private void createConfiguration() {
+      CreateConfigAction cca = new CreateConfigAction(BumpLaunchConfigType.JAVA_APP);
+      ActionEvent act = new ActionEvent(this,0,"NEW");
+      cca.actionPerformed(act);
     }
 
 }	// end of inner class PanelHandler

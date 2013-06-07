@@ -26,7 +26,8 @@
 
    <target name='compile' depends='init'>
       <javac srcdir='.' destdir='${BUBBLES}/java' debug='on' deprecation='on'
-		includeantruntime='false'>
+		includeantruntime='false' target='1.6' source='1.6'
+		bootclasspath='/pro/java/linux/jdk1.6/jre/lib/rt.jar'>
 	 <classpath refid='bubbles.classpath' />
       </javac>
    </target>

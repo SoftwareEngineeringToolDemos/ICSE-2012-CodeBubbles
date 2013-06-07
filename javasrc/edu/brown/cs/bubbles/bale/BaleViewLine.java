@@ -87,6 +87,8 @@ private static BreakElement [] break_table = new BreakElement[] {
 
 };
 
+private static int MAX_LINE_ELEMENTS = 50;
+
 
 
 /********************************************************************************/
@@ -244,6 +246,8 @@ private SplitLine splitLine(float w,SplitLine spl,int maxlines,boolean opt)
    //TODO: if only entry left is a blank line, remove the leading spaces
 
    int n = getViewCount();
+   if (n > MAX_LINE_ELEMENTS) opt = false;
+   
    BaleDocument bd = (BaleDocument) getDocument();
 
    if (spl.getTotalWidth() <= w) return spl;	// current split works

@@ -446,6 +446,16 @@ String [] BOARD_CLASSPATH_FILES = new String [] {
 };
 
 
+String [] BOARD_TEMPLATES = new String [] {
+   "block.template",
+   "javadoc.template",
+   "marquis.template",
+   "module.template",
+   "scratch.template",
+   "type.template",
+};
+
+
 
 /********************************************************************************/
 /*										*/

@@ -38,6 +38,7 @@ import edu.brown.cs.ivy.xml.IvyXml;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
+import javax.swing.filechooser.FileSystemView;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -60,7 +61,6 @@ class BddtLaunchControl extends BudaBubble implements BddtConstants, BumpConstan
 /*										*/
 /********************************************************************************/
 
-
 private BumpClient		bump_client;
 private BumpLaunchConfig	launch_config;
 private BumpProcess		cur_process;
@@ -76,6 +76,7 @@ private int			freeze_count;
 private SwingEventListenerList<BddtFrameListener> frame_listeners;
 private Action			stepinto_action;
 private Action			stepuser_action;
+private FileSystemView		file_system;
 
 private JPanel			launch_panel;
 
@@ -105,6 +106,8 @@ BddtLaunchControl(BumpLaunchConfig blc)
    freeze_count = 0;
    frame_listeners = new SwingEventListenerList<BddtFrameListener>(BddtFrameListener.class);
 
+   file_system = BoardFileSystemView.getFileSystemView();
+
    setupPanel();
 
    setContentPane(launch_panel);
@@ -114,6 +117,9 @@ BddtLaunchControl(BumpLaunchConfig blc)
    editor_handler = new EditorContextListener();
    BaleFactory.getFactory().addContextListener(editor_handler);
    bubble_manager = new BddtBubbleManager(this);
+
+   String log = launch_config.getLogFile();
+   if (log != null) BddtFactory.getFactory().getConsoleControl().setLogFile(this,log);
 }
 
 
@@ -142,6 +148,46 @@ boolean matchProcess(BumpProcess p)
    if (p != null && cur_process == null) return true;
    return false;
 }
+
+
+private void setProcess(BumpProcess p)
+{
+   cur_process = p;
+
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BddtLaunchControl.this);
+   if (bba != null) {
+      bba.setProperty("Bddt.process",cur_process);
+    }
+
+   String log = launch_config.getLogFile();
+   if (log != null && p != null) BddtFactory.getFactory().getConsoleControl().setLogFile(p,log);
+}
+
+
+
+boolean frameFileExists(BumpStackFrame frm)
+{
+   if (frm.getFile() == null) return false;
+   File rf = file_system.createFileObject(frm.getFile().getPath());
+   return rf.exists();
+}
+
+
+boolean fileExists(File f)
+{
+   if (f == null) return false;
+   File rf = file_system.createFileObject(f.getPath());
+   return rf.exists();
+}
+
+
+boolean fileExists(String f)
+{
+   if (f == null) return false;
+   File rf = file_system.createFileObject(f);
+   return rf.exists();
+}
+
 
 
 
@@ -315,7 +361,7 @@ private class PlayAction extends AbstractAction {
 	 case READY :
 	 case TERMINATED :
 	    BoardMetrics.noteCommand("BDDT","StartDebug");
-	    cur_process = null;
+	    setProcess(null);
 	    setLaunchState(LaunchState.STARTING);
 	    bubble_manager.restart();
 	    BoardThreadPool.start(new StartDebug());
@@ -614,11 +660,14 @@ private class StartDebug implements Runnable {
 	       JOptionPane.QUESTION_MESSAGE);
 	 if (sts == JOptionPane.YES_OPTION) ct = 0;
        }
-      if (ct != 0) return;
+      if (ct != 0) {
+	 setLaunchState(LaunchState.READY);
+	 return;
+       }
 
       String id = "B_" + Integer.toString(((int)(Math.random() * 100000)));
       BumpProcess bp = bump_client.startDebug(launch_config,id);
-      cur_process = bp;
+      setProcess(bp);
       if (bp != null) setLaunchState(LaunchState.RUNNING);
     }
 
@@ -841,7 +890,7 @@ private class RunEventHandler implements BumpRunEventHandler {
 	 case PROCESS_ADD :
 	    if (cur_process == null && launch_state == LaunchState.STARTING &&
 		   (elc == null || elc == launch_config)) {
-	       cur_process = evt.getProcess();
+	       setProcess(evt.getProcess());
 	       last_stopped = null;
 	       BddtFactory.getFactory().getConsoleControl().clearConsole(cur_process);
 	       BddtFactory.getFactory().getHistoryControl().clearHistory(cur_process);
@@ -851,7 +900,7 @@ private class RunEventHandler implements BumpRunEventHandler {
 	    if (cur_process == evt.getProcess()) {
 	       setLaunchState(LaunchState.TERMINATED);
 	       thread_states.clear();
-	       cur_process = null;
+	       setProcess(null);
 	       last_stopped = null;
 	     }
 	    else if (cur_process == null && launch_state == LaunchState.STARTING &&
@@ -968,7 +1017,7 @@ private void addExecutionAnnot(BumpThread bt)
    BumpThreadStack stk = bt.getStack();
    if (stk != null && stk.getNumFrames() > 0) {
       BumpStackFrame bsf = stk.getFrame(0);
-      if (bsf.getFile() != null && bsf.getFile().exists() && bsf.getLineNumber() > 0) {
+      if (frameFileExists(bsf) && bsf.getLineNumber() > 0) {
 	 ExecutionAnnot ea = new ExecutionAnnot(bt,bsf);
 	 exec_annots.put(bt,ea);
 	 BaleFactory.getFactory().addAnnotation(ea);

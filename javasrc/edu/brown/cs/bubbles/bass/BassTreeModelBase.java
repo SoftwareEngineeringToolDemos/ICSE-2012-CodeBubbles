@@ -309,7 +309,7 @@ void requestRebuild()
        }
       cur_rebuilder = new Rebuilder();
       BoardThreadPool.start(cur_rebuilder);
-    }
+    } 
 }
 
 
@@ -336,27 +336,27 @@ private class Rebuilder implements Runnable {
 
    @Override public void run() {
       for ( ; ; ) {
-	 synchronized (this) {
-	    for ( ; ; ) {
-	       long delta = start_time - System.currentTimeMillis();
-	       if (delta <= 0) break;
-	       try {
-		  wait(delta);
-		}
-	       catch (InterruptedException e) { }
-	     }
-	    begin_time = start_time;
-	  }
-	 BoardLog.logD("BASS","RUN REBUILD " + begin_time + " " + System.currentTimeMillis());
-
-	 rebuild();
-
-	 synchronized (this) {
-	    if (begin_time == start_time) {
-	       is_active = false;
-	       break;
-	     }
-	  }
+         synchronized (this) {
+            for ( ; ; ) {
+               long delta = start_time - System.currentTimeMillis();
+               if (delta <= 0) break;
+               try {
+        	  wait(delta);
+        	}
+               catch (InterruptedException e) { }
+             }
+            begin_time = start_time;
+          }
+         BoardLog.logD("BASS","RUN REBUILD " + begin_time + " " + System.currentTimeMillis());
+   
+         rebuild();
+   
+         synchronized (this) {
+            if (begin_time == start_time) {
+               is_active = false;
+               break;
+             }
+          }
        }
     }
 

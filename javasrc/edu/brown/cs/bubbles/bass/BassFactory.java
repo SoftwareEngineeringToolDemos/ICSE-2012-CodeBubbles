@@ -44,6 +44,7 @@ import javax.swing.JPopupMenu;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
 
@@ -126,6 +127,8 @@ public static synchronized void setup()
 
    BudaRoot.registerMenuButton("Package Explorer",new PackageExplorerButton(),"Add/Remove the package explorer panel for easier browsing");
    BudaRoot.registerMenuButton("Text Search",new TextSearchButton(),"Search for a string or pattern in all files");
+
+   BudaRoot.addToolbarButton("DefaultMenu",new TextSearchButton(),"Text search",BoardImage.getImage("search"));
 
    repository_map = new HashMap<BassRepository,BassTreeModelBase>();
 
@@ -443,7 +446,7 @@ private static class PackageExplorerButton implements BudaConstants.ButtonListen
 /*										*/
 /********************************************************************************/
 
-private static class TextSearchButton implements BudaConstants.ButtonListener
+private static class TextSearchButton implements BudaConstants.ButtonListener, ActionListener
 {
 
    TextSearchButton()			{ }
@@ -457,6 +460,14 @@ private static class TextSearchButton implements BudaConstants.ButtonListener
       br.add(bb,bc);
       bb.grabFocus();
       BowiFactory.stopTask(BowiTaskType.TEXT_SEARCH);
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      Component c = (Component) evt.getSource();
+      if (c == null) return;
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(c);
+      BudaBubble bb = the_factory.createTextSearch();
+      bba.addBubble(bb,c,null,BudaRoot.PLACEMENT_LOGICAL);
     }
 
 }	// end of inner class TextSearchButton

@@ -211,7 +211,7 @@ private class GotoSourceAction extends AbstractAction {
       BumpThreadStack stk = for_item.getStack();
       BumpStackFrame frame= stk.getFrame(0);
       BudaBubble bb = null;
-      if (frame.getFile() != null && frame.getFile().exists()) {
+      if (for_control.frameFileExists(frame)) {
 	 String mid = frame.getMethod() + frame.getSignature();
 	 bb = BaleFactory.getFactory().createMethodBubble(for_control.getProject(),mid);
        }

@@ -53,6 +53,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.*;
+import java.net.*;
 
 
 /**
@@ -72,6 +73,7 @@ public class BeamFactory implements BeamConstants, BudaConstants.ButtonListener
 
 private static BeamFactory	the_factory = null;
 private static BeamHelpPanel	help_panel = null;
+private static BudaRoot 	buda_root = null;
 
 
 /********************************************************************************/
@@ -146,6 +148,8 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
+   buda_root = br;
+
    BeamTracBugReport btr = new BeamTracBugReport(br);
    btr.addPanel();
 
@@ -184,6 +188,34 @@ private static Icon imageToFlagIcon(String path)
    Image img = BoardImage.getImage(path).getScaledInstance(17, 17, java.awt.Image.SCALE_SMOOTH);
    return new ImageIcon(img);
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Common routines for browsing						*/
+/*										*/
+/********************************************************************************/
+
+static void showBrowser(URI uri)
+{
+   if (uri == null) return;
+
+   try {
+      Desktop.getDesktop().browse(uri);
+    }
+   catch (Throwable t) {
+      BoardLog.logE("BEAM","Problem showing URL " + uri);
+      String s = uri.toString();
+      int idx = s.indexOf("?");
+      if (idx >= 0) s = s.substring(0,idx);
+      JOptionPane.showMessageDialog(buda_root,"<html><p>This version of Java does not support" +
+				       " the desktop API.  Please use your browser to navigate" +
+				       " to " + s);
+    }
+}
+
+
 
 
 
@@ -281,7 +313,7 @@ private static Icon imageToFlagIcon(String path)
 
 /********************************************************************************/
 /*										*/
-/*	<comment here>								*/
+/*	Note Handling								*/
 /*										*/
 /********************************************************************************/
 

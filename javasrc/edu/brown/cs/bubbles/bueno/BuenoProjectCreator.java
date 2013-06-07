@@ -56,7 +56,7 @@ private BuenoProjectMaker project_type;
 private Map<BuenoProjectMaker,JPanel> panel_map;
 
 private JTextField	name_field;
-private JComboBox	type_field;
+private JComboBox<String> type_field;
 private JButton 	create_button;
 
 static private Map<String,BuenoProjectMaker> type_names = new TreeMap<String,BuenoProjectMaker>();
@@ -207,6 +207,7 @@ private class CreationActions implements ActionListener, UndoableEditListener {
 	    JComponent c = (JComponent) evt.getSource();
 	    BudaBubble bb = BudaRoot.findBudaBubble(c);
 	    if (bb != null) bb.setVisible(false);
+	    // possibly bring up project editor dialog here
 	  }
 	 return;
        }
@@ -391,6 +392,9 @@ private boolean createProject()
 	     }
 	    else break;
 	  }
+	 else if (tid == StreamTokenizer.TT_EOF) {
+	    return null;
+	 }
        }
 
       fis.close();
@@ -431,7 +435,7 @@ private String getFilePath(BuenoProjectProps props,File f)
    String p2 = pdir.getPath();
    String p3 = p2 + File.separator;
    if (p1.startsWith(p3)) {
-      int ln = p2.length();
+      int ln = p2.length()+1;
       return p1.substring(ln);
     }
 

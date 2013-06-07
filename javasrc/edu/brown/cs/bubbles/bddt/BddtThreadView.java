@@ -187,7 +187,7 @@ Point getPosition(BumpThread t)
       BumpThreadStack stk = thread.getStack();
       if (stk != null && stk.getNumFrames() > 0) {
 	 BumpStackFrame frm = stk.getFrame(0);
-	 if (frm.getFile() != null && frm.getFile().exists()) {
+	 if (launch_control.frameFileExists(frm)) {
 	    popup.add(new SourceAction(frm));
 	  }
        }
@@ -324,7 +324,7 @@ private class SourceAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent e) {
       BudaBubble bb = null;
-      if (for_frame.getFile() != null && for_frame.getFile().exists()) {
+      if (launch_control.frameFileExists(for_frame)) {
 	 String proj = for_frame.getThread().getLaunch().getConfiguration().getProject();
 	 String mid = for_frame.getMethod() + for_frame.getSignature();
 	 bb = BaleFactory.getFactory().createMethodBubble(proj,mid);
@@ -590,8 +590,8 @@ private class ThreadsTable extends JTable implements BudaConstants.BudaBubbleOut
       setSelectionForeground(Color.BLACK);
       setOpaque(false);
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-         TableColumn tc = e.nextElement();
-         tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
+	 TableColumn tc = e.nextElement();
+	 tc.setHeaderRenderer(new HeaderDrawer(getTableHeader().getDefaultRenderer()));
        }
       cell_drawer = new CellDrawer[col_names.length];
     }

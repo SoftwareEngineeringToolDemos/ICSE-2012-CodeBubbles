@@ -296,6 +296,14 @@ enum BaleElideMode {
 }
 
 
+interface BaleElisionData {
+   int getStartOffset();
+   int getEndOffset();
+   String getElementName();
+}       // end of inner class BaleElisionData
+
+
+
 enum BaleSplitMode {
    SPLIT_NEVER, 			// don't split lines
    SPLIT_QUICK, 			// fast check
@@ -1240,6 +1248,7 @@ interface RegionAction {
  **/
 
    void handleClick(MouseEvent e);
+   BudaBubble handleHoverBubble(MouseEvent e);
 
 }
 

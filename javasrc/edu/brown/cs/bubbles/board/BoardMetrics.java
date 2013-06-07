@@ -842,9 +842,23 @@ private void dumpOptions()
 private File[] getOptionsFiles()
 {
    File dir = new File(BOARD_PROP_BASE);
-   File[] files = dir.listFiles();
+   File[] files = dir.listFiles(new OptionFileFilter());
    return files;
 }
+
+
+
+private static class OptionFileFilter implements FileFilter {
+
+   @Override public boolean accept(File path) {
+      if (path.isDirectory()) return false;
+      String nm = path.getName();
+      if (nm.startsWith(".")) return false;
+      if (!nm.endsWith(".props")) return false;
+      return true;
+    }
+
+}	// end of inner class OptionFileFilter
 
 
 

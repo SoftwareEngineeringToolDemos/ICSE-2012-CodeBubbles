@@ -974,9 +974,11 @@ private void addForcedLibsFor(String lib) {
 	    if (zipFile.getEntry("werkzeug/__init__.py") != null) {
 	       forced_libs.add("werkzeug");
 	     }
-	  } catch (Exception e) {
-	       //ignore (not zip file)
-	     }
+            zipFile.close();
+	  } 
+         catch (Exception e) {
+            //ignore (not zip file)
+          }
        }
     }
 }

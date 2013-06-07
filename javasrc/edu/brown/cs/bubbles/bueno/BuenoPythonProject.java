@@ -356,7 +356,7 @@ private class PackagePanel extends SwingGridPanel implements ActionListener, Lis
 
    private JButton edit_button;
    private JButton delete_button;
-   private JList   path_display;
+   private JList<PathData> path_display;
 
    PackagePanel() {
       int y = 0;
@@ -369,8 +369,8 @@ private class PackagePanel extends SwingGridPanel implements ActionListener, Lis
       delete_button.addActionListener(this);
       addGBComponent(delete_button,1,y++,1,1,0,0);
       ++y;
-
-      path_display = new JList(project_paths);
+   
+      path_display = new JList<PathData>(project_paths);
       path_display.setVisibleRowCount(5);
       addGBComponent(new JScrollPane(path_display),0,0,1,y++,1,1);
     }
@@ -393,10 +393,9 @@ private class PackagePanel extends SwingGridPanel implements ActionListener, Lis
     }
 
    private void updateButtons() {
-      Object [] sels = path_display.getSelectedValues();
+      List<PathData> sels = path_display.getSelectedValuesList();
       boolean edok = false;
-      for (Object sel : sels) {
-	 PathData pe = (PathData) sel;
+      for (PathData pe : sels) {
 	 if (pe.isLibrary()) {
 	    if (edok) {
 	       edok = false;
@@ -406,7 +405,7 @@ private class PackagePanel extends SwingGridPanel implements ActionListener, Lis
 	  }
        }
       edit_button.setEnabled(edok);
-      delete_button.setEnabled(sels.length >= 1);
+      delete_button.setEnabled(sels.size() >= 1);
     }
 
 }	// end of inner class PackagePanel
@@ -461,23 +460,23 @@ private class OptionPanel extends SwingGridPanel implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent evt) {
       String what = evt.getActionCommand();
-      JComboBox op = (JComboBox) evt.getSource();
+      JComboBox<?> op = (JComboBox<?>) evt.getSource();
       String v = (String) op.getSelectedItem();
       v = error_values.get(v);
       for (Map.Entry<String,String> ent : error_descriptions.entrySet()) {
-	 if (ent.getValue().equals(what)) {
-	    BumpClient bc = BumpClient.getBump();
-	    IvyXmlWriter xw = new IvyXmlWriter();
-	    xw.begin("PROJECT");
-	    xw.field("NAME",project_name);
-	    xw.begin("OPTION");
-	    xw.field("KEY","ErrorType." + ent.getKey());
-	    xw.field("VALUE",v);
-	    xw.end("OPTION");
-	    xw.end("PROJECT");
-	    bc.editProject(project_name,xw.toString());
-	    xw.close();
-	  }
+         if (ent.getValue().equals(what)) {
+            BumpClient bc = BumpClient.getBump();
+            IvyXmlWriter xw = new IvyXmlWriter();
+            xw.begin("PROJECT");
+            xw.field("NAME",project_name);
+            xw.begin("OPTION");
+            xw.field("KEY","ErrorType." + ent.getKey());
+            xw.field("VALUE",v);
+            xw.end("OPTION");
+            xw.end("PROJECT");
+            bc.editProject(project_name,xw.toString());
+            xw.close();
+          }
        }
     }
 

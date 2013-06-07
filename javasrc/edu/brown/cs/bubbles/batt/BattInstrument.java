@@ -70,6 +70,7 @@ private static final String [] SYSTEM_PACKAGES = new String [] {
 };
 
 
+
 /********************************************************************************/
 /*										*/
 /*	Constructors								*/
@@ -127,8 +128,8 @@ private byte [] instrument(String name,byte [] buf)
 {
    byte [] rsltcode;
    try {
-      ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
       ClassReader reader = new ClassReader(buf);
+      ClassWriter writer = new ClassWriter(reader,ClassWriter.COMPUTE_MAXS|ClassWriter.COMPUTE_FRAMES);
       ClassVisitor ins = new BattTransformer(name,writer);
       reader.accept(ins,ClassReader.SKIP_FRAMES);
       rsltcode = writer.toByteArray();
@@ -149,6 +150,7 @@ private boolean isBattClass(String name)
 {
    if (name.startsWith("edu/brown/cs/bubbles/batt/")) return true;
    if (name.startsWith("edu/brown/cs/bubbles/org/objectweb/asm")) return true;
+   if (name.startsWith("edu/brown/cs/bubbles/bandaid/org/objectweb/asm")) return true;
 
    return false;
 }

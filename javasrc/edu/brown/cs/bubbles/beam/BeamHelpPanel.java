@@ -149,7 +149,7 @@ private abstract class HelpUrlAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       try {
 	 URI u = new URI(url_name);
-	 Desktop.getDesktop().browse(u);
+	 BeamFactory.showBrowser(u);
        }
       catch (Throwable t) {
 	 BoardLog.logE("BEAM","Problem showing help url " + url_name,t);

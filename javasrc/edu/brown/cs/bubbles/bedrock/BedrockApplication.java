@@ -32,7 +32,7 @@ package edu.brown.cs.bubbles.bedrock;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.*;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
@@ -44,9 +44,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.*;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.debug.ui.DebugUITools;
+import org.eclipse.core.resources.*;
+
 
 import java.util.*;
-
+import java.io.*;
 
 
 public class BedrockApplication implements IApplication, BedrockConstants {
@@ -63,6 +67,7 @@ public class BedrockApplication implements IApplication, BedrockConstants {
 private boolean exit_ok;
 private Display base_display;
 private int	exit_ctr;
+private boolean is_setup;
 
 private Location base_location;
 
@@ -87,6 +92,8 @@ public BedrockApplication()
 {
    exit_ok = false;
    exit_ctr = 0;
+   base_display = null;
+   is_setup = false;
 
    the_app = this;
 }
@@ -163,8 +170,34 @@ static Display getDisplay()
 {
    if (the_app == null) return null;
 
+   the_app.waitForSetup();
+
    return the_app.base_display;
 }
+
+
+private synchronized void waitForSetup()
+{
+   while (!is_setup) {
+      System.err.println("BEDROCK: wait for setup");
+      try {
+	 wait();
+       }
+      catch (InterruptedException e) { }
+    }
+}
+
+
+
+private synchronized void noteSetup()
+{
+   if (is_setup) return;
+
+   System.err.println("BEDROCK: note setup");
+   is_setup = true;
+   notifyAll();
+}
+
 
 
 
@@ -208,18 +241,35 @@ static Display getDisplay()
    if ((use_display || tiny_display || hide_display) &&
 	  !PlatformUI.isWorkbenchRunning()) {
       int sts = PlatformUI.RETURN_UNSTARTABLE;
+      System.err.println("BEDROCK: DISPLAY START");
       try {
 	 if (base_display == null) base_display = PlatformUI.createDisplay();
 	 System.err.println("BEDROCK: DISPLAY = " + base_display);
 	 EndChecker ec = new EndChecker();
 	 ec.start();
+	 if (org.eclipse.jface.preference.PreferenceConverter.class != null) ;
+	 is_setup = false;
 	 sts = PlatformUI.createAndRunWorkbench(base_display,new WbAdvisor());
        }
       catch (Throwable t) {
 	 System.err.println("BEDROCK: Start status: " + t);
+	 BedrockPlugin.logE("Bad start",t);
 	 t.printStackTrace();
        }
+      IWorkspace ws = ResourcesPlugin.getWorkspace();
+      if (ws != null) {
+	 IWorkspaceRoot wr = ws.getRoot();
+	 IPath wp = wr.getFullPath();
+	 File wf = wp.toFile();
+	 File cf = new File(wf,".clone");
+	 try {
+	    FileWriter fw = new FileWriter(cf);
+	    fw.close();
+	  }
+	 catch (IOException e) { }
+       }
       if (base_display == null) {
+	 System.err.println("BEDROCK: Alternative Start");
 	 try {
 	    IWorkbench wb = PlatformUI.getWorkbench();
 	    base_display = wb.getDisplay();
@@ -228,6 +278,18 @@ static Display getDisplay()
 	    System.err.println("BEDROCK: Start1 status: " + t);
 	    t.printStackTrace();
 	  }
+	 if (base_display != null) {
+	    try {
+	       // Class<?> c1 = org.eclipse.jface.resource.ColorRegistry.class;
+	       DebugUITools.getPreferenceStore();
+	       JavaUI.getColorManager();
+	     }
+	    catch (Throwable t) {
+	       System.err.println("BEDROCK: Start1a status: " + t);
+	       t.printStackTrace();
+	     }
+	  }
+	 noteSetup();
        }
 
       BedrockPlugin.logD("BEDROCK SETUP STATUS " + sts);
@@ -249,6 +311,8 @@ static Display getDisplay()
 	 if (sh != null) sh.setVisible(false);
 	 exit_atend = true;
 	 show_atend = false;
+	 // forceLoads();
+	 noteSetup();
        }
     }
    else {
@@ -326,6 +390,18 @@ static String getOptions()
 
 
 
+private void forceLoads()
+{
+   try {
+      // Class<?> c1 = org.eclipse.jface.resource.ColorRegistry.class;
+      DebugUITools.getPreferenceStore();
+      JavaUI.getColorManager();
+    }
+   catch (Throwable t) { }
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Workbench advisor							*/
@@ -351,6 +427,9 @@ private class WbAdvisor extends WorkbenchAdvisor {
       BedrockPlugin.logD("BEDROCK POST STARTUP " + use_display + " " + hide_display);
 
       // super.postStartup();
+
+      forceLoads();
+      noteSetup();
 
       if (use_display || hide_display) {
 	 for (Shell sh1 : the_app.base_display.getShells()) {
@@ -435,8 +514,8 @@ private class WbShellRemover extends ShellAdapter {
 
    @Override public void shellDeiconified(ShellEvent e) {
       BedrockPlugin.logD("BEDROCK: DEICON SHELL");
-      // Shell sh = (Shell) e.getSource();
-      // sh.setVisible(false);
+      Shell sh = (Shell) e.getSource();
+      sh.setVisible(false);
     }
 
    @Override public void shellActivated(ShellEvent e) {

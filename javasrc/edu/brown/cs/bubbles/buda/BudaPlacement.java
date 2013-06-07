@@ -105,6 +105,22 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
       if (pnm.contains("WINDOW")) dflt |= PLACEMENT_ADJACENT;
       if (dflt == 0) dflt = PLACEMENT_USER | PLACEMENT_ADJACENT;
       if (dflt == PLACEMENT_USER) dflt = PLACEMENT_USER | PLACEMENT_ADJACENT;
+      
+      if ((dflt & PLACEMENT_USER) != 0) {
+	 switch (pos) {
+	    case DIALOG :
+	    case DOCKED :
+	    case FIXED :
+	    case HOVER :
+	    case FLOAT :
+	    case STATIC :
+	       dflt &= ~PLACEMENT_USER;
+	       break;
+	    default :
+	       break;
+	  }
+       }
+ 
       if ((place & (PLACEMENT_ADJACENT | PLACEMENT_ADGROUP)) == 0) place |= dflt;
       else if ((dflt & PLACEMENT_USER) != 0) place |= PLACEMENT_USER;
     }

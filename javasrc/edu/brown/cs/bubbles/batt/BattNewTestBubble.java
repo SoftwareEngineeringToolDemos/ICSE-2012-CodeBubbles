@@ -421,7 +421,7 @@ private abstract class NewTestCase implements BattCallTest, CaretListener, Actio
    private boolean is_checked;
    protected JTextField test_args;
    protected JTextField test_result;
-   protected JComboBox test_op;
+   protected JComboBox<Enum<?>> test_op;
 
    NewTestCase(NewTestArea ta) {
       test_area = ta;
@@ -470,8 +470,8 @@ private abstract class NewTestCase implements BattCallTest, CaretListener, Actio
       return tf;
     }
 
-   protected JComboBox createSelection(Enum<?> dflt,Enum<?> [] opts) {
-      JComboBox cbx = new JComboBox(opts);
+   protected JComboBox<Enum<?>> createSelection(Enum<?> dflt,Enum<?> [] opts) {
+      JComboBox<Enum<?>> cbx = new JComboBox<Enum<?>>(opts);
       cbx.setSelectedItem(dflt);
       cbx.addActionListener(this);
       return cbx;
@@ -529,25 +529,25 @@ private class CallTestCase extends NewTestCase {
       bx.add(l1);
       test_args = createTextField(12);
       if (no_args) {
-	 test_args.setEditable(false);
-	 test_args.setText("void");
+         test_args.setEditable(false);
+         test_args.setText("void");
        }
       bx.add(test_args);
       l1 = new JLabel(")");
       l1.setOpaque(false);
       bx.add(l1);
       test_area.addTestCell(this,bx,0,1);
-
+   
       test_result = createTextField(12);
       test_area.addTestCell(this,test_result,2,1);
-
+   
       if (no_return) {
-	 test_op = createSelection(NewTestOp.IGNORE,VOID_CALL_OPS);
-	 test_result.setEditable(false);
-	 test_result.setText("void");
+         test_op = createSelection(NewTestOp.IGNORE,VOID_CALL_OPS);
+         test_result.setEditable(false);
+         test_result.setText("void");
        }
       else {
-	 test_op = createSelection(NewTestOp.EQL,CALL_OPS);
+         test_op = createSelection(NewTestOp.EQL,CALL_OPS);
        }
       test_area.addTestCell(this,test_op,1,1);
     }

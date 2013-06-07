@@ -87,7 +87,7 @@ BeduStudentTicketSubmitBubble(String a_jid)
 private class TicketPanel extends JPanel implements ActionListener {
 private static final long	serialVersionUID = 1L;
 private Map<String, BgtaManager> chat_logins;
-private JComboBox		login_box;
+private JComboBox<String>	login_box;
 private JTextArea		ticket_area;
 
 
@@ -107,7 +107,7 @@ private TicketPanel(Map<String, BgtaManager> some_chat_logins)
    c.weighty = 0.1;
    add(l, c);
 
-   login_box = new JComboBox(chat_logins.keySet().toArray(new String[1]));
+   login_box = new JComboBox<String>(chat_logins.keySet().toArray(new String[1]));
 
    c.gridx = 1;
    c.gridy = 0;

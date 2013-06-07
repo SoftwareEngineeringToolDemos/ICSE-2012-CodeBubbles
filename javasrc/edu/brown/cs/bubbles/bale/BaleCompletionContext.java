@@ -165,6 +165,7 @@ private synchronized void removeContext()
    for_document = null;
    if (cur_menu != null) {
       cur_menu.setVisible(false);
+      cur_menu.dispose();
       cur_menu = null;
     }
    if (getter_thread != null) BoardThreadPool.finish(getter_thread);
@@ -619,7 +620,7 @@ private class CompletionPanel extends JPanel implements MouseListener {
     }
 
    void handleCurrentIndex(){
-      CompletionItem ci = (CompletionItem) item_list.getSelectedValue();
+      CompletionItem ci = item_list.getSelectedValue();
       if (ci == null) return;
       handleCompletion(ci);
    }
@@ -649,7 +650,7 @@ private class CompletionPanel extends JPanel implements MouseListener {
 
    @Override public void mouseClicked(MouseEvent arg0) {
       super.processMouseEvent(arg0);
-      CompletionItem ci = (CompletionItem) item_list.getSelectedValue();
+      CompletionItem ci = item_list.getSelectedValue();
       if (ci == null) return;
       handleCompletion(ci);
    }
@@ -667,7 +668,7 @@ private class CompletionPanel extends JPanel implements MouseListener {
 
 
 
-private static class CompletionList extends JList {
+private static class CompletionList extends JList<CompletionItem> {
 
    CompletionModel item_model;
 
@@ -693,7 +694,7 @@ private static class CompletionList extends JList {
 
    CompletionItem getCurrentCompletion() {
       if (item_model.getSize() == 0) return null;
-      return (CompletionItem) item_model.getElementAt(0);
+      return item_model.getElementAt(0);
     }
 
 }	// end of inner class CompletionList
@@ -701,7 +702,7 @@ private static class CompletionList extends JList {
 
 
 
-private static class CompletionModel extends DefaultListModel {
+private static class CompletionModel extends DefaultListModel<CompletionItem> {
 
    private static final long serialVersionUID = 1;
 
@@ -720,7 +721,7 @@ private static class CompletionListCellRenderer extends DefaultListCellRenderer 
 
    private static final long serialVersionUID = 1;
 
-   @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
+   @Override public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
      {
 	 Component renderedcomp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 	 CompletionItem ci = (CompletionItem) value;

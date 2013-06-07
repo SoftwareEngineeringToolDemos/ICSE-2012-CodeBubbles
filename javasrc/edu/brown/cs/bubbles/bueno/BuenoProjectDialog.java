@@ -129,7 +129,9 @@ public BuenoProjectDialog(String proj)
 
    BumpClient bc = BumpClient.getBump();
    Element xml = bc.getProjectData(proj);
+
    if (xml == null) return;
+
    String dir = IvyXml.getAttrString(xml,"PATH");
    if (dir != null) project_dir = new File(dir);
 
@@ -241,7 +243,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
 
    private JButton edit_button;
    private JButton delete_button;
-   private JList   path_display;
+   private JList<PathEntry>   path_display;
 
    PathPanel() {
       int y = 0;
@@ -260,7 +262,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
       addGBComponent(delete_button,1,y++,1,1,0,0);
       ++y;
 
-      path_display = new JList(library_paths);
+      path_display = new JList<PathEntry>(library_paths);
       path_display.setVisibleRowCount(10);
       path_display.addListSelectionListener(this);
       addGBComponent(new JScrollPane(path_display),0,0,1,y++,1,1);
@@ -275,7 +277,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
 	 askForNew(new BinaryFileFilter(),JFileChooser.DIRECTORIES_ONLY);
        }
       else if (cmd.equals("Edit")) {
-	 PathEntry pe = (PathEntry) path_display.getSelectedValue();
+	 PathEntry pe = path_display.getSelectedValue();
 	 if (pe == null) return;
 	 EditPathEntryBubble bb = new EditPathEntryBubble(pe);
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
@@ -283,8 +285,8 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
 	 if (bba != null) bba.addBubble(bb,rbb,null,dialog_placement);
        }
       else if (cmd.equals("Delete")) {
-	 for (Object o : path_display.getSelectedValues()) {
-	    library_paths.removeElement((PathEntry) o);
+	 for (PathEntry pe : path_display.getSelectedValuesList()) {
+	    library_paths.removeElement(pe);
 	  }
        }
       else BoardLog.logE("BUENO","Unknown path panel command " + cmd);
@@ -298,14 +300,14 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
       NewPathEntryBubble bb = new NewPathEntryBubble(ff,mode);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
       BudaBubble rbb = BudaRoot.findBudaBubble(this);
-      if (bba != null) bba.addBubble(bb,rbb,null,dialog_placement);
+      if (bba != null) bba.addBubble(bb,rbb,null,dialog_placement,
+					BudaConstants.BudaBubblePosition.STATIC);
     }
 
    private void updateButtons() {
-      Object [] sels = path_display.getSelectedValues();
+      List<PathEntry> sels = path_display.getSelectedValuesList();
       boolean edok = false;
-      for (Object sel : sels) {
-	 PathEntry pe = (PathEntry) sel;
+      for (PathEntry pe : sels) {
 	 if (pe.getPathType() == PathType.LIBRARY) {
 	    if (edok) {
 	       edok = false;
@@ -315,7 +317,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
 	  }
        }
       edit_button.setEnabled(edok);
-      delete_button.setEnabled(sels.length >= 1);
+      delete_button.setEnabled(sels.size() >= 1);
     }
 
 }	// end of inner class PathPanel
@@ -341,6 +343,7 @@ private class NewPathEntryBubble extends BudaBubble implements ActionListener {
       file_chooser.addChoosableFileFilter(ff);
       file_chooser.setFileSelectionMode(mode);
       file_chooser.addActionListener(this);
+      file_chooser.setOpaque(true);
       setContentPane(file_chooser);
     }
 
@@ -725,7 +728,7 @@ private class ProblemPanel extends SwingGridPanel implements ActionListener {
    @Override public void actionPerformed(ActionEvent evt) {
       String cmd = evt.getActionCommand();
       if (cmd.equals("Option Set")) {
-	 JComboBox cbx = (JComboBox) evt.getSource();
+	 JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
 	 String nopt = (String) cbx.getSelectedItem();
 	 if (nopt == null || nopt.equals(current_optionset)) return;
 	 current_optionset = nopt;
@@ -743,7 +746,7 @@ private class ProblemPanel extends SwingGridPanel implements ActionListener {
 	 needs_update = true;
        }
       else if (cmd.equals("Java Source Version")) {
-	 JComboBox cbx = (JComboBox) evt.getSource();
+	 JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
 	 String nval = (String) cbx.getSelectedItem();
 	 String oval = option_elements.get(SOURCE_OPTION);
 	 if (nval == null || nval.equals(oval)) return;
@@ -751,7 +754,7 @@ private class ProblemPanel extends SwingGridPanel implements ActionListener {
 	 needs_update = true;
        }
       else if (cmd.equals("Java Target Version")) {
-	 JComboBox cbx = (JComboBox) evt.getSource();
+	 JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
 	 String nval = (String) cbx.getSelectedItem();
 	 String oval = option_elements.get(TARGET_OPTION);
 	 if (nval == null || nval.equals(oval)) return;
@@ -759,7 +762,7 @@ private class ProblemPanel extends SwingGridPanel implements ActionListener {
 	 needs_update = true;
        }
       else if (cmd.equals("Java Compliance Version")) {
-	 JComboBox cbx = (JComboBox) evt.getSource();
+	 JComboBox<?> cbx = (JComboBox<?>) evt.getSource();
 	 String nval = (String) cbx.getSelectedItem();
 	 String oval = option_elements.get(COMPLIANCE_OPTION);
 	 if (nval == null || nval.equals(oval)) return;
@@ -945,9 +948,11 @@ private class ProjectEditor implements ActionListener {
       for (Map.Entry<String,String> ent : option_elements.entrySet()) {
 	 String k = ent.getKey();
 	 String v = ent.getValue();
-	 String ov = start_options.get(k);
 	 if (k == null || v == null) continue;
-	 if (v.equals(ov)) continue;
+	 if (start_options != null) {
+	    String ov = start_options.get(k);
+	    if (v.equals(ov)) continue;
+	  }
 	 chng = true;
 	 xw.begin("OPTION");
 	 xw.field("NAME",k);

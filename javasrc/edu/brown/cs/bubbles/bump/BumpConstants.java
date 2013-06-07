@@ -607,6 +607,7 @@ enum BumpRunEventType {
    PROCESS_PERFORMANCE,
    PROCESS_TRIE,
    PROCESS_SWING,
+   PROCESS_TRACE,
    THREAD_ADD,
    THREAD_REMOVE,
    THREAD_CHANGE,
@@ -674,6 +675,7 @@ interface BumpLaunchConfig {
    int getRemotePort();
    boolean isWorkingCopy();
    String getContractArgs();
+   String getLogFile();
    
    BumpLaunchConfig clone(String name);
    BumpLaunchConfig save();
@@ -690,6 +692,8 @@ interface BumpLaunchConfig {
    BumpLaunchConfig setJunitKind(String kind);
 
    BumpLaunchConfig setRemoteHostPort(String host,int port);
+   
+   BumpLaunchConfig setLogFile(String name);
 
    BumpLaunchConfig setAttribute(String name,String value);
 

@@ -256,7 +256,7 @@ void handleContextMenu(MouseEvent e)
    Point p = new Point(e.getXOnScreen(),e.getYOnScreen());
    SwingUtilities.convertPointFromScreen(p,this);
    Component c = SwingUtilities.getDeepestComponentAt(this,p.x,p.y);
-   while (c != null && c != this) {
+   while (c != null) {
       if (c == crumb_bar) {
 	 convertMouseEvent(e,p,c);
 	 crumb_bar.handleContextMenu(e);
@@ -271,7 +271,7 @@ void handleContextMenu(MouseEvent e)
 	 annot_area.handleContextMenu(e);
 	 break;
        }
-      else if (c == editor_pane) {
+      else if (c == editor_pane || c == this) {
 	 convertMouseEvent(e,p,c);
 	 editor_pane.handleContextMenu(e);
 	 break;
@@ -339,6 +339,7 @@ private class HelpMouser extends MouseAdapter {
    String fnm = getDocument().getFragmentName();
    if (fnm != null) fragment_name = fnm;
    xw.field("NAME",fragment_name);
+   getDocument().outputElisions(xw);
 }
 
 

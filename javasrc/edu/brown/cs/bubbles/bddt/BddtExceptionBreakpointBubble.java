@@ -52,12 +52,12 @@ class BddtExceptionBreakpointBubble extends BudaBubble implements BddtConstants,
 /*										*/
 /********************************************************************************/
 
-private JComboBox		exception_box;
+private JComboBox<String>	exception_box;
 private JCheckBox		caught_button;
 private JCheckBox		uncaught_button;
 private JCheckBox		suspendvm_button;
 
-private static boolean use_hierarchy = false;
+private static boolean use_hierarchy = true;
 
 
 
@@ -89,7 +89,7 @@ private void setupPanel()
    pnl.beginLayout();
    pnl.addBannerLabel("Exception Breakpoint Creator");
    pnl.addSeparator();
-   exception_box = pnl.addChoice("EXCEPTION",(new Object [] { "Computing List of Exceptions ..." }),null,null);
+   exception_box = pnl.addChoice("EXCEPTION",(new String [] { "Computing List of Exceptions ..." }),null,null);
    exception_box.setEditable(true);
    caught_button = pnl.addBoolean("CAUGHT",true,null);
    uncaught_button = pnl.addBoolean("UNCAUGHT",true,null);
@@ -163,26 +163,31 @@ private class ExceptionSet implements Runnable {
 
    @Override public void run() {
       Set<String> etypes = new TreeSet<String>();
-
+   
       if (use_hierarchy) {
-	 BumpClient bc = BumpClient.getBump();
-	 Element e = bc.getTypeHierarchy(null,null,"java.lang.Throwable",true);
-	 for (Element te : IvyXml.children(e,"TYPE")) {
-	    // actually one needs to be more selective here and avoid supertypes
-	    etypes.add(IvyXml.getAttrString(te,"NAME"));
-	  }
+         BumpClient bc = BumpClient.getBump();
+         Element e = bc.getTypeHierarchy(null,null,"java.lang.Throwable",true);
+         for (Element te : IvyXml.children(e,"TYPE")) {
+            String tnm = IvyXml.getAttrString(te,"NAME");
+            if (tnm.equals("java.lang.Throwable")) {
+               for (Element ste : IvyXml.children(te,"SUBTYPE")) {
+        	  etypes.add(IvyXml.getAttrString(ste,"NAME"));
+               }
+            }
+          }
        }
       else {
-	 BumpClient bc = BumpClient.getBump();
-	 List<BumpLocation> locs = bc.findAllClasses("*Exception");
-	 if (locs != null) {
-	    for (BumpLocation bl : locs) {
-	       etypes.add(bl.getSymbolName());
-	     }
-	  }
+         // this doesn't get system classes although it should
+         BumpClient bc = BumpClient.getBump();
+         List<BumpLocation> locs = bc.findAllClasses("*Exception");
+         if (locs != null) {
+            for (BumpLocation bl : locs) {
+               etypes.add(bl.getSymbolName());
+             }
+          }
        }
-
-      DefaultComboBoxModel mdl = (DefaultComboBoxModel) exception_box.getModel();
+   
+      DefaultComboBoxModel<String> mdl = (DefaultComboBoxModel<String>) exception_box.getModel();
       mdl.removeAllElements();
       for (String s : etypes) mdl.addElement(s);
     }

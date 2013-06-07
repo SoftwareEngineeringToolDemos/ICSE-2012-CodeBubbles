@@ -116,7 +116,7 @@ private static boolean checkEditor(BaleEditorPane e)
 /*										*/
 /********************************************************************************/
 
-private int findEndPoint(Segment s,int off)
+private static int findEndPoint(Segment s,int off)
 {
    int soff1 = off;
    if (soff1 >= s.length()) soff1 = s.length()-1;
@@ -137,7 +137,10 @@ private int findEndPoint(Segment s,int off)
    return soff1;
 }
 
-private int findStartPoint(Segment s,int off)
+
+
+
+private static int findStartPoint(Segment s,int off)
 {
    if (off < 0) off = 0;
    int soff2 = off;
@@ -303,85 +306,97 @@ private class FragmentAction extends TextAction {
    @Override public void actionPerformed(ActionEvent e) {
       BaleEditorPane target = getBaleEditor(e);
       if (!checkEditor(target)) return;
+
       BaleDocument bd = target.getBaleDocument();
       // Position spos = null;
       BaleFragmentEditor bfe = null;
+      BaleEditorBubble bb = null;
 
       bd.baleWriteLock();
       try {
 	 int soff = target.getSelectionStart();
-	 BaleElement root = (BaleElement) bd.getDefaultRootElement();
-	 BaleElement be = bd.getCharacterElement(soff);
-	 while (be != null && be.getParent() != null && be.getParent() != root &&
-		   be.getBubbleType() == BaleFragmentType.NONE) {
-	    be = be.getBaleParent();
-	  }
-	 if (be == null || be == root) return;
-
-	 BaleFragmentType ftyp = be.getBubbleType();
-	 if (ftyp == BaleFragmentType.NONE) return;
-
-	 Segment s = new Segment();
-	 try {
-	    bd.getText(0,bd.getLength(),s);
-	  }
-	 catch (BadLocationException ex) {
-	    return;
-	  }
-
-	 int soff0 = be.getStartOffset();
-	 int eoff0 = be.getEndOffset();
-	 int soff1 = findEndPoint(s,soff0);
-	 // next determine where new fragment should start
-	 int soff2 = findStartPoint(s,soff1);
-	 // next determine where the new fragment should end
-	 int eoff2 = findEndPoint(s,eoff0);
-
-	 List<BaleRegion> rgns = new ArrayList<BaleRegion>();
-	 try {
-	    BaleRegion r0 = bd.createDocumentRegion(soff2,eoff2,true);
-	    rgns.add(r0);
-	    // spos = bd.createPosition(soff2);
-	  }
-	 catch (BadLocationException ex) {
-	    return;
-	  }
-
-	 BaleFactory bf = BaleFactory.getFactory();
-	 bfe =	bf.getEditorFromRegions(bd.getProjectName(),bd.getFile(),null,rgns,ftyp);
+	 bfe = findFragmentBubble(target,soff);
        }
       finally { bd.baleWriteUnlock(); }
 
-      if (bfe != null) {
-	 BaleEditorBubble bb = new BaleEditorBubble(bfe);
+      if (bfe != null && bb == null) {
+	 bb = new BaleEditorBubble(bfe);
+       }
 
+      if (bb != null) {
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(target);
 	 if (bba != null) {
 	    bba.addBubble(bb,target,null,
 			     PLACEMENT_NEW |
 			     PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
 	  }
-
-	 /*************
-	 BudaRoot broot = BudaRoot.findBudaRoot(target);
-	 Rectangle loc = BudaRoot.findBudaLocation(target);
-	 broot.add(bb,new BudaConstraint(loc.x + loc.width + BUBBLE_CREATION_NEAR_SPACE,
-					    loc.y));
-	 **************/
-	 /*************
-	 BudaBubble obbl = BudaRoot.findBudaBubble(target);
-	 BudaConstants.LinkPort port0 = new BaleLinePort(target,spos,null);
-	 BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
-	 BudaBubbleLink lnk = new BudaBubbleLink(obbl,port0,bb,port1);
-	 broot.addLink(lnk);
-	 *************/
-
 	 bb.grabFocus();
 	 BoardMetrics.noteCommand("BALE","Fragment");
        }
     }
 
 }	// end of inner class FragmentAction
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Find fragment bubbles							*/
+/*										*/
+/********************************************************************************/
+
+static BaleFragmentEditor findFragmentBubble(BaleEditorPane target,int pos)
+{
+   BaleDocument bd = target.getBaleDocument();
+   BaleFragmentEditor bfe = null;
+
+   bd.baleWriteLock();
+   try {
+      int soff = pos;
+      BaleElement root = (BaleElement) bd.getDefaultRootElement();
+      BaleElement be = bd.getCharacterElement(soff);
+      while (be != null && be.getParent() != null && be.getParent() != root &&
+		be.getBubbleType() == BaleFragmentType.NONE) {
+	 be = be.getBaleParent();
+       }
+      if (be == null || be == root) return null;
+
+      BaleFragmentType ftyp = be.getBubbleType();
+      if (ftyp == BaleFragmentType.NONE) return null;
+
+      Segment s = new Segment();
+      try {
+	 bd.getText(0,bd.getLength(),s);
+       }
+      catch (BadLocationException ex) {
+	 return null;
+       }
+
+      int soff0 = be.getStartOffset();
+      int eoff0 = be.getEndOffset();
+      int soff1 = findEndPoint(s,soff0);
+      // next determine where new fragment should start
+      int soff2 = findStartPoint(s,soff1);
+      // next determine where the new fragment should end
+      int eoff2 = findEndPoint(s,eoff0);
+
+      List<BaleRegion> rgns = new ArrayList<BaleRegion>();
+      try {
+	 BaleRegion r0 = bd.createDocumentRegion(soff2,eoff2,true);
+	 rgns.add(r0);
+	 // spos = bd.createPosition(soff2);
+       }
+      catch (BadLocationException ex) {
+	 return null;
+       }
+
+      BaleFactory bf = BaleFactory.getFactory();
+      bfe =  bf.getEditorFromRegions(bd.getProjectName(),bd.getFile(),null,rgns,ftyp);
+    }
+   finally { bd.baleWriteUnlock(); }
+
+   return bfe;
+}
 
 
 

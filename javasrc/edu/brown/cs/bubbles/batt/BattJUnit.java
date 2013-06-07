@@ -260,6 +260,7 @@ private void setupSocket(String ph)
    catch (NumberFormatException e) { }
 
    try {
+      @SuppressWarnings("resource")
       Socket s = new Socket(host,port);
       result_stream = s.getOutputStream();
     }

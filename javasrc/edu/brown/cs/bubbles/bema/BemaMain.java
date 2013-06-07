@@ -75,9 +75,9 @@ public class BemaMain implements BemaConstants
 
 public static void main(String [] args)
 {
-    BemaMain bm = new BemaMain(args);
+   BemaMain bm = new BemaMain(args);
 
-   if (System.getProperty("java.vm.vendor").startsWith("Apple")) {
+   if (System.getProperty("os.name").startsWith("Mac")) {
       try {
 	 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
        }
@@ -362,6 +362,7 @@ private void start()
 		  // need to create a class loader for this jar, then use it to load the given class and
 		  // use it to initialize things
 		  // TODO: load plugin in jar file
+		  jf.close();
 		}
 	       catch (IOException e) {
 		  BoardLog.logE("BEMA","Can't access plugin jar file " + jfn);

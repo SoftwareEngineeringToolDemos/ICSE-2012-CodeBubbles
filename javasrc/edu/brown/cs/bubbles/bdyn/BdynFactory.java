@@ -42,18 +42,18 @@ public class BdynFactory implements BdynConstants, BumpConstants
 /*										*/
 /********************************************************************************/
 
-private Map<BumpProcess,BdynProcess>    process_map;
-private BdynCallbacks                   callback_set;
+private Map<BumpProcess,BdynProcess>	process_map;
+private BdynCallbacks			callback_set;
 
-private static BdynFactory      the_factory = new BdynFactory();
+private static BdynFactory	the_factory = new BdynFactory();
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Setup Methods                                                           */
-/*                                                                              */
+/*										*/
+/*	Setup Methods								*/
+/*										*/
 /********************************************************************************/
 
 public static void setup()
@@ -65,21 +65,21 @@ public static void setup()
 public static void initialize(BudaRoot br)
 {
    BudaRoot.registerMenuButton("Bubble.Show Task Visualization",new TaskAction());
-   
+
    getFactory().callback_set.setup();
-   
-   
+
+
 }
 
 /**
- *      Return the singleton instance of the factory
+ *	Return the singleton instance of the factory
  **/
 
 public static BdynFactory getFactory()
 {
    return the_factory;
 }
-   
+
 
 
 /********************************************************************************/
@@ -93,23 +93,23 @@ private BdynFactory()
    process_map = new HashMap<BumpProcess,BdynProcess>();
    callback_set = new BdynCallbacks();
    ProcessHandler ph = new ProcessHandler();
-   BumpClient.getBump().getRunModel().addRunEventHandler(ph);   
+   BumpClient.getBump().getRunModel().addRunEventHandler(ph);
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Window methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Window methods								*/
+/*										*/
 /********************************************************************************/
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle new processes                                                    */
-/*                                                                              */
+/*										*/
+/*	Handle new processes							*/
+/*										*/
 /********************************************************************************/
 
 private void setupProcess(BumpRunEvent evt)
@@ -119,7 +119,7 @@ private void setupProcess(BumpRunEvent evt)
 }
 
 
-BdynProcess getBdynProcess(BumpProcess bp)      
+BdynProcess getBdynProcess(BumpProcess bp)
 {
    return process_map.get(bp);
 }
@@ -128,88 +128,89 @@ BdynProcess getBdynProcess(BumpProcess bp)
 
 
 private class ProcessHandler implements BumpRunEventHandler {
-   
-   @Override public void handleLaunchEvent(BumpRunEvent evt)            { }
-   
-   @Override public void handleThreadEvent(BumpRunEvent evt)            { }
-   
+
+   @Override public void handleLaunchEvent(BumpRunEvent evt)		{ }
+
+   @Override public void handleThreadEvent(BumpRunEvent evt)		{ }
+
    @Override public void handleConsoleMessage(BumpProcess p,boolean err,boolean eof,String msg)
    { }
-   
+
    @Override public synchronized void handleProcessEvent(BumpRunEvent evt) {
       BumpProcess proc = evt.getProcess();
       if (proc == null) return;
       BdynProcess bp = process_map.get(proc);
-      
+
       switch (evt.getEventType()) {
-         case PROCESS_ADD :
-            if (bp == null) setupProcess(evt);
-            break;
-         case PROCESS_REMOVE :
-            if (bp != null) {
-               process_map.remove(proc);
-               TrieNode tn = bp.getTrieRoot();
-               if (tn != null) callback_set.updateCallbacks(tn);
-             }
-            break;
-         case PROCESS_CHANGE :
-            break;
-         case PROCESS_PERFORMANCE :
-            break;
-         case PROCESS_SWING :
-            break;
-         case PROCESS_TRIE :
-            if (bp != null) { 
-               Element xml = (Element) evt.getEventData();
-               bp.handleTrieEvent(xml);
-             }
-            break;
-         case PROCESS_TRACE :
-            if (bp != null) {
-               Element xml = (Element) evt.getEventData();
-               bp.handleTraceEvent(xml);
-             }
-            break;
-         default :
-            break;
+	 case PROCESS_ADD :
+	    if (bp == null) setupProcess(evt);
+	    break;
+	 case PROCESS_REMOVE :
+	    if (bp != null) {
+	       process_map.remove(proc);
+	       TrieNode tn = bp.getTrieRoot();
+	       if (tn != null) callback_set.updateCallbacks(tn);
+	       bp.finish();
+	     }
+	    break;
+	 case PROCESS_CHANGE :
+	    break;
+	 case PROCESS_PERFORMANCE :
+	    break;
+	 case PROCESS_SWING :
+	    break;
+	 case PROCESS_TRIE :
+	    if (bp != null) {
+	       Element xml = (Element) evt.getEventData();
+	       bp.handleTrieEvent(xml);
+	     }
+	    break;
+	 case PROCESS_TRACE :
+	    if (bp != null) {
+	       Element xml = (Element) evt.getEventData();
+	       bp.handleTraceEvent(xml);
+	     }
+	    break;
+	 default :
+	    break;
        }
     }
 
-}       // end of inner class ProcessHandler
+}	// end of inner class ProcessHandler
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Button actions                                                          */
-/*                                                                              */
+/*										*/
+/*	Button actions								*/
+/*										*/
 /********************************************************************************/
 
 private static class TaskAction implements BudaConstants.ButtonListener {
-   
+
    @Override public void buttonActivated(BudaBubbleArea bba,String id,Point pt) {
       BdynTaskWindow tw = new BdynTaskWindow();
       BudaBubble bb = tw.getBubble();
       bba.addBubble(bb,null,pt,BudaConstants.PLACEMENT_LOGICAL);
-      
+
       Object proc = bba.getProperty("Bddt.process");
       if (proc != null) {
-         BumpProcess bp = (BumpProcess) proc;
-         if (bp.isRunning()) tw.setProcess(bp);
+	 BumpProcess bp = (BumpProcess) proc;
+	 if (bp.isRunning()) tw.setProcess(bp);
        }
     }
-   
-}       // end of inner class TaskAction
+
+}	// end of inner class TaskAction
 
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Methods to handle callback information                                  */
-/*                                                                              */
+/*										*/
+/*	Methods to handle callback information					*/
+/*										*/
 /********************************************************************************/
 
 BdynCallback getCallback(int id)

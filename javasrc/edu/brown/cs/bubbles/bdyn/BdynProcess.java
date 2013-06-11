@@ -98,8 +98,13 @@ TrieNode getTrieRoot()			{ return root_node; }
 double getBaseSamples() 		{ return base_samples; }
 double getTotalSamples()		{ return total_samples; }
 double getBaseTime()			{ return base_time; }
-BdynEventTrace getEventTrace()          { return event_trace; }
+BdynEventTrace getEventTrace()		{ return event_trace; }
 
+
+void finish()
+{
+   event_trace = null;
+}
 
 
 

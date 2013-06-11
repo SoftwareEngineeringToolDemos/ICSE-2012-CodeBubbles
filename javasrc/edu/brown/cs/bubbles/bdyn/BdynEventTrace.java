@@ -132,6 +132,22 @@ List<BdynEntryThread> getActiveThreads()
 BumpProcess getProcess()		{ return for_process; }
 
 
+void clear()
+{
+   pending_entries.clear();
+   output_set.clear();
+   object_tasks.clear();
+   active_threads.clear();
+   next_time = 0;
+   current_thread = null;
+   thread_map.clear();
+   cpu_time = null;
+   thread_counter = 0;
+   task_counter = 0;
+   max_delta = 1;
+}
+
+
 
 /********************************************************************************/
 /*										*/

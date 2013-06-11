@@ -49,6 +49,7 @@ import org.w3c.dom.Element;
 import javax.swing.SwingUtilities;
 import javax.swing.event.*;
 import javax.swing.text.*;
+import javax.swing.undo.*;
 
 import java.io.*;
 import java.util.*;
@@ -105,7 +106,7 @@ private static BumpClient      bump_client = null;
 
 BaleDocumentIde()
 {
-// super(new IdeContent(1024));
+   super(new IdeContent(1024));
 
    synchronized (BaleDocumentIde.class) {
       if (bump_client == null) {
@@ -965,7 +966,6 @@ BaleRegion getRegionFromEclipse(int soff,int eoff)
 /*										*/
 /*	Fixing this to handle the general case and still be fast is going	*/
 /*	to be difficult.							*/
-/*	TODO: fix it								*/
 /*										*/
 /********************************************************************************/
 
@@ -1251,6 +1251,7 @@ private class EclipseUpdater implements DocumentListener {
    those created internally to abstract document.
 
    For now, the fix is to have Burp merge all events for a common base editor
+**************************/
 
 private static class IdeContent extends GapContent {
 
@@ -1402,6 +1403,7 @@ private static class IdeContent extends GapContent {
 }	// end of inner class IdeContent
 
 
+/**********************
 ***********************/
 
 

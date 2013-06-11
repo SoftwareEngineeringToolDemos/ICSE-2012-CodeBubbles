@@ -92,6 +92,7 @@ BdynTaskWindow()
 void dispose()
 {
    BumpClient.getBump().getRunModel().removeRunEventHandler(process_handler);
+   event_trace = null;
 }
 
 

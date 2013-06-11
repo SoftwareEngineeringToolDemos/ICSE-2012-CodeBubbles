@@ -271,20 +271,20 @@ UndoableEdit getEdit()
 private void savePosition()
 {
    doc_position = null;
-//   try {
-//	doc_position = base_document.createPosition(doc_offset);
-//   }
-//   catch (BadLocationException e) { }
+     try {
+	doc_position = base_document.createPosition(doc_offset);
+     }
+     catch (BadLocationException e) { }
 }
 
 private void restorePosition()
 {
    if (doc_position == null) return;
-//   int off = doc_position.getOffset();
-//   if (off != doc_offset) {
-//	BoardLog.logD("BALE","Document position update " + off + doc_offset);
-//	doc_offset = off;
-//   }
+     int off = doc_position.getOffset();
+     if (off != doc_offset) {
+	// BoardLog.logD("BALE","Document position update " + off + doc_offset);
+	doc_offset = off;
+     }
 }
 
 

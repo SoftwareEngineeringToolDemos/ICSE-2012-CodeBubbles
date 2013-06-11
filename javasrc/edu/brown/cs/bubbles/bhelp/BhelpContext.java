@@ -111,9 +111,8 @@ void mouseMove(int x,int y) throws BhelpException
    checkMouse();
 
    Point sp = new Point(x,y);
-   SwingUtilities.convertPointToScreen(sp,buda_root);
+   convertPointToScreen(sp);
    getRobot().mouseMove(sp.x,sp.y);
-
    setMouse(x,y);
 }
 
@@ -129,11 +128,12 @@ boolean checkMouse()
    else {
       cp = pi.getLocation();
       SwingUtilities.convertPointFromScreen(cp,buda_root);
+      // BoardLog.logD("BHELP","MOUSE RESULT " + cp);
     }
 
    int diff = Math.abs(cp.x - current_mouse.x) + Math.abs(cp.y - current_mouse.y);
-   // BoardLog.logD("BHELP","TEST MOUSE " + cp + " " + current_mouse);
-   if (diff > 5) {
+   // BoardLog.logD("BHELP","TEST MOUSE " + cp + " " + current_mouse + " " + diff);
+   if (diff > 10) {
       // BoardLog.logD("BHELP","CHECK MOUSE " + cp + " " + current_mouse);
       for_demo.stopDemonstration();
     }
@@ -178,6 +178,26 @@ private Robot getRobot() throws BhelpException
    if (event_robot == null) throw new BhelpException("Event Simulator not available");
    return event_robot;
 }
+
+
+
+private void convertPointToScreen(Point pt)
+{
+   PointerInfo pi = MouseInfo.getPointerInfo();
+
+   if (pi != null) {
+      GraphicsDevice gd = pi.getDevice();
+      GraphicsConfiguration gc = gd.getDefaultConfiguration();
+      Rectangle r = gc.getBounds();
+      pt.x -= r.x;
+      pt.y -= r.y;
+    }
+
+   // BoardLog.logD("BHELP","Convert " + pt);
+   SwingUtilities.convertPointToScreen(pt,buda_root);
+   // BoardLog.logD("BHELP","Convert result " + pt);
+}
+
 
 
 /********************************************************************************/

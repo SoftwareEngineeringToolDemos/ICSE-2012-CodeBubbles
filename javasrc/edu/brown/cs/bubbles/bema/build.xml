@@ -154,6 +154,12 @@
       </java>
    </target>
 
+   <target name='testonly' depends='init'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+      </java>
+   </target>
+
    <target name='testclime' depends='compile'>
       <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
 	 <classpath refid='test.classpath' />

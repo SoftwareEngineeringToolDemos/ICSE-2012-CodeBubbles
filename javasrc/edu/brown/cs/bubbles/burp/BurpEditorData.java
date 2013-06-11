@@ -145,6 +145,11 @@ void noteSave()
 
 @Override public void undoableEditHappened(UndoableEditEvent evt)
 {
+   // replace evt.getEdit() with our own event structure that saves positions
+   // is this necessary -- if we use IdeContent, wouldn't all internal positions
+   // be fine -- then its just a matter of updating the external positions
+   // when we need to reuse an event
+
    for_history.handleNewEdit(this,evt.getEdit(),in_event,next_sig);
    next_sig = false;
 }

@@ -139,6 +139,8 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
    BumpClient.getBump().addBreakpointHandler(fdoc.getFile(),this);
    BaleFactory.getFactory().addAnnotationListener(this);
 
+   new BaleCorrector(this,BALE_PROPERTIES.getBoolean("Bale.correct.spelling"));
+   
    for (BumpProblem bp : BumpClient.getBump().getProblems(fdoc.getFile())) {
       handleProblemAdded(bp);
     }
@@ -369,11 +371,17 @@ private class HelpMouser extends MouseAdapter {
 
 @Override public void handleProblemRemoved(BumpProblem bp)
 {
-   ProblemAnnot pa = problem_annotations.get(bp);
+   ProblemAnnot pa = problem_annotations.remove(bp);
    if (pa != null) annot_area.removeAnnotation(pa);
 }
 
-
+@Override public void handleClearProblems()
+{
+   for (ProblemAnnot pa : problem_annotations.values()) {
+      annot_area.removeAnnotation(pa);
+    }
+   problem_annotations.clear();
+}
 
 @Override public void handleProblemsDone()
 { }

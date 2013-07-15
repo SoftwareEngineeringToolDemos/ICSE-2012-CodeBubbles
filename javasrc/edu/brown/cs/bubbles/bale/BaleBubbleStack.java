@@ -78,11 +78,11 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 	    idx = key.lastIndexOf(".");
 	    key = key.substring(0,idx+1) + ".<INITIALIZER>";
 	    break;
-         case MAIN_PROGRAM :
-            key = bl.getSymbolName();
-            idx = key.lastIndexOf(".");
-            key = key.substring(0,idx+1) + ".<MAIN>";
-            break;
+	 case MAIN_PROGRAM :
+	    key = bl.getSymbolName();
+	    idx = key.lastIndexOf(".");
+	    key = key.substring(0,idx+1) + ".<MAIN>";
+	    break;
 	 case CLASS :
 	 case INTERFACE :
 	 case ENUM :
@@ -105,7 +105,7 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 
    if (locs.size() > 1) {
       BaleBubbleStack bs = new BaleBubbleStack(src,p,pt,near,link,keys);
-      bs.setupStack();
+      bs.setupStack(link);
       return;
     }
 
@@ -163,7 +163,7 @@ private BaleBubbleStack(Component src,Position p,Point pt,boolean near,BudaLinkS
 /*										*/
 /********************************************************************************/
 
-private void setupStack()
+private void setupStack(BudaLinkStyle link)
 {
    List<BussEntry> entries = new ArrayList<BussEntry>();
 
@@ -190,7 +190,7 @@ private void setupStack()
 	    InitializerStackEntry ie = new InitializerStackEntry(locs);
 	    entries.add(ie);
 	    break;
-         case MAIN_PROGRAM :
+	 case MAIN_PROGRAM :
 	    MainProgramStackEntry me = new MainProgramStackEntry(locs);
 	    entries.add(me);
 	    break;
@@ -203,7 +203,7 @@ private void setupStack()
 	    entries.add(te);
 	    break;
 	 default :
-	    createBubble(source_bubble,source_position,source_point,false,loc0,true,BudaLinkStyle.STYLE_SOLID);
+	    createBubble(source_bubble,source_position,source_point,false,loc0,true,link);
 	    break;
        }
     }
@@ -217,6 +217,7 @@ private void setupStack()
    if (entries.size() == 0) return;
    BussFactory bussf = BussFactory.getFactory();
    BussBubble bb = bussf.createBubbleStack(entries, contentwidth + title_width);
+   bb.setLinkStyle(link_style);
 
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_bubble);
    if (bba == null) return;
@@ -391,27 +392,27 @@ private class InitializerStackEntry extends GenericStackEntry {
 
 
 private class MainProgramStackEntry extends GenericStackEntry {
-   
+
    private String class_name;
-   
+
    MainProgramStackEntry(List<BumpLocation> locs) {
       super(locs);
       String nm = def_location.getSymbolName();
       int idx = nm.lastIndexOf(".");
       class_name = nm.substring(0,idx);
     }
-   
+
    @Override public String getEntryName() {
       return class_name.replace('$','.') + ".<MAIN>";
     }
-   
+
    @Override protected BaleFragmentEditor createFullFragment() {
       BaleFragmentEditor ed = BaleFactory.getFactory().createStaticsFragmentEditor(
-            def_location.getSymbolProject(),class_name,def_location.getFile());
+	    def_location.getSymbolProject(),class_name,def_location.getFile());
       ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
       return ed;
     }
-   
+
 }	// end of inner class MainProgramStackEntry
 
 
@@ -447,7 +448,7 @@ private class TypeStackEntry extends GenericStackEntry {
 /*										*/
 /********************************************************************************/
 /**************** now done in BussStackBox
- * 
+ *
 private static class EditorBubbleCallback implements BubbleViewCallback {
 
    private static final double DISTANCE_LIMIT = 100;

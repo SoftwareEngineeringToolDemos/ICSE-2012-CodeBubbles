@@ -230,7 +230,15 @@ interface BumpFix {
  **/
    String getParameter(String id);
 
+/**
+ *	Return the edits associated with the fix.
+ **/
    Element getEdits();
+
+/**
+ *	Return the relevance of this fix
+ **/
+   int getRelevance();
 
 }
 
@@ -246,6 +254,7 @@ interface BumpProblemHandler extends EventListener {
    void handleProblemAdded(BumpProblem bp);
    void handleProblemRemoved(BumpProblem bp);
    void handleProblemsDone();
+   void handleClearProblems();
 
 }	// end of inner interface BumpProblemHandler
 
@@ -260,12 +269,12 @@ String [] FIX_PARAMETERS = new String [] {
 };
 
 
-interface BumpContractType { 
+interface BumpContractType {
 
    boolean useContractsForJava();
    boolean useJunit();
    boolean enableAssertions();
-   
+
 }
 
 
@@ -565,7 +574,7 @@ enum BumpThreadStateDetail {
    CLIENT_REQUEST,
    EVALUATION,
    EVALUATION_IMPLICIT,
-   STEP_END, 
+   STEP_END,
    STEP_INTO,
    STEP_OVER,
    STEP_RETURN,
@@ -676,7 +685,7 @@ interface BumpLaunchConfig {
    boolean isWorkingCopy();
    String getContractArgs();
    String getLogFile();
-   
+
    BumpLaunchConfig clone(String name);
    BumpLaunchConfig save();
    void delete();
@@ -692,7 +701,7 @@ interface BumpLaunchConfig {
    BumpLaunchConfig setJunitKind(String kind);
 
    BumpLaunchConfig setRemoteHostPort(String host,int port);
-   
+
    BumpLaunchConfig setLogFile(String name);
 
    BumpLaunchConfig setAttribute(String name,String value);

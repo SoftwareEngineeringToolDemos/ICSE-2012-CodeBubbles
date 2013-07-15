@@ -268,6 +268,8 @@ static void updateVersionFile()
 
 private static Element getVersionXml(InputStream ins) throws IOException
 {
+   if (ins == null) return null;
+   
    try {
       DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
       dbf.setValidating(false);

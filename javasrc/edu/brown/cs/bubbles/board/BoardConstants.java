@@ -85,6 +85,7 @@ enum BoardLanguage {
  **/
 
 String BOARD_PROP_BASE = System.getProperty("user.home") + File.separator + ".bubbles";
+String BOARD_SUDS_PROP_BASE = System.getProperty("user.home") + File.separator + ".suds";
 String BOARD_PYTHON_PROP_BASE = System.getProperty("user.home") + File.separator + ".pybles";
 
 
@@ -376,7 +377,7 @@ String [] BOARD_RESOURCE_PROPS =  new String [] {
    "Board.x86.props", "Bddt.props", "Bcon.props", "Bueno.props", "Bvcr.props",
    "Batt.props", "Bedu.props", "Bnote.props", "Bbook.props", "Buda.python.props",
    "Bandaid.props","Barr.props","Bass.props","Bdoc.java.props","Bdoc.python.props",
-   "Bhelp.props",
+   "Bhelp.props", "Bwiz.props"
 };
 
 
@@ -507,7 +508,7 @@ int	BOARD_CORE_POOL_SIZE = 2;
 /**
  *	Maximum number of threads to allow in the pool
  **/
-int	BOARD_MAX_POOL_SIZE = 8;
+int	BOARD_MAX_POOL_SIZE = 12;
 
 
 /**
@@ -567,7 +568,11 @@ String BOARD_PROP_DEFAULT_METRICS = "Board.metrics.default";
 
 String BOARD_METRIC_PROP_USERID = "edu.brown.cs.bubbles.metrics.UserId";
 
-
+/**
+ *	Property to auto generate user id
+ **/
+String BOARD_METRIC_PROP_AUTOID = "edu.brown.cs.bubbles.metrics.autoid";
+	
 /**
  *	Property indicating we can save screen dumps for metrics
  **/

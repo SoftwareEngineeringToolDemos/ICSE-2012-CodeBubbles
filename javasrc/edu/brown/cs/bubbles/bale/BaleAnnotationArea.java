@@ -228,7 +228,12 @@ void removeAll(BalePosition start,BalePosition end)
 	    int ht = ic.getIconHeight();
 	    int x = bnd.x + bnd.width/2 - wid/2;
 	    int y = (y0 + y1)/2 - ht/2;
-	    ic.paintIcon(this,g,x,y);
+	    try {
+	       ic.paintIcon(this,g,x,y);
+	     }
+	    catch (Throwable t) {
+	       BoardLog.logE("BALE","Problem drawing annotation " + an.getToolTip(),t);
+	     }
 	  }
        }
     }
@@ -271,7 +276,7 @@ private Map<Integer,Collection<BaleAnnotation>> setupAnnotationMap()
    if (line_data == null) recheckLines();
 
    synchronized (annot_set) {
-      if (annot_map == null) {
+      if (annot_map == null && line_data != null) {
 	 annot_map = new HashMap<Integer,Collection<BaleAnnotation>>();
 
 	 for (BaleAnnotation an : annot_set) {

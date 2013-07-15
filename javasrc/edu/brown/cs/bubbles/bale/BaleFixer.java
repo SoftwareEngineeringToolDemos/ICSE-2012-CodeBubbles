@@ -44,7 +44,8 @@ import java.util.*;
 import java.io.File;
 
 
-class BaleFixer extends AbstractAction implements BaleConstants, BumpConstants
+class BaleFixer extends AbstractAction implements BaleConstants, BumpConstants,
+        Comparable<BaleFixer>
 {
 
 
@@ -59,6 +60,7 @@ interface Fixup {
 
    void perform(ActionEvent evt);
    String getLabel();
+   double getRelevance();
 
 }
 
@@ -150,6 +152,18 @@ int getStartPosition()			{ return for_problem.getStart(); }
 int getEndPosition()			{ return for_problem.getEnd(); }
 File getFile()				{ return for_problem.getFile(); }
 
+double getRelevance()                   { return using_code.getRelevance(); }
+
+@Override public int compareTo(BaleFixer bf) 
+{
+   double v = bf.getRelevance() - getRelevance();
+   if (v < 0) return -1;
+   if (v > 0) return 1;
+   return toString().compareTo(bf.toString());
+}
+
+
+
 @Override public String toString()
 {
    return using_code.getLabel();
@@ -167,7 +181,7 @@ File getFile()				{ return for_problem.getFile(); }
 @Override public void actionPerformed(ActionEvent evt)
 {
    BoardLog.logD("BALE","DOING QUICK FIX " + getValue(Action.NAME));
-   
+
    if (using_code != null) {
       using_code.perform(evt);
    }
@@ -254,6 +268,8 @@ private static class NewMethodFixup implements Fixup {
 				      c,pos,true,true);
     }
 
+   @Override public double getRelevance()               { return 50; }
+   
 }
 
 
@@ -280,24 +296,29 @@ private static class EditBasedFixup implements Fixup {
       File file = for_fix.getFile();
       BaleFileOverview bfo = BaleFactory.getFactory().getFileOverview(proj,file);
       BaleDocumentIde bd = (BaleDocumentIde) bfo;
-      
+
       BurpHistory bh = null;
       BaleEditorPane htxt = null;
       if (evt.getSource() instanceof BaleEditorPane) {
-         bh = BurpHistory.getHistory();
-         htxt = (BaleEditorPane) evt.getSource();
-         bh.beginEditAction(htxt);
+	 bh = BurpHistory.getHistory();
+	 htxt = (BaleEditorPane) evt.getSource();
+	 bh.beginEditAction(htxt);
        }
-      
+
       try {
-         BaleApplyEdits app = new BaleApplyEdits(bd);
-         app.applyEdits(edit_fix.getEdits());
+	 BaleApplyEdits app = new BaleApplyEdits(bd);
+	 app.applyEdits(edit_fix.getEdits());
        }
       finally {
-         if (bh != null) bh.endEditAction(htxt);
+	 if (bh != null) bh.endEditAction(htxt);
        }
     }
 
+   @Override public double getRelevance() {
+      double v = edit_fix.getRelevance();
+      v -= BaleApplyEdits.getEditSize(edit_fix.getEdits())/5.0;
+      return v;
+    }
 }	// end of inner class EditBasedFixup
 
 

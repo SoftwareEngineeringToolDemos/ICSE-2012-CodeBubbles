@@ -6,4 +6,31 @@
 <entry key="Bass.font.size">10</entry>
 <entry key="Bass.font">Monospaced/0/10</entry>
 <entry key="Bass.click.count">1</entry>
+<entry key="Bass.delete.package">false</entry>
+<entry key="Bass.max.leaf.for.expand.all">32</entry>
+<entry key="Bass.max.leaf.for.auto.expand">128</entry>
+<entry key="Bass.keystrokes.for.auto.expand">3</entry>
+<entry key="Bass.panel.top.color">96ffffff</entry>
+<entry key="Bass.panel.bottom.color">968080ff</entry>
+<entry key="Bass.panel.select.background">ffb8cfe5</entry>
 </properties>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

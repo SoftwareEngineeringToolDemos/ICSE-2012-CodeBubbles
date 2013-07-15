@@ -56,7 +56,7 @@
 <entry key="ConstId.parent">Bale</entry>
 <entry key="Number.parent">Bale</entry>
 <entry key="Literal.parent">Bale</entry>
-<entry key="Literal.foreground">#2a00ff</entry>
+<entry key="Literal.foreground">#004040</entry>
 <entry key="Space.parent">Bale</entry>
 <entry key="Indent.parent">Bale</entry>
 <entry key="EOL.parent">Bale</entry>
@@ -87,6 +87,7 @@
 <entry key="visualization.gradient.direction">horizontal</entry>
 <entry key="Bale.editor.do.gradient">true</entry>
 <entry key="Bale.comment.wrapping">false</entry>
+<entry key="Bale.string.wrapping">false</entry>
 <entry key="Bale.autocomplete.delay">0</entry>
 <entry key="Bale.autocomplete.nocase">false</entry>
 <entry key="Bale.elide.delay">250</entry>
@@ -105,4 +106,7 @@
 <entry key="Bale.indent.rbrace">0</entry>
 <entry key="Bale.indent.innerclass">false</entry>
 <entry key="Bale.autoclose">true</entry>
+<entry key="Bale.correct.spelling">false</entry>
+<entry key="Bale.correct.spelling.edits">2</entry>
+<entry key="Bale.correct.spelling.user">5</entry>
 </properties>

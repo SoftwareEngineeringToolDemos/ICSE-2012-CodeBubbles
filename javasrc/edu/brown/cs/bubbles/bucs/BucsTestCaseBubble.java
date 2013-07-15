@@ -516,7 +516,7 @@ private void checkStatus()
        }
     }
 
-   search_button.setEnabled(sts);
+   if (search_button != null) search_button.setEnabled(sts);
 }
 
 

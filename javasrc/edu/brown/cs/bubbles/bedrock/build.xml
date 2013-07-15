@@ -23,11 +23,15 @@
 	 <pathelement location='${IVYBIN}' />
       </path>
    </target>
+   <available file='/pro/java/linux/jdk1.6/jre/lib/rt.jar' type='file' property='j6'
+       value='/pro/java/linux/jdk1.6/jre/lib/rt.jar' />
+   <available file='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Classes/classes.jar'
+	type='file' property = 'j6' value='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Classes/classes.jar' />
 
    <target name='compile' depends='init'>
       <javac srcdir='.' destdir='${BUBBLES}/java' debug='on' deprecation='on'
 		includeantruntime='false' target='1.6' source='1.6'
-		bootclasspath='/pro/java/linux/jdk1.6/jre/lib/rt.jar'>
+		bootclasspath='${j6}'>
 	 <classpath refid='bubbles.classpath' />
       </javac>
    </target>
@@ -73,7 +77,7 @@
 
    <target name='eduplugin' depends='plugin' if='ivy.present'>
       <copy file='bedrock.jar'
-		tofile='/research/people/spr/suds/eclipse-cs15/eclipse/plugins/edu.brown.cs.bubbles.bedrock_1.0.0.jar' />
+		tofile='/research/people/spr/suds/eclipse/plugins/edu.brown.cs.bubbles.bedrock_1.0.0.jar' />
    </target>
 
 </project>

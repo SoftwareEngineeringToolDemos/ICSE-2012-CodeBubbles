@@ -52,6 +52,7 @@ public class BuenoFactory implements BuenoConstants
 private SwingEventListenerList<BuenoInserter> insertion_handlers;
 private Map<BuenoMethod,BuenoCreator> creation_map;
 private BuenoCreator		cur_creator;
+private BuenoMethodCreatorInstance method_creator;
 
 
 private static BuenoFactory	the_factory = null;
@@ -152,6 +153,36 @@ public BuenoLocation createLocation(String proj,String pkgcls,String insert,bool
 {
    return new BuenoLocationStatic(proj,pkgcls,insert,after);
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Dialog setup methods							*/
+/*										*/
+/********************************************************************************/
+
+public void setMethodDialog(BuenoMethodCreatorInstance bmc)
+{
+   method_creator = bmc;
+}
+
+
+
+public void createMethodDialog(BudaBubble src,Point loc,BuenoProperties known,
+				  BuenoLocation insert,String lbl,
+				  BuenoBubbleCreator newer)
+{
+   if (method_creator != null) {
+      method_creator.showMethodDialogBubble(src,loc,known,insert,lbl,newer);
+    }
+   else {
+      BuenoMethodDialog md = new BuenoMethodDialog(src,loc,known,insert,newer);
+      if (lbl != null) md.setLabel(lbl);
+      md.showDialog();
+    }
+}
+
 
 
 

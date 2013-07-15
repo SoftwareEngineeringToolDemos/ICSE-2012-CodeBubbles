@@ -545,7 +545,93 @@ public Element revertAll()
 
 /********************************************************************************/
 /*										*/
-/*	Remote file methods							*/
+/*	Private buffer management						*/
+/*										*/
+/********************************************************************************/
+
+/**
+ *	Create a private buffer
+ **/
+
+public String createPrivateBuffer(String proj,String file,String bid)
+{
+   waitForIDE();
+
+   String q = "FILE='" + file + "'";
+   if (bid != null) q += " PID='" + bid + "'";
+
+   Element xml = getXmlReply("CREATEPRIVATE",proj,q,null,0);
+   if (IvyXml.isElement(xml,"RESULT")) return IvyXml.getText(xml);
+   
+   return null;
+}
+
+
+/**
+ *	Remove a private buffer
+ **/
+
+public void removePrivateBuffer(String proj,String file,String bid)
+{
+   waitForIDE();
+
+   String q = "FILE='" + file + "' PID='" + bid + "'";
+
+   sendMessage("REMOVEPRIVATE",proj,q,null);
+
+   problem_set.clearPrivateProblems(bid);
+}
+
+
+
+/**
+ *	Begin a private edit
+ **/
+
+public void beginPrivateEdit(String file,String pid)
+{
+      problem_set.clearPrivateProblems(pid);
+}
+
+
+
+/**
+ *	Do a private edit
+ **/
+
+public void editPrivateFile(String pname,File file,String privid,int start,int end,String txt)
+{
+   waitForIDE();
+
+   String flds = "FILE='" + file.getPath() + "'";
+   flds += " PID='" + privid + "'";
+   flds += " NEWLINE='true'";
+   String edit = "<EDIT START='" + start + "' END='" + end + "'>";
+   if (txt != null) {
+      // TODO: if txt contains ]]> we have to split it
+      edit += "<![CDATA[" + txt + "]]>";
+    }
+   edit += "</EDIT>";
+
+   sendMessage("PRIVATEEDIT",pname,flds,edit);
+}
+
+
+
+/**
+ *	Get error messages associated with a private buffer
+ **/
+
+public Collection<BumpProblem> getPrivateProblems(String file,String pid)
+{
+   return problem_set.getPrivateErrors(pid);
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Remote f   ile methods							*/
 /*										*/
 /********************************************************************************/
 
@@ -1156,9 +1242,12 @@ public List<BumpLocation> findPackages(String proj,String nm)
    waitForIDE();
 
    StringWriter sw = new StringWriter();
-   sw.write("PATTERN='");
-   IvyXml.outputXmlString(nm,sw);
-   sw.write("' DEFS='true' REFS='true'");
+   if (nm != null) {
+      sw.write("PATTERN='");
+      IvyXml.outputXmlString(nm,sw);
+      sw.write("' ");
+    }
+   sw.write("DEFS='true' REFS='true'");
    sw.write(" FOR='PACKAGE'");
 
    Element xml = getXmlReply("PATTERNSEARCH",proj,sw.toString(),null,0);
@@ -1230,7 +1319,7 @@ public List<BumpLocation> findAllClasses(String nm)
 
 /**
  *	Return a list of BumpLocations containing the definitions of all annotations
- *	matching the given pattern.
+ *	matching the given pattern.								 JI
  *	@param proj the project to search in, null implies all projects
  *	@param nm the search pattern
  *	@param def if true, include definitions in the output set
@@ -1732,6 +1821,21 @@ public boolean renameResource(String proj,File file,String newname)
 
 
 
+public boolean delete(String proj,String what,String path)
+{
+   waitForIDE();
+
+   saveAll();
+
+   String rq = "WHAT='" + what + "' PATH='" + path + "'";
+   Element xml = getXmlReply("DELETE",proj,rq,null,0);
+   if (!IvyXml.isElement(xml,"RESULT")) return false;
+
+   compile(true,true,true);
+
+   return true;
+}
+
 
 /********************************************************************************/
 /*										*/
@@ -2224,7 +2328,7 @@ Element getNewRunConfiguration(String name,String clone,BumpLaunchConfigType typ
 Element editRunConfiguration(String id,String prop,String val)
 {
    if (val == null) val = "";
-   
+
    String q = "LAUNCH='" + id + "' PROP='" + prop + "' VALUE='" + IvyXml.xmlSanitize(val) + "'";
    Element e = getXmlReply("EDITRUNCONFIG",null,q,null,0);
    return e;
@@ -2994,6 +3098,12 @@ protected class IDEHandler implements MintHandler {
 					new File(IvyXml.getAttrString(e,"FILE")),
 					-1,
 					IvyXml.getChild(e,"MESSAGES"));
+	  }
+	 else if (cmd.equals("PRIVATEERROR")) {
+	    problem_set.handlePrivateErrors(IvyXml.getAttrString(e,"PROJECT"),
+		  new File(IvyXml.getAttrString(e,"FILE")),
+		  IvyXml.getAttrString(e,"ID"),
+		  IvyXml.getChild(e,"MESSAGES"));
 	  }
 	 else if (cmd.equals("EDIT")) {
 	    BoardLog.logD("BUMP","REMOTE EDIT: " + IvyXml.convertXmlToString(e));

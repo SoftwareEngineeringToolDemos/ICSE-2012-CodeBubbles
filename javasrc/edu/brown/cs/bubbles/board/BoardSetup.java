@@ -381,6 +381,7 @@ public void setCourseName(String nm)
 {
    course_name = null;
    course_assignment = null;
+   auto_update = false;
 
    if (nm != null && nm.length() > 0) {
       int idx = nm.indexOf("@");
@@ -442,6 +443,16 @@ public void setCreateWorkspace(String ws)
 public String getDefaultWorkspace()
 {
    return default_workspace;
+}
+
+
+/**
+ *	Set flat to ask about a workspace
+ **/
+public void setAskWorkspace(boolean fg)
+{
+   ask_workspace = fg;
+   if (!fg) has_changed = false;
 }
 
 
@@ -683,25 +694,34 @@ public String getLibraryPath(String item)
  *	Return the directory for the current course
  **/
 
-public File getClassDirectory()
+public File getCourseDirectory()
 {
    if (course_name == null) return null;
 
    File f = null;
 
-   if (install_jar && jar_directory != null) {
+   String suds = System.getProperty("edu.brown.cs.bubbles.suds");
+   if (suds == null) suds = System.getenv("BUBBLES_SUDS");
+   if (suds != null) {
+      f = new File(suds);
+      if (!f.exists() || !f.isDirectory()) f = null;
+    }
+
+   if (f == null && install_jar && jar_directory != null) {
       f = new File(jar_directory);
     }
    else if (install_path != null) {
       f = new File(install_path);
+      f = new File(f,"suds");
     }
    else return null;
 
-   f = new File(f,course_name);
-
+   File f1 = f.getParentFile();
+   File f2 = new File(f1,course_name);
+   if (!f2.exists()) f2 = new File(f,course_name);
    if (!f.exists()) return null;
 
-   return f;
+   return f2;
 }
 
 
@@ -741,7 +761,7 @@ private File getLibraryDirectory()
 
    if (!f.exists()) f.mkdir();
    if (!f.exists() || !f.isDirectory()) {
-      File f1 = new File(BOARD_PROP_BASE);
+      File f1 = BoardProperties.getPropertyDirectory();
       File f2 = new File(f1,BOARD_INSTALL_LIBRARY);
       f2.mkdirs();
       if (f2.exists() && f2.isDirectory()) f = f2;
@@ -771,6 +791,7 @@ public void setLanguage(BoardLanguage bl)
 	    BoardProperties.setPropertyDirectory(BOARD_PYTHON_PROP_BASE);
 	    break;
 	 case JAVA :
+	    if (course_name != null) BoardProperties.setPropertyDirectory(BOARD_SUDS_PROP_BASE);
 	    BoardProperties.setPropertyDirectory(BOARD_PROP_BASE);
 	    break;
        }
@@ -1041,13 +1062,16 @@ public boolean doSetup()
    if (!must_restart) BoardLog.setup();
 
    if (install_jar) {
-      setSplashTask("Checking libraries");
-      String cp = System.getProperty("java.class.path");
-      for (String s : BOARD_LIBRARY_FILES) {
-	 if (!s.endsWith(".jar")) continue;
-	 s = s.replace('/',File.separatorChar);
-	 if (!cp.contains(s)) must_restart = true;
-      }
+      URL url = getClass().getClassLoader().getResource(BOARD_RESOURCE_PLUGIN);
+      if (url != null) {
+	 setSplashTask("Checking libraries");
+	 String cp = System.getProperty("java.class.path");
+	 for (String s : BOARD_LIBRARY_FILES) {
+	    if (!s.endsWith(".jar")) continue;
+	    s = s.replace('/',File.separatorChar);
+	    if (!cp.contains(s)) must_restart = true;
+	 }
+       }
     }
 
    if (must_restart) {
@@ -1139,7 +1163,7 @@ private void uninstall()
       pin.delete();
     }
 
-   File bdir = new File(BOARD_PROP_BASE);
+   File bdir = BoardProperties.getPropertyDirectory();
    if (bdir.exists()) deleteAll(bdir);
 }
 
@@ -1361,7 +1385,6 @@ private boolean checkInstall()
    if (!install_jar) {
       checkLibResources();
     }
-
 
    return true;
 }
@@ -1765,7 +1788,7 @@ private boolean checkDates()
    if (install_jar) {
       try {
 	 URL u = getClass().getClassLoader().getResource(BOARD_RESOURCE_PLUGIN);
-	 if (u == null) return false;
+	 if (u == null) return true;
 	 URLConnection uc = u.openConnection();
 	 dlm = uc.getLastModified();
 	 // TODO: this is the overall jar file, not the bedrock jar file
@@ -1843,6 +1866,7 @@ private void updatePlugin()
       InputStream ins = null;
       if (install_jar) {
 	 ins = getClass().getClassLoader().getResourceAsStream(BOARD_RESOURCE_PLUGIN);
+	 if (ins == null) return;
        }
       else {
 	 File ind = new File(install_path);
@@ -2002,7 +2026,7 @@ private void restartBubbles()
 
 private boolean checkDefaultInstallation()
 {
-   boolean firsttime = (system_properties.size() == 0);
+   boolean firsttime = (jar_directory == null && install_path == null);
    if (!firsttime) return false;
 
    boolean jarok = true;
@@ -2014,33 +2038,56 @@ private boolean checkDefaultInstallation()
    catch (IOException e) {
       jarok = false;
     }
-   if (!jarok) return firsttime;
-
-   URL url = getClass().getClassLoader().getResource(BOARD_RESOURCE_PLUGIN);
-   String file = url.toString();
-   if (file.startsWith("jar:file:/")) file = file.substring(9);
-   if (file.length() >= 3 && file.charAt(0) == '/' &&
-	  Character.isLetter(file.charAt(1)) && file.charAt(2) == ':' &&
-	  File.separatorChar == '\\')
-      file = file.substring(1);
-   int idx = file.lastIndexOf('!');
-   if (idx >= 0) file = file.substring(0,idx);
-   if (File.separatorChar != '/') file = file.replace('/',File.separatorChar);
-   file = file.replace("%20"," ");
-   File f = new File(file);
-   if (!f.exists()) return firsttime;
-
+      
+   File f = null;
+   
+   if (jarok) {
+      URL url = getClass().getClassLoader().getResource(BOARD_RESOURCE_PLUGIN);
+      String file = url.toString();
+      if (file.startsWith("jar:file:/")) file = file.substring(9);
+      if (file.length() >= 3 && file.charAt(0) == '/' &&
+	       Character.isLetter(file.charAt(1)) && file.charAt(2) == ':' &&
+	       File.separatorChar == '\\')
+	 file = file.substring(1);
+      int idx = file.lastIndexOf('!');
+      if (idx >= 0) file = file.substring(0,idx);
+      if (File.separatorChar != '/') file = file.replace('/',File.separatorChar);
+      file = file.replace("%20"," ");
+      f = new File(file);
+      if (!f.exists()) return firsttime;
+    }
+   else {
+      String pth = System.getProperty("edu.brown.cs.bubbles.jarpath");
+      if (pth != null) {
+	 f = new File(pth);
+	 try {
+	    f = f.getCanonicalFile();
+	  }
+	 catch (IOException e) { }
+	 if (!f.exists()) f = null;
+       }
+    }
+   
+   if (f == null) return firsttime;
+   
    jar_file = f.getPath();
    jar_directory = f.getParent();
    install_jar = true;
 
    File fe = new File(jar_directory,"eclipse");
+   File fe1 = null;
+   if (f.getParentFile() != null) fe1 = new File(f.getParentFile().getParentFile(),"eclipse");
    if (checkEclipseDirectory(fe)) {
-      eclipse_directory = f.getPath();
+      eclipse_directory = fe.getPath();
       firsttime = false;
     }
-   has_changed = true;
-   ask_workspace = true;
+   else if (fe1 !=  null && checkEclipseDirectory(fe1)) {
+      eclipse_directory = fe1.getPath();
+      firsttime = false;
+    }
+
+   // has_changed = true;
+   // ask_workspace = true;
 
    return firsttime;
 }

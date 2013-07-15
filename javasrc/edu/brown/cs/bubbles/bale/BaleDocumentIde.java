@@ -49,7 +49,7 @@ import org.w3c.dom.Element;
 import javax.swing.SwingUtilities;
 import javax.swing.event.*;
 import javax.swing.text.*;
-import javax.swing.undo.*;
+// import javax.swing.undo.*;
 
 import java.io.*;
 import java.util.*;
@@ -106,7 +106,7 @@ private static BumpClient      bump_client = null;
 
 BaleDocumentIde()
 {
-   super(new IdeContent(1024));
+  // super(new IdeContent(1024));
 
    synchronized (BaleDocumentIde.class) {
       if (bump_client == null) {
@@ -528,11 +528,11 @@ private void fixupElision()
 
 @Override public void handleElisionData(File f,int id,Element d)
 {
-   BoardLog.logD("BALE","ELISION ID = " + id + " " + getEditCounter() + " " + IvyXml.convertXmlToString(d));
-
    if (!f.equals(file_name)) return;
 
    if (id != getEditCounter()) return;
+   
+   BoardLog.logD("BALE","ELISION ID = " + id + " " + getEditCounter() + " " + IvyXml.convertXmlToString(d));
 
    List<BaleAstNode> nodes = new ArrayList<BaleAstNode>();
    for (Element e : IvyXml.children(d,"ELIDE")) {
@@ -851,6 +851,19 @@ private class RemoteEdit implements Runnable {
        }
     }
 }
+
+
+@Override public void handleClearProblems()
+{
+   List<BumpProblem> probl;
+   synchronized (problem_set) {
+      probl = new ArrayList<BumpProblem>(problem_set);
+    }
+   for (BumpProblem bp : probl) {
+      handleProblemRemoved(bp);
+    }
+}
+
 
 
 
@@ -1252,6 +1265,7 @@ private class EclipseUpdater implements DocumentListener {
 
    For now, the fix is to have Burp merge all events for a common base editor
 **************************/
+/*************************
 
 private static class IdeContent extends GapContent {
 

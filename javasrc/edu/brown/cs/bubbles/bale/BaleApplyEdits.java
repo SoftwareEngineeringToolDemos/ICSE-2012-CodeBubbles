@@ -113,9 +113,7 @@ private void applyLocalEdits(Element xml)
 	    for_document = bde;
 	  }
 	 Set<Element> edits = new TreeSet<Element>(new EditSorter());
-	 for (Element ed : IvyXml.children(xml,"EDIT")) {
-	    edits.add(ed);
-	  }
+	 extractEdits(xml,edits);
 	 for (Element ed : edits) {
 	    applyEdit(ed);
 	  }
@@ -126,15 +124,26 @@ private void applyLocalEdits(Element xml)
       if (typ == null) return;
       if (typ.equals("MULTI")) {
 	 Set<Element> edits = new TreeSet<Element>(new EditSorter());
-	 for (Element ed : IvyXml.children(xml,"EDIT")) {
-	    edits.add(ed);
-	  }
+	 extractEdits(xml,edits);
 	 for (Element ed : edits) {
 	    applyEdit(ed);
 	  }
        }
       else applyEdit(xml);
     }
+}
+
+
+private void extractEdits(Element xml,Set<Element> edits)
+{
+   String typ = IvyXml.getAttrString(xml,"TYPE");
+   if (typ == null) return;
+   if (typ.equals("MULTI")) {
+      for (Element ed : IvyXml.children(xml,"EDIT")) {
+	 extractEdits(ed,edits);
+       }
+    }
+   else edits.add(xml);
 }
 
 
@@ -165,6 +174,45 @@ private void applyResourceEdits(Element xml)
        }
     }
 }
+
+
+static int getEditSize(Element xml)
+{
+   int ct = 0;
+   if (xml == null) return 0;
+
+   if (IvyXml.isElement(xml,"EDITS") || IvyXml.isElement(xml,"RESULT")) {
+      for (Element c : IvyXml.children(xml)) ct += getEditSize(c);
+    }
+   else if (IvyXml.isElement(xml,"CHANGE")) {
+      String typ = IvyXml.getAttrString(xml,"TYPE");
+      if (typ == null) return 0;
+      else if (typ.equals("COMPOSITE")) {
+	 for (Element c : IvyXml.children(xml)) ct += getEditSize(c);
+       }
+      else if (typ.equals("EDIT")) {
+	 for (Element ed : IvyXml.children(xml,"EDIT")) {
+	    ct += getEditSize(ed);
+	  }
+       }
+    }
+   else if (IvyXml.isElement(xml,"EDIT")) {
+      String typ = IvyXml.getAttrString(xml,"TYPE");
+      if (typ == null) return 0;
+      if (typ.equals("MULTI")) {
+	 for (Element ed : IvyXml.children(xml,"EDIT")) {
+	    ct += getEditSize(ed);
+	  }
+       }
+      else {
+	 String txt = IvyXml.getTextElement(xml,"TEXT");
+	 if (txt != null) ct += txt.length();
+	 ct += IvyXml.getAttrInt(xml,"LENGTH");
+       }
+    }
+   return ct;
+}
+
 
 
 

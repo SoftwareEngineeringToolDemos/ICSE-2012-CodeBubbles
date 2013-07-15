@@ -70,6 +70,7 @@ private boolean 	      overwrite_mode;
 private BaleCompletionContext completion_context;
 private BaleRenameContext     rename_context;
 private BaleHighlightContext  highlight_context;
+private boolean 	      fixed_size;
 private BaleVisualizationKit  visual_kit = BaleVisualizationKit.getVisualizationKit();
 
 private Map<BaleHighlightType,HighlightData> hilite_map;
@@ -78,6 +79,8 @@ private Collection<ActiveRegion>	active_regions;
 
 private static final long serialVersionUID = 1;
 
+
+		
 
 /********************************************************************************/
 /*										*/
@@ -107,6 +110,7 @@ protected BaleEditorPane()
    overwrite_mode = false;
    completion_context = null;
    rename_context = null;
+   fixed_size = false;
 
    hilite_map = new EnumMap<BaleHighlightType,HighlightData>(BaleHighlightType.class);
 
@@ -201,6 +205,8 @@ void dispose()
 
 @Override public void increaseSize(int nline)
 {
+   if (fixed_size) return;
+
    int ht = (int)(getBaleDocument().getFontHeight() * nline + 0.5);
    Dimension r = getParent().getParent().getSize();	// size of viewport
    Dimension d = getSize();
@@ -361,6 +367,11 @@ void handleContextMenu(MouseEvent evt)
    addButton(menu,"Open Eclipse Editor",true,hdlr,null);
    addButton(menu,"Remove Bubble",true,new RemoveBubbleHandler(),null);
 
+   menu.add(new FixSizeButton());
+
+   BudaBubble bb = BudaRoot.findBudaBubble(this);
+   menu.add(bb.getFloatBubbleAction());
+
    int ct = menu.getComponentCount();
    if (ct == 0) return;
 
@@ -412,6 +423,23 @@ private class RemoveBubbleHandler implements ActionListener {
     }
 
 }	// end of inner class RemoveBubbleHandler
+
+
+
+private class FixSizeButton extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   FixSizeButton() {
+      super(fixed_size ? "Allow Auto Resizing" : "Prevent Auto Resizing");
+      putValue(SHORT_DESCRIPTION,"Set whether this bubble will resize automatically with typing");
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      fixed_size = !fixed_size;
+    }
+
+}	// end of inner class FixSizeButton
 
 
 

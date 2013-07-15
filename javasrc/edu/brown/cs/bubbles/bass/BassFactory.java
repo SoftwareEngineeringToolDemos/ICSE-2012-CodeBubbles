@@ -679,6 +679,8 @@ private static class NewPythonProjectAction extends AbstractAction {
 
 }	// end of inner class ProjectAction
 
+
+
 }	// end of class BassFactory
 
 

@@ -664,7 +664,7 @@ private class ThreadsTable extends JTable implements BudaConstants.BudaBubbleOut
 
       if (bt.getThreadState().isException()) {
 	 buf.append("<tr><td>Exception:</td><td>");
-	 buf.append(bt.getExceptionType().toString());
+	 if (bt.getExceptionType() != null)  buf.append(bt.getExceptionType().toString());
 	 buf.append("</td></tr>");
        }
       else if (dtl != null && dtl != BumpThreadStateDetail.NONE) {

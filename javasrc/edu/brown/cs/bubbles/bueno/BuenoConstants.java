@@ -25,7 +25,7 @@
 
 package edu.brown.cs.bubbles.bueno;
 
-import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+import edu.brown.cs.bubbles.buda.*;
 
 import java.awt.Point;
 import javax.swing.JPanel;
@@ -108,7 +108,7 @@ enum BuenoKey {
    KEY_PROJECT, 		// String
    KEY_RETURN_STMT,		// String
    KEY_ATTRIBUTES,		// String
-   KEY_CREATE_INIT,             // Boolean (create __init__ module)
+   KEY_CREATE_INIT,		// Boolean (create __init__ module)
 }
 
 
@@ -157,11 +157,30 @@ interface BuenoBubbleCreator {
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Interface for default creators						*/
+/*										*/
+/********************************************************************************/
+
+
+interface BuenoMethodCreatorInstance {
+
+   void showMethodDialogBubble(BudaBubble source,Point location,
+				  BuenoProperties known,
+				  BuenoLocation insert,
+				  String label,
+				  BuenoBubbleCreator newer);
+
+}	// end of interface BuenoMethodCreationInstance
+
+
+
 
 /********************************************************************************/
-/*                                                                              */
-/*      Interface for project creators                                          */
-/*                                                                              */
+/*										*/
+/*	Interface for project creators						*/
+/*										*/
 /********************************************************************************/
 
 String PROJ_PROP_NAME = "ProjectName";
@@ -172,7 +191,7 @@ String PROJ_PROP_LIBS = "ProjectLibraries";
 String PROJ_PROP_LINKS = "ProjectLinks";
 
 interface BuenoProjectProps {
-   
+
    Object get(String k);
    String getString(String k);
    File getFile(String k);
@@ -181,30 +200,30 @@ interface BuenoProjectProps {
    List<File> getLibraries();
    List<File> getSources();
    Map<String,File> getLinks();
-   
-}       // end of interface BuenoProjectProps
+
+}	// end of interface BuenoProjectProps
 
 
 interface BuenoProjectMaker {
-   
+
    String getLabel();
    boolean checkStatus(BuenoProjectProps props);
    JPanel createPanel(BuenoProjectCreationControl ctrl,BuenoProjectProps props);
    void resetPanel(BuenoProjectProps props);
    boolean setupProject(BuenoProjectCreationControl ctrl,BuenoProjectProps props);
 
-}       // end of inner interface BuenoProjectMaker
+}	// end of inner interface BuenoProjectMaker
 
 interface BuenoProjectCreationControl {
-   
+
    void checkStatus();
    BuenoProjectProps getProperties();
-   
+
    boolean generateClassPathFile();
    boolean generateProjectFile();
    String getPackageName(File f);
-   
-}       // end of innter interface BuenoProjectCreationControl
+
+}	// end of innter interface BuenoProjectCreationControl
 
 
 }	// end of interface BuenoConstants

@@ -168,6 +168,7 @@ private static class OptionsListenerNew implements ActionListener {
 
       JPanel jp = pnl.getPanel();
       Rectangle r = bba.getViewport();
+      if (r.width == 0) return;
       Dimension d = jp.getPreferredSize();
       BudaConstraint bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,r.x  + r.width - d.width,r.y);
       jp.setSize(d);

@@ -140,6 +140,9 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
 	 r = BudaRoot.findBudaLocation(last_focus);
 	 grpb = last_focus;
        }
+      else {
+	 r = bubble_area.getViewport();
+      }
       if (r == null) {
 	 if (last_placement != null) {
 	    r = BudaRoot.findBudaLocation(last_placement);

@@ -97,15 +97,7 @@ public BudaBubbleLink(BudaBubble frm,LinkPort fpt,BudaBubble to,LinkPort tpt)
 
 
 
-/**
- *	Create a solid link from one bubble to another that may or may not be
- *	rectilinear.
- **/
 
-public BudaBubbleLink(BudaBubble frm,LinkPort fpt,BudaBubble to,LinkPort tpt,boolean rect)
-{
-   this(frm,fpt,to,tpt,rect,BudaLinkStyle.STYLE_SOLID);
-}
 
 
 
@@ -177,18 +169,31 @@ public void setStyle(float w,BudaLinkStyle sty)
 
    switch (sty) {
       case STYLE_SOLID :
+      case STYLE_FLIP_SOLID :
 	 link_stroke = new BasicStroke(w,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND);
 	 break;
       case STYLE_DASHED :
+      case STYLE_FLIP_DASHED :
 	 link_stroke = new BasicStroke(w,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND,
 					  1.0f,DASH_ARRAY,0);
 	 break;
       case STYLE_REFERENCE :
+      case STYLE_FLIP_REFERENCE :
 	 link_stroke = new BasicStroke(w,BasicStroke.CAP_BUTT,BasicStroke.JOIN_ROUND);//DoubleStroke(w);
 	 finish_type = BudaPortEndType.END_TRIANGLE_FILLED;
 	 //TODO: make more different somehow...
 	 break;
       default:
+	 break;
+    }
+
+   switch (sty) {
+      case STYLE_FLIP_SOLID :
+      case STYLE_FLIP_DASHED :
+      case STYLE_FLIP_REFERENCE :
+	 flip();
+	 break;
+      default :
 	 break;
     }
 }
@@ -246,6 +251,12 @@ public void setEndTypes(BudaPortEndType st,BudaPortEndType et)
 }
 
 
+public void flip()
+{
+   setEndTypes(finish_type,start_type);
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -296,6 +307,9 @@ void handlePopupMenu(MouseEvent e)
    m.add(new StyleAction("Solid",BudaLinkStyle.STYLE_SOLID));
    m.add(new StyleAction("Dashed",BudaLinkStyle.STYLE_DASHED));
    m.add(new StyleAction("Reference",BudaLinkStyle.STYLE_REFERENCE));
+   m.add(new StyleAction("Flip Solid",BudaLinkStyle.STYLE_FLIP_SOLID));
+   m.add(new StyleAction("Flip Dashed",BudaLinkStyle.STYLE_FLIP_DASHED));
+   m.add(new StyleAction("Flip Reference",BudaLinkStyle.STYLE_FLIP_REFERENCE));
    pm.add(m);
    pm.add(new CollapseAction());
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(from_bubble);

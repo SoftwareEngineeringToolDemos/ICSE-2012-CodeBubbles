@@ -184,7 +184,7 @@ File findActualFile(File f)
 /********************************************************************************/
 
 private void initialize()
-{					
+{				
    synchronized (this) {
       all_names.clear();
       is_ready = false;
@@ -353,6 +353,7 @@ private class Searcher implements Runnable {
 
    BassFactory.reloadRepository(this);
 }
+
 
 @Override public void handleProjectOpened(String proj)
 {

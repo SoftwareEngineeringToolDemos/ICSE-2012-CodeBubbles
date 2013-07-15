@@ -1124,6 +1124,13 @@ private class StringValueNode extends ValueNode {
 
    @Override public boolean isLeaf()		{ return true; }
    @Override public boolean getAllowsChildren() { return false; }
+   @Override public Object getValue() {
+      String v = super.getValue().toString();
+      if (v != null && v.startsWith("<html>")) {
+	 v = "HTML:" + v;
+       }
+      return v;
+    }
 
 }	// end of inner class StringValueNode
 

@@ -82,6 +82,9 @@ private static boolean		initial_refresh = false;
 
 private static Set<String> ignore_projects;
 
+private static boolean		show_events = false;
+
+
 static {
    ignore_projects = new HashSet<String>();
    ignore_projects.add("RemoteSystemsTempFiles");
@@ -1023,6 +1026,9 @@ ICompilationUnit getCompilationUnit(String proj,String file) throws BedrockExcep
 
 
 
+
+
+
 private ICompilationUnit checkFilePrefix(IJavaProject ijp,String pfx,String file)
 {
    if (ijp == null) return null;
@@ -1274,7 +1280,7 @@ private void addPath(IvyXmlWriter xw,IJavaProject jp,IClasspathEntry ent,boolean
       f1 = BedrockUtil.getFileForPath(p,ip);
       if (!f1.exists()) {
 	 BedrockPlugin.logD("Path file " + p + " not found as " + f1);
-	 f1 = null;
+	 // f1 = null;
        }
     }
    File f2 = null;
@@ -1487,16 +1493,17 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
 
 @Override public void resourceChanged(IResourceChangeEvent evt)
 {
-/*********************
-   BedrockPlugin.logD("Resource Change: " + evt.getBuildKind() + " " + evt.getType());
-   IvyXmlWriter dxw = new IvyXmlWriter();
-   dxw.begin("RESOURCECHANGE");
-   IResourceDelta drd = evt.getDelta();
-   dumpDelta(0,drd);
-   BedrockUtil.outputResource(drd,dxw);
-   dxw.end();
-   BedrockPlugin.logD("Resource: " + dxw.toString());
-*************************/
+   if (show_events) {
+      BedrockPlugin.logD("Resource Change: " + evt.getBuildKind() + " " + evt.getType() + " " +
+			    evt.getSource() + " " + evt.getResource());
+      IvyXmlWriter dxw = new IvyXmlWriter();
+      dxw.begin("RESOURCECHANGE");
+      IResourceDelta drd = evt.getDelta();
+      dumpDelta(0,drd);
+      BedrockUtil.outputResource(drd,dxw);
+      dxw.end();
+      BedrockPlugin.logD("Resource: " + dxw.toString());
+    }
 
    if (evt.getType() == IResourceChangeEvent.POST_CHANGE) {
       try {
@@ -1529,17 +1536,17 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
 }
 
 
-/***********************
+
+
 private void dumpDelta(int lvl,IResourceDelta drd)
 {
    if (drd == null) return;
    BedrockPlugin.logD("Resource " + lvl + " Delta: " + drd + " " + drd.getFullPath() + " " +
-			 drd.getFlags());
+			 drd.getFlags() + " " + drd.getKind() + " " + drd.getResource());
    for (IResourceDelta xrd : drd.getAffectedChildren()) {
       dumpDelta(lvl+1,xrd);
     }
 }
-********************/
 
 
 

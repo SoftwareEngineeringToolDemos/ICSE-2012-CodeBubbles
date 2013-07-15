@@ -1386,7 +1386,7 @@ protected void noteResize(int owd,int oht)
  *	Return an action to switch this bubble between floating and fixed
  **/
 
-protected Action getFloatBubbleAction()
+public Action getFloatBubbleAction()
 {
    return new FloatAction();
 }
@@ -1399,6 +1399,7 @@ private class FloatAction extends AbstractAction {
 
    FloatAction() {
       super(isFloating() ? "Make Floating" : "Make Fixed");
+      putValue(SHORT_DESCRIPTION,"Set whether the bubble is fixed on the display or not");
     }
 
    @Override public void actionPerformed(ActionEvent evt) {

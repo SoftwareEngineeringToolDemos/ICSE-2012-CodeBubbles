@@ -53,6 +53,7 @@ class BumpProblemSet implements BumpConstants {
 private Map<String,BumpProblemImpl>	current_problems;
 private SwingEventListenerList<BumpProblemHandler> handler_set;
 private Map<BumpProblemHandler,File>	problem_handlers;
+private Map<String,Set<BumpProblemImpl>> private_problems;
 
 
 
@@ -67,6 +68,7 @@ BumpProblemSet()
    current_problems = new HashMap<String,BumpProblemImpl>();
    problem_handlers = new HashMap<BumpProblemHandler,File>();
    handler_set = new SwingEventListenerList<BumpProblemHandler>(BumpProblemHandler.class);
+   private_problems = new HashMap<String,Set<BumpProblemImpl>>();
 }
 
 
@@ -158,7 +160,7 @@ void handleErrors(String proj,File forfile,int eid,Element ep)
 	    BumpProblemImpl bp = it.next();
 	    if (found.contains(bp)) continue;
 	    if (!fileMatch(forfile,bp)) continue;
-	    // if (bp.getErrorType() == BumpErrorType.NOTICE) continue;	// notes not returned on recompile -- seems fixed
+	    // if (bp.getErrorType() == BumpErrorType.NOTICE) continue; // notes not returned on recompile -- seems fixed
 	    if (deled == null) deled = new ArrayList<BumpProblemImpl>();
 	    deled.add(bp);
 	    it.remove();
@@ -211,12 +213,57 @@ void clearProblems()
 	 for (BumpProblemImpl bp : clear) {
 	    bph.handleProblemRemoved(bp);
 	  }
+	 bph.handleClearProblems();
 	 bph.handleProblemsDone();
        }
     }
 }
 
 
+
+/********************************************************************************/
+/*										*/
+/*	Private buffer problem management					*/
+/*										*/
+/********************************************************************************/
+
+void clearPrivateProblems(String pid)
+{
+   synchronized (private_problems) {
+      private_problems.remove(pid);
+    }
+}
+
+
+void handlePrivateErrors(String proj,File forfile,String privid,Element ep)
+{
+   Set<BumpProblemImpl> probs = new HashSet<BumpProblemImpl>();
+   for (Element e : IvyXml.children(ep,"PROBLEM")) {
+      String pid = getProblemId(e);
+      BumpProblemImpl bp = new BumpProblemImpl(e,pid,-1,proj);
+      probs.add(bp);
+    }
+
+   synchronized (private_problems) {
+      private_problems.put(privid,probs);
+      private_problems.notifyAll();
+    }
+}
+
+
+Collection<BumpProblem> getPrivateErrors(String privid)
+{
+   synchronized (private_problems) {
+      if (private_problems.get(privid) == null) {
+	 try {
+	    private_problems.wait(60000);
+	  }
+	 catch (InterruptedException e) { }
+       }
+      if (private_problems.get(privid) == null) return null;
+      return new ArrayList<BumpProblem>(private_problems.get(privid));
+    }
+}
 
 /********************************************************************************/
 /*										*/

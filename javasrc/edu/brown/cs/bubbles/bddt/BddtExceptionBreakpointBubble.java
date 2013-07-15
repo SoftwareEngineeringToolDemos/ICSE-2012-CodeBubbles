@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -31,9 +31,6 @@ import edu.brown.cs.bubbles.bump.*;
 import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.swing.*;
-import edu.brown.cs.ivy.xml.*;
-
-import org.w3c.dom.*;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -56,9 +53,6 @@ private JComboBox<String>	exception_box;
 private JCheckBox		caught_button;
 private JCheckBox		uncaught_button;
 private JCheckBox		suspendvm_button;
-
-private static boolean use_hierarchy = true;
-
 
 
 
@@ -163,34 +157,28 @@ private class ExceptionSet implements Runnable {
 
    @Override public void run() {
       Set<String> etypes = new TreeSet<String>();
-   
-      if (use_hierarchy) {
-         BumpClient bc = BumpClient.getBump();
-         Element e = bc.getTypeHierarchy(null,null,"java.lang.Throwable",true);
-         for (Element te : IvyXml.children(e,"TYPE")) {
-            String tnm = IvyXml.getAttrString(te,"NAME");
-            if (tnm.equals("java.lang.Throwable")) {
-               for (Element ste : IvyXml.children(te,"SUBTYPE")) {
-        	  etypes.add(IvyXml.getAttrString(ste,"NAME"));
-               }
-            }
-          }
+
+      // this doesn't get system classes although it should
+      BumpClient bc = BumpClient.getBump();
+      List<BumpLocation> locs = bc.findAllClasses("*Exception");
+      if (locs != null) {
+	 for (BumpLocation bl : locs) {
+	    etypes.add(bl.getSymbolName());
+	  }
        }
-      else {
-         // this doesn't get system classes although it should
-         BumpClient bc = BumpClient.getBump();
-         List<BumpLocation> locs = bc.findAllClasses("*Exception");
-         if (locs != null) {
-            for (BumpLocation bl : locs) {
-               etypes.add(bl.getSymbolName());
-             }
-          }
+     locs = bc.findAllClasses("*Error");
+      if (locs != null) {
+	 for (BumpLocation bl : locs) {
+	    etypes.add(bl.getSymbolName());
+	  }
        }
-   
+
       DefaultComboBoxModel<String> mdl = (DefaultComboBoxModel<String>) exception_box.getModel();
       mdl.removeAllElements();
       for (String s : etypes) mdl.addElement(s);
     }
+
+
 
 }	// end of inner class ExceptionSet
 

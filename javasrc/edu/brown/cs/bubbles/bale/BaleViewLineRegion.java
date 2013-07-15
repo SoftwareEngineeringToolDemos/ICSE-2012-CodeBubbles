@@ -96,7 +96,7 @@ BaleViewLineRegion(BaleElement elem)
    for (int i = 0; i < n; i++) {
       if (y < (alloc.y + view_data[i].yOffset() + view_data[i].ySpan())) {
 	 if (y < alloc.y + view_data[i].yOffset()) {
-	    int j = i;
+	    int j = (i > 0 ? i-1 : i);
 	    childAllocation(j,alloc);
 	    return getView(j);
 	  }

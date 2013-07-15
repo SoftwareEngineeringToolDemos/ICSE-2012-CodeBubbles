@@ -57,7 +57,7 @@ class BaleEditorBubble extends BudaBubble implements BaleConstants, BudaConstant
 /*										*/
 /********************************************************************************/
 
-private boolean callpath_bkg = true;
+private static boolean callpath_bkg = true;
 
 private static final long serialVersionUID = 1;
 
@@ -118,6 +118,12 @@ BaleEditorBubble(BaleFragmentEditor bfe)
 	 break;
     }
    int maxbht = Math.max(maxht,BALE_MAX_INITIAL_BUBBLE_HEIGHT);
+   
+   GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+   GraphicsDevice gd = ge.getDefaultScreenDevice();
+   DisplayMode dm = gd.getDisplayMode();
+   maxwd = Math.min(maxwd, dm.getWidth()/2);
+   maxht = Math.min(maxht, dm.getHeight()*2/3);
 
    bd.baleWriteLock();
    try {

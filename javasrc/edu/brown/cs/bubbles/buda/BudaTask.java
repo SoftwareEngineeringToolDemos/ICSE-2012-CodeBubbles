@@ -204,8 +204,9 @@ BudaWorkingSetImpl loadTask(BudaBubbleArea bba,int offset)
       Element tlnk = IvyXml.getChild(lnk,"TO");
       BudaBubble tbbl = bubblemap.get(IvyXml.getAttrString(tlnk,"ID"));
       LinkPort tprt = root.createPort(tbbl,IvyXml.getChild(tlnk,"PORT"));
+      BudaLinkStyle sty = IvyXml.getAttrEnum(lnk,"STYLE",BudaLinkStyle.STYLE_SOLID);
       if (fbbl != null && tbbl != null && fprt != null && tprt != null) {
-	 BudaBubbleLink blnk = new BudaBubbleLink(fbbl,fprt,tbbl,tprt,rect);
+	 BudaBubbleLink blnk = new BudaBubbleLink(fbbl,fprt,tbbl,tprt,rect,sty);
 	 root.addLink(blnk);
        }
     }
@@ -301,6 +302,7 @@ boolean updateTask(BudaWorkingSetImpl ws)
    Element lnks = IvyXml.getChild(te,"LINKS");
    for (Element lnk : IvyXml.children(lnks,"LINK")) {
       boolean rect = IvyXml.getAttrBool(lnk,"RECT");
+      BudaLinkStyle sty = IvyXml.getAttrEnum(lnk,"STYLE",BudaLinkStyle.STYLE_SOLID);
       Element flnk = IvyXml.getChild(lnk,"FROM");
       Element tlnk = IvyXml.getChild(lnk,"TO");
       BudaBubble fbbl = bubblemap.get(IvyXml.getAttrString(flnk,"ID"));
@@ -317,7 +319,7 @@ boolean updateTask(BudaWorkingSetImpl ws)
          LinkPort fprt = br.createPort(fbbl,IvyXml.getChild(flnk,"PORT"));
          LinkPort tprt = br.createPort(tbbl,IvyXml.getChild(tlnk,"PORT"));
          if (fbbl != null && tbbl != null && fprt != null && tprt != null) {
-            BudaBubbleLink blnk = new BudaBubbleLink(fbbl,fprt,tbbl,tprt,rect);
+            BudaBubbleLink blnk = new BudaBubbleLink(fbbl,fprt,tbbl,tprt,rect,sty);
             br.addLink(blnk);   
             chng = true;
           }

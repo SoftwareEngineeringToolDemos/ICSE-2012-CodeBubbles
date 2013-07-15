@@ -102,6 +102,7 @@ enum BaleTokenState {
    IN_FORMAL_COMMENT,
    IN_COMMENT,
    IN_LINE_COMMENT, //amc6 added
+   IN_STRING,
    IN_MULTILINE_STRING,
 }
 
@@ -300,7 +301,7 @@ interface BaleElisionData {
    int getStartOffset();
    int getEndOffset();
    String getElementName();
-}       // end of inner class BaleElisionData
+}	// end of inner class BaleElisionData
 
 
 
@@ -630,6 +631,11 @@ String BALE_DOES_DOCUMENT_MOVEMENT = "Bale.caret.movement";
  *  Whether comments wrap or not.
  */
 String COMMENT_WRAPPING = "Bale.comment.wrapping"; //added by amc6
+
+/**
+ *  Whether strings wrap or not.
+ */
+String STRING_WRAPPING = "Bale.string.wrapping"; //added by amc6
 
 /**
  *	The minimum initial width for a code bubble.

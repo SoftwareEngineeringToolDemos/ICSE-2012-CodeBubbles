@@ -91,7 +91,7 @@ int getModifiers()
    Object v = get(BuenoKey.KEY_MODIFIERS);
    if (v == null) return 0;
    if (v instanceof Integer) return ((Integer) v);
-
+   
    // allow string or set here and decode
 
    return 0;

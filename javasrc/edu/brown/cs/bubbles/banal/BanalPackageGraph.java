@@ -169,10 +169,14 @@ Collection<BanalPackageNode> getAllNodes()
 {
    if (package_name == null) return true;
 
-   if (!cls.startsWith(package_name)) return false;
-
-   int ln = package_name.length();
-   if (ln == cls.length() || cls.charAt(ln) == '.') return true;
+   if (package_name.length() == 0) {
+      if (!cls.contains(".")) return true;
+    }
+   else {
+      if (!cls.startsWith(package_name)) return false;
+      int ln = package_name.length();
+      if (ln == cls.length() || cls.charAt(ln) == '.') return true;
+    }
 
    return false;
 }

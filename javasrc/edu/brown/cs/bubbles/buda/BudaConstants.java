@@ -509,7 +509,7 @@ Color	BUDA_MENU_BACKGROUND_COLOR = Color.WHITE;
 /**
  *	Color for the button panel
  **/
-Color	BUDA_BUTTON_PANEL_COLOR = new Color(205,201,201);//Color(255,182,193);
+Color	BUDA_BUTTON_PANEL_COLOR = new Color(205,201,201);
 
 
 /**
@@ -741,7 +741,10 @@ enum BudaLinkStyle {
    NONE,
    STYLE_SOLID,
    STYLE_DASHED,
-   STYLE_REFERENCE
+   STYLE_REFERENCE,
+   STYLE_FLIP_SOLID,
+   STYLE_FLIP_DASHED,
+   STYLE_FLIP_REFERENCE
 }
 
 

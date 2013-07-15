@@ -641,11 +641,16 @@ private int getDepth(String nm)
 private boolean inPackage(String nm)
 {
    if (for_package == null) return true;
-   if (!nm.startsWith(for_package)) return false;
-   if (nm.equals(for_package)) return true;
-
-   int pln = for_package.length();
-   if (nm.charAt(pln) != '.') return false;
+   if (for_package.length() == 0) {
+      if (nm.startsWith("java.") || nm.startsWith("com.") || nm.startsWith("sun.") ||
+	       nm.startsWith("edu.") || nm.startsWith("org.")) return false;
+    }
+   else {
+      if (!nm.startsWith(for_package)) return false;
+      if (nm.equals(for_package)) return true;
+      int pln = for_package.length();
+      if (nm.charAt(pln) != '.') return false;
+    }
 
    return true;
 }

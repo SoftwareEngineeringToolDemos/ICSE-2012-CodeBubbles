@@ -45,6 +45,7 @@ import java.awt.print.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 
 
@@ -73,8 +74,8 @@ private double			scale_factor;
 private MouseScaler		mouse_scaler;
 private BudaBubble		search_bubble;
 private BudaBubble		docsearch_bubble;
-private int			panel_count;
 private JPanel			button_panel;
+private List<Component>	button_panels;
 private Collection<BudaTask>	task_shelf;
 private BudaRelations		relation_data;
 private BudaChannelSet		cur_channels;
@@ -235,8 +236,8 @@ private void initialize(Element e)
    mouse_scaler = new MouseScaler();
    search_bubble = null;
    docsearch_bubble = null;
-   panel_count = 0;
    button_panel = null;
+   button_panels = new ArrayList<Component>();
    cur_channels = null;
    buda_properties = BoardProperties.getProperties("Buda");
    last_mouse = null;
@@ -630,8 +631,8 @@ private static Component getParentComponent(Component c)
 
 private void addButtonPanel()
 {
-   JPanel pnl = new ButtonPanel();
-   addPanel(pnl);
+   button_panel = new ButtonPanel();
+   addPanel(button_panel,false);
 }
 
 
@@ -667,13 +668,21 @@ public void addButtonPanelButton(JComponent c)
 
 
 
-public void addPanel(Component pnl)
+public void addPanel(Component pnl,boolean right)
 {
+   if (button_panels.isEmpty() && pnl != button_panel) {
+      addButtonPanel();
+    }
+   if (right) button_panels.add(pnl);
+   else button_panels.add(0,pnl);
+   
    SwingGridPanel root = (SwingGridPanel) getContentPane();
-
-   int ct = ++panel_count;
-
-   root.addGBComponent(pnl,ct,0,1,2,0,0);
+   int ct = 1;
+   for (Component c : button_panels) {
+      root.addGBComponent(c,ct,0,1,2,0,0);
+      ++ct;
+    }
+   
    root.invalidate();
 }
 
@@ -2510,7 +2519,6 @@ private class ButtonPanel extends JPanel
       super();
       this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
       this.add(Box.createVerticalStrut(BUDA_BUTTON_SEPARATION));
-      button_panel = this;
     }
 
    protected void paintComponent(Graphics g0) {

@@ -131,7 +131,8 @@ enum BranchNodeType {
  *	less than this, then the search box will automatically expand all tree
  *	nodes so that all leaves are visible.
  **/
-int MAX_LEAF_FOR_EXPANDALL = 32;
+int MAX_LEAF_FOR_EXPANDALL = 48;
+String MAX_LEAF_FOR_EXPANDALL_PROP = "Bass.max.leaf.for.expand.all";
 
 
 /**
@@ -141,6 +142,7 @@ int MAX_LEAF_FOR_EXPANDALL = 32;
  *	chosen both for practicality purposes and for efficiency considerations.
  **/
 int MAX_LEAF_FOR_AUTO_EXPAND = 128;
+String MAX_LEAF_FOR_AUTO_EXPAND_PROP = "Bass.max.leaf.for.auto.expand";
 
 
 /**
@@ -148,7 +150,7 @@ int MAX_LEAF_FOR_AUTO_EXPAND = 128;
  **/
 
 int KEYSTROKES_FOR_AUTO_EXPAND = 3;
-
+String KEYSTROKES_FOR_AUTO_EXPAND_PROP = "Bass.keystrokes.for.auto.expand";
 
 
 /**
@@ -163,26 +165,27 @@ int INDENT_AMOUNT = 4;
  *	Color at the top of a search bubble.
  **/
 Color	BASS_PANEL_TOP_COLOR = new Color(255,255,255,150);
+String	BASS_PANEL_TOP_COLOR_PROP = "Bass.panel.top.color";
 
 
 /**
  *	Color at the bottom of a search bubble.
  **/
 Color	BASS_PANEL_BOTTOM_COLOR = new Color(128,128,255,150);
-
+String	BASS_PANEL_BOTTOM_COLOR_PROP = "Bass.panel.bottom.color";
 
 /**
  *	Color for selection background
  **/
-Color	BASS_PANEL_SELECT_BACKGROUND = new Color(80,80,255);
+Color	BASS_PANEL_SELECT_BACKGROUND = new Color(0xb8,0xcf,0xe5);
+String	BASS_PANEL_SELECT_BACKGROUND_PROP = "Bass.panel.select.background";
 
 
 /**
  *	Font used in search bubbles.
  **/
-String BASS_TEXT_FONT_PROP = "Bass.font";
-
 Font	BASS_TEXT_FONT = BoardFont.getFont(Font.MONOSPACED,Font.PLAIN,10);
+String BASS_TEXT_FONT_PROP = "Bass.font";
 
 
 /**

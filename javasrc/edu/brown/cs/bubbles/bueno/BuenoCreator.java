@@ -522,7 +522,7 @@ protected void methodText(StringBuffer buf,BuenoProperties props)
       pbuf.append("\n{\n$(TAB)${CONTENTS}\n");
       String rstmt = props.getStringProperty(BuenoKey.KEY_RETURN_STMT);
       if (rstmt != null) {
-	 pbuf.append("\t$(TAB)$(RETURN_STMT)\n");
+	 pbuf.append("\n$(TAB)$(RETURN_STMT)\n");
        }
       pbuf.append("$(ITAB)}\n");
     }

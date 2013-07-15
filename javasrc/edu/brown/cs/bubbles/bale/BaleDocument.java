@@ -177,7 +177,8 @@ public BaleElement getCharacterElement(int pos)
 	 int idx = e.getElementIndex(pos);
 	 e = e.getElement(idx);
        }
-      return (BaleElement) e;
+      if (e instanceof BaleElement) return (BaleElement) e;
+      return null;
     }
    finally { readUnlock(); }
 }
@@ -756,7 +757,7 @@ void removeElision()
 void outputElisions(BudaXmlWriter xw)
 {
    if (element_buffer == null) return;
-   
+
    xw.begin("ELISIONS");
    BaleElement e = element_buffer.getRootElement();
    outputElisions(e,xw);
@@ -764,7 +765,7 @@ void outputElisions(BudaXmlWriter xw)
 }
 
 
-private void outputElisions(BaleElement e,BudaXmlWriter xw) 
+private void outputElisions(BaleElement e,BudaXmlWriter xw)
 {
    if (isElided(e)) {
       xw.begin("ELISION");
@@ -776,8 +777,8 @@ private void outputElisions(BaleElement e,BudaXmlWriter xw)
    else if (!e.isLeaf()) {
       int ct = e.getChildCount();
       for (int i = 0; i < ct; ++i) {
-         BaleElement e1 = e.getBaleElement(i);
-         outputElisions(e1,xw);
+	 BaleElement e1 = e.getBaleElement(i);
+	 outputElisions(e1,xw);
        }
     }
 }
@@ -787,16 +788,16 @@ void applyElisions(List<BaleElisionData> elides)
 {
    waitForAst();
    if (element_buffer == null) return;
-   
+
    baleWriteLock();
    try {
       if (getElideMode() == BaleElideMode.ELIDE_CHECK_ONCE ||
-         getElideMode() == BaleElideMode.ELIDE_CHECK_NEVER) {
-         BaleElement e = element_buffer.getRootElement();
-         int idx = matchElisions(elides,0,e);
-         if (idx < elides.size()) return;
-         applyElisions(elides,0,e);
-         setElideMode(BaleElideMode.ELIDE_CHECK_NEVER);
+	 getElideMode() == BaleElideMode.ELIDE_CHECK_NEVER) {
+	 BaleElement e = element_buffer.getRootElement();
+	 int idx = matchElisions(elides,0,e);
+	 if (idx < elides.size()) return;
+	 applyElisions(elides,0,e);
+	 setElideMode(BaleElideMode.ELIDE_CHECK_NEVER);
        }
     }
    finally {
@@ -810,15 +811,15 @@ private int matchElisions(List<BaleElisionData> elides,int idx,BaleElement e)
    if (idx >= elides.size()) return idx;
    BaleElisionData bed = elides.get(idx);
    if (e.getStartOffset() == bed.getStartOffset() &&
-         e.getEndOffset() == bed.getEndOffset() &&
-         bed.getElementName().equals(e.getName())) {
+	 e.getEndOffset() == bed.getEndOffset() &&
+	 bed.getElementName().equals(e.getName())) {
       ++idx;
     }
    else if (!e.isLeaf()) {
       int ct = e.getChildCount();
       for (int i = 0; i < ct; ++i) {
-         BaleElement e1 = e.getBaleElement(i);
-         idx = matchElisions(elides,idx,e1);
+	 BaleElement e1 = e.getBaleElement(i);
+	 idx = matchElisions(elides,idx,e1);
        }
     }
    return idx;
@@ -829,7 +830,7 @@ private int applyElisions(List<BaleElisionData> elides,int idx,BaleElement e)
 {
    BaleElisionData bed = null;
    if (idx < elides.size()) bed = elides.get(idx);
-   if (bed != null && 
+   if (bed != null &&
 	    e.getStartOffset() == bed.getStartOffset() &&
 	    e.getEndOffset() == bed.getEndOffset() &&
 	    bed.getElementName().equals(e.getName())) {
@@ -840,11 +841,11 @@ private int applyElisions(List<BaleElisionData> elides,int idx,BaleElement e)
       e.setElided(false);
       int ct = e.getChildCount();
       for (int i = 0; i < ct; ++i) {
-         BaleElement e1 = e.getBaleElement(i);
-         idx = applyElisions(elides,idx,e1);
+	 BaleElement e1 = e.getBaleElement(i);
+	 idx = applyElisions(elides,idx,e1);
        }
     }
-   return idx;  
+   return idx;
 }
 
 

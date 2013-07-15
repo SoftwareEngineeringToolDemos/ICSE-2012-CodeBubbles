@@ -159,8 +159,10 @@ private String getClassName()
 {
    StringBuffer buf = new StringBuffer();
    String pkg = insertion_point.getPackage();
-   buf.append(pkg);
-   buf.append(".");
+   if (pkg != null) {
+      buf.append(pkg);
+      buf.append(".");
+    }
    buf.append(property_set.getStringProperty(BuenoKey.KEY_NAME));
 
    return buf.toString();

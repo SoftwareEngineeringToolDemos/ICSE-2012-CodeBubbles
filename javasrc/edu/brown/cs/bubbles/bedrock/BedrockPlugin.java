@@ -681,14 +681,25 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				     getElements(xml,"FILE"),xw);
     }
    else if (cmd.equals("CREATEPRIVATE")) {
-      bedrock_editor.createPrivateBuffer(proj,
-	    IvyXml.getAttrString(xml,"BID"),
-	    IvyXml.getAttrString(xml,"FILE"));
+      bedrock_editor.createPrivateBuffer(proj,IvyXml.getAttrString(xml,"BID","*"),
+					    IvyXml.getAttrString(xml,"PID"),
+					    IvyXml.getAttrString(xml,"FILE"),xw);
+    }
+   else if (cmd.equals("PRIVATEEDIT")) {
+      bedrock_editor.handleEdit(proj,IvyXml.getAttrString(xml,"PID","*"),
+				   IvyXml.getAttrString(xml,"FILE"),
+				   null,
+				   getEditSet(xml),xw);
     }
    else if (cmd.equals("REMOVEPRIVATE")) {
       bedrock_editor.removePrivateBuffer(proj,
-	    IvyXml.getAttrString(xml,"BID"),
+	    IvyXml.getAttrString(xml,"PID"),
 	    IvyXml.getAttrString(xml,"FILE"));
+    }
+   else if (cmd.equals("DELETE")) {
+      bedrock_editor.handleDelete(proj,
+	    IvyXml.getAttrString(xml,"WHAT"),
+	    IvyXml.getAttrString(xml,"PATH"));
     }
    else if (cmd.equals("GETCOMPLETIONS")) {
       bedrock_editor.getCompletions(proj,IvyXml.getAttrString(xml,"BID","*"),

@@ -110,7 +110,7 @@ BaleCrumbBarComponent(BaleCrumbBar par, BaleCrumbBarComponent bro, String shotxt
    addMouseListener(new Mouser());
 
    if (BudaRoot.showHelpTips()) {
-      setToolTipText("Tool tip for crumb bar component");
+      setToolTipText("Click to begin search starting here");
     }
 }
 

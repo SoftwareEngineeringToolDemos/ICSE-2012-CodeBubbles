@@ -261,6 +261,11 @@
 	 <TAB NAME="Popular Options"/>
 	 <WARNING TEXT="Requires restart"/>
       </OPT>
+      <OPT NAME="Bale.string.wrapping" DESCRIPTION="String Wrapping" TYPE="BOOLEAN">
+	 <TAB NAME="Code Editor Options"/>
+	 <TAB NAME="Popular Options"/>
+	 <WARNING TEXT="Requires restart"/>
+      </OPT>
       <OPT NAME="Bale.autocomplete.delay" DESCRIPTION="Autocomplete Delay" TYPE="INTEGER">
 	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="autocomplete"/>

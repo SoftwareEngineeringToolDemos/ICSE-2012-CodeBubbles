@@ -7,15 +7,15 @@
 /********************************************************************************/
 /*	Copyright 2010 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 
@@ -87,7 +87,15 @@ BuenoLocationStatic(String proj,String nm,String ins,boolean after)
 	 location_file = loc.getFile();
 	 String snm = loc.getSymbolName();
 	 class_name = snm;
+	 String key = loc.getKey();
+	 int ct = 0;
+	 for (int i = key.indexOf('$'); i >= 0; i = key.indexOf('$',i+1)) ct++;
 	 int idx = snm.lastIndexOf(".");
+	 if (ct > 0) {
+	    for (int j = 0; idx > 0 && j < ct; ++j) {
+	       idx = snm.lastIndexOf(".",idx-1);
+	     }
+	  }
 	 if (idx > 0) package_name = snm.substring(0,idx);
        }
     }

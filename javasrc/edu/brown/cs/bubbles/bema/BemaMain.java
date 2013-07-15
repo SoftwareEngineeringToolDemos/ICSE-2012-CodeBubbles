@@ -41,8 +41,10 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bueno.BuenoFactory;
+import edu.brown.cs.bubbles.bedu.BeduFactory;
 
 import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.file.IvyFile;
 
 import org.w3c.dom.Element;
 
@@ -178,9 +180,11 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-py")) {                  // -python
 	    for_language = BoardLanguage.PYTHON;
+	    BoardProperties.setPropertyDirectory(IvyFile.expandName("$(HOME)/.pybles"));
 	  }
 	 else if (args[i].startsWith("-course") && i+1 < ln) {  // -course <course>
 	    course_name = args[++i];
+	    BoardProperties.setPropertyDirectory(IvyFile.expandName("$(HOME)/.suds" + course_name));
 	  }
 	 else if (args[i].startsWith("-c")) {                   // -collect
 	    force_metrics = true;
@@ -219,8 +223,11 @@ private void scanArgs(String [] args)
 	    restore_session = false;
 	    save_session = false;
 	  }
+	 else if (args[i].startsWith("-Dfile.encoding")) ;
 	 else badArgs();
        }
+      else if (args[i].equals("")) ;
+      else if (args[i].equals("edu.brown.cs.bubbles.bema.BemaMain")) ;
       else badArgs();
     }
 }
@@ -248,6 +255,7 @@ private void start()
    // first setup the environment
    BoardSetup bs = BoardSetup.getSetup();
 
+   if (course_name != null) bs.setCourseName(course_name);
    if (for_language != null) bs.setLanguage(for_language);
 
    if (skip_setup) bs.setSkipSetup();
@@ -259,8 +267,11 @@ private void start()
    if (new_workspace) bs.setCreateWorkspace(use_workspace);
    else if (use_workspace != null) bs.setDefaultWorkspace(use_workspace);
    if (run_mode != null) bs.setRunMode(run_mode);
-   if (course_name != null) bs.setCourseName(course_name);
    bs.setJavaArgs(java_args);
+
+   if (bs.getCourseName() != null) {
+      BeduFactory.getFactory();
+    }
 
    bs.doSetup();
 

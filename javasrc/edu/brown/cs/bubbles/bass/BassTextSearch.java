@@ -102,7 +102,8 @@ BassTextSearch()
    input_field = new JTextField(36);
    input_field.setText(search_text);
    input_field.setFont(ft);
-   input_field.setBackground(BASS_PANEL_TOP_COLOR);
+   Color bptc = bass_properties.getColor(BASS_PANEL_TOP_COLOR_PROP,BASS_PANEL_TOP_COLOR);
+   input_field.setBackground(bptc);
    input_field.setActionCommand("INPUT");
    input_field.addActionListener(this);
    input_field.selectAll();
@@ -316,7 +317,9 @@ static void loadStatic(Element data)
 
    Graphics2D g2 = (Graphics2D) g.create();
    Dimension sz = getSize();
-   Paint p = new GradientPaint(0f,0f,BASS_PANEL_TOP_COLOR,0f,sz.height,BASS_PANEL_BOTTOM_COLOR);
+   Color bptc = bass_properties.getColor(BASS_PANEL_TOP_COLOR_PROP,BASS_PANEL_TOP_COLOR);
+   Color bpbc = bass_properties.getColor(BASS_PANEL_BOTTOM_COLOR_PROP,BASS_PANEL_BOTTOM_COLOR);
+   Paint p = new GradientPaint(0f,0f,bptc,0f,sz.height,bpbc);
    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
    g2.setPaint(p);
    g2.fill(r);

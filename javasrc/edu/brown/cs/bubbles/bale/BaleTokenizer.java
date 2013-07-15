@@ -109,6 +109,17 @@ abstract protected boolean useSlashSlashComments();
 abstract protected boolean useHashComments();
 abstract protected boolean useMultiLineString();
 
+static Collection<String> getKeywords(BoardLanguage bl)
+{
+   switch (bl) {
+      default :
+      case JAVA :
+	 return java_keyword_map.keySet();
+      case PYTHON :
+	 return python_keyword_map.keySet();
+    }
+}
+
 
 
 /********************************************************************************/
@@ -178,11 +189,20 @@ private BaleToken getNextToken()
 {
    token_start = cur_offset;
 
-   if (token_state != BaleTokenState.NORMAL) {
-      if (token_state == BaleTokenState.IN_LINE_COMMENT) return scanLineComment(); //added by amc6
-      else if (token_state == BaleTokenState.IN_MULTILINE_STRING) return scanMultiLineString();
-      else return scanComment(token_state == BaleTokenState.IN_FORMAL_COMMENT);
-   }
+   switch (token_state) {
+      case NORMAL :
+	 break;
+      case IN_LINE_COMMENT :
+	 return scanLineComment();		// added by amc6
+      case IN_MULTILINE_STRING :
+	 return scanMultiLineString();
+      case IN_FORMAL_COMMENT :
+	 return scanComment(true);
+      case IN_COMMENT :
+	 return scanComment(false);
+      case IN_STRING :
+	 return scanString();
+    }
 
    //TODO: keep a flag to identify unary operators
    //TODO: instanceof should be separate
@@ -286,21 +306,22 @@ private BaleToken getNextToken()
 	     }
 	  }
        }
-      for ( ; ; ) {
-	 ch = nextChar();
-	 if (ch == '"') return buildToken(BaleTokenType.STRING);
-	 else if (ch == '\n' || ch == '\r' || ch == 0xffff) {
-	    backup();
-	    return buildToken(BaleTokenType.BADSTRING);
-	  }
-	 else if (ch == '\\') {
-	    ch = nextChar();
-	    if (ch == '\n' || ch == '\r' || ch == 0xffff) {
-	       backup();
-	       return buildToken(BaleTokenType.BADSTRING);
-	     }
-	  }
-       }
+      return scanString();
+//	for ( ; ; ) {
+//	 ch = nextChar();
+//	 if (ch == '"') return buildToken(BaleTokenType.STRING);
+//	 else if (ch == '\n' || ch == '\r' || ch == 0xffff) {
+//	    backup();
+//	    return buildToken(BaleTokenType.BADSTRING);
+//	  }
+//	 else if (ch == '\\') {
+//	    ch = nextChar();
+//	    if (ch == '\n' || ch == '\r' || ch == 0xffff) {
+//	       backup();
+//	       return buildToken(BaleTokenType.BADSTRING);
+//	     }
+//	  }
+//	 }
     }
    else if (ch == '\'') {
       for ( ; ; ) {
@@ -476,6 +497,44 @@ private Token scanComment(boolean formalstart)
 	       else return buildToken(BaleTokenType.ENDCOMMENT);
 	     }
 	  }
+       }
+    }
+}
+
+
+
+private Token scanString()
+{
+   int havetext = 0;
+
+   for ( ; ; ) {
+      char ch = nextChar();
+      if (ch == '"') {
+	 token_state = BaleTokenState.NORMAL;
+	 return buildToken(BaleTokenType.STRING);
+      }
+      else if (ch == '\n' || ch == '\r' || ch == 0xffff) {
+	 backup();
+	 token_state = BaleTokenState.NORMAL;
+	 return buildToken(BaleTokenType.BADSTRING);
+       }
+      else if (ch == '\\') {
+	 ch = nextChar();
+	 if (ch == '\n' || ch == '\r' || ch == 0xffff) {
+	    backup();
+	    token_state = BaleTokenState.NORMAL;
+	    return buildToken(BaleTokenType.BADSTRING);
+	  }
+       }
+      else if (BALE_PROPERTIES.getBoolean(STRING_WRAPPING)) {
+	 if (Character.isWhitespace(ch)) {
+	    if (havetext > 0) {
+	       backup();
+	       token_state = BaleTokenState.IN_STRING;
+	       return buildToken(BaleTokenType.STRING);
+	     }
+	  }
+	 else ++havetext;
        }
     }
 }

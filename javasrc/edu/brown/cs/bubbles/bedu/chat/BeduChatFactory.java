@@ -21,11 +21,11 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
+import edu.brown.cs.bubbles.bedu.*;
+
 import java.util.List;
 
 import java.util.ArrayList;
-
-import edu.brown.cs.bubbles.board.*;
 
 
 public class BeduChatFactory {
@@ -54,16 +54,10 @@ static {
 
 public static void setup()
 {
-   String course = BoardSetup.getSetup().getCourseName();
-   if (course == null) return;
-
-   BoardProperties bp = BoardProperties.getProperties("Bedu");
-   String pnm = "Bedu.chat." + course;
-
-   if (bp.getProperty(pnm) == null) return;
-
-   if (!bp.getProperty(pnm).equals("false"))
+   BeduFactory bf = BeduFactory.getFactory();
+   if (bf.useCourseChat()) {
       BeduCourseRepository.initialize();
+    }
 }
 
 

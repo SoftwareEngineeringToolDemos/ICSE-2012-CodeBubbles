@@ -413,7 +413,7 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 
    SearchEngine se = new SearchEngine(working);
    SearchParticipant [] parts = new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() };
-   FindHandler fh = new FindHandler(xw,filter);
+   FindHandler fh = new FindHandler(xw,filter,false);
 
    BedrockPlugin.logD("BEGIN SEARCH " + pat + " " + parts.length + " " + " " + scp + " :: COPIES: " + working.length);
 
@@ -702,7 +702,7 @@ void handleJavaSearch(String proj,String patstr,String foritems,
    IJavaElement [] pelt;
    if (ijp != null) pelt = new IJavaElement[] { ijp };
    else pelt = getAllProjects();
-   // pelt = getSearchElements(pelt);	-- not needed because search scope set via flags
+
    ICompilationUnit [] working = getWorkingElements(pelt);
    for (ICompilationUnit xcu : working) {
       try {
@@ -714,15 +714,22 @@ void handleJavaSearch(String proj,String patstr,String foritems,
        }
     }
 
+   IJavaSearchScope scp = null;
    int fg = IJavaSearchScope.SOURCES | IJavaSearchScope.REFERENCED_PROJECTS;
-   if (system) fg |= IJavaSearchScope.SYSTEM_LIBRARIES | IJavaSearchScope.APPLICATION_LIBRARIES;
-   IJavaSearchScope scp = SearchEngine.createJavaSearchScope(pelt,fg);
+   if (system) {
+      fg |= IJavaSearchScope.SYSTEM_LIBRARIES | IJavaSearchScope.APPLICATION_LIBRARIES;
+      scp = SearchEngine.createWorkspaceScope();
+    }
+   else {
+      scp = SearchEngine.createJavaSearchScope(pelt,fg);
+    }
 
    SearchEngine se = new SearchEngine(working);
    SearchParticipant [] parts = new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() };
-   FindHandler fh = new FindHandler(xw,filter);
+   FindHandler fh = new FindHandler(xw,filter,system);
 
    BedrockPlugin.logD("BEGIN SEARCH " + pat);
+   BedrockPlugin.logD("SEARCH SCOPE " + system + " " + fg + " " + scp);
 
    try {
       se.search(pat,parts,scp,fh,null);
@@ -742,12 +749,14 @@ void handleJavaSearch(String proj,String patstr,String foritems,
 
 private static class FindHandler extends SearchRequestor {
 
+   private boolean allow_system;
    private FindFilter find_filter;
    private IvyXmlWriter xml_writer;
 
-   FindHandler(IvyXmlWriter xw,FindFilter ff) {
+   FindHandler(IvyXmlWriter xw,FindFilter ff,boolean sys) {
       xml_writer = xw;
       find_filter = ff;
+      allow_system = sys;
     }
 
    @Override public void acceptSearchMatch(SearchMatch mat) {
@@ -759,7 +768,7 @@ private static class FindHandler extends SearchRequestor {
 
    private boolean reportMatch(SearchMatch mat) {
       IResource irc = mat.getResource();
-      if (irc.getType() != IResource.FILE) return false;
+      if (!allow_system && irc.getType() != IResource.FILE) return false;
       if (find_filter != null) return find_filter.checkMatch(mat);
       return true;
     }

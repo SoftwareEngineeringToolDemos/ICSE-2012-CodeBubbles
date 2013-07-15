@@ -66,6 +66,7 @@ private BussEntry selected_entry;
 private BudaBubble editor_bubble;
 private JViewport view_port;
 private JLayeredPane layered_pane;
+private BudaConstants.BudaLinkStyle link_style;
 
 private Hoverer buss_hover;
 
@@ -103,6 +104,7 @@ BussBubble(Collection<BussEntry> ents, int contentWidth)
 
    default_dim = (Dimension)stack_box.getPreferredSize().clone();
    stack_box.setSize(stack_box.getPreferredSize());
+   link_style = BudaLinkStyle.STYLE_SOLID;
 
    view_port = vp.getViewport();
 
@@ -158,6 +160,16 @@ public void removeEditorBubble()
 public BudaBubble getEditorBubble()
 {
    return editor_bubble;
+}
+
+
+
+/**
+ *	Set the style for links
+ **/
+public void setLinkStyle(BudaLinkStyle sty)
+{
+   link_style = sty;
 }
 
 
@@ -387,7 +399,16 @@ void tearOutEditorBubble()
    getEditorBubble().setLocation(locx, locy);
 
    bba.setLayer(getEditorBubble(), zindex + 1);
-   bba.add(getEditorBubble(), new BudaConstraint(BudaBubblePosition.FIXED, locx, locy));
+
+   for (int i = 0; i < 3; ++i) {
+      try {
+	 // this can fail when trying to sort bubbles on screen -- retry in that case
+	 bba.add(getEditorBubble(), new BudaConstraint(BudaBubblePosition.FIXED, locx, locy));
+	 break;
+       }
+      catch (Throwable t) { }
+    }
+
 
    getEditorBubble().setFixed(false);
 
@@ -404,7 +425,7 @@ void addLinks(BudaBubble bb)
    if (!source_bubble.isShowing()) return;
 
    BudaConstants.LinkPort port1 = new BudaDefaultPort(BudaPortPosition.BORDER_EW_TOP,true);
-   BudaBubbleLink lnk = new BudaBubbleLink(source_bubble,source_linkport,bb,port1);
+   BudaBubbleLink lnk = new BudaBubbleLink(source_bubble,source_linkport,bb,port1,true,link_style);
    root.addLink(lnk);
 }
 

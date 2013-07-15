@@ -383,7 +383,7 @@ private void setupElements()
    // should this be incremental to avoid jumping?
 
    region_set = new TreeSet<BconRegion>(new RegionComparator());
-   
+
    String cnm = for_class;
    int idx = cnm.indexOf("<");
    if (idx > 0) cnm = cnm.substring(0,idx);
@@ -1248,9 +1248,9 @@ private class MethodCreator extends AbstractCreator implements BuenoBubbleCreato
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      BuenoMethodDialog bmd = new BuenoMethodDialog(getBubble(),popup_point,
-						       property_set,getLocation(),this);
-      bmd.showDialog();
+      BuenoFactory.getFactory().createMethodDialog(getBubble(),popup_point,
+						      property_set,getLocation(),null,
+						      this);
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
@@ -1330,7 +1330,7 @@ private class TypeCreator extends AbstractCreator implements BuenoBubbleCreator 
 
 @Override public void handleFileAdded(String proj,String file)		{ }
 @Override public void handleFileStarted(String proj,String file)	{ }
-@Override public void handleProjectOpened(String proj)                  { }
+@Override public void handleProjectOpened(String proj)			{ }
 
 @Override public void handleFileRemoved(String proj,String file)
 {

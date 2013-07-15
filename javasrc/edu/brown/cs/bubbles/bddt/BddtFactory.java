@@ -268,7 +268,7 @@ private void setupDebugging(BudaRoot br)
 
    pnl.addGBComponent(launch_label,0,3,0,0,1,1);
 
-   br.addPanel(pnl);
+   br.addPanel(pnl,true);
 
    // add a button to bring up the task bubble (F2?)
 }

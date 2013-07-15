@@ -741,20 +741,7 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
 	throws BedrockException
 {
    if (file == null) {
-      IProject ip = our_plugin.getProjectManager().findProjectForFile(proj,null);
-      IType ityp = null;
-      IJavaProject ijp = JavaCore.create(ip);
-      String bcls = baseClassName(cls);
-      try {
-	 if (ijp != null) ityp = ijp.findType(bcls);
-       }
-      catch (JavaModelException ex) { }
-      if (ityp == null)
-	 throw new BedrockException("Class " + cls + " " + bcls + " not defined in project " + proj);
-
-      ICompilationUnit icu = ityp.getCompilationUnit();
-      File f = BedrockUtil.getFileForPath(icu.getPath(),ip);
-      file = f.getPath();
+      file = getFileFromClass(proj,cls);
     }
 
    FileData fd = findFile(proj,file,bid,null);
@@ -973,12 +960,45 @@ private String baseClassName(String s)
 /*										*/
 /********************************************************************************/
 
-void createPrivateBuffer(String proj,String bid,String file) throws BedrockException
+void createPrivateBuffer(String proj,String bid,String pid,String file,IvyXmlWriter xw)
+	throws BedrockException
 {
-   FileData fd = findFile(proj,file,null,null);
+   FileData fd = findFile(proj,file,bid,null);
    if (fd == null) throw new BedrockException("File not found");
-   fd.createPrivateBuffer(bid);
+
+   BufferData pbd = null;
+
+   if (pid == null) {
+      for (int i = 0; i < 100; ++i) {
+	 int v = (int)(Math.random() * 10000000);
+	 pid = "PID_" + v;
+	 pbd = fd.createPrivateBuffer(pid);
+	 if (pbd != null) break;
+       }
+    }
+   else {
+      pbd = fd.createPrivateBuffer(pid);
+      if (pbd == null)
+	 throw new BedrockException("Buffer id " + pid + " already used");
+    }
+
+   // do this now in case it fails
+   fd.getEditableUnit(pid);
+
+   OpenTask et = new OpenTask(fd,pid);
+   try {
+      synchronized (thread_pool) {
+	 thread_pool.execute(et);
+       }
+    }
+   catch (RejectedExecutionException ex) {
+      BedrockPlugin.logE("Edit task rejected " + ex + " " +
+			    edit_queue.size() + " " + thread_pool.getActiveCount());
+    }
+
+   xw.text(pid);
 }
+
 
 
 
@@ -988,6 +1008,96 @@ void removePrivateBuffer(String proj,String bid,String file) throws BedrockExcep
    if (fd != null) fd.removePrivateBuffer(bid);
 }
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Delete commands 							*/
+/*										*/
+/********************************************************************************/
+
+void handleDelete(String proj,String what,String path)
+	throws BedrockException
+{
+   IResource rs = null;
+   FileData fd = null;
+   IProject ip = our_plugin.getProjectManager().findProject(proj);
+   IJavaProject ijp = JavaCore.create(ip);
+
+   if (what.equals("PROJECT")) {
+      if (ip == null) throw new BedrockException("Can't find project to delete");
+      rs = ip;
+    }
+   else if (what.equals("FILE")) {
+      fd = file_map.get(path);
+      if (fd != null) {
+	 rs = fd.getSearchUnit().getResource();
+       }
+      if (rs == null) throw new BedrockException("Can't find file to delete");
+    }
+   else if (what.equals("CLASS")) {
+      IType ityp = null;
+      String bcls = baseClassName(path);
+      String file = getFileFromClass(proj,bcls);
+      fd = file_map.get(file);
+      try {
+	 if (ijp != null) ityp = ijp.findType(bcls);
+       }
+      catch (JavaModelException e) { }
+      if (ityp == null) throw new BedrockException("Can't find class to delete");
+      rs = ityp.getResource();
+    }
+   else if (what.equals("PACKAGE")) {
+      IPackageFragmentRoot ipfr = null;
+      try {
+	 for (IPackageFragmentRoot pfr : ijp.getAllPackageFragmentRoots()) {
+	    try {
+	       if (!pfr.isExternal() && !pfr.isArchive() &&
+		     pfr.getKind() == IPackageFragmentRoot.K_SOURCE) {
+		  ipfr = pfr;
+		  break;
+		}
+	     }
+	    catch (JavaModelException e) { }
+	  }
+       }
+      catch (JavaModelException e) {
+	 throw new BedrockException("Problem finding package root",e);
+       }
+      if (ipfr == null) throw new BedrockException("Can't find source fragment root");
+      IPackageFragment ifr = ipfr.getPackageFragment(path);
+      if (ifr == null) throw new BedrockException("Can't find package to delete");
+      rs = ifr.getResource();
+    }
+
+   if (rs != null) {
+      BedrockPlugin.logD("Delete resource " + rs);
+      try {
+	 rs.delete(IResource.FORCE|IResource.KEEP_HISTORY|IResource.ALWAYS_DELETE_PROJECT_CONTENT,
+	       new BedrockProgressMonitor(our_plugin,"Deleting " + path));
+       }
+      catch (CoreException e) {
+	 throw new BedrockException("Problem with delete",e);
+       }
+    }
+
+   if (fd != null) {
+      String file = fd.getFileName();
+      file_map.remove(file);
+      IvyXmlWriter xw = our_plugin.beginMessage("RESOURCE");
+      xw.begin("DELTA");
+      xw.field("KIND","REMOVED");
+      xw.field("PATH",file);
+      xw.begin("RESOURCE");
+      xw.field("LOCATION",file);
+      xw.field("TYPE","FILE");
+      xw.field("PROJECT",proj);
+      xw.end("RESOURCE");
+      xw.end("DELTA");
+      our_plugin.finishMessage(xw);
+    }
+}
 
 
 
@@ -1233,6 +1343,27 @@ CompilationUnit getAST(String bid,String proj,String file) throws BedrockExcepti
 
 
 
+private String getFileFromClass(String proj,String cls) throws BedrockException
+{
+   IProject ip = our_plugin.getProjectManager().findProjectForFile(proj,null);
+   IType ityp = null;
+   IJavaProject ijp = JavaCore.create(ip);
+   String bcls = baseClassName(cls);
+   try {
+      if (ijp != null) ityp = ijp.findType(bcls);
+    }
+   catch (JavaModelException ex) { }
+   if (ityp == null)
+      throw new BedrockException("Class " + cls + " " + bcls + " not defined in project " + proj);
+
+   ICompilationUnit icu = ityp.getCompilationUnit();
+   File f = BedrockUtil.getFileForPath(icu.getPath(),ip);
+   return f.getPath();
+}
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Methods for managing file data						*/
@@ -1356,6 +1487,31 @@ private class EditTask implements Runnable {
 
 
 
+private class OpenTask implements Runnable {
+
+   private FileData file_data;
+   private String bedrock_id;
+
+   OpenTask(FileData fd,String pid) {
+      file_data = fd;
+      bedrock_id = pid;
+    }
+
+   @Override public void run() {
+      BedrockPlugin.logD("RUNNING open task for " + bedrock_id);
+      try {
+	 file_data.getAstRoot(bedrock_id,null);
+       }
+      catch (Throwable t) {
+	 BedrockPlugin.logE("Problem running open task",t);
+       }
+      BedrockPlugin.logD("FINISHED open task for " + bedrock_id);
+    }
+
+}	// end of inner class OpenTask
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -1417,8 +1573,9 @@ private class FileData implements IBufferChangedListener {
     }
 
    CompilationUnit getAstRoot(String sid,String id) {
-      last_ast = sid;
-      return getBuffer(sid).getAstRoot(id);
+      BufferData bd = getBuffer(sid);
+      if (!bd.isPrivate()) last_ast = sid;
+      return bd.getAstRoot(id);
     }
 
    CompilationUnit getDefaultRoot(String sid) {
@@ -1427,6 +1584,7 @@ private class FileData implements IBufferChangedListener {
 
    void applyEdit(String sid,TextEdit xe) throws BedrockException {
       boolean chngfg = hasChanged();
+      boolean pvt = false;
 
       if (sid == null) {
 	 try {
@@ -1437,10 +1595,12 @@ private class FileData implements IBufferChangedListener {
 	  }
        }
       else {
-	 getBuffer(sid).applyEdit(xe);
+	 BufferData bd = getBuffer(sid);
+	 bd.applyEdit(xe);
+	 pvt = bd.isPrivate();
        }
 
-      if (!chngfg && hasChanged()) {
+      if (!chngfg && hasChanged() && !pvt) {
 	 IvyXmlWriter xw = our_plugin.beginMessage("FILECHANGE");
 	 xw.field("FILE",file_name);
 	 our_plugin.finishMessage(xw);
@@ -1482,7 +1642,7 @@ private class FileData implements IBufferChangedListener {
    void commit(boolean refresh,boolean save) throws JavaModelException {
       // TODO: This needs to be synchronized correctly among buffers
       for (BufferData bd : buffer_map.values()) {
-	 bd.commit(refresh,save);
+	 if (!bd.isPrivate()) bd.commit(refresh,save);
        }
       default_buffer = comp_unit.getBuffer();
       last_ast = null;
@@ -1492,6 +1652,9 @@ private class FileData implements IBufferChangedListener {
       synchronized (buffer_map) {
 	 BufferData bd = buffer_map.get(sid);
 	 if (bd == null) {
+	    if (sid.startsWith("PID")) {
+	       throw new Error("Attempt to create public private buffer for " + sid);
+	     }
 	    bd = new BufferData(this,sid,comp_unit,false);
 	    buffer_map.put(sid,bd);
 	  }
@@ -1502,7 +1665,7 @@ private class FileData implements IBufferChangedListener {
    private BufferData createPrivateBuffer(String sid) throws BedrockException {
       synchronized (buffer_map) {
 	 BufferData bd = buffer_map.get(sid);
-	 if (bd != null) throw new BedrockException("Private Id already in use");
+	 if (bd != null) return null;
 	 bd = new BufferData(this,sid,comp_unit,true);
 	 buffer_map.put(sid,bd);
 	 return bd;
@@ -1510,8 +1673,10 @@ private class FileData implements IBufferChangedListener {
     }
 
    private void removePrivateBuffer(String sid) {
+      BedrockPlugin.logD("Remove private buffer " + sid);
       synchronized (buffer_map) {
-	 buffer_map.remove(sid);
+	 BufferData bd = buffer_map.remove(sid);
+	 if (bd != null) bd.free();
        }
     }
 
@@ -1523,13 +1688,16 @@ private class FileData implements IBufferChangedListener {
       int len = evt.getLength();
       int off = evt.getOffset();
       String txt = evt.getText();
-      BedrockPlugin.logD("Buffer change " + file_name + " " + len + " " + off + " " + (txt == null) + " " +
-			    (buf == default_buffer));
+      BedrockPlugin.logD("Buffer change " + file_name + " " + len + " " + off + " " +
+			    (txt == null) + " " + (buf == default_buffer) + " " +
+			    (default_buffer == null) + " " +
+			    Thread.currentThread().getName());
       if (len == 0 && off == 0 && txt == null && buf == default_buffer) {
 	 BedrockPlugin.logD("Buffer switch occurred for " + file_name);
 	 try {
-	    default_buffer = comp_unit.getBuffer();
 	    buf0 = default_buffer;
+	    default_buffer = comp_unit.getBuffer();
+	    BedrockPlugin.logD("After getBuffer()");
 	    len = default_buffer.getLength();
 	    txt = default_buffer.getContents();
 	    buf0.removeBufferChangedListener(this);
@@ -1538,13 +1706,14 @@ private class FileData implements IBufferChangedListener {
 	    last_ast = null;
 	    if (buf.getContents().equals(txt)) {
 	       BedrockPlugin.logD("Buffer contents not changed");
+	       doing_change = false;
 	       return;
 	     }
 	    // BedrockPlugin.logD("New buffer contents:\n" + buf.getContents());
-	    // BedrockPlugin.logD("End of contents");
+	    BedrockPlugin.logD("End of contents");
 	  }
 	 catch (JavaModelException e) {
-	    BedrockPlugin.logD("BUFFER MODEL EXCEPTION " + e);
+	    BedrockPlugin.logE("BUFFER MODEL EXCEPTION " + e);
 	  }
        }
 
@@ -1553,6 +1722,7 @@ private class FileData implements IBufferChangedListener {
 	 BufferData bd = ent.getValue();
 	 IBuffer bdb = bd.getBuffer();
 	 if (bdb == null || bdb == buf) continue;
+	 if (bd.isPrivate()) continue;
 	 IvyXmlWriter xw = our_plugin.beginMessage("EDIT",ent.getKey());
 	 BedrockPlugin.logD("START EDIT " + len + " " + off + " " + (ctr++));
 	 xw.field("FILE",file_name);
@@ -1573,7 +1743,10 @@ private class FileData implements IBufferChangedListener {
 	 BedrockPlugin.logD("SENDING EDIT " + xw.toString());
 	 bdb.replace(off,xlen,txt);
        }
-      if (buf != default_buffer && default_buffer != null) default_buffer.replace(off,len,txt);
+      if (buf != default_buffer && default_buffer != null) {
+	 BedrockPlugin.logD("Update default buffer " + off + " " + len);
+	 default_buffer.replace(off,len,txt);
+       }
 
       doing_change = false;
     }
@@ -1636,7 +1809,7 @@ private class BufferData {
    private FileData file_data;
    private String bedrock_id;
    private ICompilationUnit comp_unit;
-   private boolean is_changed;
+   private boolean is_setup;
    private String current_id;
    private BedrockElider elision_data;
    private CopyOwner copy_owner;
@@ -1644,28 +1817,39 @@ private class BufferData {
    private boolean is_private;
 
    BufferData(FileData fd,String bid,ICompilationUnit base,boolean pvt) {
-      BedrockPlugin.logD("Create buffer for " + fd.getFileName() + " " + bid);
+      BedrockPlugin.logD("Create buffer for " + fd.getFileName() + " " + bid + " " + pvt);
       file_data = fd;
       bedrock_id = bid;
       comp_unit = base;
-      is_changed = false;
+      is_setup = false;
       current_id = null;
       elision_data = null;
       last_ast = null;
       is_private = pvt;
-      copy_owner = new CopyOwner(file_data,bedrock_id);
+      copy_owner = new CopyOwner(file_data,bedrock_id,is_private);
     }
 
+   void free() { }
+
    synchronized ICompilationUnit getEditableUnit() {
-      if (is_changed) return comp_unit;
+      if (is_setup) return comp_unit;
       try {
-	 // comp_unit.becomeWorkingCopy(null);
 	 // comp_unit.getSource() being null causes NullPointerException
-	 if (comp_unit.getSource() != null)
+	 if (comp_unit.getSource() != null) {
+	    copy_owner.suppressErrors(true);
 	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
-	 if (!is_private)
+	    copy_owner.suppressErrors(false);
+	  }
+	 else {
+	    BedrockPlugin.logE("Compilation unit lacking source");
+	  }
+	 if (!is_private) {
 	    comp_unit.getBuffer().addBufferChangedListener(file_data);
-	 is_changed = true;
+	  }
+	 else {
+	    // BedrockPlugin.logD("Private source: " + comp_unit.getSource());
+	  }
+	 is_setup = true;
        }
       catch (JavaModelException e) {
 	 BedrockPlugin.logE("Problem creating working copy: " + e);
@@ -1683,7 +1867,9 @@ private class BufferData {
       p.setKind(ASTParser.K_COMPILATION_UNIT);
       p.setResolveBindings(true);
       p.setSource(comp_unit);
-      return (CompilationUnit) p.createAST(null);
+      CompilationUnit cu = (CompilationUnit) p.createAST(null);
+      last_ast = cu;
+      return cu;
     }
 
    synchronized CompilationUnit getAstRoot(String id) {
@@ -1691,9 +1877,11 @@ private class BufferData {
       CompilationUnit cu = null;
       try {
 	 if (!is_private) copy_owner.setId(id);
+	 copy_owner.suppressErrors(false);
 	 cu = icu.reconcile(AST.JLS3,true,true,null,null);
 	 if (cu == null) cu = last_ast;
 	 else last_ast = cu;
+	 if (last_ast == null) getDefaultRoot();
        }
       catch (JavaModelException e) {
 	 BedrockPlugin.logE("Problem getting AST for file " +
@@ -1723,7 +1911,7 @@ private class BufferData {
     }
 
    IBuffer getBuffer() {
-      if (!is_changed) return null;
+      if (!is_setup) return null;
       try {
 	 return comp_unit.getBuffer();
        }
@@ -1736,6 +1924,7 @@ private class BufferData {
 
    String getCurrentId()			{ return current_id; }
    void setCurrentId(String id) 		{ current_id = id; }
+   boolean isPrivate()				{ return is_private; }
 
    BedrockElider checkElider()			{ return elision_data; }
    void clearElider()				{ elision_data = null; }
@@ -1754,12 +1943,12 @@ private class BufferData {
       if (is_private) return;
       if (comp_unit != null) {
 	 if (save) {
-	    BedrockPlugin.log("COMMITING " + file_data.getFileName() + " " +
-				 comp_unit.isWorkingCopy() + " " +
-				 comp_unit.hasResourceChanged() + " " +
-				 comp_unit.getElementName() + " " +
-				 comp_unit.hasUnsavedChanges() + " " +
-				 comp_unit.isConsistent());
+	    BedrockPlugin.logD("COMMITING " + file_data.getFileName() + " " +
+				  comp_unit.isWorkingCopy() + " " +
+				  comp_unit.hasResourceChanged() + " " +
+				  comp_unit.getElementName() + " " +
+				  comp_unit.hasUnsavedChanges() + " " +
+				  comp_unit.isConsistent());
 	    if (comp_unit.isWorkingCopy()) {
 	       comp_unit.commitWorkingCopy(true,new BedrockProgressMonitor(our_plugin,"Committing"));
 	     }
@@ -1769,6 +1958,7 @@ private class BufferData {
 	       comp_unit = comp_unit.getWorkingCopy(
 		  copy_owner,
 		  new BedrockProgressMonitor(our_plugin,"Updating"));
+	       // if (!is_private) comp_unit.getBuffer().addBufferChangedListener(file_data);
 	     }
 	    catch (Throwable t) {
 	       BedrockPlugin.logE("Problem get working copy after a save",t);
@@ -1781,6 +1971,8 @@ private class BufferData {
 	    comp_unit.restore();
 	    comp_unit.makeConsistent(bpm);
 	    comp_unit = comp_unit.getWorkingCopy(copy_owner,null);
+	    if (!is_private)
+	       comp_unit.getBuffer().addBufferChangedListener(file_data);
 	  }
        }
     }
@@ -1802,20 +1994,41 @@ private class CopyOwner extends WorkingCopyOwner {
    private FileData for_file;
    private String bedrock_id;
    private ProblemHandler problem_handler;
+   private boolean is_private;
+   private boolean suppress_errors;
 
-   CopyOwner(FileData fd,String bid) {
+   CopyOwner(FileData fd,String bid,boolean pvt) {
       for_file = fd;
       bedrock_id = bid;
       problem_handler = null;
+      is_private = pvt;
+      suppress_errors = false;
+    }
+
+   @Override public IBuffer createBuffer(ICompilationUnit cu) {
+      IBuffer buf = super.createBuffer(cu);
+      String cnts = for_file.getContents(null);
+      BedrockPlugin.logD("CREATE BUFFER " + bedrock_id + " " + is_private + " " + (cnts == null) +
+			    " " + for_file.getFileName());
+      if (cnts != null) buf.setContents(cnts);
+      return buf;
     }
 
    @Override public IProblemRequestor getProblemRequestor(ICompilationUnit ic) {
-      if (problem_handler == null) problem_handler = new ProblemHandler(for_file,bedrock_id,ic);
+      if (problem_handler == null) {
+	 problem_handler = new ProblemHandler(for_file,bedrock_id,ic,is_private);
+	 problem_handler.setSuppressErrors(suppress_errors);
+       }
       return problem_handler;
     }
 
    void setId(String id) {
       if (problem_handler != null) problem_handler.setId(id);
+    }
+
+   void suppressErrors(boolean fg) {
+      suppress_errors = fg;
+      if (problem_handler != null) problem_handler.setSuppressErrors(fg);
     }
 
 }	// end of innerclass CopyOwner
@@ -1835,30 +2048,50 @@ private class ProblemHandler implements IProblemRequestor {
    private String bedrock_id;
    private List<IProblem> problem_set;
    private String for_id;
+   private boolean is_private;
+   private boolean suppress_errors;
 
-   ProblemHandler(FileData fd,String bid,ICompilationUnit cu) {
+   ProblemHandler(FileData fd,String bid,ICompilationUnit cu,boolean pvt) {
       file_data = fd;
       bedrock_id = bid;
       for_id = null;
       problem_set = null;
+      is_private = pvt;
+      suppress_errors = false;
     }
 
    void setId(String id)			{ for_id = id; }
+   void setSuppressErrors(boolean fg)		{ suppress_errors = fg; }
 
    public void acceptProblem(IProblem ip) {
+      if (suppress_errors) return;
+      BedrockPlugin.logD("Note problem for " + bedrock_id + " " + is_private);
       if (problem_set == null) problem_set = new ArrayList<IProblem>();
       problem_set.add(ip);
     }
 
    public void beginReporting() {
+      BedrockPlugin.logD("Begin error reporting for " + bedrock_id + " " + is_private + " " +
+			    suppress_errors);
       problem_set = null;
     }
 
    public void endReporting() {
+      if (suppress_errors) return;
+      BedrockPlugin.logD("End error reporting for " + bedrock_id + " " + is_private);
+
       if (for_id != null && !for_id.equals(file_data.getCurrentId(bedrock_id))) return;
 
       IvyXmlWriter xw;
-      if (for_id != null) {
+      if (is_private) {
+	 if (bedrock_id != null) {
+	    xw = our_plugin.beginMessage("PRIVATEERROR",bedrock_id);
+	    xw.field("FILE",file_data.getFileName());
+	    xw.field("ID",bedrock_id);
+	  }
+	 else return;
+       }
+      else if (for_id != null) {
 	 xw = our_plugin.beginMessage("EDITERROR",bedrock_id);
 	 xw.field("FILE",file_data.getFileName());
 	 xw.field("ID",for_id);
@@ -1884,6 +2117,7 @@ private class ProblemHandler implements IProblemRequestor {
       our_plugin.finishMessage(xw);
 
       BedrockPlugin.logD("ERROR REPORT: " + xw.toString());
+      xw.close();
     }
 
    public boolean isActive()			{ return true; }
@@ -1909,7 +2143,7 @@ private class CompletionHandler extends CompletionRequestor {
       setAllowsRequiredProposals(CompletionProposal.FIELD_REF,CompletionProposal.TYPE_REF,true);
       setAllowsRequiredProposals(CompletionProposal.FIELD_REF,CompletionProposal.TYPE_IMPORT,true);
       setAllowsRequiredProposals(CompletionProposal.FIELD_REF,CompletionProposal.FIELD_IMPORT,true);
-      for (int i = 1; i <= 25; ++i) {
+      for (int i = 1; i <= 27; ++i) {
 	 setIgnored(i,false);
        }
 
@@ -1997,4 +2231,6 @@ private static class ParamSettings {
 
 
 /* end of BedrockEditor.java */
+
+
 

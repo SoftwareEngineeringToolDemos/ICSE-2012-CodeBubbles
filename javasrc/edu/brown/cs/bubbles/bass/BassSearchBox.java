@@ -131,7 +131,8 @@ BassSearchBox(BassTreeModel mdl,boolean common)
    input_field = new JTextField(36);
    input_field.setFont(ft);
    input_field.setOpaque(true);
-   Color ifc = new Color(BASS_PANEL_TOP_COLOR.getRGB(),false);
+   Color bptc = bass_properties.getColor(BASS_PANEL_TOP_COLOR_PROP,BASS_PANEL_TOP_COLOR);
+   Color ifc = new Color(bptc.getRGB(),false);
    input_field.setBackground(ifc);
    input_field.setBorder(null);
 
@@ -196,7 +197,8 @@ BassSearchBox(BassTreeModel mdl,boolean common)
 
    self = this;
 
-   if (tree_model.getLeafCount() <= MAX_LEAF_FOR_EXPANDALL) expandAll();
+   int mxl = bass_properties.getInt(MAX_LEAF_FOR_EXPANDALL_PROP,MAX_LEAF_FOR_EXPANDALL);
+   if (tree_model.getLeafCount() <= mxl) expandAll();
 
    tree_model.addTreeModelListener(new UpdateHandler());
 }
@@ -327,19 +329,22 @@ void setDefaultText(String text)
 
 private void fixupDisplay(String txt)
 {
-   if (txt.trim().length() >= KEYSTROKES_FOR_AUTO_EXPAND) {
-      if (tree_model.getLeafCount() <= MAX_LEAF_FOR_AUTO_EXPAND) expandAll();
+   int kys = bass_properties.getInt(KEYSTROKES_FOR_AUTO_EXPAND_PROP,KEYSTROKES_FOR_AUTO_EXPAND);
+   int mxl = bass_properties.getInt(MAX_LEAF_FOR_EXPANDALL_PROP,MAX_LEAF_FOR_EXPANDALL);
+   int mxea = bass_properties.getInt(MAX_LEAF_FOR_AUTO_EXPAND_PROP,MAX_LEAF_FOR_AUTO_EXPAND);
+
+   if (txt.trim().length() >= kys) {
+      if (tree_model.getLeafCount() <= mxl) expandAll();
       else {
 	 //TODO: expand some here (first ten?)
        }
-
       int[] aryIndices = tree_model.getIndicesOfFirstMethod();
       int index = 0;
       for(int i=0;i<aryIndices.length;i++) index += aryIndices[i];
       active_options.setSelectionRow(index);
     }
    else {
-      if (tree_model.getLeafCount() > MAX_LEAF_FOR_EXPANDALL) collapseAll();
+      if (tree_model.getLeafCount() > mxea) collapseAll();
       else expandAll();
 
       active_options.setSelectionRow(-1);
@@ -847,7 +852,9 @@ protected void paintComponent(Graphics g)
 
    Graphics2D g2 = (Graphics2D) g.create();
    Dimension sz = getSize();
-   Paint p = new GradientPaint(0f,0f,BASS_PANEL_TOP_COLOR,0f,sz.height,BASS_PANEL_BOTTOM_COLOR);
+   Color bptc = bass_properties.getColor(BASS_PANEL_TOP_COLOR_PROP,BASS_PANEL_TOP_COLOR);
+   Color bpbc = bass_properties.getColor(BASS_PANEL_BOTTOM_COLOR_PROP,BASS_PANEL_BOTTOM_COLOR);
+   Paint p = new GradientPaint(0f,0f,bptc,0f,sz.height,bpbc);
    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
    g2.setPaint(p);
    g2.fill(r);
@@ -1225,7 +1232,9 @@ private static class GradientTree extends JTree {
    protected void paintComponent(Graphics g) {
        Graphics2D g2 = (Graphics2D) g.create();
        Dimension sz = getSize();
-       Paint p = new GradientPaint(0f,0f,BASS_PANEL_TOP_COLOR,0f,sz.height,BASS_PANEL_BOTTOM_COLOR);
+       Color bptc = bass_properties.getColor(BASS_PANEL_TOP_COLOR_PROP,BASS_PANEL_TOP_COLOR);
+       Color bpbc = bass_properties.getColor(BASS_PANEL_BOTTOM_COLOR_PROP,BASS_PANEL_BOTTOM_COLOR);
+       Paint p = new GradientPaint(0f,0f,bptc,0f,sz.height,bpbc);
        Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
        g2.setPaint(p);
        g2.fill(r);
@@ -1339,7 +1348,8 @@ private class UpdateHandler implements TreeModelListener {
    @Override public void treeNodesRemoved(TreeModelEvent e)		{ }
 
    @Override public void treeStructureChanged(TreeModelEvent e) {
-      if (tree_model.getLeafCount() <= MAX_LEAF_FOR_EXPANDALL) expandAll();
+      int mxl = bass_properties.getInt(MAX_LEAF_FOR_EXPANDALL_PROP,MAX_LEAF_FOR_EXPANDALL);
+      if (tree_model.getLeafCount() <= mxl) expandAll();
       else useLocalExpandedNodes();
     }
 

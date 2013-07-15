@@ -107,6 +107,7 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
 
    List<BuenoLocation> memblocs = new ArrayList<BuenoLocation>();
    BuenoLocation clsloc = null;
+   Action delact = null;
 
    // TODO: if forname == null and it represents an inner class, create alternatives for before/after the inner class
 
@@ -114,6 +115,7 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
       forname = null;
       BuenoLocation dfltloc = BuenoFactory.getFactory().createLocation(fullname,null,null,true);
       menu.add(new NewPackageAction(dfltloc));
+      delact = new DeleteProjectAction(fullname,bb);
     }
    else if (forname == null) {
       String proj = null;
@@ -123,8 +125,37 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
 	 fullname = fullname.substring(idx+1);
        }
       BuenoLocation loc = BuenoFactory.getFactory().createLocation(proj,fullname,null,true);
-      if (loc.getClassName() != null) memblocs.add(loc);
-      if (loc.getPackage() != null) clsloc = loc;
+      if (loc.getClassName() != null) {
+	 memblocs.add(loc);
+	 String cnm = loc.getClassName();
+	 String pnm = loc.getPackage();
+	 String outer;
+	 if (pnm == null) outer = "";
+	 else outer = cnm.substring(pnm.length() + 1);
+	 if (outer.contains(".") || outer.contains("$")) {
+	    int xidx = outer.indexOf(".");
+	    String inner = outer.replace(".", "$");
+	    outer = pnm + "." + outer.substring(0,xidx);
+	    memblocs.add(BuenoFactory.getFactory().createLocation(proj,outer,inner,false));
+	    memblocs.add(BuenoFactory.getFactory().createLocation(proj,outer,inner,true));
+	  }
+	 if (pnm != null) {
+	    cnm = cnm.substring(pnm.length()+1);
+	    if (!cnm.contains(".")) {
+	       delact = new DeleteClassAction(proj,loc.getClassName(),bb);
+	     }
+	  }
+	 else {
+	    if (cnm != null) {
+	       delact = new DeleteClassAction(proj,cnm,bb);
+	    }
+	 }
+       }
+      else {
+	 if (bass_properties.getBoolean("Bass.delete.package"))
+	    delact = new DeletePackageAction(proj,fullname,bb);
+       }
+      if (loc.getPackage() != null || loc.getClassName() != null) clsloc = loc;
     }
    else {
       BuenoLocation loc = new BassNewLocation(forname,false,false);
@@ -153,6 +184,9 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
       if (clsloc.getPackage() != null) {
 	 menu.add(new NewPackageAction(clsloc));
        }
+    }
+   if (delact != null) {
+      menu.add(delact);
     }
 }
 
@@ -253,9 +287,8 @@ private class NewMethodAction extends NewAction implements BuenoConstants.BuenoB
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","NewMethod");
       BudaRoot.hideSearchBubble(e);
-      BuenoMethodDialog bmd = new BuenoMethodDialog(search_bubble,access_point,
-						       property_set,for_location,this);
-      bmd.showDialog();
+      BuenoFactory.getFactory().createMethodDialog(search_bubble,access_point,property_set,
+						      for_location,null,this);
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
@@ -449,6 +482,110 @@ private static class BassNewLocation extends BuenoLocation {
    @Override public String getInsertAtEnd()		{ return for_name.getClassName(); }
 
 }	// end of inner class BassNewLocation
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Delete actions								*/
+/*										*/
+/********************************************************************************/
+
+private static class DeleteProjectAction extends AbstractAction implements Runnable {
+
+   private String project_name;
+   private BudaBubble rel_bubble;
+
+   private static final long serialVersionUID = 1;
+
+   DeleteProjectAction(String proj,BudaBubble bb) {
+      super("Delete Project " + proj);
+      project_name = proj;
+      rel_bubble = bb;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
+      int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete project " + project_name,
+	    "Confirm Delete Project",
+	    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+      if (sts != JOptionPane.YES_OPTION) return;
+      BoardThreadPool.start(this);
+    }
+
+   @Override public void run() {
+      BumpClient bc = BumpClient.getBump();
+      bc.delete(project_name,"PROJECT",project_name);
+    }
+}	// end of inner class DeleteProjectAction
+
+
+
+
+
+private static class DeletePackageAction extends AbstractAction implements Runnable {
+
+   private String project_name;
+   private String package_name;
+   private BudaBubble rel_bubble;
+
+   private static final long serialVersionUID = 1;
+
+   DeletePackageAction(String proj,String pkg,BudaBubble bb) {
+      super("Delete Package " + pkg);
+      project_name = proj;
+      package_name = pkg;
+      rel_bubble = bb;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
+      int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete all of package " + package_name,
+	    "Confirm Delete Package",
+	    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+      if (sts != JOptionPane.YES_OPTION) return;
+      BoardThreadPool.start(this);
+   }
+
+   @Override public void run() {
+      BumpClient bc = BumpClient.getBump();
+      bc.delete(project_name,"PACKAGE",package_name);
+    }
+}	// end of inner class DeletePackageAction
+
+
+
+
+private static class DeleteClassAction extends AbstractAction implements Runnable {
+
+   private String project_name;
+   private String class_name;
+   private BudaBubble rel_bubble;
+
+   private static final long serialVersionUID = 1;
+
+   DeleteClassAction(String proj,String cls,BudaBubble bb) {
+      super("Delete Class " + cls);
+      project_name = proj;
+      class_name = cls;
+      rel_bubble = bb;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
+      int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete the class " + class_name,
+	    "Confirm Delete Class",
+	    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+      if (sts != JOptionPane.YES_OPTION) return;
+      BoardThreadPool.start(this);
+   }
+
+   @Override public void run() {
+      BumpClient bc = BumpClient.getBump();
+      bc.delete(project_name,"CLASS",class_name);
+    }
+
+}	// end of inner class DeleteClassAction
 
 
 

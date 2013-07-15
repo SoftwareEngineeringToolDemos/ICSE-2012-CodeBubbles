@@ -86,7 +86,7 @@ private BudaChannelSet	  channel_set;
 private Cursor		  palm_cursor;
 private boolean 	  first_time;
 private Dimension	  base_size;
-private Map<String,Object>      property_map;
+private Map<String,Object>	property_map;
 
 private Map<BudaBubble,Point> floating_bubbles;
 private Map<BudaBubble,BudaBubbleDock[]> docked_bubbles;
@@ -128,7 +128,7 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    cur_viewport = null;
    routes_valid = false;
    focus_bubble = null;
-   
+
    property_map = new HashMap<String,Object>();
 
    bubble_manager = new BubbleManager();
@@ -585,13 +585,16 @@ void setFocusBubble(BudaBubble bb,boolean fg)
    if (fg) focus_bubble = bb;
    else focus_bubble = null;
 
-   for (BudaBubble bbl : active_bubbles) {
-      String key = bbl.getContentKey();
-      if (bbl == obb || bbl == bb ||
-	       (key != null && (key.equals(okey) || key.equals(nkey)))) {
-	 bbl.repaint();
-      }
-   }
+   synchronized (active_bubbles) {
+      for (BudaBubble bbl : active_bubbles) {
+	 String key = bbl.getContentKey();
+	 if (bbl == obb || bbl == bb ||
+		(key != null && (key.equals(okey) || key.equals(nkey)))) {
+	    bbl.repaint();
+	  }
+       }
+    }
+
    if (scale_factor != 1.0) repaint();
 
    focusLinks(bb,fg);
@@ -602,7 +605,7 @@ void setFocusBubble(BudaBubble bb,boolean fg)
 }
 
 
-BudaBubble getFocusBubble()
+public BudaBubble getFocusBubble()
 {
    return focus_bubble;
 }
@@ -635,13 +638,13 @@ String getFocusKey()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Property methods                                                        */
-/*                                                                              */
+/*										*/
+/*	Property methods							*/
+/*										*/
 /********************************************************************************/
 
 /**
- *      Set a property associated with this bubble area.
+ *	Set a property associated with this bubble area.
  **/
 
 public void setProperty(String prop,Object v)
@@ -653,7 +656,7 @@ public void setProperty(String prop,Object v)
 
 
 /**
- *      Retrieve a property associated with the bubble area.
+ *	Retrieve a property associated with the bubble area.
  **/
 
 public Object getProperty(String prop)
@@ -1499,6 +1502,8 @@ void setViewPosition(Rectangle r)
 
 public Point getViewPosition()
 {
+   if (cur_viewport == null) return new Point();
+
    Point p = cur_viewport.getLocation();
 
    return p;
@@ -1512,6 +1517,8 @@ public Point getViewPosition()
 
 public Rectangle getViewport()
 {
+   if (cur_viewport == null) return new Rectangle();
+
    return new Rectangle(cur_viewport);
 }
 

@@ -247,7 +247,7 @@ private synchronized void noteSetup()
 	 System.err.println("BEDROCK: DISPLAY = " + base_display);
 	 EndChecker ec = new EndChecker();
 	 ec.start();
-	 if (org.eclipse.jface.preference.PreferenceConverter.class != null) ;
+	 if (org.eclipse.jface.preference.PreferenceConverter.FONTDATA_DEFAULT_DEFAULT != null);
 	 is_setup = false;
 	 sts = PlatformUI.createAndRunWorkbench(base_display,new WbAdvisor());
        }
@@ -396,6 +396,7 @@ private void forceLoads()
       // Class<?> c1 = org.eclipse.jface.resource.ColorRegistry.class;
       DebugUITools.getPreferenceStore();
       JavaUI.getColorManager();
+      new org.eclipse.jface.resource.FontRegistry();
     }
    catch (Throwable t) { }
 }

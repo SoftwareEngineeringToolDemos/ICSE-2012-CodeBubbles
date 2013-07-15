@@ -175,6 +175,11 @@ BeamProblemBubble(String typs,boolean task)
 }
 
 
+@Override public void handleClearProblems()
+{
+   active_problems.clear();
+}
+
 
 @Override public void handleProblemsDone()
 {

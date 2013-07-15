@@ -199,6 +199,7 @@ private int findInsertionPoint(BaleDocumentIde doc,BuenoLocation loc)
 		  offset = off+1;
 		  break;
 		}
+	       off -= 1;
 	     }
 	  }
        }

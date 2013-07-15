@@ -196,7 +196,10 @@ private static class FindBubbleAction extends BhelpAction {
 	    best = score;
 	  }
        }
-      if (rslt == null) throw new BhelpException("No bubble found");
+      if (rslt == null)
+	 throw new BhelpException("No bubble found: " + pt + " " + rv + " " + r + " " +
+				     ctx.getMouse() + " " +
+				     SwingUtilities.convertPoint(br,ctx.getMouse(),bba));
       ctx.setValue(result_variable,rslt);
     }
 

@@ -447,6 +447,7 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
    @Override public synchronized void handleProblemAdded(BumpProblem bp)     { flag_map = null; }
    @Override public synchronized void handleProblemRemoved(BumpProblem bp)   { flag_map = null; }
    @Override public synchronized void handleProblemsDone()		     { }
+   @Override public synchronized void handleClearProblems()                  { flag_map = null; }
 
    private void computeFlagMap() {
       Map<String,ProblemFlag> mpf = new HashMap<String,ProblemFlag>();

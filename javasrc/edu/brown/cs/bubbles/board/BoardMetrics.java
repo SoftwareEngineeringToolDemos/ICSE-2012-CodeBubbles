@@ -334,6 +334,17 @@ private void setupOptions(boolean force)
 {
    BoardProperties bp = BoardProperties.getProperties("Metrics");
    user_id = bp.getProperty(BOARD_METRIC_PROP_USERID);
+   if (user_id == null) {
+      if (bp.getBoolean(BOARD_METRIC_PROP_AUTOID)) {
+	 user_id = getUserId();
+	 bp.setProperty(BOARD_METRIC_PROP_USERID,user_id);
+	 force = false;
+	 try {
+	    bp.save();
+	  }
+	 catch (IOException e) { }
+      }
+   }
 
    BoardLog.logD("BOARD","Metrics setup for user " + user_id);
 
@@ -841,7 +852,7 @@ private void dumpOptions()
 
 private File[] getOptionsFiles()
 {
-   File dir = new File(BOARD_PROP_BASE);
+   File dir = BoardProperties.getPropertyDirectory();
    File[] files = dir.listFiles(new OptionFileFilter());
    return files;
 }

@@ -49,6 +49,8 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ltk.core.refactoring.*;
 import org.eclipse.ltk.core.refactoring.resource.*;
 import org.eclipse.text.edits.*;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
 
 import java.io.File;
 import java.util.*;
@@ -779,6 +781,10 @@ static void outputCompletion(CompletionProposal cp,IvyXmlWriter xw)
    xw.field("TOKEN_START",cp.getTokenStart());
    xw.field("TOKEN_END",cp.getTokenEnd());
    fieldValue(xw,"KIND",cp.getKind(),completion_types);
+   if (cp instanceof ICompletionProposalExtension4) {
+      ICompletionProposalExtension4 icp4 = (ICompletionProposalExtension4) cp;
+      xw.field("AUTO",icp4.isAutoInsertable());
+    }
 
    if (CompletionFlags.isStaticImport(cp.getAdditionalFlags())) xw.field("STATICIMPORT",true);
 
@@ -1152,14 +1158,15 @@ private static void outputSymbol(IJavaElement elt,String what,String nm,String k
     }
 
    if (elt instanceof IPackageFragment || elt instanceof IType) {
-      try {
-	 URL u = JavaUI.getJavadocBaseLocation(elt);
+      Display d = BedrockApplication.getDisplay();
+      if (d != null) {
+	 JavadocUrl ju = new JavadocUrl(elt);
+	 d.syncExec(ju);
+	 URL u = ju.getResult();
 	 if (u != null) {
 	    xw.field("JAVADOC",u.toString());
 	  }
        }
-      catch (JavaModelException e) { }
-      catch (NoClassDefFoundError e) { }
     }
 
    xw.field("SOURCE","USERSOURCE");
@@ -1243,6 +1250,29 @@ private static void outputSymbol(IJavaElement elt,String what,String nm,String k
 
    xw.end("ITEM");
 }
+
+
+
+private static class JavadocUrl implements Runnable {
+
+   private IJavaElement java_element;
+   private URL result_url;
+
+   JavadocUrl(IJavaElement elt) {
+      java_element = elt;
+      result_url = null;
+    }
+
+   URL getResult()			{ return result_url; }
+
+   @Override public void run() {
+      try {
+	 result_url = JavaUI.getJavadocBaseLocation(java_element);
+       }
+      catch (Throwable e) { }
+    }
+
+}	// end of inner class JavadocUrl
 
 
 

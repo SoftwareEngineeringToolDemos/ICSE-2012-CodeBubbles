@@ -1346,9 +1346,9 @@ private static class ProblemHover implements BaleContextListener {
       BaleDocument bd = (BaleDocument) cfg.getDocument();
       List<BumpProblem> probs = bd.getProblemsAtLocation(cfg.getOffset());
       if (probs != null) {
-	 for (BumpProblem bp : probs) {
-	    menu.add(new QuickFix(cfg.getEditor(),bp));
-	  }
+         for (BumpProblem bp : probs) {
+            menu.add(new QuickFix(cfg.getEditor(),bp));
+          }
        }
     }
 

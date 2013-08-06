@@ -1530,6 +1530,8 @@ public Rectangle getViewport()
 
 public void scrollBubbleVisible(BudaBubble bb)
 {
+   checkAreaDimensions();
+
    Rectangle rbubble = bb.getBounds();
    Rectangle rview = cur_viewport.getBounds();
 

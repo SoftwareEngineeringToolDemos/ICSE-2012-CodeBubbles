@@ -442,8 +442,21 @@ private Component getDisplayComponent(BconGraphNode gn)
       comp = gc;
    }
 
-   Color ncol = comp.getForeground();
-   switch (gn.getNodeType()) {
+   Color ncol = getNodeColor(gn.getNodeType());
+   if (ncol == null) ncol = comp.getForeground();
+   if (show_labels) ncol = ncol.darker();
+   comp.setForeground(ncol);
+
+   return comp;
+}
+
+
+
+static Color getNodeColor(NodeType nt)
+{
+   Color ncol = null;
+
+   switch (nt) {
       case CLASS :
 	 ncol = Color.RED;
 	 break;
@@ -464,13 +477,10 @@ private Component getDisplayComponent(BconGraphNode gn)
 	 break;
       default:
 	 break;
-   }
-   if (show_labels) ncol = ncol.darker();
-   comp.setForeground(ncol);
+    }
 
-   return comp;
+   return ncol;
 }
-
 
 
 
@@ -615,22 +625,22 @@ static Color getArcColor(ArcType prt)
    Color c = null;
    switch (prt) {
       default :
-         c = Color.CYAN;
-         break;
+	 c = Color.CYAN;
+	 break;
       case CALLS :
-         c = Color.MAGENTA;
-         break;
+	 c = Color.MAGENTA;
+	 break;
       case SUBCLASS :
       case IMPLEMENTED_BY :
       case EXTENDED_BY :
       case MEMBER_OF :
-         c = Color.BLACK;
-         break;
+	 c = Color.BLACK;
+	 break;
       case INNERCLASS :
-         c = Color.GRAY;
-         break;
+	 c = Color.GRAY;
+	 break;
     }
-   
+
    return c;
 }
 

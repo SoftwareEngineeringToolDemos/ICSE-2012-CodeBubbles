@@ -57,7 +57,7 @@ class BwizListEntryComponent extends JPanel implements BwizConstants,
 
 private String ui_title;
 private JList<StringBuffer> ui_list;
-private JTextField input_field;
+private BwizVerifiedTextField input_field;
 private JLabel title_label;
 private Vector<StringBuffer> list_data;
 private HashSet<String> set_data;
@@ -152,6 +152,7 @@ private void setup()
    input_field.setAlignmentY(Component.BOTTOM_ALIGNMENT);
    //Add a handler for when the user hits enter
    input_field.addActionListener(new InputAction());
+   input_field.addVerificationListener(this);
 
    subpanel.add(input_field);
 
@@ -164,8 +165,7 @@ private void setup()
    add_button.addActionListener(new InputAction());
    add_button.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 
-   if (the_verifier!=null)
-       add_button.setEnabled(false);
+   if (the_verifier != null) add_button.setEnabled(false);
 
    //A button for removing values from the list
    remove_button=new BwizHoverButton();

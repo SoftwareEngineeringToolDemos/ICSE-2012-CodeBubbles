@@ -327,7 +327,9 @@ private void start()
    try {
       bc = BumpClient.getBump();
     }
-   catch (Error e) { }
+   catch (Error e) {
+      BoardLog.logE("BEMA","Problem starting bump",e);
+    }
 
    if (bc == null) {
       JOptionPane.showMessageDialog(null,"Can't setup messaging environment",

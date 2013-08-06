@@ -354,8 +354,10 @@ private void initialize(Graphics g)
 {
    Point2D p1 = new Point2D.Double(0,0);
    Point2D p2 = new Point2D.Double(img.getWidth(),img.getHeight());
-   p1 = xf.transform(p1,p1);
-   p2 = xf.transform(p2,p2);
+   if (xf != null) {
+      p1 = xf.transform(p1,p1);
+      p2 = xf.transform(p2,p2);
+    }
 
    int x0 = (int) Math.min(p1.getX(),p2.getX());
    int y0 = (int) Math.min(p1.getY(),p2.getY());

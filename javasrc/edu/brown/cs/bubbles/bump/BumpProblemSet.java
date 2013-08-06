@@ -30,6 +30,8 @@
 
 package edu.brown.cs.bubbles.bump;
 
+import edu.brown.cs.bubbles.board.BoardLog;
+
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 import edu.brown.cs.ivy.xml.IvyXml;
 
@@ -235,8 +237,14 @@ void clearPrivateProblems(String pid)
 }
 
 
-void handlePrivateErrors(String proj,File forfile,String privid,Element ep)
+void handlePrivateErrors(String proj,File forfile,String privid,boolean fail,Element ep)
 {
+   if (fail) {
+      private_problems.put(privid,null);
+      private_problems.notifyAll();
+      return;
+    }
+
    Set<BumpProblemImpl> probs = new HashSet<BumpProblemImpl>();
    for (Element e : IvyXml.children(ep,"PROBLEM")) {
       String pid = getProblemId(e);
@@ -253,12 +261,21 @@ void handlePrivateErrors(String proj,File forfile,String privid,Element ep)
 
 Collection<BumpProblem> getPrivateErrors(String privid)
 {
+   long start = System.currentTimeMillis();
+
    synchronized (private_problems) {
-      if (private_problems.get(privid) == null) {
+      while (!private_problems.containsKey(privid)) {
+	 if ((System.currentTimeMillis() - start) > 10000) break;
 	 try {
-	    private_problems.wait(60000);
+	    private_problems.wait(1000);
 	  }
-	 catch (InterruptedException e) { }
+	 catch (InterruptedException e) {
+	    BoardLog.logE("BUMP","Interrupted getting Private problems " + privid);
+	  }
+       }
+
+      if (!private_problems.containsKey(privid)) {
+	 BoardLog.logE("BUMP","Failed to get private problems " + privid);
        }
       if (private_problems.get(privid) == null) return null;
       return new ArrayList<BumpProblem>(private_problems.get(privid));

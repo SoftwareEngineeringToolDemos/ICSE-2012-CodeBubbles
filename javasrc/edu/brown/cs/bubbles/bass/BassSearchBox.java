@@ -332,11 +332,18 @@ private void fixupDisplay(String txt)
    int kys = bass_properties.getInt(KEYSTROKES_FOR_AUTO_EXPAND_PROP,KEYSTROKES_FOR_AUTO_EXPAND);
    int mxl = bass_properties.getInt(MAX_LEAF_FOR_EXPANDALL_PROP,MAX_LEAF_FOR_EXPANDALL);
    int mxea = bass_properties.getInt(MAX_LEAF_FOR_AUTO_EXPAND_PROP,MAX_LEAF_FOR_AUTO_EXPAND);
+   int mnl = bass_properties.getInt(MIN_LEAF_FOR_AUTO_EXPAND_PROP,MIN_LEAF_FOR_AUTO_EXPAND);
 
    if (txt.trim().length() >= kys) {
       if (tree_model.getLeafCount() <= mxl) expandAll();
       else {
-	 //TODO: expand some here (first ten?)
+	 int ct = active_options.getRowCount();
+	 while (ct < mnl) {
+	    for (int i = 0; i < ct; ++i) {
+	       active_options.expandRow(i);
+	     }
+	    ct = active_options.getRowCount();
+	 }
        }
       int[] aryIndices = tree_model.getIndicesOfFirstMethod();
       int index = 0;

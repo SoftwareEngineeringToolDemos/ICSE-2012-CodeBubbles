@@ -414,6 +414,8 @@ private class ThreadHandler implements BumpRunEventHandler
    @Override public void handleProcessEvent(BumpRunEvent evt)	{ }
 
    @Override public void handleThreadEvent(BumpRunEvent evt) {
+      BumpProcess bp = evt.getProcess();
+      if (launch_control != null && launch_control.getProcess() != bp) return;
       TableUpdater tup = new TableUpdater(evt);
       SwingUtilities.invokeLater(tup);
     }

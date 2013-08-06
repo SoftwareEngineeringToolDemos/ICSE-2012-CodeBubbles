@@ -170,8 +170,9 @@ String BDDT_TOOLBAR_RUN_BUTTON = "DebugRun";
 /********************************************************************************/
 
 Font BDDT_CONSOLE_FONT = BoardFont.getFont(Font.MONOSPACED, Font.PLAIN, 11);
-int BDDT_CONSOLE_WIDTH = BDDT_PROPERTIES.getInt("Bddt.console.width",300);
-int BDDT_CONSOLE_HEIGHT = BDDT_PROPERTIES.getInt("Bddt.console.height",200);
+String BDDT_CONSOLE_WIDTH_PROP = "Bddt.console.width";
+String BDDT_CONSOLE_HEIGHT_PROP = "Bddt.console.height";
+
 
 int BDDT_CONSOLE_MAX_LINES = 1000;
 
@@ -485,12 +486,13 @@ enum BubbleType {
    HISTORY,		// debugging history
    SWING,		// swing debugging
    PERF,		// performance view
-   EVAL,		// evaluation/interaction
+   EVAL,		// evaluation
    EXEC,		// bubble for current execution point
    FRAME,		// bubble for user selection up the call stack
    VALUES,		// stack frame values bubble
    STOP_TRACE,		// trace of stacks just before debugger stop
-   USER 		// bubble created by the user
+   USER,		// bubble created by the user
+   INTERACT		// interaction bubble
 }
 
 

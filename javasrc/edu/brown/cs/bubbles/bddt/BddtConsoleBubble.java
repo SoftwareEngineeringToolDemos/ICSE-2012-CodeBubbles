@@ -87,7 +87,9 @@ BddtConsoleBubble(BddtConsoleController ctrl,StyledDocument doc)
    scroll_pane.setBorder(null);
    scroll_pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
    scroll_pane.setWheelScrollingEnabled(true);
-   Dimension d = new Dimension(BDDT_CONSOLE_WIDTH,BDDT_CONSOLE_HEIGHT - 24);
+   int w = BDDT_PROPERTIES.getInt(BDDT_CONSOLE_WIDTH_PROP);
+   int h = BDDT_PROPERTIES.getInt(BDDT_CONSOLE_HEIGHT_PROP);
+   Dimension d = new Dimension(w,h - 24);
    auto_scroll = true;
 
    text_pane.setPreferredSize(d);

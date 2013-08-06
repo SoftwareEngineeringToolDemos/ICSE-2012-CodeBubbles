@@ -75,7 +75,7 @@ private MouseScaler		mouse_scaler;
 private BudaBubble		search_bubble;
 private BudaBubble		docsearch_bubble;
 private JPanel			button_panel;
-private List<Component>	button_panels;
+private List<Component> button_panels;
 private Collection<BudaTask>	task_shelf;
 private BudaRelations		relation_data;
 private BudaChannelSet		cur_channels;
@@ -675,14 +675,14 @@ public void addPanel(Component pnl,boolean right)
     }
    if (right) button_panels.add(pnl);
    else button_panels.add(0,pnl);
-   
+
    SwingGridPanel root = (SwingGridPanel) getContentPane();
    int ct = 1;
    for (Component c : button_panels) {
       root.addGBComponent(c,ct,0,1,2,0,0);
       ++ct;
     }
-   
+
    root.invalidate();
 }
 
@@ -1303,19 +1303,20 @@ private class MouseScaler extends MouseInputAdapter {
 	 if (p instanceof BudaBubbleArea) {
 	    bba = (BudaBubbleArea) p;
 	    break;
-	 }
-      }
+	  }
+       }
       if (bba != null && bba.getScaleFactor() != 1) {
 	 Point p1 = SwingUtilities.convertPoint(e.getComponent(),e.getPoint(),bba);
 	 double sf = bba.getScaleFactor();
 	 p1.x /= sf;
 	 p1.y /= sf;
 	 c = SwingUtilities.getDeepestComponentAt(bba,p1.x,p1.y);
+	 if (c == null) return;
 	 pt = SwingUtilities.convertPoint(bba,p1,c);
-      }
+       }
       else {
 	 pt = SwingUtilities.convertPoint(e.getComponent(),e.getPoint(),c);
-      }
+       }
       MouseEvent e1 = new MouseEvent(c,e.getID(),e.getWhen(),e.getModifiers(),pt.x,pt.y,e.getClickCount(),
 	       e.isPopupTrigger());
       c.dispatchEvent(e1);

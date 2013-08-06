@@ -86,7 +86,7 @@ BconPackagePanel(String proj,String pkg)
    pnl.addGBComponent(graph_panel,0,1,1,1,10,10);
    JTextField tfld = new JTextField();
    tfld.addActionListener(new FilterAction());
-   
+
    pnl.addGBComponent(tfld,0,2,1,1,10,0);
    JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM,JTabbedPane.SCROLL_TAB_LAYOUT);
    pnl.addGBComponent(tabs,1,1,1,1,0,1);
@@ -171,18 +171,18 @@ private class NodeTab extends JPanel implements ActionListener {
    NodeTab() {
       setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
-      addClassButton("Public",ClassType.PUBLIC);
-      addClassButton("Proteced",ClassType.PROTECTED);
-      addClassButton("Package",ClassType.PACKAGE_PROTECTED);
-      addClassButton("Private",ClassType.PRIVATE);
-      addClassButton("Inner Classes",ClassType.INNER);
-      addClassButton("Classes",ClassType.CLASS);
-      addClassButton("Interfaces",ClassType.INTERFACE);
-      addClassButton("Static",ClassType.STATIC);
-      addClassButton("Abstract",ClassType.ABSTRACT);
-      addClassButton("Enumerations",ClassType.ENUM);
-      addClassButton("Exceptions",ClassType.THROWABLE);
-      addClassButton("Methods",ClassType.METHOD);
+      addClassButton("Public",ClassType.PUBLIC,null);
+      addClassButton("Proteced",ClassType.PROTECTED,null);
+      addClassButton("Package",ClassType.PACKAGE_PROTECTED,null);
+      addClassButton("Private",ClassType.PRIVATE,null);
+      addClassButton("Inner Classes",ClassType.INNER,null);
+      addClassButton("Classes",ClassType.CLASS,NodeType.CLASS);
+      addClassButton("Interfaces",ClassType.INTERFACE,NodeType.INTERFACE);
+      addClassButton("Static",ClassType.STATIC,null);
+      addClassButton("Abstract",ClassType.ABSTRACT,null);
+      addClassButton("Enumerations",ClassType.ENUM,NodeType.ENUM);
+      addClassButton("Exceptions",ClassType.THROWABLE,NodeType.THROWABLE);
+      addClassButton("Methods",ClassType.METHOD,NodeType.METHOD);
       // add(new JSeparator()); -- make it fixed size
       JCheckBox cbx = new JCheckBox("Show Labels",graph_panel.getShowLabels());
       cbx.setToolTipText("Show node labels");
@@ -190,11 +190,15 @@ private class NodeTab extends JPanel implements ActionListener {
       add(cbx);
     }
 
-   private void addClassButton(String nm,ClassType cty) {
+   private void addClassButton(String nm,ClassType cty,NodeType nty) {
       boolean fg = package_graph.getClassOption(cty);
       JCheckBox btn = new JCheckBox(nm,fg);
       btn.addActionListener(new ClassAction(cty));
       btn.setToolTipText("Show " + nm.toLowerCase() + " types");
+      if (nty != null) {
+	 Color c = BconPackageDisplay.getNodeColor(nty);
+	 if (c != null) btn.setForeground(c);
+       }
       add(btn);
     }
 
@@ -244,7 +248,7 @@ private class EdgeTab extends JPanel implements ActionListener {
 
    EdgeTab() {
       setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-   
+
       addRelationButton("Superclass",ArcType.SUBCLASS);
       addRelationButton("Implements",ArcType.IMPLEMENTED_BY);
       addRelationButton("Extends",ArcType.EXTENDED_BY);
@@ -258,7 +262,7 @@ private class EdgeTab extends JPanel implements ActionListener {
       addRelationButton("Field",ArcType.FIELD);
       addRelationButton("Local",ArcType.LOCAL);
       addRelationButton("Members",ArcType.MEMBER_OF);
-   
+
       // add(new JSeparator()); -- make it fixed size
       JCheckBox cbx = new JCheckBox("Show Labels",graph_panel.getShowArcLabels());
       cbx.setToolTipText("Show edge labels");
@@ -373,13 +377,13 @@ private class LayoutAction implements ActionListener {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle typein filtering                                                          */
-/*                                                                              */
+/*										*/
+/*	Handle typein filtering 							 */
+/*										*/
 /********************************************************************************/
 
 private class FilterAction implements ActionListener {
-   
+
    @Override public void actionPerformed(ActionEvent evt) {
       JTextField tfld = (JTextField) evt.getSource();
       String txt = tfld.getText();
@@ -388,12 +392,12 @@ private class FilterAction implements ActionListener {
       if (args.length == 0) return;
       graph_panel.removeSelections();
       for (BconGraphNode gn : package_graph.getNodes()) {
-         String nm = gn.getFullName();
-         boolean fnd = true;
-         for (String s : args) {
-            if (nm.contains(s)) fnd = false;
-          }
-         if (fnd) graph_panel.addSelection(gn);
+	 String nm = gn.getFullName();
+	 boolean fnd = true;
+	 for (String s : args) {
+	    if (nm.contains(s)) fnd = false;
+	  }
+	 if (fnd) graph_panel.addSelection(gn);
        }
     }
 

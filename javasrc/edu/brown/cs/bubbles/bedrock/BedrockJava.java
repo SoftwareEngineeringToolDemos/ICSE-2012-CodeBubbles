@@ -269,6 +269,7 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
    char [] typename = null;
 
    try {
+      BedrockPlugin.logD("Getting search scopes");
       IJavaElement [] pelt;
       if (ijp != null) pelt = new IJavaElement[] { ijp };
       else pelt = getAllProjects();
@@ -277,6 +278,7 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
       if (system) fg |= IJavaSearchScope.SYSTEM_LIBRARIES | IJavaSearchScope.APPLICATION_LIBRARIES;
       scp = SearchEngine.createJavaSearchScope(pelt,fg);
 
+      BedrockPlugin.logD("Locating item to search for");
       IJavaElement [] elts = icu.codeSelect(start,end-start);
 
       if (typeof) {
@@ -333,6 +335,7 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 		}
 
 	       if (typename != null) {
+		  BedrockPlugin.logD("Handling type names");
 		  FindTypeHandler fth = new FindTypeHandler(ijp);
 		  SearchEngine se = new SearchEngine(working);
 		  se.searchAllTypeNames(packagename,SearchPattern.R_EXACT_MATCH,
@@ -411,6 +414,7 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
       return;
     }
 
+   BedrockPlugin.logD("Setting up search");
    SearchEngine se = new SearchEngine(working);
    SearchParticipant [] parts = new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() };
    FindHandler fh = new FindHandler(xw,filter,false);

@@ -267,6 +267,9 @@ private synchronized void setFragmentName(String name,boolean dirty)
 	       last_name = new BaleCrumbBarComponent(this, component_list.getLast(), lastcomp + arrow_char);
 	       last_name.setPackageName(fragment_name);
 	     }
+	    else {
+	       last_name = new BaleCrumbBarComponent(this,null,lastcomp);
+	     }
 	  }
 	 else if (component_list.size() > 0) {
 	    last_name = new BaleCrumbBarComponent(this, component_list.getLast(), lastcomp);

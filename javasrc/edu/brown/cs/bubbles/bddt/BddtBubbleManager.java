@@ -52,6 +52,10 @@ private BddtLaunchControl	launch_control;
 private BudaBubbleArea		bubble_area;
 private Map<BudaBubble,BubbleData> bubble_map;
 
+private static int		console_width = BDDT_PROPERTIES.getInt(BDDT_CONSOLE_WIDTH_PROP);
+private static int		console_height = BDDT_PROPERTIES.getInt(BDDT_CONSOLE_HEIGHT_PROP);
+
+
 private static BoardProperties bddt_properties = BoardProperties.getProperties("Bddt");
 
 private static boolean	delete_old = true;
@@ -238,6 +242,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	    case PERF :
 	    case THREADS :
 	    case EVAL :
+	    case INTERACT :
 	       Rectangle rx = BudaRoot.findBudaLocation(bdx.getBubble());
 	       if (rx != null) {
 		  xpos = Math.max(xpos,rx.x + rx.width + 40);
@@ -330,6 +335,7 @@ void restart()
 	 case SWING :
 	 case PERF :
 	 case EVAL :
+	 case INTERACT :
 	    break;
 	 case EXEC :
 	 case FRAME :
@@ -346,6 +352,12 @@ void restart()
 }
 
 
+
+/********************************************************************************/
+/*										*/
+/*	Entries to create auxilliary bubbles					*/
+/*										*/
+/********************************************************************************/
 
 BudaBubble createThreadBubble()
 {
@@ -372,7 +384,7 @@ BudaBubble createThreadBubble()
    BudaBubble bb = new BddtThreadView(launch_control);
    Rectangle r = launch_control.getBounds();
    int x = r.x;
-   int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + 20;
+   int y = r.y + r.height + console_height + 20 + 20;
 
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_THREADS)) {
       bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
@@ -451,7 +463,7 @@ BudaBubble createHistoryBubble()
 
    Rectangle r = launch_control.getBounds();
    int x = r.x;
-   int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + BDDT_STACK_HEIGHT + 20 + 20;
+   int y = r.y + r.height + console_height + 20 + BDDT_STACK_HEIGHT + 20 + 20;
 
    if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_HISTORY)) {
       bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
@@ -503,6 +515,124 @@ BudaBubble createSwingBubble()
    return bb;
 }
 
+
+
+BudaBubble createPerformanceBubble()
+{
+   setupBubbleArea();
+
+   Collection<BubbleData> bbls = new ArrayList<BubbleData>(bubble_map.values());
+   for (BubbleData bd : bbls) {
+      switch (bd.getBubbleType()) {
+	 case PERF :
+	    BudaBubble tbd = bd.getBubble();
+	    if (tbd.isFloating() && tbd.isShowing()) return tbd;
+	    if (tbd.isFloating()) {
+	       tbd.setVisible(true);
+	       return tbd;
+	     }
+	    break;
+	 default :
+	    break;
+       }
+    }
+
+   if (bubble_area == null) return null;
+   BudaBubble bb = new BddtPerfViewTable(launch_control);
+
+   Rectangle r = launch_control.getBounds();
+   int x = r.x + BDDT_HISTORY_WIDTH + 20;
+   int y = r.y + r.height + console_height + 20 + BDDT_STACK_HEIGHT + 20 + 20;
+
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_PERFORMANCE)) {
+      bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
+    }
+   else {
+      bubble_area.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
+    }
+
+   return bb;
+}
+
+
+
+
+BudaBubble createValueViewerBubble()
+{
+   setupBubbleArea();
+
+   Collection<BubbleData> bbls = new ArrayList<BubbleData>(bubble_map.values());
+   for (BubbleData bd : bbls) {
+      switch (bd.getBubbleType()) {
+	 case EVAL :
+	    BudaBubble tbd = bd.getBubble();
+	    if (tbd.isFloating() && tbd.isShowing()) return tbd;
+	    if (tbd.isFloating()) {
+	       tbd.setVisible(true);
+	       return tbd;
+	     }
+	    break;
+	 default :
+	    break;
+       }
+    }
+
+   if (bubble_area == null) return null;
+   BudaBubble bb = new BddtEvaluationBubble(launch_control);
+
+   Rectangle r = launch_control.getBounds();
+   int x = r.x + console_width + 20;
+   int y = r.y;
+
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_EVALUATION)) {
+      bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
+    }
+   else {
+      bubble_area.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
+    }
+
+   return bb;
+}
+
+
+
+
+BudaBubble createInteractionBubble()
+{
+   setupBubbleArea();
+
+   Collection<BubbleData> bbls = new ArrayList<BubbleData>(bubble_map.values());
+   for (BubbleData bd : bbls) {
+      switch (bd.getBubbleType()) {
+	 case INTERACT :
+	    BudaBubble tbd = bd.getBubble();
+	    if (tbd.isFloating() && tbd.isShowing()) return tbd;
+	    if (tbd.isFloating()) {
+	       tbd.setVisible(true);
+	       return tbd;
+	     }
+	    break;
+	 default :
+	    break;
+       }
+    }
+
+   if (bubble_area == null) return null;
+   BudaBubble bb = new BddtInteractionBubble(launch_control);
+
+   Rectangle r = launch_control.getBounds();
+   int x = r.x + BDDT_STACK_WIDTH + 20;
+   int y = r.y + r.height + console_height + 20 + 20;
+
+   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_EVALUATION)) {
+      bubble_area.addBubble(bb,BudaBubblePosition.FLOAT,x,y);
+    }
+   else {
+      bubble_area.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
+    }
+
+   return bb;
+}
 
 
 
@@ -679,6 +809,7 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
 	    case THREADS :
 	    case STOP_TRACE :
 	    case EVAL :
+	    case INTERACT :
 	       continue;
 	    default:
 	       break;
@@ -783,6 +914,7 @@ private static class BubbleData {
    private BumpThreadStack for_stack;
    private BumpStackFrame for_frame;
    private int		frame_level;
+   private int		stack_depth;
    private BudaBubble	for_bubble;
    private BubbleType	bubble_type;
    private long 	last_used;
@@ -795,6 +927,7 @@ private static class BubbleData {
       for_stack = null;
       for_frame = null;
       frame_level = -1;
+      stack_depth = -1;
       if (bb instanceof BddtConsoleBubble) bubble_type = BubbleType.CONSOLE;
       else if (bb instanceof BddtLaunchControl) bubble_type = BubbleType.BDDT;
       else if (bb instanceof BddtThreadView) bubble_type = BubbleType.THREADS;
@@ -803,7 +936,7 @@ private static class BubbleData {
       else if (bb instanceof BddtPerfViewTable) bubble_type = BubbleType.PERF;
       else if (bb instanceof BddtStopTraceBubble) bubble_type = BubbleType.STOP_TRACE;
       else if (bb instanceof BddtEvaluationBubble) bubble_type = BubbleType.EVAL;
-      else if (bb instanceof BddtInteractionBubble) bubble_type = BubbleType.EVAL;
+      else if (bb instanceof BddtInteractionBubble) bubble_type = BubbleType.INTERACT;
       else bubble_type = BubbleType.USER;
       last_used = System.currentTimeMillis();
       can_remove = false;
@@ -815,6 +948,7 @@ private static class BubbleData {
       base_thread = bt;
       for_stack = stk;
       for_frame = sf;
+      stack_depth = stk.getNumFrames();
       frame_level = -1;
       for (int i = 0; i < stk.getNumFrames(); ++i) {
 	 if (stk.getFrame(i) == for_frame) {
@@ -859,7 +993,7 @@ private static class BubbleData {
 	    break;
 	  }
        }
-      if (lvl != frame_level) return false;
+      if (lvl != frame_level || stk.getNumFrames() != stack_depth) return false;
       return matchFrameMethod(frm,for_frame);
     }
 

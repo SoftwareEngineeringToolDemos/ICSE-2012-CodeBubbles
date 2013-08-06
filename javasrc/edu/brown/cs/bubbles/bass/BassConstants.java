@@ -146,6 +146,14 @@ String MAX_LEAF_FOR_AUTO_EXPAND_PROP = "Bass.max.leaf.for.auto.expand";
 
 
 /**
+ * 	If fewer than this number of items, expand one level
+ **/
+int MIN_LEAF_FOR_AUTO_EXPAND = 10;
+String MIN_LEAF_FOR_AUTO_EXPAND_PROP = "Bass.min.leaf.for.auto.expand";
+
+
+
+/**
  *	Minimum number of keystrokes before auto expand all
  **/
 

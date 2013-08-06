@@ -393,72 +393,72 @@ private class ConsoleDocument extends DefaultStyledDocument {
 
    synchronized void addText(TextMode mode,String txt) {
       if (log_writer != null) {
-	 try {
-	    log_writer.write(txt);
-	  }
-	 catch (IOException e) {
-	    BoardLog.logE("BDDT","Problem writing log file: " + e);
-	    log_writer = null;
-	  }
+         try {
+            log_writer.write(txt);
+          }
+         catch (IOException e) {
+            BoardLog.logE("BDDT","Problem writing log file: " + e);
+            log_writer = null;
+          }
        }
-
+   
       int lns = countLines(txt);
       writeLock();
       try {
-	 while (line_count+lns >= BDDT_CONSOLE_MAX_LINES) {
-	    int lidx = -1;
-	    try {
-	       Segment s = new Segment();
-	       int ln = max_length+2;
-	       int dln = getLength();
-	       if (ln > dln) ln = dln;
-	       getText(0,ln,s);
-
-	       int delct = 0;
-	       int idx = -1;
-	       for (int i = lidx+1; i < s.length(); ++i) {
-		  if (s.charAt(i) == '\n') {
-		     idx = i;
-		     ++delct;
-		     if (line_count + lns - delct < BDDT_CONSOLE_MAX_LINES) break;
-		   }
-		}
-	       if (idx >= 0) {
-		  remove(0,idx+1);
-		  line_count -= delct;
-		}
-	       else break;
-	     }
-	    catch (BadLocationException e) {
-	       BoardLog.logE("BDDT","Problem remove line from console",e);
-	     }
-	  }
-
-	 try {
-	    AttributeSet attrs = null;
-	    switch (mode) {
-	       case STDERR :
-		  attrs = stderr_attrs;
-		  break;
-	       default :
-	       case EOF :
-	       case STDOUT :
-		  attrs = stdout_attrs;
-		  break;
-	       case STDIN :
-		  attrs = stdin_attrs;
-		  break;
-	     }
-	    insertString(getLength(),txt,attrs);
-	    line_count += lns;
-	    if (txt.length() > max_length) max_length = txt.length();
-	  }
-	 catch (BadLocationException e) {
-	    BoardLog.logE("BDDT","Problem adding line to console",e);
-	  }
+         while (line_count+lns >= BDDT_CONSOLE_MAX_LINES) {
+            int lidx = -1;
+            try {
+               Segment s = new Segment();
+               int ln = max_length+2;
+               int dln = getLength();
+               if (ln > dln) ln = dln;
+               getText(0,ln,s);
+   
+               int delct = 0;
+               int idx = -1;
+               for (int i = lidx+1; i < s.length(); ++i) {
+        	  if (s.charAt(i) == '\n') {
+        	     idx = i;
+        	     ++delct;
+        	     if (line_count + lns - delct < BDDT_CONSOLE_MAX_LINES) break;
+        	   }
+        	}
+               if (idx >= 0) {
+        	  remove(0,idx+1);
+        	  line_count -= delct;
+        	}
+               else break;
+             }
+            catch (BadLocationException e) {
+               BoardLog.logE("BDDT","Problem remove line from console",e);
+             }
+          }
+   
+         try {
+            AttributeSet attrs = null;
+            switch (mode) {
+               case STDERR :
+        	  attrs = stderr_attrs;
+        	  break;
+               default :
+               case EOF :
+               case STDOUT :
+        	  attrs = stdout_attrs;
+        	  break;
+               case STDIN :
+        	  attrs = stdin_attrs;
+        	  break;
+             }
+            insertString(getLength(),txt,attrs);
+            line_count += lns;
+            if (txt.length() > max_length) max_length = txt.length();
+          }
+         catch (BadLocationException e) {
+            BoardLog.logE("BDDT","Problem adding line to console",e);
+          }
        }
       finally { writeUnlock(); }
-
+   
       if (mode == TextMode.EOF) finish();
     }
 

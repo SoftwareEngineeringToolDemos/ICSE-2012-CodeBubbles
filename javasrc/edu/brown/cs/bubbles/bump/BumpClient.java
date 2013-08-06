@@ -106,8 +106,13 @@ public synchronized static BumpClient getBump()
 {
    if (default_client == null) {
       BoardLanguage bl = BoardSetup.getSetup().getLanguage();
+      if (bl == null) {
+	 bl = BoardLanguage.JAVA;
+	 BoardSetup.getSetup().setLanguage(bl);
+       }
       // choose client based on language
       switch (bl) {
+	 default :
 	 case JAVA :
 	    default_client = new BumpClientJava();
 	    break;
@@ -562,7 +567,7 @@ public String createPrivateBuffer(String proj,String file,String bid)
 
    Element xml = getXmlReply("CREATEPRIVATE",proj,q,null,0);
    if (IvyXml.isElement(xml,"RESULT")) return IvyXml.getText(xml);
-   
+
    return null;
 }
 
@@ -3103,6 +3108,7 @@ protected class IDEHandler implements MintHandler {
 	    problem_set.handlePrivateErrors(IvyXml.getAttrString(e,"PROJECT"),
 		  new File(IvyXml.getAttrString(e,"FILE")),
 		  IvyXml.getAttrString(e,"ID"),
+		  IvyXml.getAttrBool(e,"FAILURE"),
 		  IvyXml.getChild(e,"MESSAGES"));
 	  }
 	 else if (cmd.equals("EDIT")) {

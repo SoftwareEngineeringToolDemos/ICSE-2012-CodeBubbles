@@ -424,6 +424,15 @@ private class SpellFixer implements Runnable {
 	    totry.add(sf);
 	  }
        }
+
+      // remove problematic cases
+      for (Iterator<SpellFix> it = totry.iterator(); it.hasNext(); ) {
+	 SpellFix sf = it.next();
+	 if (for_identifier.equals("put") && sf.getText().equals("get")) it.remove();
+	 if (for_identifier.startsWith("set") && sf.getText().startsWith("get")) it.remove();
+	 if (for_identifier.equals("List") && sf.getText().equals("int")) it.remove();
+       }
+
       if (totry.size() == 0) {
 	 BoardLog.logD("BALE", "SPELL: No spelling correction found");
 	 return;
@@ -453,7 +462,6 @@ private class SpellFixer implements Runnable {
 	    BoardLog.logD("BALE","SPELL: Try replacing " + for_identifier + " WITH " + sf.getText());
 	    bc.editPrivateFile(proj,file,pid,soff,eoff,sf.getText());
 	    probs = bc.getPrivateProblems(filename,pid);
-
 	    bc.beginPrivateEdit(filename,pid);		// undo and wait
 	    bc.editPrivateFile(proj,file,pid,soff,soff+sf.getText().length(),for_identifier);
 	    bc.getPrivateProblems(filename,pid);
@@ -604,6 +612,10 @@ private class DocHandler implements DocumentListener, CaretListener {
    @Override public void caretUpdate(CaretEvent e) {
       int off = e.getDot();
       if (off == caret_position) return;
+      if (off >= start_offset && off <= end_offset) {
+	 caret_position = off;
+	 return;
+       }
       BoardLog.logD("BALE","SPELL: Clear for caret update");
       clearRegion();
     }
@@ -741,4 +753,3 @@ private static class Contexter implements BaleContextListener {
 
 
 /* end of BaleCorrector.java */
-

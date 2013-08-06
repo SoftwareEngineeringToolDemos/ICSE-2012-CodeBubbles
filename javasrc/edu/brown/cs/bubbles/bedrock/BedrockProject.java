@@ -1504,6 +1504,10 @@ private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) 
       dxw.end();
       BedrockPlugin.logD("Resource: " + dxw.toString());
     }
+   else {
+      BedrockPlugin.logD("Resource Change: " + evt.getBuildKind() + " " + evt.getType() + " " +
+			    evt.getSource() + " " + evt.getResource());
+    }
 
    if (evt.getType() == IResourceChangeEvent.POST_CHANGE) {
       try {

@@ -159,7 +159,7 @@ private void computeRoute(BudaBubbleLink bbl)
 	    else x1 = tgt.getX() - TARGET_DELTA;
 	  }
 	 else x1 = x0 - TARGET_DELTA;
-	 x0 = addHPivot(bbl,x0,y0,x1);
+	 x0 = addHPivot(bbl,x0,y0,x1,tgt.getY());
 	 validleft = validright = false;
 	 validup = validdown = true;
        }
@@ -174,7 +174,7 @@ private void computeRoute(BudaBubbleLink bbl)
 	    else x1 = tgt.getX() + TARGET_DELTA;
 	  }
 	 else x1 = x0 + TARGET_DELTA;
-	 x0 = addHPivot(bbl,x0,y0,x1);
+	 x0 = addHPivot(bbl,x0,y0,x1,tgt.getY());
 	 validleft = validright = false;
 	 validup = validdown = true;
        }
@@ -189,7 +189,7 @@ private void computeRoute(BudaBubbleLink bbl)
 	    else y1 = tgt.getY() - TARGET_DELTA;
 	  }
 	 else y1 = y0 - TARGET_DELTA;
-	 y0 = addVPivot(bbl,x0,y0,y1);
+	 y0 = addVPivot(bbl,x0,y0,y1,tgt.getX());
 	 validleft = validright = true;
 	 validup = validdown = false;
        }
@@ -204,7 +204,7 @@ private void computeRoute(BudaBubbleLink bbl)
 	    else y1 = tgt.getY() + TARGET_DELTA;
 	  }
 	 else y1 = y0 + TARGET_DELTA;
-	 y0 = addVPivot(bbl,x0,y0,y1);
+	 y0 = addVPivot(bbl,x0,y0,y1,tgt.getX());
 	 validleft = validright = true;
 	 validup = validdown = false;
        }
@@ -220,7 +220,7 @@ private void computeRoute(BudaBubbleLink bbl)
 
 
 
-private double addHPivot(BudaBubbleLink bbl,double x0,double y0,double x1)
+private double addHPivot(BudaBubbleLink bbl,double x0,double y0,double x1,double yt)
 {
    double x2 = x1;
 
@@ -228,6 +228,13 @@ private double addHPivot(BudaBubbleLink bbl,double x0,double y0,double x1)
       if ((x0 < x1 && x2 > x0) || (x0 > x1 && x2 < x0)) {
 	 SortedMap<Double,VPath> vmap = v_paths.subMap(x2-CHANNEL_SIZE/2,x2+CHANNEL_SIZE/2);
 	 if (vmap.isEmpty()) break;
+	 boolean ovlap = false;
+	 for (VPath vp : vmap.values()) {
+	    if (vp.overlaps(y0,yt)) {
+	       ovlap = true;
+	    }
+	 }
+	 if (!ovlap) break;
        }
       if ((i&1) == 0) x2 = x1 + (i/2+1)*CHANNEL_SIZE;
       else x2 = x1 - (i/2+1)*CHANNEL_SIZE;
@@ -248,15 +255,22 @@ private double addHPivot(BudaBubbleLink bbl,double x0,double y0,double x1)
 
 
 
-private double addVPivot(BudaBubbleLink bbl,double x0,double y0,double y1)
+private double addVPivot(BudaBubbleLink bbl,double x0,double y0,double y1,double xt)
 {
    double y2 = y1;
 
    for (int i = 0; ; ++i) {
       if ((y0 < y1 && y2 > y0) || (y0 > y1 && y2 < y0)) {
 	 SortedMap<Double,HPath> hmap = h_paths.subMap(y2-CHANNEL_SIZE/2,y2+CHANNEL_SIZE/2);
-	 if (hmap.isEmpty()) break;
+	 boolean ovlap = false;
+	 for (HPath hp : hmap.values()) {
+	    if (hp.overlaps(x0,xt)) {
+	      ovlap = true; 
+	    }
+	  }
+	 if (!ovlap) break;
        }
+
       if ((i&1) == 0) y2 = y1 + (i/2+1)*CHANNEL_SIZE;
       else y2 = y1 - (i/2+1)*CHANNEL_SIZE;
     }
@@ -300,7 +314,11 @@ private static class VPath {
     }
 
    double getPosition() 		{ return x_pos; }
-
+   
+   boolean overlaps(double y0,double y1) {
+      if (y0 >= y_to || y1 <= y_from) return false;
+      return true;
+    }
 }	// end of inner class VPath
 
 
@@ -324,6 +342,11 @@ private static class HPath {
     }
 
    double getPosition() 		{ return y_pos; }
+   
+   boolean overlaps(double x0,double x1) {
+      if (x0 >= x_to || x1 <= x_from) return false;
+      return true;
+    }
 
 }	// end of inner class HPath
 

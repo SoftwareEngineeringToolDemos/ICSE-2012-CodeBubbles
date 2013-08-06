@@ -139,8 +139,8 @@ synchronized boolean isActive()
     }
 
    if (stop) {
-      bubble_area.checkAreaDimensions();
       move_timer.stop();
+      bubble_area.checkAreaDimensions();
     }
 
    if (upds != null && upds.size() > 0) {

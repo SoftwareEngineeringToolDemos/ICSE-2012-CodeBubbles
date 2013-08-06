@@ -26,6 +26,10 @@
 package edu.brown.cs.bubbles.buda;
 
 
+import edu.brown.cs.ivy.xml.*;
+
+import org.w3c.dom.Element;
+
 import javax.swing.*;
 
 import java.awt.*;
@@ -61,6 +65,7 @@ private List<BudaChannel>	channel_items;
 private Color			top_color;
 private Color			bottom_color;
 private BudaBubbleArea		current_area;
+private Element 		default_config;
 
 
 
@@ -71,13 +76,15 @@ private BudaBubbleArea		current_area;
 /*										*/
 /********************************************************************************/
 
-public BudaChannelSet(BudaRoot root,Color topc,Color botc)
+public BudaChannelSet(BudaRoot root,Color topc,Color botc,String dflt)
 {
    for_root = root;
    top_color = topc;
    bottom_color = botc;
    channel_items = new ArrayList<BudaChannel>();
    current_area = null;
+   default_config = null;
+   if (dflt != null) default_config = IvyXml.convertStringToXml(dflt);
 
    channel_panel = new ChannelPanel();
    scroll_pane = new JScrollPane(channel_panel);
@@ -168,7 +175,7 @@ public void setChannelName(String name)
 
 public BudaBubbleArea addChannel(String label)
 {
-   BudaChannel bc = new BudaChannel(for_root,null,this,label);
+   BudaChannel bc = new BudaChannel(for_root,default_config,this,label);
    channel_items.add(bc);
    JViewport vp = scroll_pane.getViewport();
    Rectangle r = bc.getBounds();

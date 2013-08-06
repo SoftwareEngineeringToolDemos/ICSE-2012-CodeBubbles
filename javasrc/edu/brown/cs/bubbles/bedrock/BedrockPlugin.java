@@ -302,10 +302,10 @@ public void earlyStartup()
    if (!doing_exit) {
       doing_exit = true;
       shutdown_mint = true;
-      mint_control.shutDown();
+      if (mint_control != null) mint_control.shutDown();
     }
 
-   bedrock_project.terminate();
+   if (bedrock_project != null) bedrock_project.terminate();
 
    super.stop(ctx);
 }
@@ -1044,6 +1044,28 @@ static void logW(String msg)		{ log(BedrockLogLevel.WARNING,msg,null); }
 static void logI(String msg)		{ log(BedrockLogLevel.INFO,msg,null); }
 
 static void logD(String msg)		{ log(BedrockLogLevel.DEBUG,msg,null); }
+
+static void logX(String msg)
+{
+   try {
+      throw new Error();
+    }
+   catch (Error x) {
+      log(BedrockLogLevel.DEBUG,msg,x);
+    }
+}
+
+static void logEX(String msg)
+{
+   try {
+      throw new Error();
+    }
+   catch (Error x) {
+      log(BedrockLogLevel.ERROR,msg,x);
+    }
+}
+
+
 
 static void log(String msg)		{ logI(msg); }
 

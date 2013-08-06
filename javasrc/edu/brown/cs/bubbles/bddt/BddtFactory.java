@@ -195,6 +195,7 @@ public void newDebugger(BumpLaunchConfig blc)
    br.setCurrentChannel(ctrl);
 
    ctrl.setupKeys();
+   ctrl.setupInitialBubbles();
 }
 
 
@@ -244,7 +245,12 @@ private void setupDebugging(BudaRoot br)
 
    buda_root = br;
 
-   debug_channels = new BudaChannelSet(br,BDDT_CHANNEL_TOP_COLOR,BDDT_CHANNEL_BOTTOM_COLOR);
+   String dflt = null;
+   if (bddt_properties.getBoolean("Bddt.grow.down")) {
+      // set up default bubble area to be larger vertically
+    }
+
+   debug_channels = new BudaChannelSet(br,BDDT_CHANNEL_TOP_COLOR,BDDT_CHANNEL_BOTTOM_COLOR,dflt);
    BudaBubbleArea bba = debug_channels.getBubbleArea();
    if (bba != null) bba.setProperty("Bddt.debug",Boolean.TRUE);
 
@@ -365,68 +371,9 @@ private class PanelHandler implements ActionListener {
 
 /********************************************************************************/
 /*										*/
-/*	Bubble making methods							*/
+/*	Bubble making methods (for non-debug mode)				*/
 /*										*/
 /********************************************************************************/
-
-BudaBubble makeThreadBubble(BudaBubble pview,BddtLaunchControl ctrl)
-{
-   BudaRoot br = BudaRoot.findBudaRoot(pview);
-   if (br == null) return null;
-
-   BudaBubble bb = null;
-   bb = new BddtThreadView(ctrl);
-   Rectangle r = pview.getBounds();
-   int x = r.x;
-   int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + 20;
-
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_THREADS)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   br.add(bb,bc);
-   BudaDefaultPort from = new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true);
-   BudaDefaultPort to = new BudaDefaultPort(BudaPortPosition.BORDER_ANY,true);
-   BudaBubbleLink lk = new BudaBubbleLink(pview, from, bb, to);
-   br.addLink(lk);
-
-   return bb;
-}
-
-
-
-BudaBubble makeConsoleBubble(BudaBubble src,BddtLaunchControl ctrl)
-{
-   if (ctrl == null) return null;
-
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
-   if (bba == null) return null;
-
-   BudaBubble bb = null;
-   bb = console_controller.createConsole(ctrl);
-   Rectangle r = src.getBounds();
-   int x = r.x;
-   int y = r.y + r.height + 20;
-
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_CONSOLE)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   bba.add(bb,bc);
-
-   return bb;
-}
-
-
-
 
 BudaBubble makeConsoleBubble(BudaBubble src,BumpProcess proc)
 {
@@ -441,166 +388,11 @@ BudaBubble makeConsoleBubble(BudaBubble src,BumpProcess proc)
    int x = r.x;
    int y = r.y + r.height + 20;
 
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_CONSOLE)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   bba.add(bb,bc);
+   bba.addBubble(bb,BudaBubblePosition.MOVABLE,x,y);
 
    return bb;
 }
 
-
-
-
-BudaBubble makeHistoryBubble(BudaBubble src,BddtLaunchControl ctrl)
-{
-   if (ctrl == null) return null;
-
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
-   if (bba == null) return null;
-
-   BudaBubble bb = null;
-   bb = history_controller.createHistory(ctrl);
-   if (bb == null) return null;
-
-   Rectangle r = src.getBounds();
-   int x = r.x;
-   int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + BDDT_STACK_HEIGHT + 20 + 20;
-
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_HISTORY)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   bba.add(bb,bc);
-
-   return bb;
-}
-
-
-
-BudaBubble makePerformanceBubble(BudaBubble src,BddtLaunchControl ctrl)
-{
-   if (ctrl == null) return null;
-
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
-   if (bba == null) return null;
-
-   BudaBubble bb = null;
-   bb = new BddtPerfViewTable(ctrl);
-
-   Rectangle r = src.getBounds();
-   int x = r.x + BDDT_HISTORY_WIDTH + 20;
-   int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + BDDT_STACK_HEIGHT + 20 + 20;
-
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_PERFORMANCE)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   bba.add(bb,bc);
-
-   return bb;
-}
-
-
-
-
-BudaBubble makeValueViewerBubble(BudaBubble src,BddtLaunchControl ctrl)
-{
-   if (ctrl == null) return null;
-
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
-   if (bba == null) return null;
-
-   BudaBubble bb = null;
-   bb = new BddtEvaluationBubble(ctrl);
-
-   Rectangle r = src.getBounds();
-   int x = r.x + BDDT_CONSOLE_WIDTH + 20;
-   int y = r.y;
-
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_EVALUATION)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   bba.add(bb,bc);
-
-   return bb;
-}
-
-
-
-BudaBubble makeInteractionBubble(BudaBubble src,BddtLaunchControl ctrl)
-{
-   if (ctrl == null) return null;
-
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
-   if (bba == null) return null;
-
-   BudaBubble bb = null;
-   bb = new BddtInteractionBubble(ctrl);
-
-   Rectangle r = src.getBounds();
-   int x = r.x + BDDT_STACK_WIDTH + 20;
-   int y = r.y + r.height + BDDT_CONSOLE_HEIGHT + 20 + 20;
-
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_INTERACTION)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   bba.add(bb,bc);
-
-   return bb;
-}
-
-
-
-BudaBubble makeSwingBubble(BudaBubble src,BddtLaunchControl ctrl)
-{
-   if (ctrl == null) return null;
-
-   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
-   if (bba == null) return null;
-
-   BudaBubble bb = null;
-   bb = new BddtSwingPanel(ctrl);
-
-   Rectangle r = src.getBounds();
-   int x = r.x + r.width + 20;
-   int y = r.y;
-
-   BudaConstraint bc;
-   if (bddt_properties.getBoolean(BDDT_PROPERTY_FLOAT_SWING)) {
-      bc = new BudaConstraint(BudaBubblePosition.FLOAT,x,y);
-    }
-   else {
-      bc = new BudaConstraint(BudaBubblePosition.MOVABLE,x,y);
-    }
-
-   bba.add(bb,bc);
-
-   return bb;
-}
 
 
 

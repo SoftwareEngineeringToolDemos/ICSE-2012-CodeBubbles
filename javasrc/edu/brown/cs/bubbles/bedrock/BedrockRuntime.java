@@ -1256,7 +1256,7 @@ private void queueConsole(int pid,String txt,boolean err,boolean eof)
 	 cd.addWrite(txt,err,eof);
        }
       else {
-	 BedrockPlugin.logD("Console newapp " + pid + " " + txt.length());
+	 BedrockPlugin.logD("Console newapp " + pid + " " + (txt == null ? 0 : txt.length()));
 	 cd = new ConsoleData();
 	 cd.addWrite(txt,err,eof);
 	 console_map.put(pid,cd);

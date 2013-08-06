@@ -6,31 +6,18 @@
 /*										*/
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
-/*	Copyright 2009 Brown University -- Andrew Bragdon		      */
 /*********************************************************************************
- *  Copyright 2009, Brown University, Providence, RI.				 *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
  *										 *
  *			  All Rights Reserved					 *
  *										 *
- *  Permission to use, copy, modify, and distribute this software and its	 *
- *  documentation for any purpose other than its incorporation into a		 *
- *  commercial product is hereby granted without fee, provided that the 	 *
- *  above copyright notice appear in all copies and that both that		 *
- *  copyright notice and this permission notice appear in supporting		 *
- *  documentation, and that the name of Brown University not be used in 	 *
- *  advertising or publicity pertaining to distribution of the software 	 *
- *  without specific, written prior permission. 				 *
- *										 *
- *  BROWN UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS		 *
- *  SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND		 *
- *  FITNESS FOR ANY PARTICULAR PURPOSE.  IN NO EVENT SHALL BROWN UNIVERSITY	 *
- *  BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY 	 *
- *  DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,		 *
- *  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS		 *
- *  ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 	 *
- *  OF THIS SOFTWARE.								 *
+ * This program and the accompanying materials are made available under the	 *
+ * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
  *										 *
  ********************************************************************************/
+
 
 /* SVN: $Id$ */
 
@@ -38,24 +25,27 @@
 
 package edu.brown.cs.bubbles.buda;
 
+import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
+import edu.brown.cs.bubbles.board.*;
+
 import edu.brown.cs.ivy.swing.SwingText;
 import edu.brown.cs.ivy.xml.IvyXml;
 
-import edu.brown.cs.bubbles.board.*;
-
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.filechooser.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 
-class BudaTopBar extends JPanel implements ActionListener, BudaConstants, BoardConstants {
+class BudaTopBar extends JPanel implements ActionListener, BudaConstants, BoardConstants, BudaHelpClient {
 
 
 
@@ -80,6 +70,9 @@ private Map<BudaWorkingSetImpl, ChevronButton> chevron_buttons;
 private JButton fake_chevron_button;
 private BudaTaskShelf task_shelf;
 private JMenu task_dummy_menu;
+private JMenuItem share_button;
+private JMenuItem loadshare_button;
+private Collection<BudaShare> open_shares;
 
 private static final long serialVersionUID = 1L;
 
@@ -104,6 +97,9 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    chevron_buttons = new HashMap<BudaWorkingSetImpl, ChevronButton>();
    fake_chevron_button = null;
    task_shelf = null;
+   share_button = null;
+   loadshare_button = null;
+   open_shares = null;
 
    Dimension d = new Dimension(0,BUBBLE_TOP_BAR_HEIGHT);
    setMinimumSize(d);
@@ -111,6 +107,7 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    setMaximumSize(d);
 
    setBackground(TOP_BAR_COLOR);
+   BudaRoot.registerHelp(this,this);
 
    bubble_menu = new JPopupMenu("Menu");
    task_dummy_menu = new ShelfMenu();
@@ -118,23 +115,33 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    bubble_menu.add(task_dummy_menu);
    addButton(bubble_menu,"Define Working Set","Mark the current display as a working set");
    addButton(bubble_menu,"Load Working Set","Load a saved working set");
+   loadshare_button = addButton(bubble_menu,"Load Shared Working Set","Load a shared working set");
+   loadshare_button.setEnabled(false);
    //addButton(bubble_menu,"Load Task","Load a saved task");
    addButton(bubble_menu,"Save Configuration","Save the current configuration");
    addButton(bubble_menu,"Clear Bubbles in View","Remove all bubbles in the current view");
    addButton(bubble_menu,"Print","Print the current view");
    addButton(bubble_menu,"Export as PDF","Save the current view as a PDF file");
+   bubble_menu.add(new JSeparator());
+   addButton(bubble_menu,"Clear All Bubbles","Close all bubbles");
    addButton(bubble_menu,"Save All","Save all open files");
    addButton(bubble_menu,"Quit","Exit from Bubbles");
    bubble_menu.addPopupMenuListener(new ShelfListener());
 
    workingset_menu = new JPopupMenu("WorkingSet");
-   addButton(workingset_menu,"Remove Working Set","Remove the working set, leave the bubbles");
-   addButton(workingset_menu,"Clear and Remove Working Set","Remove the working set and its bubbles");
-   addButton(workingset_menu,"Save Working Set","Save the working set to a file");
-   addButton(workingset_menu,"Make Task From Working Set","Save the working set to a file");
+   addButton(workingset_menu, "Close and Save to Task Shelf", "Close the working set and save it to the task shelf");
    addButton(workingset_menu,"Export as PDF","Save the working set as a PDF file");
-   addButton(workingset_menu,"EMail Working Set","EMail the working set");
+   addButton(workingset_menu,"EMail Working Set","EMail the Working Set");
    addButton(workingset_menu,"EMail as PDF","EMail a PDF image of the working set");
+   share_button = addButton(workingset_menu,"Share Working Set","Share this working set dynamically");
+   workingset_menu.add(new JSeparator());
+   addButton(workingset_menu,"Remove Working Set","Remove the working set, but don't close any bubbles");
+   addButton(workingset_menu,"Clear and Remove Working Set","Remove the working set and close its bubbles");
+   addButton(workingset_menu,"Save Working Set","Save the working set to a file");
+   addButton(workingset_menu,"Save Working Set to Task Shelf","Save the working set to the task shelf");
+   addButton(workingset_menu,"Clear Bubbles in Working Set","Remove all bubbles in the working set");
+   workingset_menu.add(new JSeparator());
+   addButton(workingset_menu,"Clear All Bubbles","Close all bubbles");
 
    Mouser mm = new Mouser();
    addMouseListener(mm);
@@ -201,7 +208,7 @@ void addMenuItem(Component c,boolean ws)
 /*										*/
 /********************************************************************************/
 
-private void addButton(JComponent menu,String id,String tt)
+private JMenuItem addButton(JComponent menu,String id,String tt)
 {
    JMenuItem itm = new JMenuItem(id);
    itm.addActionListener(this);
@@ -210,6 +217,8 @@ private void addButton(JComponent menu,String id,String tt)
       ToolTipManager.sharedInstance().registerComponent(itm);
     }
    menu.add(itm);
+
+   return itm;
 }
 
 
@@ -244,8 +253,7 @@ private void addButton(JComponent menu,String id,String tt)
        }
     }
    else if (cmd.equals("Quit")) {
-      if (buda_root.handleQuitRequest())
-	 System.exit(0);
+      buda_root.handleCloseRequest();
     }
    else if (cmd.equals("Load Working Set")) {
       buda_root.setChannelSet(null);
@@ -263,19 +271,6 @@ private void addButton(JComponent menu,String id,String tt)
 	  }
        }
     }
-   /******************
-   else if (cmd.equals("Load Task")) {
-      buda_root.setChannelSet(null);
-      Collection<BudaTask> bt = buda_root.getAllTasks();
-
-      if (bt.size() > 0) {
-	  BudaTask [] tsks = new BudaTask[bt.size()];
-	  bt.toArray(tsks);
-	  BudaTaskShelf task_shelf = new BudaTaskShelf(this, tsks, popup_point);
-	  //task_shelf.show(this,(int)popup_point.getX(),0);
-       }
-    }
-    *********************/
    else if (cmd.equals("Clear Bubbles in View")) {
       buda_root.setChannelSet(null);
       Rectangle r = buda_root.getViewport();
@@ -285,17 +280,26 @@ private void addButton(JComponent menu,String id,String tt)
 	 bubble_area.userRemoveBubble(bb);
        }
     }
+   else if (cmd.equals("Clear Bubbles in Working Set")) {
+      cur_workingset.removeBubbles();
+    }
    else if (cmd.equals("Remove Working Set")) {
-      /**********
-      if (cur_workingset.getLabel() != null) {
-	 BudaTask bt = cur_workingset.createTask();
-	 if (bt != null) buda_root.addTask(bt);
-       }
-      **********/
       buda_root.removeWorkingSet(cur_workingset);
       remove(chevron_buttons.get(cur_workingset));
       chevron_buttons.remove(cur_workingset);
     }
+   else if (cmd.equals("Close and Save to Task Shelf")) {
+      if (cur_workingset.getLabel() == null) {
+	 JOptionPane.showMessageDialog(this,"Working set should be named first");
+       }
+      else {
+	 BudaTask bt = cur_workingset.createTask();
+	 if (bt != null) buda_root.addTask(bt);
+	 buda_root.removeWorkingSet(cur_workingset);
+	 remove(chevron_buttons.get(cur_workingset));
+	 chevron_buttons.remove(cur_workingset);
+       }
+   }
    else if (cmd.equals("Clear and Remove Working Set")) {
       if (cur_workingset.getLabel() == null) {
 	 BudaTask bt = cur_workingset.createTask();
@@ -311,6 +315,9 @@ private void addButton(JComponent menu,String id,String tt)
       int sts = ws_chooser.showSaveDialog(this);
       if (sts == JFileChooser.APPROVE_OPTION) {
 	 File f = ws_chooser.getSelectedFile();
+	 if (!f.getPath().endsWith(".bset")) {
+	    f = new File(f.getPath() + ".bset");
+	  }
 	 try {
 	    cur_workingset.saveAs(f);
 	  }
@@ -319,23 +326,20 @@ private void addButton(JComponent menu,String id,String tt)
 	  }
        }
     }
-   /***********************
-   else if(cmd.equals("Send Working Set over Chat")){
-      ArrayList<String> chatters = BgtaFactory.getChatters();
-      JPopupMenu chatmenu = new JPopupMenu("Buddies");
-      for(String name: chatters){
-	 addChatButton(chatmenu, name, null, cur_workingset);
+   else if (cmd.equals("Clear All Bubbles")) {
+      for (BudaBubble bb : bubble_area.getBubbles()) {
+	 if (!bb.isFloating()) {
+	    bubble_area.userRemoveBubble(bb);
+	  }
        }
-      chatmenu.show(workingset_menu.getInvoker(), (int)popup_point.getX(), 0);
     }
-   ************************/
    else if (cmd.equals("EMail Working Set")) {
       cur_workingset.sendMail(null);
     }
    else if (cmd.equals("EMail as PDF")) {
       cur_workingset.sendPDF(null);
     }
-   else if (cmd.equals("Make Task From Working Set")) {
+   else if (cmd.equals("Save Working Set to Task Shelf")) {
       if (cur_workingset.getLabel() == null) {
 	 JOptionPane.showMessageDialog(this,"Working set should be named first");
        }
@@ -346,44 +350,6 @@ private void addButton(JComponent menu,String id,String tt)
     }
    else if (cmd.equals("Print")) {
       buda_root.printViewport();
-      /*********************
-      //Image creation method testing, not going to end up here in the long run
-      System.out.println(bubble_area.getSize().width+" , " +bubble_area.getSize().height);
-      BufferedImage image = new BufferedImage(bubble_area.getSize().width,bubble_area.getSize().height,BufferedImage.TYPE_INT_RGB);
-      Graphics g = image.getGraphics();
-      Graphics2D graphics = (Graphics2D) g;
-      AffineTransform at = graphics.getTransform();
-      //at.scale(0.25, 1);
-      graphics.setTransform(at);
-      buda_root.getCurrentBubbleArea().print(graphics);
-      File f1 = BoardSetup.getPropertyBase();
-      FIle f2 = new File(f1,"stuff.jpg");
-      try {
-	 ImageIO.write(image,"jpg",f2);
-      } catch (IOException e1) {  }
-
-      try {
-	 final BufferedImage rimage = ImageIO.read(f);
-	 JFrame frame = new JFrame("my bubble area");
-	 frame.setSize(400, 400);
-	 JPanel pan = new JPanel() {
-	    @Override public void paintComponent(Graphics g) {
-	       super.paintComponent(g);
-	       //AffineTransform atf = AffineTransform.getScaleInstance(4, 1);
-	       //atf.scale(.2, .2);
-	       ((Graphics2D) g).drawRenderedImage(rimage, null);
-	    }
-	 };
-	 //pan.setSize(bubble_area.getSize().width/5,bubble_area.getSize().height/5);
-	 pan.setPreferredSize(new Dimension(bubble_area.getSize().width,bubble_area.getSize().height));
-	 JScrollPane scrolly = new JScrollPane(pan);
-	 scrolly.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-	 scrolly.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-	 frame.add(scrolly);
-	 frame.setVisible(true);
-
-      } catch (IOException e1) {System.out.println("hohmaglha");}
-      ******************/
     }
    else if (cmd.equals("Export as PDF")) {
       pdf_chooser.setDialogTitle("Location to store PDF file");
@@ -422,6 +388,23 @@ private void addButton(JComponent menu,String id,String tt)
 	  }
        }
     }
+   else if (cmd.equals("Share Working Set")) {
+      buda_root.getShareManager().createShare(cur_workingset);
+    }
+   else if (cmd.equals("Stop Sharing Working Set")) {
+      buda_root.getShareManager().removeShare(cur_workingset);
+    }
+   else if (cmd.equals("Load Shared Working Set")) {
+      BudaShare [] shrs = createShareArray();
+      int sts = JOptionPane.showOptionDialog(this,"Select share to load",
+						"Select share to load",
+						JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.QUESTION_MESSAGE,
+						null,shrs,null);
+      if (sts == JOptionPane.CLOSED_OPTION) return;
+      int x0 = getAreaOffset(popup_point.getX());
+      buda_root.getShareManager().useShare(shrs[sts],bubble_area,x0);
+    }
    else {
       BoardLog.logE("BUDA","Unknown top bar command " + cmd);
     }
@@ -438,6 +421,55 @@ private int getAreaOffset(double x)
    return (int)(x * totsize.width / r.width);
 }
 
+
+
+private BudaShare [] createShareArray()
+{
+   BudaShare [] shrs = open_shares.toArray(new BudaShare[open_shares.size()]);
+   Arrays.sort(shrs);
+   return shrs;
+}
+
+
+/********************************************************************************/
+/*										*/
+/*	Tool tip methods							*/
+/*										*/
+/********************************************************************************/
+
+@Override public String getHelpLabel(MouseEvent e)
+{
+   if (!BudaRoot.showHelpTips()) return null;
+
+   Rectangle r = getBounds();
+   Dimension totsize = bubble_area.getSize();
+   int x = e.getX();
+
+   BudaWorkingSetImpl cws = null;
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
+      Rectangle wsr = ws.getRegion();
+      int x0 = wsr.x * r.width / totsize.width;
+      int x1 = (wsr.x + wsr.width) * r.width / totsize.width;
+      if (x > x0 && x < x1) {
+	 cws = ws;
+	 break;
+       }
+    }
+
+   if (cws != null) {
+      return "topbarworkingset";
+    }
+
+   return "topbar";
+}
+
+
+
+
+@Override public String getHelpText(MouseEvent e)
+{
+   return null;
+}
 
 
 
@@ -465,7 +497,7 @@ private int getAreaOffset(double x)
    boolean inws = false;
    //modified by Ian Strickman
    //hard to factor out code because widths are all different
-   for (BudaWorkingSetImpl ws : buda_root.getWorkingSets()) {
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
       Rectangle wsr = ws.getRegion();
       if (wsr.intersects(vp)) inws = true;
       Color c = ws.getTopColor();
@@ -512,12 +544,13 @@ private int getAreaOffset(double x)
        }
       add(fake_chevron_button);
       overview_area.setFakeWorkingSet(true);
-      overview_area.repaint();
+      // overview_area.repaint();
     }
    else {
       overview_area.setFakeWorkingSet(false);
       if (fake_chevron_button != null) remove(fake_chevron_button);
-   }
+      fake_chevron_button = null;
+    }
 }
 
 
@@ -550,7 +583,7 @@ private WorkingSetResizeContext startWorkingSetSizing(int x)
    Rectangle r = getBounds();
    Dimension totsize = bubble_area.getSize();
 
-   for (BudaWorkingSetImpl ws : buda_root.getWorkingSets()) {
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
       Rectangle wsr = ws.getRegion();
       int x0 = wsr.x * r.width / totsize.width;
       int x1 = (wsr.x + wsr.width) * r.width / totsize.width;
@@ -576,7 +609,7 @@ private int wouldStartWorkingSetSizing(int x)
    Rectangle r = getBounds();
    Dimension totsize = bubble_area.getSize();
 
-   for (BudaWorkingSetImpl ws : buda_root.getWorkingSets()) {
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
       Rectangle wsr = ws.getRegion();
       int x0 = wsr.x * r.width / totsize.width;
       int x1 = (wsr.x + wsr.width) * r.width / totsize.width;
@@ -590,7 +623,6 @@ private int wouldStartWorkingSetSizing(int x)
 
    return 0;
 }
-
 
 
 private class WorkingSetResizeContext {
@@ -652,7 +684,7 @@ private class WorkingSetResizeContext {
 
 /********************************************************************************/
 /*										*/
-/*	WorkingSet renaming methods						 */
+/*	WorkingSet renaming methods						*/
 /*										*/
 /********************************************************************************/
 
@@ -661,7 +693,7 @@ private void startWorkingSetRename(int x)
    Rectangle r = getBounds();
    Dimension totsize = bubble_area.getSize();
 
-   for (BudaWorkingSetImpl ws : buda_root.getWorkingSets()) {
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
       Rectangle wsr = ws.getRegion();
       int x0 = wsr.x * r.width / totsize.width;
       int x1 = (wsr.x + wsr.width) * r.width / totsize.width;
@@ -757,7 +789,7 @@ private void handlePopup(MouseEvent e)
    popup_point = e.getPoint();
 
    cur_workingset = null;
-   for (BudaWorkingSetImpl ws : buda_root.getWorkingSets()) {
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
       Rectangle wsr = ws.getRegion();
       int x0 = wsr.x * r.width / totsize.width;
       int x1 = (wsr.x + wsr.width) * r.width / totsize.width;
@@ -768,6 +800,9 @@ private void handlePopup(MouseEvent e)
     }
 
    if (cur_workingset == null) {
+      open_shares = buda_root.getShareManager().getAllShares();
+      loadshare_button.setEnabled(open_shares != null && open_shares.size() > 0);
+
       bubble_menu.validate();
       buda_root.setChannelSet(null);
       Collection<BudaTask> bt = buda_root.getAllTasks();
@@ -786,6 +821,10 @@ private void handlePopup(MouseEvent e)
       else bubble_menu.show(e.getComponent(),e.getX(),e.getY());
     }
    else {
+      if (cur_workingset.isShared())
+	 share_button.setText("Stop Sharing Working Set");
+      else
+	 share_button.setText("Share Working Set");
       workingset_menu.show(e.getComponent(),e.getX(),e.getY());
     }
 }
@@ -793,10 +832,10 @@ private void handlePopup(MouseEvent e)
 
 
 /********************************************************************************/
-/*
- *	Working Set Chevron Button methods
- *
- ********************************************************************************/
+/*										*/
+/*	Working set Cheveron Button methods					*/
+/*										*/
+/********************************************************************************/
 
 private class ChevronButton extends JButton {
 
@@ -814,7 +853,6 @@ private class ChevronButton extends JButton {
     }
 
 }	// end of inner class ChevronButton
-
 
 
 
@@ -920,13 +958,14 @@ private class Mouser extends MouseAdapter {
 
 
 
+
 /********************************************************************************/
 /*										*/
 /*	Shelf menu implementation						*/
 /*										*/
 /********************************************************************************/
 
-private class ShelfMenu extends JMenu {
+private static class ShelfMenu extends JMenu {
 
    private static final long serialVersionUID = 1L;
 
@@ -934,20 +973,28 @@ private class ShelfMenu extends JMenu {
       super();
       JPopupMenu popup = getPopupMenu();
       popup.setBorder(null);
-    }
+   }
 
    @Override public void setSelected(boolean b) {
       super.setSelected(true);
-    }
+   }
 
    @Override protected Point getPopupMenuOrigin() {
       Point pt = super.getPopupMenuOrigin();
       pt.x += 10;
       return pt;
-    }
+   }
 
 }	// end of inner class ShelfMenu
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Task Shelf killing methods						*/
+/*										*/
+/********************************************************************************/
 
 
 private class ShelfListener implements PopupMenuListener {
@@ -959,8 +1006,7 @@ private class ShelfListener implements PopupMenuListener {
       task_dummy_menu.setPopupMenuVisible(false);
    }
 
-}	// end of inner class ShelfListener
-
+}	// end of class ShelfListener
 
 
 }	// end of class BudaTopBar

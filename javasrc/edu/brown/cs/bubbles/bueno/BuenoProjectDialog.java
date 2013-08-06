@@ -64,13 +64,15 @@ private Set<PathEntry>		source_paths;
 private Set<PathEntry>		initial_paths;
 private Map<String,String>	option_elements;
 private Map<String,String>	start_options;
-private File			last_directory;
 private Map<String,Map<String,String>> option_sets;
 private boolean 		optional_error;
 private String			current_optionset;
 private Set<PrefEntry>		pref_entries;
 private ProblemPanel		problem_panel;
 private ContractPanel		contract_panel;
+private boolean 		force_update;
+
+private static File		last_directory;
 
 
 
@@ -92,6 +94,12 @@ private static final String ASSERT_OPTION = "edu.brown.cs.bubbles.bedrock.useAss
 private static final String ANNOT_OPTION = "org.eclipse.jdt.core.compiler.processAnnotations";
 
 
+static {
+   BoardProperties bp = BoardProperties.getProperties("Bueno");
+   String ld = bp.getProperty("Bueno.library.directory");
+   if (ld != null) last_directory = new File(ld);
+   else last_directory = null;
+}
 
 
 
@@ -121,11 +129,7 @@ public BuenoProjectDialog(String proj)
    option_sets = new HashMap<String,Map<String,String>>();
    initial_paths = new HashSet<PathEntry>();
    pref_entries = new HashSet<PrefEntry>();
-
-   BoardProperties bp = BoardProperties.getProperties("Bueno");
-
-   String ld = bp.getProperty("Bueno.library.directory");
-   if (ld != null) last_directory = new File(ld);
+   force_update = false;
 
    BumpClient bc = BumpClient.getBump();
    Element xml = bc.getProjectData(proj);
@@ -174,7 +178,7 @@ public BuenoProjectDialog(String proj)
 
 /********************************************************************************/
 /*										*/
-/*	Methods to create an editor bubble				*/
+/*	Methods to create an editor bubble					*/
 /*										*/
 /********************************************************************************/
 
@@ -253,7 +257,6 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
       bn = new JButton("New Directory");
       bn.addActionListener(this);
       addGBComponent(bn,1,y++,1,1,0,0);
-      // TODO: add JUNIT button
       edit_button = new JButton("Edit");
       edit_button.addActionListener(this);
       addGBComponent(edit_button,1,y++,1,1,0,0);
@@ -288,6 +291,7 @@ private class PathPanel extends SwingGridPanel implements ActionListener, ListSe
 	 for (PathEntry pe : path_display.getSelectedValuesList()) {
 	    library_paths.removeElement(pe);
 	  }
+	 force_update = true;
        }
       else BoardLog.logE("BUENO","Unknown path panel command " + cmd);
     }
@@ -909,6 +913,8 @@ private class ContractPanel extends SwingGridPanel implements ActionListener {
 
 private boolean anythingChanged()
 {
+   if (force_update) return true;
+
    for (PathEntry pe : library_paths) {
       if (pe.hasChanged()) return true;
     }
@@ -973,6 +979,8 @@ private class ProjectEditor implements ActionListener {
 
       if (chng || anythingChanged())
 	 bc.editProject(project_name,xw.toString());
+
+      force_update = false;
     }
 
 }	// end of inner class ProjectEditor

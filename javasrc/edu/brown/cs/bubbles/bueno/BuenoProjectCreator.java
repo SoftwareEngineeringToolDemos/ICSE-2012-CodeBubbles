@@ -169,6 +169,8 @@ private JPanel getJavaCreationPanel()
 
 private void setVisibilities()
 {
+   if (type_field == null) return;
+
    project_type = type_names.get(type_field.getSelectedItem());
    for (BuenoProjectMaker bpm : type_names.values()) {
       JPanel spnl = panel_map.get(bpm);
@@ -192,7 +194,7 @@ private void setVisibilities()
    File pdir = project_props.getFile(PROJ_PROP_DIRECTORY);
    boolean isok = pdir != null;
    isok &= project_type.checkStatus(project_props);
-   create_button.setEnabled(isok);
+   if (create_button != null) create_button.setEnabled(isok);
 }
 
 
@@ -222,7 +224,7 @@ private class CreationActions implements ActionListener, UndoableEditListener {
     }
 
    @Override public void undoableEditHappened(UndoableEditEvent evt) {
-      if (name_field.getDocument() == evt.getSource()) {
+      if (name_field != null && name_field.getDocument() == evt.getSource()) {
 	 project_props.put(PROJ_PROP_NAME,name_field.getText());
 	 setProjectDirectory();
        }

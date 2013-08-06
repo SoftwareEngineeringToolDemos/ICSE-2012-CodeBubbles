@@ -375,6 +375,7 @@ private class CallbackUpdater implements Runnable {
       if (cn == null) return null;	// root node
       int idx = cn.lastIndexOf(".");
       if (idx < 0) return null; 	// this might be wrong
+      if (package_hierarchy == null) return null;
       return package_hierarchy.get(cn.substring(0,idx));
     }
 

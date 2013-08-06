@@ -26,6 +26,7 @@
 package edu.brown.cs.bubbles.board;
 
 import edu.brown.cs.ivy.exec.IvySetup;
+import edu.brown.cs.ivy.file.IvyFile;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.swing.SwingSetup;
 import edu.brown.cs.ivy.mint.*;
@@ -1095,7 +1096,8 @@ private void setupIvy()
    File f4 = new File(ivv,"Props");
    if (ivv.exists() && ivv.isDirectory() && f4.exists()) {
       if (IvySetup.setup(ivv)) {
-	 return;
+	 File f = IvyFile.expandFile("$(IVY)");
+	 if (f.exists() && f.isDirectory()) return;
        }
     }
 
@@ -2038,9 +2040,9 @@ private boolean checkDefaultInstallation()
    catch (IOException e) {
       jarok = false;
     }
-      
+
    File f = null;
-   
+
    if (jarok) {
       URL url = getClass().getClassLoader().getResource(BOARD_RESOURCE_PLUGIN);
       String file = url.toString();
@@ -2067,9 +2069,9 @@ private boolean checkDefaultInstallation()
 	 if (!f.exists()) f = null;
        }
     }
-   
+
    if (f == null) return firsttime;
-   
+
    jar_file = f.getPath();
    jar_directory = f.getParent();
    install_jar = true;

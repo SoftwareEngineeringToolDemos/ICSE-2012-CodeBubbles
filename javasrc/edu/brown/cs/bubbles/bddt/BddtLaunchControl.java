@@ -240,7 +240,7 @@ private void setupPanel()
    JToolBar bblbar = new JToolBar();
    bblbar.add(new ConsoleAction());
    bblbar.add(new ThreadsAction());
-   if (bp.getBoolean("Bddt.bubbons.History",true)) bblbar.add(new HistoryAction());
+   if (bp.getBoolean("Bddt.buttons.History",true)) bblbar.add(new HistoryAction());
    if (bp.getBoolean("Bddt.buttons.Performance",true)) bblbar.add(new PerformanceAction());
    if (bp.getBoolean("Bddt.buttons.Swing",false)) bblbar.add(new SwingAction());
 
@@ -284,6 +284,42 @@ private void registerKey(BudaBubbleArea bba,Action act,KeyStroke k)
    bba.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(k,cmd);
    bba.getActionMap().put(cmd,act);
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Initial bubble management						*/
+/*										*/
+/********************************************************************************/
+
+void setupInitialBubbles()
+{
+   BoardProperties bp = BoardProperties.getProperties("Bddt");
+
+   if (bp.getBoolean("Bddt.show.console")) {
+      bubble_manager.createConsoleBubble();
+    }
+   if (bp.getBoolean("Bddt.show.threads")) {
+      bubble_manager.createThreadBubble();
+    }
+   if (bp.getBoolean("Bddt.show.history")) {
+      bubble_manager.createHistoryBubble();
+    }
+   if (bp.getBoolean("Bddt.show.swing")) {
+      bubble_manager.createSwingBubble();
+    }
+   if (bp.getBoolean("Bddt.show.perf")) {
+      bubble_manager.createPerformanceBubble();
+    }
+   if (bp.getBoolean("Bddt.show.eval")) {
+      bubble_manager.createValueViewerBubble();
+    }
+   if (bp.getBoolean("Bddt.show.interact")) {
+      bubble_manager.createInteractionBubble();
+    }
+}
+
 
 
 
@@ -691,7 +727,6 @@ private class ConsoleAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
-      // BddtFactory.getFactory().makeConsoleBubble(BddtLaunchControl.this,BddtLaunchControl.this);
       BoardMetrics.noteCommand("BDDT","CreateConsoleBubble");
       bubble_manager.createConsoleBubble();
     }
@@ -710,7 +745,6 @@ private class ThreadsAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
-      // BddtFactory.getFactory().makeThreadBubble(BddtLaunchControl.this,BddtLaunchControl.this);
       BoardMetrics.noteCommand("BDDT","CreateThreadBubble");
       bubble_manager.createThreadBubble();
     }
@@ -730,7 +764,7 @@ private class HistoryAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent evt) {
       BoardMetrics.noteCommand("BDDT","CreateHistoryBubble");
-      BddtFactory.getFactory().makeHistoryBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+      bubble_manager.createHistoryBubble();
     }
 
 }	// end of inner class HistoryAction
@@ -748,7 +782,7 @@ private class PerformanceAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent evt) {
       BoardMetrics.noteCommand("BDDT","CreatePerformanceBubble");
-      BddtFactory.getFactory().makePerformanceBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+      bubble_manager.createPerformanceBubble();
    }
 
 }	// end of inner class PerformanceAction
@@ -767,7 +801,7 @@ private class ValueViewerBubbleAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent evt) {
       BoardMetrics.noteCommand("BDDT","CreateValueViewerBubble");
-      BddtFactory.getFactory().makeValueViewerBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+      bubble_manager.createValueViewerBubble();
    }
 
 }	// end of inner class ValueViewerBubbleAction
@@ -787,7 +821,7 @@ private class EvaluationBubbleAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent evt) {
       BoardMetrics.noteCommand("BDDT","CreateEvaluationBubble");
-      BddtFactory.getFactory().makeInteractionBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+      bubble_manager.createInteractionBubble();
    }
 
 }	// end of inner class EvaluationBubbleAction
@@ -805,7 +839,7 @@ private class SwingAction extends AbstractAction {
 
    @Override public void actionPerformed(ActionEvent evt) {
       BoardMetrics.noteCommand("BDDT","CreateSwingBubble");
-      BddtFactory.getFactory().makeSwingBubble(BddtLaunchControl.this,BddtLaunchControl.this);
+      bubble_manager.createSwingBubble();
     }
 
 }	// end of inner class SwingAction

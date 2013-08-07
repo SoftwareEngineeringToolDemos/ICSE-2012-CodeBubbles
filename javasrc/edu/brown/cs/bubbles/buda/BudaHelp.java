@@ -468,8 +468,6 @@ private static class ParseHandler extends HTMLEditorKit.ParserCallback {
    private StringBuffer html_buffer;
    private ParseState parse_state;
 
-
-
    ParseHandler(WhenInfo wi) {
       when_item = wi;
       todo_items = new ArrayList<TodoInfo>();

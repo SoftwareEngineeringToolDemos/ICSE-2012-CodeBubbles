@@ -316,7 +316,9 @@ private static class VPath {
    double getPosition() 		{ return x_pos; }
    
    boolean overlaps(double y0,double y1) {
-      if (y0 >= y_to || y1 <= y_from) return false;
+      double ymin = Math.min(y0,y1);
+      double ymax = Math.max(y0,y1);
+      if (ymin >= y_to || ymax <= y_from) return false;
       return true;
     }
 }	// end of inner class VPath
@@ -344,7 +346,9 @@ private static class HPath {
    double getPosition() 		{ return y_pos; }
    
    boolean overlaps(double x0,double x1) {
-      if (x0 >= x_to || x1 <= x_from) return false;
+      double xmin = Math.min(x0,x1);
+      double xmax = Math.max(x0,x1);
+      if (xmin >= x_to || xmax <= x_from) return false;
       return true;
     }
 

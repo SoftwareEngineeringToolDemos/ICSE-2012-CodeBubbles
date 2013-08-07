@@ -83,7 +83,7 @@ BddtBubbleManager(BddtLaunchControl blc)
 /*										*/
 /********************************************************************************/
 
-void createExecBubble(BumpThread bt)
+BudaBubble createExecBubble(BumpThread bt)
 {
    boolean godown = bddt_properties.getBoolean("Bddt.grow.down");
 
@@ -93,7 +93,7 @@ void createExecBubble(BumpThread bt)
       BumpStackFrame frm = stk.getFrame(0);
       if (frm != null) {
 	 BubbleData bd = findClosestBubble(bt,stk,frm);
-	 if (bd != null && bd.match(bt,stk,frm)) return;
+	 if (bd != null && bd.match(bt,stk,frm)) return bd.getBubble();
 	 int lvl = -1;
 	 if (bd != null) lvl = bd.aboveLevel(bt,stk,frm);
 	 int mx = stk.getNumFrames();
@@ -112,12 +112,13 @@ void createExecBubble(BumpThread bt)
 
    if (bb != null) {
       BubbleData bd = bubble_map.get(bb);
-      if (bd == null || bd.getBubbleType() != BubbleType.EXEC) return;
+      if (bd == null || bd.getBubbleType() != BubbleType.EXEC) 
+	 return bb;
       if (bddt_properties.getBoolean("Bddt.show.values")) {
 	 BddtStackView sv = new BddtStackView(launch_control,bt);
 	 sv.expandFirst();
 	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
-	 if (bba == null || stk == null) return;
+	 if (bba == null || stk == null) return bb;
 	 BubbleData nbd = new BubbleData(sv,bt,stk,stk.getFrame(0),BubbleType.FRAME);
 	 bubble_map.put(sv,nbd);
 	 int place = (godown ? PLACEMENT_RIGHT : PLACEMENT_BELOW);
@@ -125,7 +126,10 @@ void createExecBubble(BumpThread bt)
 	 bd.setAssocBubble(sv);
        }
     }
+   
+   return bb;
 }
+
 
 
 void createUserStackBubble(BubbleData bd,boolean godown)

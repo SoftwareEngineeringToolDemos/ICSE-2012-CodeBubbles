@@ -27,15 +27,19 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 
-import edu.brown.cs.ivy.exec.*;
+import edu.brown.cs.ivy.exec.IvyExecQuery;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.imageio.*;
+
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
-import java.net.*;
-import java.io.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
 
 
 class BeamTracBugReport implements BeamConstants, BudaConstants {

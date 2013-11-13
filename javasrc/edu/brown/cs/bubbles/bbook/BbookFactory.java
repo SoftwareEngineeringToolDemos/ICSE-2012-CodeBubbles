@@ -37,18 +37,22 @@
 
 package edu.brown.cs.bubbles.bbook;
 
+import edu.brown.cs.bubbles.bnote.BnoteFactory;
+import edu.brown.cs.bubbles.bnote.BnoteStore;
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bnote.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
+
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 
 import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
 
@@ -68,6 +72,7 @@ public class BbookFactory implements BbookConstants, BudaConstants
 private BbookTasker		task_manager;
 private BbookRegionManager	region_manager;
 private List<String>		all_projects;
+private BudaRoot		buda_root;
 
 private static BbookFactory	the_factory = new BbookFactory();
 
@@ -85,6 +90,7 @@ private BbookFactory()
    task_manager = null;
    region_manager = null;
    all_projects = null;
+   buda_root = null;
 
    if (isEnabled()) {
       task_manager = new BbookTasker();
@@ -115,6 +121,8 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
+   the_factory.buda_root = br;
+
    if (isEnabled()) {
       br.registerKeyAction(new BbookAction(br),"Programmer's Log",
 			      KeyStroke.getKeyStroke(KeyEvent.VK_F2,0));
@@ -150,6 +158,35 @@ public void log(Component src,BnoteEntryType type,Object ... args)
    if (task == null) return;
    BnoteStore.log(task.getProject(),task,type,args);
 }
+
+
+
+public BnoteTask getCurrentTask(Component src)
+{
+   if (buda_root == null) return null;
+
+   if (src == null || !isEnabled()) return null;
+   BudaBubble bb = BudaRoot.findBudaBubble(src);
+   if (bb == null) return null;
+   BbookRegion tr = region_manager.findTaskRegion(bb);
+   if (tr == null) return null;
+   return tr.getTask();
+}
+
+
+
+
+public BnoteTask getCurrentTask()
+{
+   if (buda_root == null) return null;
+
+   BudaBubbleArea bba = buda_root.getCurrentBubbleArea();
+   Rectangle r = bba.getViewport();
+   BbookRegion tr = region_manager.findTaskRegion(bba,r);
+   if (tr == null) return null;
+   return tr.getTask();
+}
+
 
 
 
@@ -281,7 +318,7 @@ private static class TaskConfig implements BubbleConfigurator {
 
 /********************************************************************************/
 /*										*/
-/*	Handle menu buttons							     */
+/*	Handle menu buttons							*/
 /*										*/
 /********************************************************************************/
 

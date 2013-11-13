@@ -27,9 +27,10 @@
 package edu.brown.cs.bubbles.bwiz;
 
 import javax.swing.JButton;
+
 import java.awt.Color;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 
 class BwizHoverButton extends JButton implements MouseListener

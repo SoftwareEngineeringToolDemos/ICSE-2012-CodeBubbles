@@ -26,14 +26,15 @@ package edu.brown.cs.bubbles.batt;
 
 import edu.brown.cs.bubbles.board.BoardConstants;
 
-import edu.brown.cs.ivy.exec.*;
+import edu.brown.cs.ivy.exec.IvyExec;
+import edu.brown.cs.ivy.exec.IvySetup;
 import edu.brown.cs.ivy.xml.*;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import java.io.*;
-import java.util.*;
 import java.net.*;
+import java.util.*;
 
 
 public class BattMain implements BattConstants
@@ -487,8 +488,14 @@ private boolean canRunAny(Collection<BattTestCase> tests)
       boolean err = false;
       boolean use = false;
       for (String cnm : bp.getClassNames()) {
-	 if (error_classes.contains(cnm)) err = true;
-	 if (testclass.contains(cnm)) use = true;
+	 if (error_classes.contains(cnm)) {
+	    err = true;
+	    System.err.println("BATT: HOLD for errors in " + cnm);
+	  }
+	 if (testclass.contains(cnm)) {
+	    use = true;
+	    System.err.println("BATT: USE tests for " + cnm);
+	  }
        }
       if (use && !err) return true;
     }

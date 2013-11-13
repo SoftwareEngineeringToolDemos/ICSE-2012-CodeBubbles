@@ -27,10 +27,9 @@ package edu.brown.cs.bubbles.bcon;
 
 import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.BumpConstants;
-import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.*;
 
 import javax.swing.*;
 
@@ -68,30 +67,36 @@ BconRepository()
    active_names = new HashMap<String,BconName>();
    check_names = null;
 
-   if (BoardSetup.getSetup().getLanguage() == BoardConstants.BoardLanguage.JAVA) {
-      BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
-      for (BassName bn : br.getAllNames()) {
-	 switch (bn.getNameType()) {
-	    case CLASS :
-	    case INTERFACE :
-	    case ENUM :
-	    case THROWABLE :
-	    case MODULE :
-	       break;
-	    default :
-	       continue;
-	 }
-
-	 BumpLocation bl = bn.getLocation();
-	 if (bl == null) continue;
-	 String ky = bl.getKey();
-	 if (active_names.containsKey(ky)) continue;
-	 BconName bcn = new BconName(bl);
-	 active_names.put(ky,bcn);
-       }
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case JAVA :
+      case REBUS :
+	 BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
+	 for (BassName bn : br.getAllNames()) {
+	    switch (bn.getNameType()) {
+	       case CLASS :
+	       case INTERFACE :
+	       case ENUM :
+	       case THROWABLE :
+	       case MODULE :
+		  break;
+	       default :
+		  continue;
+	     }
+	
+	    BumpLocation bl = bn.getLocation();
+	    if (bl == null) continue;
+	    String ky = bl.getKey();
+	    if (active_names.containsKey(ky)) continue;
+	    BconName bcn = new BconName(bl);
+	    active_names.put(ky,bcn);
+	  }
+	 break;
+      default :
+	 break;
     }
 
    BassFactory.getFactory().addPopupHandler(this);
+   BumpClient.getBump().addChangeHandler(this);
 }
 
 
@@ -144,9 +149,7 @@ private static class BconName extends BassNameBase {
 
    @Override public String getNameHead() {
       String nm = getUserSymbolName();
-      int idx = nm.indexOf("<");
-      if (idx > 0) nm = nm.substring(0,idx);
-      return nm;
+      return stripTemplates(nm);
     }
 
    @Override public String getFullName()	{ return getNameHead() + ". " + getLocalName(); }
@@ -186,16 +189,19 @@ private static class BconName extends BassNameBase {
 @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu m,
 				    String fullname,BassName forname)
 {
-   int idx = fullname.indexOf("@");
-   if (idx >= 0) return;
-   idx = fullname.indexOf(":");
-   if (idx < 0) return;
-   String proj = fullname.substring(0,idx);
-   String pkg = fullname.substring(idx+1);
-   if (pkg.indexOf("<") >= 0 || pkg.indexOf("(") >= 0) return;
-   if (forname != null && forname.getNameType() != BassNameType.PACKAGE) return;
-
-   m.add(new PackageAction(bb,where,proj,pkg));
+   BoardProperties bp = BoardProperties.getProperties("Bcon");
+   if (bp.getBoolean("Bcon.package.explorer")) {
+      int idx = fullname.indexOf("@");
+      if (idx >= 0) return;
+      idx = fullname.indexOf(":");
+      if (idx < 0) return;
+      String proj = fullname.substring(0,idx);
+      String pkg = fullname.substring(idx+1);
+      if (pkg.indexOf("<") >= 0 || pkg.indexOf("(") >= 0) return;
+      if (forname == null || forname.getNameType() == BassNameType.PACKAGE) {
+	 m.add(new PackageAction(bb,where,proj,pkg));
+       }
+    }
 }
 
 
@@ -277,6 +283,11 @@ private void reload()
 {
    Set<String> found = new HashSet<String>();
    boolean chng = false;
+
+   try {
+      Thread.sleep(5000);
+    }
+   catch (InterruptedException e) { }
 
    synchronized (active_names) {
       BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);

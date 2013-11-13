@@ -84,6 +84,7 @@ static {
    symbol_map.put("Function",BumpSymbolType.FUNCTION);
    symbol_map.put("Constructor",BumpSymbolType.CONSTRUCTOR);
    symbol_map.put("StaticInitializer",BumpSymbolType.STATIC_INITIALIZER);
+   symbol_map.put("Exception",BumpSymbolType.CLASS);
    symbol_map.put("PythonMain",BumpSymbolType.MAIN_PROGRAM);
    symbol_map.put("Package",BumpSymbolType.PACKAGE);
    symbol_map.put("Project",BumpSymbolType.PROJECT);
@@ -231,7 +232,7 @@ public int getDefinitionOffset()		{ return symbol_offset; }
 
 
 
-/**
+/**												   PB
  *	Return the end offset of the enclosing definition.
  **/
 
@@ -275,7 +276,8 @@ public String getParameters()
       case CONSTRUCTOR :
       case FUNCTION :
 	 String knm = symbol_key;
-	 int idx = knm.indexOf("(");
+	 int idx2 = knm.indexOf("#");   // go past project prefix
+	 int idx = knm.indexOf("(",idx2+1);
 	 if (idx < 0) return null;
 	 int idx1 = knm.lastIndexOf(")");
 	 String args = knm.substring(idx,idx1+1);
@@ -372,7 +374,7 @@ public static List<String> getParameterList(String arr)
 {
    List<String> rslt = new ArrayList<String>();
    if (arr == null) return rslt;
-   
+
    int start = -1;
    int lvl = 0;
 

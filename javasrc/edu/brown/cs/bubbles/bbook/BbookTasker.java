@@ -37,21 +37,24 @@
 
 package edu.brown.cs.bubbles.bbook;
 
-import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bnote.*;
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.buda.*;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingComboBox;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
-
-import javax.swing.*;
 import javax.imageio.ImageIO;
+import javax.swing.*;
+
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.io.*;
 
 
 class BbookTasker implements BbookConstants, BudaConstants, BnoteConstants

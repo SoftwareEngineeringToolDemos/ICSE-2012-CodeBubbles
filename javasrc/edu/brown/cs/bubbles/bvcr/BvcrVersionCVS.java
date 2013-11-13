@@ -24,13 +24,14 @@
 
 package edu.brown.cs.bubbles.bvcr;
 
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardProperties;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import java.io.*;
+import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import java.text.*;
 
 
 class BvcrVersionCVS extends BvcrVersionManager implements BvcrConstants
@@ -126,7 +127,7 @@ void getDifferences(BvcrDifferenceSet ds)
    else if (diffs.size() == 0) return;
    else {
       for (File f : diffs) {
-	 cmd += " " + f.getPath();
+	 cmd += " " + getRelativePath(f);
        }
     }
 
@@ -165,7 +166,7 @@ private void findCvsRoot()
 
 void findHistory(File f,IvyXmlWriter xw)
 {
-   StringCommand cmd = new StringCommand(cvs_command + " log " + f.getPath());
+   StringCommand cmd = new StringCommand(cvs_command + " log " + getRelativePath(f));
    String rslt = cmd.getContent();
 
    StringTokenizer tok = new StringTokenizer(rslt,"\n");

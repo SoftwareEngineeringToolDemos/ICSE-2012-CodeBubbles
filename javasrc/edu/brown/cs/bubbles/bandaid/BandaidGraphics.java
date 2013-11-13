@@ -24,13 +24,14 @@
 
 package edu.brown.cs.bubbles.bandaid;
 
-import java.util.*;
 import java.awt.*;
-import java.awt.image.*;
-import java.awt.image.renderable.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.*;
-import java.awt.font.*;
-import java.text.*;
+import java.awt.image.*;
+import java.awt.image.renderable.RenderableImage;
+import java.text.AttributedCharacterIterator;
+import java.util.Map;
 
 
 class BandaidGraphics extends Graphics2D

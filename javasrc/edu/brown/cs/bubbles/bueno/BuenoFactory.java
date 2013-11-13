@@ -27,14 +27,14 @@ package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.board.BoardSetup;
-import edu.brown.cs.bubbles.bump.BumpLocation;
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
+import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
-import java.awt.Point;
 
 
 
@@ -174,13 +174,13 @@ public void createMethodDialog(BudaBubble src,Point loc,BuenoProperties known,
 				  BuenoBubbleCreator newer)
 {
    if (method_creator != null) {
-      method_creator.showMethodDialogBubble(src,loc,known,insert,lbl,newer);
+      if (method_creator.showMethodDialogBubble(src,loc,known,insert,lbl,newer))
+	 return;
     }
-   else {
-      BuenoMethodDialog md = new BuenoMethodDialog(src,loc,known,insert,newer);
-      if (lbl != null) md.setLabel(lbl);
-      md.showDialog();
-    }
+
+   BuenoMethodDialog md = new BuenoMethodDialog(src,loc,known,insert,newer);
+   if (lbl != null) md.setLabel(lbl);
+   md.showDialog();
 }
 
 
@@ -293,6 +293,8 @@ public BudaBubble getCreateProjectBubble()
 	 return bpc.createProjectCreationBubble();
       case PYTHON :
 	 return BuenoPythonProject.createNewPythonProjectBubble();
+      case REBUS :
+	 return null;
       default :
 	 return null;
     }

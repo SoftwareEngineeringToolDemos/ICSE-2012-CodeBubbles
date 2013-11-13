@@ -34,22 +34,22 @@ package edu.brown.cs.bubbles.bema;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.bdoc.BdocFactory;
+import edu.brown.cs.bubbles.bedu.BeduFactory;
 import edu.brown.cs.bubbles.board.BoardConstants.BoardLanguage;
 import edu.brown.cs.bubbles.board.BoardConstants.RunMode;
 import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.buda.BudaRoot;
-import edu.brown.cs.bubbles.buda.BudaBubble;
-import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.BuenoFactory;
-import edu.brown.cs.bubbles.bedu.BeduFactory;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import edu.brown.cs.ivy.xml.IvyXml;
-import edu.brown.cs.ivy.file.IvyFile;
 
 import org.w3c.dom.Element;
 
 import javax.swing.*;
 
+import java.awt.Rectangle;
+import java.awt.Dimension;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -77,6 +77,7 @@ public class BemaMain implements BemaConstants
 
 public static void main(String [] args)
 {
+
    BemaMain bm = new BemaMain(args);
 
    if (System.getProperty("os.name").startsWith("Mac")) {
@@ -169,22 +170,35 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-nor")) {                 // -norestore
 	    restore_session = false;
 	  }
-	 else if (args[i].startsWith("-s")) {                   // -save
-	    save_session = true;
-	  }
-	 else if (args[i].startsWith("-r")) {                   // -restore
-	    restore_session = true;
-	  }
 	 else if (args[i].startsWith("-f")) {                   // -force
 	    force_setup = true;
 	  }
 	 else if (args[i].startsWith("-py")) {                  // -python
 	    for_language = BoardLanguage.PYTHON;
-	    BoardProperties.setPropertyDirectory(IvyFile.expandName("$(HOME)/.pybles"));
+	    File fa = new File(System.getProperty("user.home"));
+	    fa = new File(fa,".pybles");
+	    // Don't use IvyFile here since it trys to use ivy without initializing it
+	    BoardProperties.setPropertyDirectory(fa.getPath());
+	  }
+	 else if (args[i].startsWith("-rebus")) {
+	    for_language = BoardLanguage.REBUS;
+	    File fa = new File(System.getProperty("user.home"));
+	    File fb = new File(fa,".rebus");
+	    if (!fb.exists()) fb.mkdir();
+	    File fc = new File(fb,".metadata");
+	    if (!fc.exists()) fc.mkdir();
+
+	    BoardProperties.setPropertyDirectory(fb.getPath());
+	    if (use_workspace == null) {
+	       use_workspace = fb.getPath();
+	     }
 	  }
 	 else if (args[i].startsWith("-course") && i+1 < ln) {  // -course <course>
 	    course_name = args[++i];
-	    BoardProperties.setPropertyDirectory(IvyFile.expandName("$(HOME)/.suds" + course_name));
+	    File fa = new File(System.getProperty("user.home"));
+	    fa = new File(fa,".suds" + course_name);
+	    // Don't use IvyFile here since it trys to use ivy without initializing it
+	    BoardProperties.setPropertyDirectory(fa.getPath());
 	  }
 	 else if (args[i].startsWith("-c")) {                   // -collect
 	    force_metrics = true;
@@ -224,6 +238,12 @@ private void scanArgs(String [] args)
 	    save_session = false;
 	  }
 	 else if (args[i].startsWith("-Dfile.encoding")) ;
+	 else if (args[i].startsWith("-s")) {                   // -save
+	    save_session = true;
+	  }
+	 else if (args[i].startsWith("-r")) {                   // -restore
+	    restore_session = true;
+	  }
 	 else badArgs();
        }
       else if (args[i].equals("")) ;
@@ -354,8 +374,9 @@ private void start()
 
    for (String s : getSetupPackageProperties()) {
       String nm = bp.getProperty(s);
+      if (nm == null || nm.equals("*") || nm.equals("")) continue;
       String ld = bp.getProperty(s + ".load");
-      if (nm != null) setupPackage(nm,ld);
+      setupPackage(nm,ld);
     }
 
    String pinf = bp.getProperty("Bema.pluginfolder");
@@ -430,8 +451,31 @@ private void start()
    BumpClient nbc = BumpClient.getBump();
    Element xe = nbc.getAllProjects();
    if (IvyXml.getChild(xe,"PROJECT") == null) {
-      BudaBubble bb = BuenoFactory.getFactory().getCreateProjectBubble();
-      root.add(bb);
+      BudaBubble bb = null;
+      switch (BoardSetup.getSetup().getLanguage()) {
+	 default :
+	    bb = BuenoFactory.getFactory().getCreateProjectBubble();
+	    break;
+	 case REBUS :
+	    try {
+	       Class<?> c = Class.forName("edu.brown.cs.bubbles.rebus.RebusFactory");
+	       Method m = c.getMethod("createSearchBubble");
+	       bb = (BudaBubble) m.invoke(null);
+	     }
+	    catch (Throwable t) {
+	       BoardLog.logE("BEMA","Problem creating rebus bubble",t);
+	     }
+	    break;
+       }
+      if (bb != null) {
+	 root.waitForSetup();
+	 BudaBubbleArea bba = root.getCurrentBubbleArea();
+	 Dimension d = bb.getSize();
+	 Rectangle r = bba.getViewport();
+	 int x0 = r.x + r.width/2 - d.width/2;
+	 int y0 = r.y + r.height/2 - d.height/2;
+	 bba.addBubble(bb, x0, y0);
+       }
     }
 }
 
@@ -510,7 +554,7 @@ private Collection<String> getSetupPackageProperties()
        }
     }
 
-   return loads.values();
+   return new LinkedHashSet<String>(loads.values());
 }
 
 

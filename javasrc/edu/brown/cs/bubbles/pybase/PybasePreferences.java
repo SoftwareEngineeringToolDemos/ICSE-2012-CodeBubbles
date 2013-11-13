@@ -40,10 +40,7 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 public class PybasePreferences implements PybaseConstants {

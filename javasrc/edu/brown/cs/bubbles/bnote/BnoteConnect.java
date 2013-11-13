@@ -39,12 +39,13 @@ package edu.brown.cs.bubbles.bnote;
 
 import edu.brown.cs.bubbles.board.*;
 
-import edu.brown.cs.ivy.file.*;
-import edu.brown.cs.ivy.exec.*;
+import edu.brown.cs.ivy.exec.IvyExec;
+import edu.brown.cs.ivy.exec.IvyExecQuery;
+import edu.brown.cs.ivy.file.IvyFile;
 
+import java.io.*;
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 
 
 class BnoteConnect implements BnoteConstants

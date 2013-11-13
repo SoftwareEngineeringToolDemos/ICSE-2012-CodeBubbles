@@ -25,8 +25,10 @@
 package edu.brown.cs.bubbles.batt;
 
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.ivy.xml.*;
-import org.w3c.dom.*;
+
+import edu.brown.cs.ivy.xml.IvyXml;
+
+import org.w3c.dom.Element;
 
 
 class BattConfigurator implements BattConstants, BudaConstants.BubbleConfigurator

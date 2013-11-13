@@ -27,8 +27,8 @@
 package edu.brown.cs.bubbles.bedrock;
 
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
 import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -38,7 +38,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.*;
 import org.eclipse.jdt.debug.eval.*;
-
 
 import java.io.IOException;
 import java.util.*;
@@ -1379,6 +1378,7 @@ private class ConsoleThread extends Thread {
       //TODO: fix this correctly
       String txt = buf.toString();
       txt = txt.replace("]]>","] ]>");
+      txt = txt.replace("\010"," ");
       if (txt.length() == 0) return;
       xw.cdataElement("TEXT",txt);
       our_plugin.finishMessageWait(xw);

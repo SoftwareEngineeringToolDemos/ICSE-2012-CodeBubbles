@@ -19,25 +19,14 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Shape;
+import edu.brown.cs.bubbles.buda.*;
+
+import javax.swing.*;
+
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
-import java.awt.BorderLayout;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-
-import edu.brown.cs.bubbles.buda.BudaBubble;
-import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.buda.BudaRoot;
 
 
 class BeduTATicketListBubble extends BudaBubble implements BeduConstants{

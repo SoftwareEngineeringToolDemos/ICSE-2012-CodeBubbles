@@ -341,6 +341,20 @@ String HELP_MAIL_URL = "spr+bubbles@cs.brown.edu";
 String HELP_MAIL_KEY = "Beam.help.mailto";
 
 
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Toolbar names                                                           */
+/*                                                                              */
+/********************************************************************************/
+
+String BEAM_TOOLBAR_MENU_BUTTON = "DefaultMenu";
+
+
+
+
+
 }	 // end in interface BeamConstants
 
 

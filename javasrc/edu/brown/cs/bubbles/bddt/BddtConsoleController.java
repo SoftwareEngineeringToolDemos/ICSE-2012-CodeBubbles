@@ -32,11 +32,11 @@ import edu.brown.cs.bubbles.bump.BumpConstants.BumpProcess;
 import edu.brown.cs.bubbles.bump.BumpConstants.BumpRunEvent;
 import edu.brown.cs.bubbles.bump.BumpConstants.BumpRunModel;
 
+import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import javax.swing.*;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 
 class BddtConsoleController implements BddtConstants {

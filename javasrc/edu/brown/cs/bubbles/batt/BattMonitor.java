@@ -167,6 +167,21 @@ private synchronized void setFileState(String file,FileState state)
 
 
 
+private synchronized void setErrorFiles(Collection<String> files)
+{
+   for (Map.Entry<String,FileState> ent : file_states.entrySet()) {
+      String f = ent.getKey();
+      FileState fs = ent.getValue();
+      if (files.contains(f)) setFileState(f,FileState.ERRORS);
+      else if (fs == FileState.ERRORS) {
+	 setFileState(f,FileState.STABLE);
+       }
+    }
+}
+
+
+
+
 private void updateTestState()
 {
    Map<String,FileState> chng = null;
@@ -453,6 +468,13 @@ private class CommandHandler implements MintHandler {
 	       lst.add(btc);
 	       rply = for_batt.showSelectedTests(lst);
 	     }
+	  }
+	 else if (cmd.equals("ERRORS")) {
+	    Set<String> files = new HashSet<String>();
+	    for (Element fe : IvyXml.children(e,"FILE")) {
+	       files.add(IvyXml.getText(fe));
+	     }
+	    setErrorFiles(files);
 	  }
 	 else if (cmd.equals("UPDATE")) {
 	    for_batt.setUpdateTests();

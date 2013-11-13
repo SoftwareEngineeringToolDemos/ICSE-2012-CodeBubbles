@@ -26,11 +26,14 @@ package edu.brown.cs.bubbles.batt;
 
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.file.IvyFormat;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
-import java.util.*;
+import org.w3c.dom.Element;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 class BattTestCase implements BattConstants, BattConstants.BattTest, Comparable<BattTestCase>

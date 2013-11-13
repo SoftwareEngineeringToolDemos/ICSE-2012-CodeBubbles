@@ -36,6 +36,7 @@ import edu.brown.cs.bubbles.board.BoardMetrics;
 import edu.brown.cs.ivy.swing.SwingFreezePane;
 
 import javax.swing.*;
+import javax.swing.text.Document;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -46,7 +47,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.text.Document;
 
 
 

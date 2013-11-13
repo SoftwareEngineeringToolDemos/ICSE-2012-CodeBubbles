@@ -21,11 +21,10 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import edu.brown.cs.bubbles.bedu.*;
-
-import java.util.List;
+import edu.brown.cs.bubbles.bedu.BeduFactory;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class BeduChatFactory {

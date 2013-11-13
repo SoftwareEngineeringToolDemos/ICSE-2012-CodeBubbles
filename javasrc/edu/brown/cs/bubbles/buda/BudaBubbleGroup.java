@@ -40,7 +40,8 @@ import java.awt.geom.*;
 import java.util.*;
 
 
-class BudaBubbleGroup implements BudaConstants, ComponentListener, Comparable<BudaBubbleGroup> {
+public class BudaBubbleGroup implements BudaConstants, ComponentListener,
+	Comparable<BudaBubbleGroup> {
 
 
 
@@ -128,7 +129,7 @@ void removeBubble(BudaBubble bb)
 
 
 
-Collection<BudaBubble> getBubbles()
+public Collection<BudaBubble> getBubbles()
 {
    return new ArrayList<BudaBubble>(group_bubbles);
 }

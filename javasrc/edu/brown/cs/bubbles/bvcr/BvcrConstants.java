@@ -25,7 +25,7 @@
 package edu.brown.cs.bubbles.bvcr;
 
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 
 

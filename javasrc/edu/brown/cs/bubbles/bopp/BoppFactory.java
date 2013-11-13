@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 
 
 /**
@@ -48,8 +49,11 @@ public class BoppFactory implements BoppConstants, BudaConstants {
 /********************************************************************************/
 
 private static BoppFactory the_factory = new BoppFactory();
-private static BudaRoot    buda_root;
-private static BoppOptionSet option_set;
+private static BudaRoot    buda_root = null;
+private static BoppOptionSet option_set = null;
+private static Map<BudaBubbleArea,BoppOptionPanel> options_panel = new HashMap<BudaBubbleArea,BoppOptionPanel>();
+private static List<BoppOptionNew> changed_options = new ArrayList<BoppOptionNew>();
+
 
 
 /**
@@ -128,12 +132,24 @@ static void repaintBubbleArea()
 
 public static BoppOptionPanel getBoppPanelNew(BudaBubbleArea area)
 {
-   BoppOptionPanel bopp = new BoppOptionPanel(option_set);
-   return bopp;
+   BoppOptionPanel pnl =  new BoppOptionPanel(option_set);
+
+   for (BoppOptionNew opt : changed_options) {
+      pnl.handleOptionChange(opt);
+    }
+
+   return pnl;
 }
 
 
+static void handleOptionChange(BoppOptionNew opt)
+{
+   changed_options.add(opt);
 
+   for (BoppOptionPanel pnl : options_panel.values()) {
+      pnl.handleOptionChange(opt);
+    }
+}
 
 /********************************************************************************/
 /*										*/
@@ -143,16 +159,11 @@ public static BoppOptionPanel getBoppPanelNew(BudaBubbleArea area)
 
 private static class OptionsListenerNew implements ActionListener {
 
-   private BudaRoot		       for_root;
-   private Map<BudaBubbleArea,BoppOptionPanel> options_panel;
-
    OptionsListenerNew(BudaRoot br) {
-      for_root = br;
-      options_panel = new HashMap<BudaBubbleArea,BoppOptionPanel>();
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
-      BudaBubbleArea bba = for_root.getCurrentBubbleArea();
+      BudaBubbleArea bba = buda_root.getCurrentBubbleArea();
       if (bba == null) return;
 
       BoppOptionPanel pnl = options_panel.get(bba);

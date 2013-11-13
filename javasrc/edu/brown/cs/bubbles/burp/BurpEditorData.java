@@ -25,8 +25,8 @@
 
 package edu.brown.cs.bubbles.burp;
 
-import edu.brown.cs.bubbles.buda.*;
-
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaRoot;
 
 import javax.swing.event.*;
 import javax.swing.text.Document;

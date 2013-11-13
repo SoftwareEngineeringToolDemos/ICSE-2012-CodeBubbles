@@ -32,26 +32,15 @@ package edu.brown.cs.bubbles.pybase;
 
 
 
-import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
-import edu.brown.cs.bubbles.pybase.symbols.Found;
-import edu.brown.cs.bubbles.pybase.symbols.Scope;
-import edu.brown.cs.bubbles.pybase.symbols.SourceToken;
-import edu.brown.cs.bubbles.pybase.symbols.NodeUtils;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
 import org.python.pydev.core.Tuple;
 import org.python.pydev.core.structure.FastStack;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Attribute;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.TryExcept;
-import org.python.pydev.parser.jython.ast.excepthandlerType;
+import org.python.pydev.parser.jython.ast.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 
 

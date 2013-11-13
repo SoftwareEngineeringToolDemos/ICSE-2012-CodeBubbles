@@ -32,7 +32,7 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
 import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.burp.*;
+import edu.brown.cs.bubbles.burp.BurpHistory;
 
 import edu.brown.cs.ivy.swing.SwingEnumButton;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 
 
@@ -160,7 +161,7 @@ BconClassPanel(String proj,File f,String cls,boolean inner)
    list_model = new ClassListModel();
    inner_class = inner;
 
-   region_set = new TreeSet<BconRegion>(new RegionComparator());
+   region_set = new ConcurrentSkipListSet<BconRegion>(new RegionComparator());
 
    setupElements();
 
@@ -189,6 +190,12 @@ BconClassPanel(String proj,File f,String cls,boolean inner)
 
 @Override public JComponent getComponent()		{ return class_panel; }
 
+boolean isValid()
+{
+   if (bale_file == null) return false;
+   if (bale_file.getLength() == 0) return false;
+   return true;
+}
 
 
 
@@ -604,13 +611,13 @@ private void outputComment(int offset,BconToken start,BconToken end,boolean cpy,
 private void headerScan(Segment s,int offset)
 {
    if (!inner_class) {
-      List<BumpLocation> locs = bump_client.findClassHeader(for_project,for_class,true,false);
+      List<BumpLocation> locs = bump_client.findClassHeader(for_project,for_file,for_class,true,false);
       if (locs != null) {
 	 for (BumpLocation bl : locs) {
 	    addHeaderRegion(bl,RegionType.REGION_PACKAGE,s,offset);
 	 }
       }
-      locs = bump_client.findClassHeader(for_project,for_class,false,true);
+      locs = bump_client.findClassHeader(for_project,for_file,for_class,false,true);
       if (locs != null) {
 	 for (BumpLocation bl : locs) {
 	    addHeaderRegion(bl,RegionType.REGION_IMPORT,s,offset);
@@ -618,7 +625,7 @@ private void headerScan(Segment s,int offset)
       }
     }
 
-   List<BumpLocation> locs = bump_client.findClassHeader(for_project,for_class,false,false);
+   List<BumpLocation> locs = bump_client.findClassHeader(for_project,for_file,for_class,false,false);
    if (locs != null) {
       for (BumpLocation bl : locs) {
 	 addHeaderRegion(bl,RegionType.REGION_CLASS_HEADER,s,offset);
@@ -637,7 +644,7 @@ void addHeaderRegion(BumpLocation bl,RegionType rt,Segment s,int offset)
    if (rt == RegionType.REGION_CLASS_HEADER) {
       for (BconRegion br : region_set) {
 	 if (br.getStartOffset() <= spos+offset && br.getEndOffset() > spos+offset) {
-	    spos = br.getEndOffset()-offset;
+	    spos = br.getStartOffset()-offset;
 	  }
        }
    }

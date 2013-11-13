@@ -26,7 +26,8 @@
 package edu.brown.cs.bubbles.bueno;
 
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Reader;
 
 
 
@@ -66,7 +67,7 @@ BuenoCreatorTemplate()
    if (r == null) r = findTemplate("type",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }
@@ -81,7 +82,7 @@ BuenoCreatorTemplate()
    Reader r = findTemplate("module",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }
@@ -101,7 +102,7 @@ BuenoCreatorTemplate()
    if (r == null) r = findTemplate("innertype",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }
@@ -120,7 +121,7 @@ BuenoCreatorTemplate()
    if (r == null) r = findTemplate("method",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }
@@ -135,7 +136,7 @@ BuenoCreatorTemplate()
    Reader r = findTemplate("field",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }
@@ -150,7 +151,7 @@ BuenoCreatorTemplate()
    Reader r = findTemplate("marquis",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }
@@ -165,7 +166,7 @@ BuenoCreatorTemplate()
    Reader r = findTemplate("block",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }
@@ -180,7 +181,7 @@ BuenoCreatorTemplate()
    Reader r = findTemplate("javadoc",props);
    if (r != null) {
       try {
-	 expand(r,props,null,buf);
+	 expand(r,props,buf);
 	 return;
        }
       catch (IOException e) { }

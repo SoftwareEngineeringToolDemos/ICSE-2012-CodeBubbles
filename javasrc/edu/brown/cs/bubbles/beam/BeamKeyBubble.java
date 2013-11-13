@@ -30,15 +30,17 @@
 
 package edu.brown.cs.bubbles.beam;
 
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.*;
-import java.util.*;
+import java.util.Vector;
 
 
 class BeamKeyBubble extends BudaBubble implements BeamConstants

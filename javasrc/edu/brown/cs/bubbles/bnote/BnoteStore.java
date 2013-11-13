@@ -37,15 +37,17 @@
 
 package edu.brown.cs.bubbles.bnote;
 
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardSetup;
 
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 
 public class BnoteStore implements BnoteConstants, MintConstants
@@ -393,6 +395,9 @@ private class NoteServer implements MintHandler {
     }
 
 }	// end of inner class NoteServer
+
+
+
 
 
 private class RemoteClient {

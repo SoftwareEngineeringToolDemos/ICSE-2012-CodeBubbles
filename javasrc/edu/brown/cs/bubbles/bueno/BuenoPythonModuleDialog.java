@@ -31,8 +31,8 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import java.awt.Point;
 import java.io.File;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 

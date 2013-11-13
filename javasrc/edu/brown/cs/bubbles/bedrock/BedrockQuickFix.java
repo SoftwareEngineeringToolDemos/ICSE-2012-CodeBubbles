@@ -30,22 +30,24 @@
 
 package edu.brown.cs.bubbles.bedrock;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.core.runtime.*;
-import org.eclipse.jdt.ui.text.java.*;
-import org.eclipse.jdt.core.*;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.*;
-import org.eclipse.jdt.core.compiler.*;
-import org.eclipse.ui.progress.*;
-import org.eclipse.jface.text.contentassist.*;
-import org.eclipse.ltk.core.refactoring.*;
+import org.eclipse.jdt.ui.text.java.*;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.TextEdit;
+import org.eclipse.ui.progress.WorkbenchJob;
+import org.w3c.dom.Element;
 
-import org.w3c.dom.*;
-
+import java.lang.reflect.Method;
 import java.util.*;
-import java.lang.reflect.*;
 
 
 class BedrockQuickFix implements BedrockConstants

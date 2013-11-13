@@ -251,7 +251,7 @@ private void setupStack(BudaLinkStyle link)
 private static BudaBubble createBubble(Component src,Position p,Point pt,boolean near,
 					  BumpLocation bl,boolean add,BudaLinkStyle link)
 {
-   if (link == BudaLinkStyle.NONE)
+   if (link == BudaLinkStyle.NONE || link == null)
       return BaleFactory.getFactory().createLocationEditorBubble(src,p,pt,near,bl,false,add,true);
    else
       return BaleFactory.getFactory().createLocationEditorBubble(src,p,pt,near,bl,true,add,true);
@@ -355,7 +355,7 @@ private class FieldStackEntry extends GenericStackEntry {
 
    @Override protected BaleFragmentEditor createFullFragment() {
       BaleFragmentEditor ed = BaleFactory.getFactory().createFieldFragmentEditor(
-	 def_location.getSymbolProject(),class_name);
+         def_location.getSymbolProject(),def_location.getFile(),class_name);
       ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
       return ed;
     }
@@ -432,7 +432,7 @@ private class TypeStackEntry extends GenericStackEntry {
 
    @Override protected BaleFragmentEditor createFullFragment() {
       BaleFragmentEditor ed = BaleFactory.getFactory().createClassPrefixFragmentEditor(
-	 def_location.getSymbolProject(),class_name);
+         def_location.getSymbolProject(),def_location.getFile(),class_name);
       ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
       return ed;
     }

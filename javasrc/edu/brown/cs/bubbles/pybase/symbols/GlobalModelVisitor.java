@@ -35,21 +35,10 @@ import edu.brown.cs.bubbles.pybase.PybaseConstants.VisitorType;
 
 import org.python.pydev.core.structure.FastStack;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.Import;
-import org.python.pydev.parser.jython.ast.ImportFrom;
+import org.python.pydev.parser.jython.ast.*;
 import org.python.pydev.parser.jython.ast.List;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.Str;
-import org.python.pydev.parser.jython.ast.Tuple;
-import org.python.pydev.parser.jython.ast.exprType;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 
 /**

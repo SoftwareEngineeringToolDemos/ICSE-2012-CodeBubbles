@@ -38,14 +38,8 @@ import edu.brown.cs.bubbles.pybase.symbols.PyFileListing.PyFileInfo;
 
 import org.python.pydev.core.FullRepIterable;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 

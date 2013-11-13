@@ -34,8 +34,8 @@ import org.junit.runners.model.TestClass;
 import javax.xml.stream.*;
 
 import java.io.*;
-import java.net.*;
 import java.lang.reflect.Method;
+import java.net.*;
 import java.security.Permission;
 import java.util.*;
 

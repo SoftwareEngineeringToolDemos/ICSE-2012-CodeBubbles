@@ -30,8 +30,10 @@ import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Segment;
+
 import java.awt.Component;
-import javax.swing.text.*;
 
 
 
@@ -243,7 +245,7 @@ BudaBubble makeBubble()
 	 int idx = fnm.lastIndexOf(".");
 	 if (idx > 0) {
 	    String cnm = fnm.substring(0,idx);
-	    bb = bf.createFieldsBubble(base_location.getProject(),cnm);
+	    bb = bf.createFieldsBubble(base_location.getProject(),base_location.getFile(),cnm);
 	  }
 	 break;
       default:

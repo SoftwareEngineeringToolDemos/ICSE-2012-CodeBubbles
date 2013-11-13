@@ -29,7 +29,8 @@ import edu.brown.cs.bubbles.buda.*;
 import javax.swing.*;
 import javax.swing.text.Position;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -100,6 +101,10 @@ static void createInfoBubble(BaleEditorPane target,String elmtype,
 		  "Source for implementation not found!",BaleInfoBubbleIconType.WARNING,sp);
 	 else bib = new BaleInfoBubble(target,new String[] {},"Source for implementation not found!",
 		  BaleInfoBubbleIconType.WARNING,sp);
+	 break;
+      case UNDEFINED:
+	 bib = new BaleInfoBubble(target,new String[] {},
+		  "Name is not defined",BaleInfoBubbleIconType.ERROR,sp);
 	 break;
       case NOIDENTIFIER:
 	 bib = new BaleInfoBubble(target,new String[] {},

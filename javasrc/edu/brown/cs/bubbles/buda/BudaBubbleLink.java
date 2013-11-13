@@ -32,10 +32,12 @@ package edu.brown.cs.bubbles.buda;
 
 import edu.brown.cs.bubbles.board.BoardMetrics;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.event.*;
 import javax.swing.*;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.List;
 

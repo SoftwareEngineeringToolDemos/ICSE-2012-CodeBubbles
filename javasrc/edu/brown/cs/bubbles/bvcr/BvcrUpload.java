@@ -27,13 +27,14 @@ package edu.brown.cs.bubbles.bvcr;
 
 import edu.brown.cs.bubbles.board.BoardProperties;
 
-import java.util.*;
-import java.util.zip.*;
 import javax.crypto.*;
-import javax.crypto.spec.*;
-import java.security.spec.*;
-import java.net.*;
+import javax.crypto.spec.PBEParameterSpec;
+
 import java.io.*;
+import java.net.*;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.Random;
+import java.util.zip.DeflaterOutputStream;
 
 
 class BvcrUpload implements BvcrConstants

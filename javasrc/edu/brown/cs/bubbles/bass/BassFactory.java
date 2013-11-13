@@ -34,8 +34,8 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bueno.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
@@ -384,12 +384,12 @@ public void removeFlagChecker(BassFlagger bf)
 }
 
 
-BassFlag getFlagForName(String name)
+BassFlag getFlagForName(BassName bnm,String name)
 {
    BassFlag best = null;
 
    for (BassFlagger bf : flag_checkers) {
-      BassFlag xf = bf.getFlagForName(name);
+      BassFlag xf = bf.getFlagForName(bnm,name);
       if (xf != null) {
 	 if (best == null || best.getPriority() < xf.getPriority()) {
 	    best = xf;
@@ -518,25 +518,27 @@ static BassTreeModelBase getModelBase(BassRepository br)
 private static class ProjectProps implements BassPopupHandler {
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,
-				       String fullname,BassName bn) {
+        			       String fullname,BassName bn) {
       if (bn != null) return;
       if (fullname.startsWith("@")) return;
-
+   
       int idx = fullname.indexOf(":");
       if (idx <= 0) return;
       String proj = fullname.substring(0,idx);
-
+   
       switch (BoardSetup.getSetup().getLanguage()) {
-	 case JAVA :
-	    // menu.add(new EclipseProjectAction(proj));
-	    menu.add(new ProjectAction(proj,bb,where));
-	    menu.add(new NewProjectAction(bb,where));
-	    menu.add(new BassImportProjectAction());
-	    break;
-	 case PYTHON :
-	    menu.add(new PythonProjectAction(proj,bb,where));
-	    menu.add(new NewPythonProjectAction(bb,where));
-	    break;
+         case JAVA :
+            // menu.add(new EclipseProjectAction(proj));
+            menu.add(new ProjectAction(proj,bb,where));
+            menu.add(new NewProjectAction(bb,where));
+            menu.add(new BassImportProjectAction());
+            break;
+         case PYTHON :
+            menu.add(new PythonProjectAction(proj,bb,where));
+            menu.add(new NewPythonProjectAction(bb,where));
+            break;
+         case REBUS :
+            break;
        }
     }
 

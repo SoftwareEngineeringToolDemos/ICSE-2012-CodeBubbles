@@ -24,7 +24,8 @@
 
 package edu.brown.cs.bubbles.bandaid;
 
-import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.*;
+import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.ClassReader;
+import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.ClassWriter;
 
 
 public class BandaidClassWriter extends ClassWriter

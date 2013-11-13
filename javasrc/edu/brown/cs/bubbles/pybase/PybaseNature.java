@@ -33,26 +33,14 @@
 
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.bubbles.pybase.symbols.ASTManager;
-import edu.brown.cs.bubbles.pybase.symbols.AbstractASTManager;
-import edu.brown.cs.bubbles.pybase.symbols.AbstractInterpreterManager;
-import edu.brown.cs.bubbles.pybase.symbols.AbstractModule;
-import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
-import edu.brown.cs.bubbles.pybase.symbols.IronpythonInterpreterManager;
-import edu.brown.cs.bubbles.pybase.symbols.JythonInterpreterManager;
-import edu.brown.cs.bubbles.pybase.symbols.ModulesManager;
-import edu.brown.cs.bubbles.pybase.symbols.ProjectModulesManager;
-import edu.brown.cs.bubbles.pybase.symbols.PythonInterpreterManager;
-import edu.brown.cs.bubbles.pybase.symbols.StringUtils;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 
 public class PybaseNature implements PybaseConstants {

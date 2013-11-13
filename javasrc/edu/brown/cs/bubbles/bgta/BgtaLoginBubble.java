@@ -22,42 +22,20 @@
 package edu.brown.cs.bubbles.bgta;
 
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.geom.Rectangle2D;
-import java.util.Collection;
-import java.util.Vector;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import edu.brown.cs.bubbles.board.BoardFont;
+import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
+import edu.brown.cs.bubbles.bowi.BowiFactory;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 
 import org.jivesoftware.smack.XMPPException;
 
-import edu.brown.cs.bubbles.board.BoardFont;
-import edu.brown.cs.bubbles.bowi.BowiFactory;
-import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
-import edu.brown.cs.bubbles.buda.BudaBubble;
+import javax.swing.*;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
+import java.util.Collection;
+import java.util.Vector;
 
 
 

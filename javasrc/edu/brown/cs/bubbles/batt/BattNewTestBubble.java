@@ -24,20 +24,23 @@
 
 package edu.brown.cs.bubbles.batt;
 
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bale.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bueno.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
-import java.util.*;
+import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-
-import java.lang.reflect.*;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 
 

@@ -29,12 +29,14 @@
 
 package edu.brown.cs.bubbles.bwiz;
 
-import javax.swing.event.DocumentListener;
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
+
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+
 import java.awt.Color;
-import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 
 

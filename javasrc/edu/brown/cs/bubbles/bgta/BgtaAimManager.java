@@ -23,29 +23,22 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.BgtaRoster;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.BgtaRosterEntry;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.ChatServer;
 import edu.brown.cs.bubbles.board.BoardLog;
 
-import net.kano.joustsim.oscar.AimConnection;
-import net.kano.joustsim.oscar.AimSession;
-import net.kano.joustsim.oscar.DefaultAppSession;
-import net.kano.joustsim.oscar.AimConnectionProperties;
-import net.kano.joustsim.oscar.OpenedServiceListener;
-import net.kano.joustsim.oscar.State;
 import net.kano.joustsim.Screenname;
+import net.kano.joustsim.oscar.*;
 import net.kano.joustsim.oscar.oscar.OscarConnection;
 import net.kano.joustsim.oscar.oscar.service.Service;
 import net.kano.joustsim.oscar.oscar.service.ServiceListener;
-import net.kano.joustsim.oscar.oscar.service.ssi.Buddy;
-import net.kano.joustsim.oscar.BuddyInfo;
-import net.kano.joustsim.oscar.oscar.service.ssi.MutableBuddyList;
-import net.kano.joustsim.oscar.oscar.service.ssi.Group;
-import net.kano.joustsim.oscar.oscar.service.ssi.SsiService;
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
+import net.kano.joustsim.oscar.oscar.service.ssi.*;
 
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Presence;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

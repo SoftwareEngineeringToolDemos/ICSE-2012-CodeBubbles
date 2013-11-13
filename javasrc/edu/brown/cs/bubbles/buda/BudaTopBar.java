@@ -25,8 +25,8 @@
 
 package edu.brown.cs.bubbles.buda;
 
-import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
 
 import edu.brown.cs.ivy.swing.SwingText;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -45,7 +45,8 @@ import java.io.IOException;
 import java.util.*;
 
 
-class BudaTopBar extends JPanel implements ActionListener, BudaConstants, BoardConstants, BudaHelpClient {
+public class BudaTopBar extends JPanel implements ActionListener, BudaConstants,
+		BoardConstants, BudaHelpClient {
 
 
 
@@ -187,8 +188,6 @@ BudaBubbleArea getBubbleArea()			{ return bubble_area; }
 BudaOverviewBar getOverviewBar()		{ return overview_area; }
 
 BudaRoot getRoot()		{ return buda_root; }
-
-
 
 BudaWorkingSetImpl findCurrentWorkingSet()	{ return cur_workingset; }
 
@@ -429,6 +428,40 @@ private BudaShare [] createShareArray()
    Arrays.sort(shrs);
    return shrs;
 }
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Help support methods							*/
+/*										*/
+/********************************************************************************/
+
+public JPopupMenu getBubbleMenu()		{ return bubble_menu; }
+
+public JPopupMenu getWorkingsetMenu()		{ return workingset_menu; }
+
+public boolean isOverWorkingSet(int x)
+{
+   Rectangle r = getBounds();
+   Dimension totsize = bubble_area.getSize();
+
+   BudaWorkingSetImpl cws = null;
+   for (BudaWorkingSetImpl ws : buda_root.getWorkingSetImpls()) {
+      Rectangle wsr = ws.getRegion();
+      int x0 = wsr.x * r.width / totsize.width;
+      int x1 = (wsr.x + wsr.width) * r.width / totsize.width;
+      if (x > x0 && x < x1) {
+	 cws = ws;
+	 break;
+       }
+    }
+
+   return (cws != null);
+}
+
+
 
 
 /********************************************************************************/
@@ -821,6 +854,7 @@ private void handlePopup(MouseEvent e)
       else bubble_menu.show(e.getComponent(),e.getX(),e.getY());
     }
    else {
+      workingset_menu.validate();
       if (cur_workingset.isShared())
 	 share_button.setText("Stop Sharing Working Set");
       else

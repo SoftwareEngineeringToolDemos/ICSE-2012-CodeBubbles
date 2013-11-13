@@ -24,21 +24,27 @@
 
 package edu.brown.cs.bubbles.batt;
 
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bale.*;
 import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.exec.*;
-import edu.brown.cs.ivy.xml.*;
 
-import org.w3c.dom.*;
-import java.awt.Point;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
+import edu.brown.cs.ivy.exec.IvyExec;
+import edu.brown.cs.ivy.mint.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
+
+import org.w3c.dom.Element;
+
 import javax.swing.*;
+
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.util.*;
 
 
 public class BattFactory implements BattConstants, BudaConstants.ButtonListener,
@@ -113,6 +119,8 @@ public static void initialize(BudaRoot br)
     }
 
    BaleFactory.getFactory().addContextListener(new BattContexter(bf));
+
+   bf.setupErrorHandler();
 }
 
 
@@ -275,6 +283,23 @@ void findNewTests()
    BoardSetup bs = BoardSetup.getSetup();
    MintControl mc = bs.getMintControl();
    mc.send("<BATT DO='UPDATE' />");
+}
+
+
+
+void sendErrorFiles(Collection<File> files)
+{
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
+   IvyXmlWriter xw = new IvyXmlWriter();
+   xw.begin("BATT");
+   xw.field("DO","ERRORS");
+   for (File f : files) {
+      xw.textElement("FILE",f);
+    }
+   xw.end("BATT");
+   mc.send(xw.toString());
+   xw.close();
 }
 
 
@@ -567,6 +592,82 @@ private static class NewTestAction extends AbstractAction {
     }
 
 }	// end of inner class NewTestAction
+
+
+
+/********************************************************************************/
+/*										*/
+/*	ErrorStatus -- maintain file error status				*/
+/*										*/
+/********************************************************************************/
+
+private void setupErrorHandler()
+{
+   ErrorStatus sts = new ErrorStatus();
+   BumpClient.getBump().addProblemHandler(null,sts);
+}
+
+
+
+private class ErrorStatus implements BumpConstants.BumpProblemHandler {
+
+   private Set<File> error_files;
+   private Set<File> check_files;
+
+   ErrorStatus() {
+      error_files = new HashSet<File>();
+      check_files = new HashSet<File>();
+      for (BumpProblem bp : BumpClient.getBump().getAllProblems()) {
+	 addProblem(bp);
+       }
+    }
+
+   @Override public void handleProblemAdded(BumpProblem bp) {
+      addProblem(bp);
+    }
+
+   @Override public void handleProblemRemoved(BumpProblem bp) {
+      if (isError(bp)) {
+	 check_files.add(bp.getFile());
+       }
+    }
+
+   @Override public void handleProblemsDone() {
+      for (File f : check_files) {
+	 int ct = 0;
+	 for (BumpProblem bp : BumpClient.getBump().getProblems(f)) {
+	    if (isError(bp)) ++ct;
+	  }
+	 if (ct > 0) error_files.add(f);
+	 else error_files.remove(f);
+       }
+      check_files.clear();
+      sendErrorFiles(error_files);
+    }
+
+   @Override public void handleClearProblems() {
+      check_files.addAll(error_files);
+    }
+
+   private boolean isError(BumpProblem bp) {
+      switch (bp.getErrorType()) {
+	 case ERROR :
+	 case FATAL :
+	    return true;
+	 default :
+	    return false;
+       }
+    }
+
+   private void addProblem(BumpProblem bp) {
+      if (isError(bp)) {
+	 File bf = bp.getFile();
+	 check_files.remove(bf);
+	 error_files.add(bf);
+       }
+    }
+
+}	// end of inner class ErrorStatus
 
 
 

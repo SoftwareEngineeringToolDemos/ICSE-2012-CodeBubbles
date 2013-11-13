@@ -25,10 +25,12 @@
 
 package edu.brown.cs.bubbles.bwiz;
 
-import java.awt.event.*;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.util.EventListener;
+import java.util.List;
+
 
 
 public interface BwizConstants
@@ -72,6 +74,8 @@ interface ISignatureUpdate {
 interface IVerifier {
 
     boolean verify(String test);
+    List<String> results(String test);
+
 
 }	// end of inner interface IVerifier
 
@@ -88,6 +92,8 @@ interface ItemChangeListener extends EventListener {
    void itemRemoved(String item);
 
 }	// end of inner interface ItemChangeListener
+
+
 
 
 interface VerificationListener extends EventListener

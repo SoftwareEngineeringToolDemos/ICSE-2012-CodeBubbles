@@ -33,9 +33,7 @@ package edu.brown.cs.bubbles.pybase.symbols;
 import edu.brown.cs.bubbles.pybase.PybaseScopeItems;
 import edu.brown.cs.bubbles.pybase.symbols.ImportChecker.ImportInfo;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 public final class Found implements Iterable<GenAndTok> {

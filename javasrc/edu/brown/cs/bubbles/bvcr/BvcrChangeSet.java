@@ -25,17 +25,18 @@
 package edu.brown.cs.bubbles.bvcr;
 
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
+import org.w3c.dom.Element;
 
-import org.w3c.dom.*;
-
-import java.util.*;
-import java.util.zip.*;
 import javax.crypto.*;
-import javax.crypto.spec.*;
-import java.security.spec.*;
+import javax.crypto.spec.PBEParameterSpec;
+
 import java.io.*;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.*;
+import java.util.zip.InflaterInputStream;
 
 
 class BvcrChangeSet implements BvcrConstants

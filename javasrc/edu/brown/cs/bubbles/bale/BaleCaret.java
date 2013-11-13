@@ -155,6 +155,9 @@ private void paintBlock(Graphics g)
 
    JTextComponent c = getComponent();
    Color bg = c.getBackground();
+   if (bg.getAlpha() == 0) {
+      bg = Color.YELLOW;	// shows up as opposite color than this
+   }
 
    try {
       int dot = getDot();

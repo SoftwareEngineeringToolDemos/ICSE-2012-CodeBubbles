@@ -309,6 +309,16 @@
       </java>
    </target>
 
+   <target name='rebus' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <jvmarg value="-Xmx1024m" />
+	 <arg value="-rebus" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr" />
+      </java>
+   </target>
+
    <target name='sudssetup' depends='compile'>
       <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
 	 <classpath refid='test.classpath' />
@@ -457,6 +467,8 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='pydev.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsoup.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='asm4.jar' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
    </target>
@@ -469,6 +481,7 @@
 	 <fileset dir='${BUBBLES}/lib' includes='bedrock.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='ivy.jar' />
 	 <fileset dir='${BUBBLES}/lib' includes='version.xml' />
+	 <fileset dir='${BUBBLES}/lib' includes='rebusprops.xml' />
 	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
@@ -499,6 +512,8 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
 	 <fileset dir='${BUBBLES}/pybles' includes='**/*' />
 	 <fileset dir='${BUBBLES}/lib/' includes='pydev.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsoup.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='asm4.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.text.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.text.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.jar' />
@@ -508,6 +523,7 @@
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.runtime.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='pydev.jar' />
 	 <fileset dir='.' includes='pyblesfiles.txt' />
+	 <fileset dir='${BUBBLES}/lib' includes='rebusprops.xml' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='${BUBBLES}/suds/bubbles.jar' />
@@ -591,6 +607,9 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsoup.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='asm4.jar' />
+	 <fileset dir='${BUBBLES}/lib' includes='rebusprops.xml' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -639,6 +658,9 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsoup.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='asm4.jar' />
+	 <fileset dir='${BUBBLES}/lib' includes='rebusprops.xml' />
       </jar>
       <copy file='bubbles.jar' tofile='${BUBBLES}/bubbles.jar' />
       <copy file='bubbles.jar' tofile='/pro/web/web/people/spr/bubbles/bubbles.jar' />
@@ -684,6 +706,9 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='cofoja.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsoup.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='asm4.jar' />
+	 <fileset dir='${BUBBLES}/lib' includes='rebusprops.xml' />
       </jar>
       <copy file='external/bubbles.jar' tofile='/pro/web/web/people/spr/bubbles.ext/bubbles.jar' />
       <copy file='external/version.xml' tofile='/pro/web/web/people/spr/bubbles.ext/version.xml' />

@@ -24,16 +24,19 @@
 
 package edu.brown.cs.bubbles.board;
 
+import edu.brown.cs.ivy.exec.IvyExec;
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.*;
-import edu.brown.cs.ivy.exec.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
+
+import javax.swing.Icon;
+import javax.swing.filechooser.FileSystemView;
 
 import java.io.*;
-import javax.swing.filechooser.*;
-import javax.swing.Icon;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class BoardFileSystemView extends FileSystemView implements BoardConstants, MintConstants

@@ -28,15 +28,8 @@ package edu.brown.cs.bubbles.pybase.symbols;
 
 import edu.brown.cs.bubbles.pybase.PybaseMain;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 
 

@@ -683,7 +683,7 @@ void extractMethod(String proj,String bid,String file,int start,int end,String n
 /*										*/
 /********************************************************************************/
 
-void formatCode(String proj,String bid,String file,Collection<Element> rgns,IvyXmlWriter xw)
+void formatCode(String proj,String bid,String file,int spos,int epos,IvyXmlWriter xw)
 	throws BedrockException
 {
    FileData fd = findFile(proj,file,bid,null);
@@ -700,14 +700,11 @@ void formatCode(String proj,String bid,String file,Collection<Element> rgns,IvyX
       throw new BedrockException("Unable to get compilation unit contents: " + e,e);
     }
 
-   IRegion [] irgns = new IRegion[rgns.size()];
-   int i = 0;
-   for (Element r : rgns) {
-      int soff = IvyXml.getAttrInt(r,"START");
-      int eoff = IvyXml.getAttrInt(r,"END");
-      if (soff < 0 || eoff < 0) throw new BedrockException("Missing start or end offset for formatting region");
-      irgns[i++] = new Region(soff,eoff-soff);
-    }
+   IRegion [] irgns = new IRegion[1];
+   if (spos < 0) spos = 0;
+   if (epos <= 0) epos = cnts.length();
+   if (epos <= spos) throw new BedrockException("Bad region to format");
+   irgns[0] = new Region(spos,epos-spos);
 
    if (code_formatter == null) {
       code_formatter = ToolFactory.createCodeFormatter(null);
@@ -737,6 +734,7 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
 		       boolean imports,
 		       boolean pkgfg,
 		       boolean topdecls,
+		       boolean fields,
 		       boolean all,
 		       IvyXmlWriter xw)
 	throws BedrockException
@@ -845,6 +843,20 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
 	 ASTNode an = (ASTNode) o;
 	 if (an.getNodeType() == ASTNode.INITIALIZER) {
 	    outputRange(cu,an,file,xw);
+	  }
+       }
+    }
+
+   if (fields && atd != null) {
+      for (Object o : atd.bodyDeclarations()) {
+	 ASTNode an = (ASTNode) o;
+	 switch (an.getNodeType()) {
+	    case ASTNode.FIELD_DECLARATION :
+	       outputRange(cu,an,file,xw);
+	       break;
+	    case ASTNode.ENUM_CONSTANT_DECLARATION :
+	       outputRange(cu,an,file,xw);
+	       break;
 	  }
        }
     }

@@ -33,25 +33,27 @@ package edu.brown.cs.bubbles.beam;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.burp.BurpHistory;
-import edu.brown.cs.bubbles.bump.*;
 
+import edu.brown.cs.ivy.mint.MintControl;
 import edu.brown.cs.ivy.swing.SwingText;
-import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.*;
-import javax.swing.event.*;
-import javax.swing.text.html.*;
+import javax.swing.text.html.HTMLEditorKit;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.net.*;
 
 
 class BeamNoteBubble extends BudaBubble implements BeamConstants,

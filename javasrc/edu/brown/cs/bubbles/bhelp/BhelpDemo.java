@@ -24,14 +24,14 @@
 
 package edu.brown.cs.bubbles.bhelp;
 
-import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.buda.*;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -71,8 +71,8 @@ BhelpDemo(Element xml)
 
    help_actions = new ArrayList<BhelpAction>();
    for (Element ea : IvyXml.children(xml,"ACTION")) {
-      BhelpAction act = BhelpAction.createAction(ea);
-      if (act != null) help_actions.add(act);
+      List<BhelpAction> act = BhelpAction.createAction(ea);
+      if (act != null) help_actions.addAll(act);
     }
 }
 
@@ -106,7 +106,7 @@ String getName()			{ return demo_name; }
 /*										*/
 /********************************************************************************/
 
-void executeDemo(BudaBubbleArea bba)
+void executeDemo(BudaBubbleArea bba,boolean silent)
 {
     demo_context = new BhelpContext(bba,this);
     demo_stopped = false;
@@ -118,8 +118,8 @@ void executeDemo(BudaBubbleArea bba)
     BudaRoot br = demo_context.getBudaRoot();
     br.setVisible(true);
     br.toFront();
-    
-    DemoRun dr = new DemoRun(demo_context);
+
+    DemoRun dr = new DemoRun(demo_context,silent);
     BoardMetrics.noteCommand("BHELP", "ShowDemo_" + demo_name);
     BoardThreadPool.start(dr);
 }
@@ -129,9 +129,11 @@ void executeDemo(BudaBubbleArea bba)
 private class DemoRun implements Runnable {
 
    private BhelpContext using_context;
+   private boolean is_silent;
 
-   DemoRun(BhelpContext ctx) {
+   DemoRun(BhelpContext ctx,boolean silent) {
       using_context = ctx;
+      is_silent = silent;
    }
 
    @Override public void run() {
@@ -145,7 +147,15 @@ private class DemoRun implements Runnable {
 	    try {
 	       using_context.checkMouse();
 	       if (demo_stopped) ba.executeStopped(using_context);
-	       else ba.executeAction(using_context);
+	       else {
+		  if (!(is_silent && ba.getClass().getName().endsWith("SpeechAction"))) {
+		     ba.executeAction(using_context);
+		   }
+		  else {
+		     ba = BhelpAction.speechToPause(ba);
+		     ba.executeAction(using_context);
+		   }
+		}
 	     }
 	    catch (BhelpException e) {
 	       if (!demo_stopped) BoardLog.logE("BHELP","Demonstration problem",e);

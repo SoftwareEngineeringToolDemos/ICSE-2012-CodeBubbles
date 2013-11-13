@@ -21,8 +21,8 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.bass.*;
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bass.BassNameBase;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 
 import java.util.Vector;
 

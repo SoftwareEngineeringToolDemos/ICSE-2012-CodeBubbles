@@ -23,9 +23,10 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
 import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.BgtaRoster;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.BgtaRosterEntry;
 
 import java.util.*;
 

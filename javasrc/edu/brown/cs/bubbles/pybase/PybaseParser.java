@@ -40,21 +40,13 @@ import org.python.pydev.parser.grammar25.PythonGrammar25;
 import org.python.pydev.parser.grammar26.PythonGrammar26;
 import org.python.pydev.parser.grammar27.PythonGrammar27;
 import org.python.pydev.parser.grammar30.PythonGrammar30;
-import org.python.pydev.parser.jython.CharStream;
-import org.python.pydev.parser.jython.FastCharStream;
-import org.python.pydev.parser.jython.ParseException;
-import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.SpecialStr;
-import org.python.pydev.parser.jython.Token;
-import org.python.pydev.parser.jython.TokenMgrError;
-import org.python.pydev.parser.jython.Visitor;
+import org.python.pydev.parser.jython.*;
 import org.python.pydev.parser.jython.ast.*;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
 import java.awt.Point;
+import java.io.File;
+import java.util.*;
+import java.util.List;
 
 
 

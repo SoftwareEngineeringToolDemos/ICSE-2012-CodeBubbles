@@ -313,10 +313,39 @@ public String getNameHead()
 
 /********************************************************************************/
 /*										*/
+/*	Helper methods								*/
+/*										*/
+/********************************************************************************/
+
+protected String stripTemplates(String nm)
+{
+   int idx = nm.indexOf("<");
+   if (idx < 0) return nm;
+
+   StringBuffer buf = new StringBuffer(nm.substring(0,idx));
+   int lvl = 0;
+   for (int i = idx; i < nm.length(); ++i) {
+      char ch = nm.charAt(i);
+      if (ch == '<') {
+	 ++lvl;
+       }
+      else if (ch == '>') {
+	 --lvl;
+       }
+      else if (lvl <= 0) buf.append(ch);
+    }
+
+   return buf.toString();
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Bubble creation methods 						*/
 /*										*/
-
-
+/*										*/
 /********************************************************************************/
 
 @Override abstract public BudaBubble createBubble();

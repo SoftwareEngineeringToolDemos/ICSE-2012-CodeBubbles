@@ -27,8 +27,10 @@
 package edu.brown.cs.bubbles.bwiz;
 
 import javax.swing.*;
+
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 
 
 
@@ -154,6 +156,7 @@ protected void setup(int fgs)
    if (private_button != null) {
       add(private_button, use_constraints);
       use_constraints.gridy += 1;
+      private_button.setSelected(true);
     }
 
    if (protected_button != null) {

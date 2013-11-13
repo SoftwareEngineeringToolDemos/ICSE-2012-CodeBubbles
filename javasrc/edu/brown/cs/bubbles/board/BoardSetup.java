@@ -27,9 +27,10 @@ package edu.brown.cs.bubbles.board;
 
 import edu.brown.cs.ivy.exec.IvySetup;
 import edu.brown.cs.ivy.file.IvyFile;
+import edu.brown.cs.ivy.mint.MintConstants;
+import edu.brown.cs.ivy.mint.MintControl;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.swing.SwingSetup;
-import edu.brown.cs.ivy.mint.*;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -42,7 +43,8 @@ import java.net.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 
@@ -275,6 +277,9 @@ private void scanArgs(String [] args)
 	  }
 	 else if (args[i].startsWith("-py")) {                          // -python
 	    setLanguage(BoardLanguage.PYTHON);
+	  }
+	 else if (args[i].startsWith("-rebus")) {                       // -rebus
+	    setLanguage(BoardLanguage.REBUS);
 	  }
 	 else if (args[i].startsWith("-p") && i+1 < args.length) {      // -prop <propdir>
 	    BoardProperties.setPropertyDirectory(args[++i]);
@@ -599,6 +604,9 @@ public static File getBubblesPluginDirectory()
       case PYTHON :
 	 pdir = new File(wsd,".metadata");
 	 break;
+      case REBUS :
+	 pdir = new File(wsd,".metadata");
+	 break;
     }
 
    if (!pdir.exists()) pdir.mkdirs();
@@ -685,7 +693,13 @@ public String getLibraryPath(String item)
    if (f == null) return null;
 
    f = new File(f,item);
-   if (!f.exists()) return null;
+   if (!f.exists()) {
+      if (install_jar) return null;
+      File f1 = new File(install_path);
+      File f2 = new File(f1,"eclipsejar");
+      f = new File(f2,item);
+      if (!f.exists()) return null;
+    }
 
    return f.getPath();
 }
@@ -794,6 +808,9 @@ public void setLanguage(BoardLanguage bl)
 	 case JAVA :
 	    if (course_name != null) BoardProperties.setPropertyDirectory(BOARD_SUDS_PROP_BASE);
 	    BoardProperties.setPropertyDirectory(BOARD_PROP_BASE);
+	    break;
+	 case REBUS :
+	    BoardProperties.setPropertyDirectory(BOARD_REBUS_PROP_BASE);
 	    break;
        }
     }
@@ -985,6 +1002,8 @@ public boolean doSetup()
 	 break;
       case PYTHON :
 	 break;
+      case REBUS :
+	 break;
    }
    if (thru) {
       BoardLog.setup();
@@ -1007,6 +1026,9 @@ public boolean doSetup()
 	 needsetup |= !checkInstall() && !install_jar;
 	 break;
       case PYTHON :
+	 needsetup |= !checkInstall() && !install_jar;
+	 break;
+      case REBUS :
 	 needsetup |= !checkInstall() && !install_jar;
 	 break;
     }
@@ -1050,6 +1072,8 @@ public boolean doSetup()
 	  }
 	 break;
       case PYTHON :
+	 break;
+      case REBUS :
 	 break;
     }
 
@@ -1999,6 +2023,9 @@ private void restartBubbles()
 	 case PYTHON :
 	    args.add(idx++,"-python");
 	    break;
+	 case REBUS :
+	    args.add(idx++,"-rebus");
+	    break;
 	 case JAVA :
 	    break;
        }
@@ -2133,6 +2160,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	    break;
 	 case PYTHON :
 	    break;
+	 case REBUS :
+	    break;
        }
 
       bubbles_warning = new JLabel("Warning!");
@@ -2162,6 +2191,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	    break;
 	 case PYTHON :
 	    break;
+	 case REBUS :
+	    break;
        }
 
       pnl.addSeparator();
@@ -2171,6 +2202,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	    install_button = pnl.addBottomButton("INSTALL BUBBLES","INSTALL",this);
 	    break;
 	 case PYTHON :
+	    break;
+	 case REBUS :
 	    break;
        }
 
@@ -2213,6 +2246,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	     }
 	    break;
 	 case PYTHON :
+	    break;
+	 case REBUS :
 	    break;
        }
 
@@ -2340,10 +2375,16 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 	    textfield = pnl.addFileField("Python Workspace",default_workspace,
 		  JFileChooser.DIRECTORIES_ONLY,
 		  new WorkspaceDirectoryFilter(),this,null);
-	    workspace_warning.setToolTipText("Not a vaid PYthon Workspace");
+	    workspace_warning.setToolTipText("Not a vaid Python Workspace");
+	    break;
+	 case REBUS :
+	    textfield = pnl.addFileField("Rebus Workspace",default_workspace,
+		  JFileChooser.DIRECTORIES_ONLY,
+		  new WorkspaceDirectoryFilter(),this,null);
+	    workspace_warning.setToolTipText("Not a vaid Rebus Workspace");
 	    break;
        }
-      textfield.addKeyListener(this);
+      if (textfield != null) textfield.addKeyListener(this);
 
       workspace_warning.setForeground(WARNING_COLOR);
       pnl.add(workspace_warning);
@@ -2386,7 +2427,7 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 
    public void actionPerformed(ActionEvent e) {
       String cmd = e.getActionCommand();
-      if (cmd.equals("Eclipse Workspace") || cmd.equals("Python Workspace")) {
+      if (cmd.equals("Eclipse Workspace") || cmd.equals("Python Workspace") || cmd.equals("Rebus Workspace")) {
 	 JTextField tf = (JTextField) e.getSource();
 	 File ef = new File(tf.getText());
 	 String np = ef.getPath();

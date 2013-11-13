@@ -31,43 +31,18 @@ package edu.brown.cs.bubbles.pybase.symbols;
 
 import edu.brown.cs.bubbles.pybase.PybaseMain;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
 import org.eclipse.core.runtime.Assert;
 import org.python.pydev.core.docutils.StringUtils;
 import org.python.pydev.parser.jython.ISpecialStr;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Attribute;
-import org.python.pydev.parser.jython.ast.Call;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.Compare;
-import org.python.pydev.parser.jython.ast.Dict;
-import org.python.pydev.parser.jython.ast.Expr;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.If;
-import org.python.pydev.parser.jython.ast.Import;
-import org.python.pydev.parser.jython.ast.ImportFrom;
-import org.python.pydev.parser.jython.ast.ListComp;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.Num;
-import org.python.pydev.parser.jython.ast.Str;
-import org.python.pydev.parser.jython.ast.Subscript;
-import org.python.pydev.parser.jython.ast.Tuple;
-import org.python.pydev.parser.jython.ast.VisitorBase;
-import org.python.pydev.parser.jython.ast.aliasType;
-import org.python.pydev.parser.jython.ast.commentType;
-import org.python.pydev.parser.jython.ast.excepthandlerType;
-import org.python.pydev.parser.jython.ast.exprType;
-import org.python.pydev.parser.jython.ast.keywordType;
-import org.python.pydev.parser.jython.ast.stmtType;
+import org.python.pydev.parser.jython.ast.*;
 import org.python.pydev.parser.visitors.scope.ASTEntry;
 import org.python.pydev.parser.visitors.scope.EasyASTIteratorVisitor;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.List;
 
 
 public class NodeUtils {

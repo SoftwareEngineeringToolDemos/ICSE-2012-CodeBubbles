@@ -36,10 +36,10 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
+import javax.swing.Icon;
 import javax.swing.JPopupMenu;
 
 import java.awt.*;
-import javax.swing.Icon;
 import java.util.EventListener;
 import java.util.Stack;
 
@@ -351,7 +351,7 @@ interface BassPopupHandler extends EventListener {
 
 interface BassFlagger extends EventListener {
 
-   public BassFlag getFlagForName(String fullname);
+   public BassFlag getFlagForName(BassName bnm,String fullname);
 
 }	// end of interface BassFlagger
 

@@ -297,7 +297,7 @@ private void handleCompletion(CompletionItem ci)
 /*										*/
 /********************************************************************************/
 
-private synchronized void handleFound(Collection<BumpCompletion> fnd)
+private synchronized void handleFound(Collection<BumpCompletion> fnd,boolean calls)
 {
    if (for_editor == null) return;	// no longer relevant
    if (fnd == null || fnd.size() == 0) return;
@@ -328,7 +328,11 @@ private synchronized void handleShow()
    the_panel = new CompletionPanel();
    found_items = new ArrayList<CompletionItem>();
    for (BumpCompletion bc : found_completions) {
-      CompletionItem citm = new CompletionItemBump(bc);
+      CompletionItem citm = null;
+      if (bc.getCompletion().length() == 0) 
+         citm = new CompletionItemBumpCall(bc);
+      else 
+        citm = new CompletionItemBump(bc);
       found_items.add(citm);
     }
    restrictOptions();
@@ -513,11 +517,21 @@ private class CompletionGetter implements Runnable {
 	 removeContext();
 	 return;
        }
+      
+      List<BumpCompletion> callcomps = null;
 
       for (Iterator<BumpCompletion> it = completions.iterator(); it.hasNext(); ) {
 	 BumpCompletion bc = it.next();
 	 switch (bc.getType()) {
 	    case METHOD_REF :
+               if (bc.getCompletion() == null || bc.getCompletion().length() == 0) {
+                  it.remove();
+                  if (bc.getSignature() != null && bc.getCompletion() != null) {
+                     if (callcomps == null) callcomps = new ArrayList<BumpCompletion>();
+                     callcomps.add(bc);
+                   }
+                }	  
+               break;
 	    case TYPE_REF :
 	    case FIELD_REF :
 	       if (bc.getCompletion() == null || bc.getCompletion().length() == 0) it.remove();
@@ -528,11 +542,16 @@ private class CompletionGetter implements Runnable {
 	       break;
 	  }
        }
-      if (completions.size() == 0) {
+      
+      if (completions.size() == 0 && callcomps != null) {
+         handleFound(callcomps,true);
+       }
+      else  if (completions.size() == 0) {
 	 removeContext();
-	 return;
       }
-      handleFound(completions);
+      else {
+         handleFound(completions,false);
+       }
     }
 
    @Override public String toString() {
@@ -743,15 +762,53 @@ private static class CompletionListCellRenderer extends DefaultListCellRenderer 
 /********************************************************************************/
 
 private static abstract class CompletionItem {
-
+   
+   protected String param_types;
+   protected String return_type;
+   
+   
    abstract String getCompletionText();
    abstract int getStartIndex();
    abstract boolean canStartWith(String text);
-
    Icon getIcon()					{ return null; }
 
    void accepted(BaleEditorPane editor) 		{ }
 
+   protected void getSignatureObjects(String sgn) {
+      param_types = "";
+      return_type = "";
+      
+      if (sgn == null) return;
+      String s = IvyFormat.formatTypeName(sgn);
+      if (s == null) return;
+      
+      int parenindex = s.indexOf('(');
+      if (parenindex >= 0) {
+         return_type = s.substring(0,parenindex);
+         return_type = shortenType(return_type);
+         String temp = s.substring(parenindex+1,s.length()-1);
+         param_types = shortenType(temp);
+       }
+    }
+   
+   protected String shortenType(String typ) {
+      StringTokenizer tok = new StringTokenizer(typ,".<>,",true);
+      StringBuilder buf = new StringBuilder();
+      String pfx = null;
+      while (tok.hasMoreTokens()) {
+	 String q = tok.nextToken();
+	 if ("<>,".contains(q)) {
+	    if (pfx != null) buf.append(pfx);
+	    pfx = null;
+	    buf.append(q);
+	  }
+	 else if (q.equals(".")) pfx = null;
+	 else pfx = q;
+       }
+      if (pfx != null) buf.append(pfx);
+      return buf.toString();
+    }
+   
 }	// end of inner class CompletionItem
 
 
@@ -827,12 +884,10 @@ private static class CompletionItemNewMethod extends CompletionItem implements
 private static class CompletionItemBump extends CompletionItem {
 
    BumpCompletion bump_completion;
-   String param_types;
-   String return_type;
 
    CompletionItemBump(BumpCompletion bc) {
       bump_completion = bc;
-      getSignatureObjects();
+      getSignatureObjects(bc.getSignature());
     }
 
    @Override public String toString() {
@@ -882,52 +937,47 @@ private static class CompletionItemBump extends CompletionItem {
       else return BoardImage.getIcon("default_method");
     }
 
-   void getSignatureObjects() {
-      param_types = "";
-      return_type = "";
-
-      String sgn = bump_completion.getSignature();
-      if (sgn == null) return;
-      String s = IvyFormat.formatTypeName(sgn);
-      if (s == null) return;
-
-      int parenindex = s.indexOf('(');
-      if (parenindex >= 0) {
-	 return_type = s.substring(0,parenindex);
-	 return_type = shortenType(return_type);
-	 String temp = s.substring(parenindex+1,s.length()-1);
-	 param_types = shortenType(temp);
-	 /***********
-	 String[] types = temp.split(",");
-	 for (int i=0; i < types.length; i++) {
-	    int index = types[i].lastIndexOf('.');
-	    if (index != -1) param_types += types[i].substring(index+1);
-	    else param_types += types[i];
-	    if (i != types.length-1) param_types += ", ";
-	 }
-	 *************/
-      }
-   }
-
-   private String shortenType(String typ) {
-      StringTokenizer tok = new StringTokenizer(typ,".<>,",true);
-      StringBuilder buf = new StringBuilder();
-      String pfx = null;
-      while (tok.hasMoreTokens()) {
-	 String q = tok.nextToken();
-	 if ("<>,".contains(q)) {
-	    if (pfx != null) buf.append(pfx);
-	    pfx = null;
-	    buf.append(q);
-	  }
-	 else if (q.equals(".")) pfx = null;
-	 else pfx = q;
-       }
-      if (pfx != null) buf.append(pfx);
-      return buf.toString();
-   }
 
 }	// end of inner class CompletionItemBump
+
+
+
+
+private static class CompletionItemBumpCall extends CompletionItem {
+   
+   BumpCompletion bump_completion;
+   
+   CompletionItemBumpCall(BumpCompletion bc) {
+      bump_completion = bc;
+      getSignatureObjects(bc.getSignature());
+    }
+   
+   @Override public String toString() {
+      String comp = bump_completion.getName() + "(" + param_types + ") : " + return_type;
+      return comp;
+    }
+   
+   int getStartIndex() {
+      return bump_completion.getReplaceStart();
+    }
+   
+   boolean canStartWith(String txt) {
+      return false;
+    }
+   
+   String getCompletionText() {
+      return "";
+    }
+   
+   Icon getIcon() {
+      if (bump_completion.isPublic()) return BoardImage.getIcon("method");
+      else if (bump_completion.isPrivate()) return BoardImage.getIcon("private_method");
+      else if (bump_completion.isProtected()) return BoardImage.getIcon("protected_method");
+      else return BoardImage.getIcon("default_method");
+    }
+   
+   
+}	// end of inner class CompletionItemBumpCall
 
 
 }	// end of class BaleCompletionContext

@@ -98,6 +98,8 @@ private static Toolbar getToolbar(BudaBubbleArea bba)
 }
 
 
+
+
 /********************************************************************************/
 /*										*/
 /*	Nested classes for display						*/
@@ -233,29 +235,30 @@ private static class MenuListener extends AbstractAction implements ActionListen
    private static final long serialVersionUID = 1;
 
    MenuListener(BudaRoot r) {
+      super("Toggle Menu Bar");
       for_root = r;
    }
 
    @Override public void actionPerformed(ActionEvent arg0) {
       BudaBubbleArea bba = for_root.getCurrentBubbleArea();
       if (bba == null) return;
-   
+
       Toolbar pnl = getToolbar(bba);
       if (pnl.isVisible()) {
-         pnl.setVisible(false);
-         return;
+	 pnl.setVisible(false);
+	 return;
       }
       Rectangle r = for_root.getViewport();
       BudaConstraint bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,
-        	  r.x, r.y);
-   
+		  r.x, r.y);
+
       Rectangle pnlrect = new Rectangle(r.x, r.y, pnl.getPreferredSize().width, pnl.getPreferredSize().height);
       Collection<BudaBubble> bubbles = bba.getBubblesInRegion(pnlrect);
       if (bubbles.contains(for_root.getPackageExplorer(bba)))
-         bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,
-        	  r.x + r.width - pnl.getPreferredSize().width, r.y);
-   
-   
+	 bc = new BudaConstraint(BudaConstants.BudaBubblePosition.STATIC,
+		  r.x + r.width - pnl.getPreferredSize().width, r.y);
+
+
       pnl.revalidate();
       bba.add(pnl,bc,0);
       bba.setLayer(pnl, JLayeredPane.DRAG_LAYER+2);

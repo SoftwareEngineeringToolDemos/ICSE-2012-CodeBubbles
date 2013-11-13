@@ -26,15 +26,16 @@
 package edu.brown.cs.bubbles.bddt;
 
 import edu.brown.cs.bubbles.bale.BaleFactory;
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import java.awt.Rectangle;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 
@@ -92,7 +93,7 @@ BudaBubble createExecBubble(BumpThread bt)
    if (bb == null && stk != null && bddt_properties.getBoolean("Bddt.show.user.bubble")) {
       BumpStackFrame frm = stk.getFrame(0);
       if (frm != null) {
-	 BubbleData bd = findClosestBubble(bt,stk,frm);
+	 BubbleData bd = findClosestBubble(bt,stk,frm,godown);
 	 if (bd != null && bd.match(bt,stk,frm)) return bd.getBubble();
 	 int lvl = -1;
 	 if (bd != null) lvl = bd.aboveLevel(bt,stk,frm);
@@ -176,7 +177,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
    int linkline = -1;
    boolean linkto = true;
 
-   BubbleData bd = findClosestBubble(bt,stk,frame);
+   BubbleData bd = findClosestBubble(bt,stk,frame,godown);
    if (bd != null && bd.match(bt,stk,frame)) {
       if (bd.getBubbleType() == BubbleType.USER) createUserStackBubble(bd,godown);
       bd.update(stk,frame);
@@ -731,7 +732,7 @@ private void setupBubbleArea()
 
 
 
-private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStackFrame frm)
+private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStackFrame frm,boolean godown)
 {
    BubbleData best = null;
 
@@ -785,14 +786,16 @@ private BubbleData findClosestBubble(BumpThread bt,BumpThreadStack stk,BumpStack
       return best;
     }
 
-   // find rightmost bubble for the current thread
+   // find rightmost/bottommost bubble for the current thread
    int rmost = -1;
    for (BubbleData bd : bubble_map.values()) {
       if (bd.getThread() == bt && bd.getBubbleType() == BubbleType.EXEC) {
 	 BudaBubble bb = bd.getBubble();
 	 Rectangle r = BudaRoot.findBudaLocation(bb);
-	 if (r != null && r.x + r.width > rmost) {
-	    rmost = r.x + r.width;
+	 if (r == null) continue;
+	 int coord = (godown ? r.y + r.height : r.x + r.width);
+	 if (coord > rmost) {
+	    rmost = coord;
 	    best = bd;
 	  }
        }

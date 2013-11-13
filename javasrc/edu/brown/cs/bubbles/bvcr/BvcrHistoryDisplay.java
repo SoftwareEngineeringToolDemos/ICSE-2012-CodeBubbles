@@ -24,26 +24,30 @@
 
 package edu.brown.cs.bubbles.bvcr;
 
-import edu.brown.cs.bubbles.bale.*;
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.petal.*;
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
-import java.util.*;
-import java.io.*;
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.text.Segment;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Segment;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
+import java.awt.geom.Rectangle2D;
+import java.io.*;
+import java.util.*;
 import java.util.List;
 
 

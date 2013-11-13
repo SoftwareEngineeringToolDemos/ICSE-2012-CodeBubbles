@@ -25,9 +25,9 @@
 
 package edu.brown.cs.bubbles.banal;
 
-import edu.brown.cs.ivy.file.IvyFormat;
-
 import edu.brown.cs.bubbles.org.objectweb.asm.*;
+
+import edu.brown.cs.ivy.file.IvyFormat;
 
 import java.io.IOException;
 import java.io.InputStream;

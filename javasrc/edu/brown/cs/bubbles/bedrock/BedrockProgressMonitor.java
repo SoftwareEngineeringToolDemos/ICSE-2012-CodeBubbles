@@ -37,7 +37,8 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 class BedrockProgressMonitor extends NullProgressMonitor {

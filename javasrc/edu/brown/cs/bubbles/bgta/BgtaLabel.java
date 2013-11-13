@@ -21,18 +21,13 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.buda.BudaCursorManager;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.BoxLayout;
-import javax.swing.Box;
+import javax.swing.*;
 
 import java.awt.Cursor;
 import java.awt.Dimension;

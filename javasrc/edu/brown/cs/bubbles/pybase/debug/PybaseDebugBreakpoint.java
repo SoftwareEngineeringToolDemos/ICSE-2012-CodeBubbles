@@ -36,18 +36,12 @@
 
 package edu.brown.cs.bubbles.pybase.debug;
 
-import edu.brown.cs.bubbles.pybase.PybaseConstants;
-import edu.brown.cs.bubbles.pybase.PybaseException;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
+import edu.brown.cs.bubbles.pybase.*;
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
 import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-
-import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.BadLocationException;
-
+import org.eclipse.jface.text.*;
 import org.w3c.dom.Element;
 
 import java.io.File;

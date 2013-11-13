@@ -26,7 +26,7 @@
 package edu.brown.cs.bubbles.buda;
 
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 

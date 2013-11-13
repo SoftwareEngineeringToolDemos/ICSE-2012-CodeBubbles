@@ -31,7 +31,7 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaBubbleOutputer;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingEditorPane;
 
 import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;

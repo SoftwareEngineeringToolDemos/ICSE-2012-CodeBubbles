@@ -26,21 +26,18 @@
 
 package edu.brown.cs.bubbles.bwiz;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingComboBox;
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import javax.swing.*;
-
 import javax.swing.border.Border;
-import java.awt.Component;
-import java.awt.Dimension;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.Font;
+import javax.swing.event.ListSelectionListener;
+
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 
 
 
@@ -56,10 +53,11 @@ class BwizListEntryComponent extends JPanel implements BwizConstants,
 /********************************************************************************/
 
 private String ui_title;
-private JList<StringBuffer> ui_list;
+private JList<String> ui_list;
 private BwizVerifiedTextField input_field;
+private SwingComboBox<String> input_choice;
 private JLabel title_label;
-private Vector<StringBuffer> list_data;
+private Vector<String> list_data;
 private HashSet<String> set_data;
 private IVerifier the_verifier;
 private JButton add_button;
@@ -76,24 +74,12 @@ private static Border cell_padding = BorderFactory.createEmptyBorder(4,4,4,4);
 /*										*/
 /********************************************************************************/
 
-BwizListEntryComponent(List<StringBuffer> data, IVerifier verifier)
-{
-   this(data, verifier, "");
-}
-
-
-
-BwizListEntryComponent(Collection<StringBuffer> data, IVerifier verifier, String title)
+BwizListEntryComponent(IVerifier verifier, String title)
 {
    the_verifier = null;
    ui_title=title;
-   list_data= new Vector<StringBuffer>();
+   list_data= new Vector<String>();
    set_data = new HashSet<String>();
-   for (StringBuffer bf : data) {
-      list_data.add(bf);
-      set_data.add(bf.toString());
-    }
-
    the_verifier=verifier;
    item_listeners = new SwingEventListenerList<ItemChangeListener>(ItemChangeListener.class);
 
@@ -109,11 +95,35 @@ BwizListEntryComponent(Collection<StringBuffer> data, IVerifier verifier, String
 /*										*/
 /********************************************************************************/
 
-JTextField getInputField()		{ return input_field; }
+List<String> getListElements()	        { return new ArrayList<String>(list_data); }
 
-List<StringBuffer> getListElements()	{ return new ArrayList<StringBuffer>(list_data); }
+void setHeight(int ht)
+{
+   Dimension d = new Dimension(Integer.MAX_VALUE,ht);
+   input_field.setMaximumSize(d);
+   input_choice.setMaximumSize(d);
+}
 
-HashSet<String> getSetElements() { return set_data; }
+void setHoverText(String s)
+{
+   input_field.setToolTipText(s);
+   input_choice.setToolTipText(s);
+}
+
+boolean isActive()                      
+{
+   String txt = input_field.getText();
+   if (txt == null || txt.length() == 0) return false;
+   return true;
+}
+
+void setOptions(Collection<String> opts)
+{
+   input_field.setVisible(false);
+   input_choice.setContents(opts);
+   input_choice.setVisible(true);
+}
+
 
 
 /********************************************************************************/
@@ -151,10 +161,16 @@ private void setup()
    input_field.setColumns(8);
    input_field.setAlignmentY(Component.BOTTOM_ALIGNMENT);
    //Add a handler for when the user hits enter
-   input_field.addActionListener(new InputAction());
+   InputAction iact = new InputAction();
+   input_field.addActionListener(iact);
    input_field.addVerificationListener(this);
+   
+   input_choice = new SwingComboBox<String>(new ArrayList<String>(),true);
+   input_choice.setVisible(false);
+   input_choice.addActionListener(iact);
 
    subpanel.add(input_field);
+   subpanel.add(input_choice);
 
    subpanel.add(Box.createRigidArea(new Dimension(7,0)));
 
@@ -179,7 +195,7 @@ private void setup()
    subpanel.add(remove_button);
 
    //Creates a UI list area
-   ui_list = new JList<StringBuffer>(list_data);
+   ui_list = new JList<String>(list_data);
    ui_list.setFont(BWIZ_FONT_SIZE_MAIN.deriveFont((float)14));
    ui_list.setVisibleRowCount(0);
    ui_list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
@@ -205,35 +221,19 @@ private void setup()
 
 private void addItem(String text)
 {
-   boolean add = true;
    //Add text to list
-   if (the_verifier !=null)
-      {
+   if (the_verifier != null) {
       //Use the verifier to check the text
       if (the_verifier.verify(text)) {
-	 String[] strs = text.split(",");
-	 if (strs.length > 1) {
-	    for (String s : strs) addItem(s.trim());
-	  }
-	 else {
-	    //Make sure no duplicated in Parameters case
-	    text = text.trim();
-	    strs = text.split(" ");
-	    if (strs.length > 1) {
-	       if (!set_data.contains(strs[1])) {
-		  set_data.add(strs[1]);
-		}
-	       else {
-		  add = false;
-		}
-	     }
-	    //Make sure no duplicates
-	    if (add==true && !set_data.contains(text)) {
-	       set_data.add(text);
-	       list_data.add(new StringBuffer(text));
+	 List<String> slist = the_verifier.results(text);
+	 for (String s : slist) {
+	    s = s.trim();
+	    if (!set_data.contains(s)) {
+	       set_data.add(s);
+	       list_data.add(s);
 	       ui_list.setListData(list_data);
 	       input_field.setText("");
-	       //Throw an event that an item was added
+               input_choice.clear();
 	       fireItemAdded(text);
 	       disableAddition();
 	       disableRemoval();
@@ -249,10 +249,11 @@ private void addItem(String text)
       //Make sure no duplicates
       if (!set_data.contains(text)) {
 	 set_data.add(text);
-	 list_data.add(new StringBuffer(text));
+	 list_data.add(text);
 	 ui_list.setListData(list_data);
 	 input_field.setText("");
-	 //Throw an event that an item was added
+         input_choice.clear();
+	 // Throw an event that an item was added
 	 fireItemAdded(text);
 	 disableAddition();
 	 disableRemoval();
@@ -263,19 +264,19 @@ private void addItem(String text)
 
 
 
-private void remove(List<StringBuffer> objects)
+private void remove(List<String> objects)
 {
    //Find the object in the list to remove
-   for (StringBuffer obj : objects) {
-      String[] strs = obj.toString().trim().split(" ");
+   for (String obj : objects) {
+      String[] strs = obj.trim().split(" ");
       if (strs.length > 1) {
 	 set_data.remove(strs[1]);
        }
       list_data.remove(obj);
-      set_data.remove(obj.toString());
+      set_data.remove(obj);
 
-      //I haven't tested that this will be the correct string
-      //Throw an event that an item was removed
+      // I haven't tested that this will be the correct string
+      // Throw an event that an item was removed
       fireItemRemoved(obj.toString());
     }
 
@@ -287,7 +288,7 @@ private void remove(List<StringBuffer> objects)
 
 private void removeSelected()
 {
-    List<StringBuffer> indices = ui_list.getSelectedValuesList();
+    List<String> indices = ui_list.getSelectedValuesList();
     if (indices != null && indices.size() > 0)
     {
 	remove(indices);
@@ -370,6 +371,7 @@ protected void setTitleFont(Font f)
 protected void setTextFont(Font f)
 {
    input_field.setFont(f);
+   input_choice.setFont(f);
 }
 
 
@@ -422,7 +424,7 @@ private class KeyAction extends KeyAdapter {
 /*										*/
 /********************************************************************************/
 
-private class PaddedListCellRenderer implements ListCellRenderer<StringBuffer>
+private class PaddedListCellRenderer implements ListCellRenderer<String>
 {
    private Border instance_padding;
    private DefaultListCellRenderer default_renderer;
@@ -433,7 +435,7 @@ private class PaddedListCellRenderer implements ListCellRenderer<StringBuffer>
       default_renderer = new DefaultListCellRenderer();
     }
 
-   @Override public Component getListCellRendererComponent(JList<? extends StringBuffer> list, StringBuffer value, int index, boolean isSelected, boolean cellHasFocus) {
+   @Override public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
       JLabel renderer = (JLabel) default_renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
       renderer.setBorder((instance_padding==null) ? cell_padding : instance_padding);
 

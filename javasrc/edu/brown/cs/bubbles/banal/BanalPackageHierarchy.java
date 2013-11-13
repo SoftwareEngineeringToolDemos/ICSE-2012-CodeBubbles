@@ -24,12 +24,13 @@
 
 package edu.brown.cs.bubbles.banal;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
-import java.lang.reflect.*;
 
 
 class BanalPackageHierarchy extends BanalDefaultVisitor implements BanalConstants

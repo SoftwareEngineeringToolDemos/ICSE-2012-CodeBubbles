@@ -37,11 +37,14 @@
 
 package edu.brown.cs.bubbles.beam;
 
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
 import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+
 import java.awt.*;
 import java.util.*;
 

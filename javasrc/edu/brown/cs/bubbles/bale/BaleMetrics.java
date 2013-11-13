@@ -85,9 +85,9 @@ void computeMetrics(BaleFragmentEditor ed)
 
    Dimension d = ed.getSize();
    BaleDocument bd = ed.getDocument();
-   BaleElement be = (BaleElement) bd.getDefaultRootElement();
-
-   if (be == null) return;
+   Object o = bd.getDefaultRootElement();
+   if (o == null || !(o instanceof BaleElement)) return;
+   BaleElement be = (BaleElement) o;
 
    num_visible = 0;
    num_reflow = 0;

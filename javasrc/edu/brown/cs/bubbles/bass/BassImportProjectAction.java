@@ -21,34 +21,22 @@
 package edu.brown.cs.bubbles.bass;
 
 
+import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+
+import edu.brown.cs.ivy.xml.IvyXml;
+
+import org.w3c.dom.*;
+
+import javax.swing.*;
+
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
-
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.buda.BudaBubble;
-import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.buda.BudaErrorBubble;
-import edu.brown.cs.bubbles.buda.BudaRoot;
-import edu.brown.cs.bubbles.bump.BumpClient;
-import edu.brown.cs.ivy.xml.IvyXml;
 
 
 class BassImportProjectAction extends AbstractAction {

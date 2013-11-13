@@ -25,9 +25,11 @@
 
 package edu.brown.cs.bubbles.buda;
 
-import javax.swing.*;
-import javax.swing.text.*;
-import java.awt.*;
+import javax.swing.JLabel;
+import javax.swing.JToolTip;
+import javax.swing.text.View;
+
+import java.awt.Dimension;
 
 
 

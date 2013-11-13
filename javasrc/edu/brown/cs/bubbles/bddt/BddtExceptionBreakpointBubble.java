@@ -25,16 +25,18 @@
 
 package edu.brown.cs.bubbles.bddt;
 
-import edu.brown.cs.bubbles.bass.*;
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bass.BassConstants;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.board.*;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
-import java.awt.event.*;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 
 
@@ -83,7 +85,7 @@ private void setupPanel()
    pnl.beginLayout();
    pnl.addBannerLabel("Exception Breakpoint Creator");
    pnl.addSeparator();
-   exception_box = pnl.addChoice("EXCEPTION",(new String [] { "Computing List of Exceptions ..." }),null,null);
+   exception_box = pnl.addChoice("EXCEPTION",(new String [] { "Computing List of Exceptions ..." }),null,true,null);
    exception_box.setEditable(true);
    caught_button = pnl.addBoolean("CAUGHT",true,null);
    uncaught_button = pnl.addBoolean("UNCAUGHT",true,null);

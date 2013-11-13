@@ -33,8 +33,8 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
 
-import java.awt.Dimension;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.*;
 
 

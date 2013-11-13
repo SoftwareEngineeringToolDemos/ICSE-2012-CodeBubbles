@@ -6,6 +6,7 @@
 /*										*/
 /********************************************************************************/
 /*	Copyright 2009 Brown University -- Steven P. Reiss		      */
+/*	Copyright 2009 Brown University -- Izaak Baker			      */
 /*********************************************************************************
  *  Copyright 2011, Brown University, Providence, RI.				 *
  *										 *
@@ -27,13 +28,14 @@ package edu.brown.cs.bubbles.buda;
 
 import edu.brown.cs.bubbles.board.*;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.event.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
@@ -42,9 +44,12 @@ import javax.swing.text.html.parser.ParserDelegator;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 
@@ -205,7 +210,7 @@ void simulateHover(MouseEvent e)
 
 private String getHelpText(MouseEvent e)
 {
-   String txt = null;
+   String txt = "";
 
    String lbl = help_client.getHelpLabel(e);
    if (lbl != null) {
@@ -216,10 +221,16 @@ private String getHelpText(MouseEvent e)
       else if (help_xml == null) {
 	 help_xml = IvyXml.loadXmlFromStream(BoardProperties.getLibraryFile(HELP_RESOURCE));
        }
+
+      //Style the window
+      for (Element xml : IvyXml.children(help_xml,"STYLE")) {
+	 txt += IvyXml.getTextElement(xml,"TEXT");
+       }
+
       for (Element xml : IvyXml.children(help_xml,"HELP")) {
 	 String key = IvyXml.getAttrString(xml,"KEY");
 	 if (key.equals(lbl)) {
-	    txt = IvyXml.getTextElement(xml,"TEXT");
+	    txt += IvyXml.getTextElement(xml,"TEXT");
 	    if (txt != null && txt.length() > 0) {
 	       break;
 	    }
@@ -227,11 +238,11 @@ private String getHelpText(MouseEvent e)
        }
     }
 
-   if (txt == null) {
+   if (txt == null || txt.length() == 0) {
       txt = help_client.getHelpText(e);
     }
 
-   if (txt != null) {
+   if (txt != null && txt.length() > 0) {
       txt = txt.trim();
       if (!txt.startsWith("<html>")) txt = "<html>" + txt;
     }
@@ -348,6 +359,16 @@ private class Mouser extends MouseAdapter implements KeyListener {
 
 public static void main(String [] args)
 {
+   Parser2 parser = new Parser2(BoardSetup.getSetup().getLibraryPath(HELP_RESOURCE),"helptext.html");
+   parser.parse();
+}
+
+
+
+
+@SuppressWarnings("unused") 
+private static void oldParser()
+{
    File helpfile = new File(BoardSetup.getSetup().getLibraryPath(HELP_RESOURCE));
    Element xml = IvyXml.loadXmlFromFile(helpfile);
    List<WhenInfo> whens = new ArrayList<WhenInfo>();
@@ -417,6 +438,220 @@ public static void main(String [] args)
 
 
 
+
+/********************************************************************************/
+/*										*/
+/*	Parser for help information						*/
+/*										*/
+/********************************************************************************/
+
+private static class Parser2 {
+
+   private String input_filename;
+   private String output_filename;
+   private List<String> when_block;
+   private List<String> demo_block;
+   private Map<String, String> demo_map;
+   private Map<String, List<String>> when_map;
+
+   //Constructor
+   public Parser2(String f, String o) {
+      input_filename = f;
+      output_filename = o;
+      when_block = new ArrayList<String>();
+      demo_block = new ArrayList<String>();
+      demo_map = new HashMap<String,String>();
+      when_map = new HashMap<String,List<String>>();
+    }
+
+   public void parse() {
+      sort();
+      build();
+      output();
+    }
+
+   //Determines whether each help element is a node (when) element or leaf (demo) element
+   private void sort() {
+      Element file_as_element = IvyXml.loadXmlFromFile(input_filename);
+      List<Element> demo_elements = new ArrayList<Element>();
+      List<Element> when_elements = new ArrayList<Element>();
+
+      for(Element help_element : IvyXml.children(file_as_element, "HELP")) {
+	 String key = IvyXml.getAttrString(help_element,"KEY");
+	 if (key.startsWith("spec_")) {
+	    demo_elements.add(help_element);
+	  }
+	 else {
+	    when_elements.add(help_element);
+	  }
+       }
+
+      for(Element when_element : when_elements) {
+	 makeWhenMap(when_element);
+       }
+
+      for(Element demo_element : demo_elements) {
+	 makeDemoMap(demo_element);
+       }
+    }
+
+   //Creates a mapping from when elements to their constitutent demo elements
+   private void makeWhenMap(Element when_element) {
+      //Retrieve necessary information
+      String key = IvyXml.getAttrString(when_element, "KEY");
+      String when = IvyXml.getAttrString(when_element, "WHEN");
+      String body = IvyXml.getTextElement(when_element, "TEXT");
+
+      //Construct the key and regex
+      String map_key = key + "|" + when;
+      Pattern p = Pattern.compile(".*<a href='gotodemo:(.*);backto:.*'>(.*)</a>.*");
+
+      //Locate demos that happen during this when, and map to them
+      for(String line : body.split("\n")) {
+	 Matcher m = p.matcher(line);
+	 if(m.matches()) {
+	    if(!when_map.containsKey(map_key)) {
+	       when_map.put(map_key, new ArrayList<String>());
+	     }
+	    when_map.get(map_key).add(m.group(1) + "|" + m.group(2));
+	  }
+       }
+    }
+
+   //Creates a mapping from demo elements to their body of text
+   private void makeDemoMap(Element demo_element) {
+      String key = IvyXml.getAttrString(demo_element, "KEY");
+      String body = IvyXml.getTextElement(demo_element, "TEXT");
+      demo_map.put(key, body);
+    }
+
+   private void build() {
+      when_block.add("<div class='whenblock'>");
+      demo_block.add("<div class='demoblock'>");
+
+      for(String key : when_map.keySet()) {
+	 //Retrieve necessary information
+	 int indexOfBar = key.indexOf("|");
+	 String id = key.substring(0, indexOfBar);
+	 String long_id = key.substring(indexOfBar + 1);
+
+	 //Put title for when section
+	 when_block.add("<div class='whenitem'>");
+	 when_block.add("<div class='whenitemtitle'>");
+	 when_block.add("<a href='#" + id + "'>" + long_id + "</a>");
+	 when_block.add("</div>");
+	 when_block.add("<ul>");
+
+	 //Put title for demo section
+	 demo_block.add("<div class='whendemoblock'>");
+	 demo_block.add("<a id='" + id + "'></a>");
+	 demo_block.add("<div class='wdb-title'>");
+	 demo_block.add("<h2>" + long_id + "</h2>");
+	 demo_block.add("</div>");
+
+	 //Put elements in the list under this block
+	 for(String demo : when_map.get(key)) {
+	    indexOfBar = demo.indexOf("|");
+	    String name = demo.substring(0, indexOfBar);
+	    String long_name = demo.substring(indexOfBar + 1);
+	    when_block.add("<li> To <a href='#" + name + "'>" + long_name + "</a></li>");
+
+	    demo_block.add("<div class='demoitem'>");
+	    if(demo_map.containsKey(name)) {
+	       demo_block.addAll(parseIndividualDemo(demo_map.get(name), long_name, name));
+	     }
+	    else {
+	       //ERROR with names
+	     }
+	    demo_block.add("</div>");
+	  }
+
+	 when_block.add("</ul></div>");
+	 demo_block.add("</div>");
+       }
+
+      when_block.add("</div>");
+      demo_block.add("</div>");
+    }
+
+   private List<String> parseIndividualDemo(String demo, String long_name, String name) {
+      //Remove buttons
+      Pattern p = Pattern.compile("\\[.*\\]");
+      Matcher m = p.matcher(demo);
+      demo = m.replaceAll("");
+
+      //Replace bold tag with di-emph span
+      p = Pattern.compile("\\<b\\>");
+      m = p.matcher(demo);
+      demo = m.replaceAll("<span class='di-emph'>");
+
+      //Replace closing bold tag
+      p = Pattern.compile("\\</b\\>");
+      m = p.matcher(demo);
+      demo = m.replaceAll("</span>");
+
+      //Construct list to return and return it
+      List<String> return_value = new ArrayList<String>();
+      return_value.add("<a id='" + name + "'></a>");
+      return_value.add("<h3>&raquo; To " + long_name + "</h3>");
+      return_value.add("<p class='explanation'>");
+      return_value.add(demo);
+      return_value.add("</p>");
+      return_value.add("<p class='demolinks'>");
+      return_value.add("<span class='tbutton' onclick='demo(\"" + name.substring(name.indexOf("_") + 1) + "\");'>Show Me</span>");
+      return_value.add("<span class='tbutton' onclick='demo(\"" + name.substring(name.indexOf("_") + 1) + "_silent\");'>Tell Me</span>");
+      return_value.add("</p>");
+
+      return return_value;
+    }
+
+   private void output() {
+      PrintWriter pw = null;
+      try {
+	 pw = new PrintWriter(new FileWriter(output_filename));
+
+	 pw.println("<html><head>");
+	 pw.println("<title>The CodeBubbles Help Page</title>");
+	 pw.println("<script type='text/javascript'>");
+	 pw.println("function demo(x) {");
+	 pw.println("var xmlhttp = new XMLHttpRequest();");
+	 pw.println("xmlhttp.open('GET', 'http://localhost:19888/' + x, false);");
+	 pw.println("xmlhttp.send(null); }");
+	 pw.println("</script>");
+	 pw.println("<link href='http://fonts.googleapis.com/css?family=Gudea' rel='stylesheet' type='text/css'>");
+	 pw.println("<link rel='stylesheet' type='text/css' href='style.css'>");
+	 pw.println("</head>");
+	 pw.println("<body>");
+	 pw.println("<div class='page'>");
+	 pw.println("<div class='title'>");
+	 pw.println("<h1>The <span id='codebubbles'>CodeBubbles</span> Help Page</h1>");
+	 pw.println("</div>");
+
+	 for(String line : when_block) {
+	    pw.println(line);
+	  }
+
+	 for(String line : demo_block) {
+	    pw.println(line);
+	  }
+
+	 pw.println("</div></body></html>");
+	 pw.close();
+       }
+      catch (IOException e) {}
+    }
+
+}	// end of inner class Parser2
+
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Stored information about help tasks					*/
+/*										*/
+/********************************************************************************/
 
 private static class WhenInfo {
 

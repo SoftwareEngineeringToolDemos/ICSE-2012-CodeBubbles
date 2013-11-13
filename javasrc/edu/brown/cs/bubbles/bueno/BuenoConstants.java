@@ -25,14 +25,14 @@
 
 package edu.brown.cs.bubbles.bueno;
 
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+
+import javax.swing.JPanel;
 
 import java.awt.Point;
-import javax.swing.JPanel;
-import java.util.EventListener;
 import java.io.File;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 
@@ -166,11 +166,11 @@ interface BuenoBubbleCreator {
 
 interface BuenoMethodCreatorInstance {
 
-   void showMethodDialogBubble(BudaBubble source,Point location,
-				  BuenoProperties known,
-				  BuenoLocation insert,
-				  String label,
-				  BuenoBubbleCreator newer);
+   boolean showMethodDialogBubble(BudaBubble source,Point location,
+				     BuenoProperties known,
+				     BuenoLocation insert,
+				     String label,
+				     BuenoBubbleCreator newer);
 
 }	// end of interface BuenoMethodCreationInstance
 

@@ -31,9 +31,9 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.bump.BumpLocation;
-import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.buda.BudaXmlWriter;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
@@ -405,7 +405,7 @@ public void handleAstUpdated(List<BaleAstNode> nodes)
    }
    finally { baleReadUnlock(); }
 
-   BoardLog.logD("BALE","Update AST for " + nodes);
+   // BoardLog.logD("BALE","Update AST for " + nodes);
    BaleAstNode oast = null;
 
    baleWriteLock();
@@ -597,6 +597,7 @@ BoardLanguage getLanguage()
 {
    String f = getFile().getName();
    if (f == null) return BoardLanguage.JAVA;
+   if (f.startsWith("/REBUS/")) return BoardLanguage.REBUS;
    if (f.endsWith(".py") || f.endsWith(".PY")) return BoardLanguage.PYTHON;
    if (f.endsWith(".java")) return BoardLanguage.JAVA;
    return BoardLanguage.JAVA;
@@ -957,6 +958,7 @@ BaleIndenter getIndenter()
    if (our_indenter == null) {
       switch (getLanguage()) {
 	 case JAVA :
+         case REBUS :
 	 default :
 	    our_indenter = new BaleIndenterJava(this);
 	    break;

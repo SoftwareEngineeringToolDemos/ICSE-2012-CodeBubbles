@@ -31,22 +31,13 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.python.pydev.core.DeltaSaver;
 import org.python.pydev.core.Tuple;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 
 /**

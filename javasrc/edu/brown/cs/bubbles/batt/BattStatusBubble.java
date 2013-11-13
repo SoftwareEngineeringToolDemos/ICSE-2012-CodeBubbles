@@ -25,18 +25,20 @@
 
 package edu.brown.cs.bubbles.batt;
 
+import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.bddt.BddtFactory;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bale.*;
 import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.bddt.*;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
 

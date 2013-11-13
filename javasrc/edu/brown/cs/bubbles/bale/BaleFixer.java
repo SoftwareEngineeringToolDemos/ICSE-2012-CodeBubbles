@@ -31,8 +31,8 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.burp.*;
+import edu.brown.cs.bubbles.bump.BumpConstants;
+import edu.brown.cs.bubbles.burp.BurpHistory;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -40,8 +40,8 @@ import javax.swing.text.Position;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.util.*;
 import java.io.File;
+import java.util.StringTokenizer;
 
 
 class BaleFixer extends AbstractAction implements BaleConstants, BumpConstants,

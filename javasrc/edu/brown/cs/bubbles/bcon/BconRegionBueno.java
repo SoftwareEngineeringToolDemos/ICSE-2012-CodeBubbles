@@ -25,13 +25,15 @@
 
 package edu.brown.cs.bubbles.bcon;
 
+import edu.brown.cs.bubbles.bale.BaleConstants.BaleFileOverview;
+import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bueno.BuenoConstants;
 import edu.brown.cs.bubbles.bueno.BuenoLocation;
-import edu.brown.cs.bubbles.bale.BaleConstants.*;
-import edu.brown.cs.bubbles.bale.*;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Segment;
 
 import java.io.File;
-import javax.swing.text.*;
 
 
 

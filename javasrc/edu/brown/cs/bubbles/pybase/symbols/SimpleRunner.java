@@ -10,26 +10,13 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseConstants;
-import edu.brown.cs.bubbles.pybase.PybaseException;
-import edu.brown.cs.bubbles.pybase.PybaseFileSystem;
-import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybasePathNature;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.python.pydev.core.Tuple;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 
 public class SimpleRunner implements PybaseConstants {

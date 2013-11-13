@@ -23,11 +23,13 @@
 
 package edu.brown.cs.bubbles.bddt;
 
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaConstants;
-import edu.brown.cs.bubbles.bump.BumpConstants;
+import edu.brown.cs.bubbles.bump.*;
 
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 
@@ -38,6 +40,11 @@ import javax.swing.text.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 
@@ -57,6 +64,8 @@ private JTextField input_pane;
 private boolean   auto_scroll;
 private BddtConsoleController console_control;
 
+private static Pattern LOCATION_PATTERN = 
+   Pattern.compile("at ([a-zA-Z$_.]+)\\(([a-zA-Z_]+\\.java)\\:([0-9]+)\\)");
 private static final long serialVersionUID = 1;
 
 
@@ -108,6 +117,7 @@ BddtConsoleBubble(BddtConsoleController ctrl,StyledDocument doc)
 
    doc.addDocumentListener(new EndScroll());
    text_pane.addMouseListener(new FocusOnEntry());
+   text_pane.addMouseListener(new GotoMouser());
 }
 
 
@@ -122,15 +132,63 @@ BddtConsoleBubble(BddtConsoleController ctrl,StyledDocument doc)
 @Override public void handlePopupMenu(MouseEvent e)
 {
    JPopupMenu menu = new JPopupMenu();
-
-   menu.add(getFloatBubbleAction());
+   
+   Point pt0 = SwingUtilities.convertPoint(this,e.getPoint(),text_pane);
+   GotoLine gl = checkForGoto(pt0);
+   if (gl != null && gl.isValid()) {
+      menu.add(gl);
+    }
 
    JCheckBoxMenuItem sitm = new JCheckBoxMenuItem("Auto Scroll");
    sitm.setState(auto_scroll);
    sitm.addActionListener(new AutoScrollAction());
    menu.add(sitm);
-
+   
+   menu.add(getFloatBubbleAction());
+   
    menu.show(this,e.getX(),e.getY());
+}
+
+
+private GotoLine checkForGoto(Point pt0)
+{
+   int pos = text_pane.viewToModel(pt0);
+   if (pos >= 0) {
+      int start = Math.max(0,pos-100);
+      int end = Math.min(text_pane.getDocument().getLength(),pos+100);
+      try {
+         String txt = text_pane.getText(start,end-start);
+         int p0 = pos - start;
+         for (int i = p0; i >= 0; --i) {
+            if (i >= txt.length()) continue;
+            if (txt.charAt(i) == '\n') {
+               start = start + i + 1;
+               txt = txt.substring(i+1);
+               break;
+             }
+          }
+         p0 = pos-start;
+         for (int i = p0; i < txt.length(); ++i) {
+            if (txt.charAt(i) == '\n') {
+               txt = txt.substring(0,i);
+               break;
+               
+             }
+          }
+         Matcher m = LOCATION_PATTERN.matcher(txt);
+         if (m.find()) {
+            int spos = m.start();
+            int epos = m.end();
+            if (spos <= p0 && epos >= p0) {
+               int lno = Integer.parseInt(m.group(3));
+               GotoLine gl = new GotoLine(m.group(1),m.group(2),lno);
+               if (gl.isValid()) return gl;
+             }
+          }
+       }
+      catch (BadLocationException ex) { }
+    }
+   return null;
 }
 
 
@@ -239,6 +297,86 @@ private class InputHandler implements ActionListener {
 }       // end of inner class InputHandler
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Handle mouse clicks that do a goto                                      */
+/*                                                                              */
+/********************************************************************************/
+
+private class GotoMouser extends MouseAdapter {
+   
+   @Override public void mouseClicked(MouseEvent evt) {
+      GotoLine gl = checkForGoto(evt.getPoint());
+      if (gl != null && gl.isValid()) {
+         gl.createBubble();
+       }
+    }
+   
+}       // end of inner class GotoMouser
+
+/********************************************************************************/
+/*                                                                              */
+/*      Go to a line from an error report                                       */
+/*                                                                              */
+/********************************************************************************/
+
+private class GotoLine extends AbstractAction {
+   
+   private String class_name;
+   private String method_name;
+   private boolean is_constructor;
+   private int line_number;
+   private List<BumpLocation> goto_locs;
+   
+   GotoLine(String mthd,String file,int line) {
+      super("Go To " + mthd);
+      goto_locs = null;
+      int idx = mthd.lastIndexOf(".");
+      if (idx < 0) return;
+      class_name = mthd.substring(0,idx).replace("$",".");
+      method_name = mthd.substring(idx+1);
+      if (method_name.equals("<init>")) {
+         idx = class_name.lastIndexOf(".");
+         if (idx >= 0) method_name = class_name.substring(idx+1);
+         else method_name = class_name;
+         is_constructor = true;
+       }
+      else is_constructor = false;
+      line_number = line;
+      String nmthd = class_name + "." + method_name;
+      BumpClient bc = BumpClient.getBump();
+      List<BumpLocation> locs = bc.findMethods(null,nmthd,false,true,is_constructor,false);
+      if (locs == null || locs.isEmpty()) return;
+      BumpLocation bl0 = locs.get(0);
+      File f = bl0.getFile();
+      if (!f.exists()) return;
+      if (locs.size() > 1) {
+         BaleFactory bf = BaleFactory.getFactory();
+         BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,f);
+         if (bfo == null) return;
+         int loff = bfo.findLineOffset(line_number);
+         for (Iterator<BumpLocation> it = locs.iterator(); it.hasNext(); ) {
+            BumpLocation bl1 = it.next();
+            if (bl1.getOffset() > loff || bl1.getEndOffset() < loff) it.remove();
+          }
+         if (locs.size() == 0) return;
+       }
+      goto_locs = locs;
+    }
+   
+   boolean isValid()                    { return goto_locs != null; }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      if (goto_locs != null && goto_locs.size() > 0) createBubble();
+    }
+   
+   void createBubble() {
+      BaleFactory bf = BaleFactory.getFactory();
+      bf.createBubbleStack(BddtConsoleBubble.this,null,null,false,goto_locs,null);
+    }
+
+}       // end of innter class GotoLine
 
 
 }	// end of class BddtConsoleBubble

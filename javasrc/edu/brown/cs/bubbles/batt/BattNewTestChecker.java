@@ -24,12 +24,12 @@
 
 package edu.brown.cs.bubbles.batt;
 
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.org.objectweb.asm.Type;
 
-import edu.brown.cs.bubbles.org.objectweb.asm.*;
-
-import java.util.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 class BattNewTestChecker implements BattConstants

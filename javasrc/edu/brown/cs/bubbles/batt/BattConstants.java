@@ -26,8 +26,11 @@ package edu.brown.cs.bubbles.batt;
 
 
 import edu.brown.cs.bubbles.bump.BumpLocation;
-import java.util.*;
+
 import javax.swing.JPanel;
+
+import java.util.EventListener;
+import java.util.List;
 
 
 public interface BattConstants {

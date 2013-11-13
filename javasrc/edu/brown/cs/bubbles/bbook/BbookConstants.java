@@ -37,7 +37,7 @@
 
 package edu.brown.cs.bubbles.bbook;
 
-import edu.brown.cs.bubbles.bnote.*;
+import edu.brown.cs.bubbles.bnote.BnoteConstants;
 
 
 

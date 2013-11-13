@@ -25,23 +25,25 @@
 package edu.brown.cs.bubbles.bucs;
 
 
-import edu.brown.cs.bubbles.buss.BussConstants.BussEntry;
-import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bale.*;
 import edu.brown.cs.bubbles.bale.BaleConstants.BaleFileOverview;
+import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.buss.BussConstants.BussEntry;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingEditorPane;
+
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
-import java.awt.geom.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.text.*;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 

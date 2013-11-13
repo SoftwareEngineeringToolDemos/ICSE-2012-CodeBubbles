@@ -31,40 +31,21 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseFileSystem;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
-import edu.brown.cs.bubbles.pybase.PybaseMessage;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
+import edu.brown.cs.bubbles.pybase.*;
 
-import org.python.pydev.core.FullRepIterable;
-import org.python.pydev.core.ICompletionCache;
+import org.python.pydev.core.*;
 import org.python.pydev.core.Tuple;
-import org.python.pydev.core.Tuple3;
 import org.python.pydev.core.cache.Cache;
 import org.python.pydev.core.cache.LRUCache;
 import org.python.pydev.core.structure.CompletionRecursionException;
 import org.python.pydev.core.structure.FastStack;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.Attribute;
-import org.python.pydev.parser.jython.ast.Call;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.Expr;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.ImportFrom;
-import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.Str;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.TreeMap;
 
 
 /**

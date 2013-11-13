@@ -132,7 +132,7 @@ BeamNoteAnnotation(Element xml)
    return note_position.getOffset();
 }
 
-@Override public synchronized Icon getIcon()
+@Override public synchronized Icon getIcon(BudaBubble b)
 {
    if (note_icon == null) {
       note_icon = BoardImage.getIcon("note");
@@ -142,7 +142,7 @@ BeamNoteAnnotation(Element xml)
 
 @Override public String getToolTip()			{ return "Note Bubble"; }
 
-@Override public Color getLineColor()			{ return annot_color; }
+@Override public Color getLineColor(BudaBubble b)	{ return annot_color; }
 @Override public Color getBackgroundColor()		{ return null; }
 
 @Override public boolean getForceVisible(BudaBubble bbl) {

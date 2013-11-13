@@ -36,8 +36,8 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
-import edu.brown.cs.ivy.xml.IvyXml;
 import edu.brown.cs.ivy.swing.SwingEditorPane;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import javax.accessibility.Accessible;
 import javax.swing.*;
@@ -1156,6 +1156,8 @@ static {
    context_types.put("DeprecatedCallId",BaleContextType.CALL_ID);
    context_types.put("TypeId",BaleContextType.TYPE_ID);
    context_types.put("ConstId",BaleContextType.CONST_ID);
+   context_types.put("UndefId", BaleContextType.UNDEF_ID);
+   context_types.put("UndefCallId", BaleContextType.UNDEF_CALL_ID);
 }
 
 

@@ -24,13 +24,14 @@
 
 package edu.brown.cs.bubbles.bwiz;
 
-import edu.brown.cs.bubbles.bedu.*;
 import edu.brown.cs.bubbles.bedu.BeduConstants.Assignment;
+import edu.brown.cs.bubbles.bedu.BeduFactory;
 
 import javax.swing.*;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.util.List;
 
 
@@ -149,7 +150,7 @@ private class CreateClassAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
-      BwizNewWizard bcwiz = new BwizNewWizard(CreateType.CLASS);
+      BwizNewWizard bcwiz = new BwizNewClassWizard();
       BwizFactory.getFactory().createBubble(bcwiz,bcwiz.getFocus());
     }
 
@@ -164,7 +165,7 @@ CreateInterfaceAction() {
  }
 
 @Override public void actionPerformed(ActionEvent evt) {
-   BwizNewWizard bcwiz = new BwizNewWizard(CreateType.INTERFACE);
+   BwizNewWizard bcwiz = new BwizNewInterfaceWizard();
    BwizFactory.getFactory().createBubble(bcwiz,bcwiz.getFocus());
  }
 
@@ -179,7 +180,7 @@ CreateEnumAction() {
  }
 
 @Override public void actionPerformed(ActionEvent evt) {
-   BwizNewWizard bcwiz = new BwizNewWizard(CreateType.ENUM);
+   BwizNewWizard bcwiz = new BwizNewEnumWizard();
    BwizFactory.getFactory().createBubble(bcwiz,bcwiz.getFocus());
  }
 

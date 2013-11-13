@@ -31,15 +31,12 @@
 package edu.brown.cs.bubbles.pybase.symbols;
 
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 import org.python.pydev.core.Tuple;
 import org.python.pydev.core.cache.LRUCache;
+
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.util.*;
 
 
 public final class StringUtils {

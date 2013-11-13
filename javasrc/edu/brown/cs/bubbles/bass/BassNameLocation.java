@@ -120,7 +120,7 @@ BassNameLocation(BumpLocation bl)
 
    method_params = base_location.getParameters();
    if (name_type == BassNameType.METHOD) {
-      if(Modifier.isPublic(getModifiers())) appropriate_icon = BoardImage.getIcon("method");
+      if (Modifier.isPublic(getModifiers())) appropriate_icon = BoardImage.getIcon("method");
       else if (Modifier.isPrivate(getModifiers())) appropriate_icon = BoardImage.getIcon("private_method");
       else if (Modifier.isProtected(getModifiers())) appropriate_icon = BoardImage.getIcon("protected_method");
       else appropriate_icon = BoardImage.getIcon("default_method");
@@ -237,8 +237,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case OTHER_CLASS :
       case MODULE :
 	 String nm = getUserSymbolName();
-	 int idx = nm.indexOf("<");
-	 if (idx > 0) nm = nm.substring(0,idx);
+	 nm = stripTemplates(nm);
 	 return nm;			// we add <PREFIX> or <BODY> for classes
       default:
 	 break;
@@ -293,7 +292,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 bb = bf.createMethodBubble(getProject(),getFullName());
 	 break;
       case FIELDS :
-	 bb = bf.createFieldsBubble(getProject(),getNameHead());
+	 bb = bf.createFieldsBubble(getProject(),getFile(),getNameHead());
 	 break;
       case STATICS :
 	 bb = bf.createStaticsBubble(getProject(),getNameHead(),getFile());
@@ -308,7 +307,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 bb = bf.createClassBubble(getProject(),getNameHead());
 	 break;
       case HEADER :
-	 bb = bf.createClassPrefixBubble(getProject(),getNameHead());
+	 bb = bf.createClassPrefixBubble(getProject(),getFile(),getNameHead());
 	 break;
       case FILE :
 	 bb = bf.createFileBubble(getProject(),getFile(),getNameHead());
@@ -383,7 +382,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       default:
 	 break;
    }
-												
+										
    return null;
 }
 

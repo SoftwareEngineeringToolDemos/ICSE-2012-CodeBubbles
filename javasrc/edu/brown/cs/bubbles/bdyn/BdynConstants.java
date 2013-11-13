@@ -24,7 +24,7 @@
 
 package edu.brown.cs.bubbles.bdyn;
 
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import java.util.*;
 

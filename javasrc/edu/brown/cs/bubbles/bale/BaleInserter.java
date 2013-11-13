@@ -89,7 +89,14 @@ BaleInserter()
       if (offset < 0) return false;
       doc.insertString(offset,text,null);
       loc.setFile(doc.getFile());
-      loc.setLocation(offset,text.length());
+
+      int tln = text.length();
+      String lstxt = doc.getLineSeparator();
+      if (lstxt != null && lstxt.length() > 1) {
+	 String atxt = text.replace("\n",lstxt);
+	 tln = atxt.length();
+       }
+      loc.setLocation(offset,tln);
     }
    catch (BadLocationException e) {
       return false;

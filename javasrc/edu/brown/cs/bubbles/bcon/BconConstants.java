@@ -31,7 +31,8 @@ import javax.swing.JComponent;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
 
 public interface BconConstants {

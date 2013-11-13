@@ -20,34 +20,18 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Paint;
-import java.awt.Shape;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.geom.Rectangle2D;
-import java.io.IOException;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import edu.brown.cs.bubbles.bass.BassFactory;
-import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
+import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaConstants;
+
+import javax.swing.*;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 
 
 class BeduManageCoursesBubble extends BudaBubble implements BeduConstants{

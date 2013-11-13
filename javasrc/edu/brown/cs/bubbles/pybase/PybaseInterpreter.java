@@ -30,10 +30,7 @@
  */
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.bubbles.pybase.symbols.InterpreterInfoBuilder;
-import edu.brown.cs.bubbles.pybase.symbols.ProjectModulesManager;
-import edu.brown.cs.bubbles.pybase.symbols.SystemModulesManager;
-import edu.brown.cs.bubbles.pybase.symbols.StringUtils;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
 import org.python.pydev.core.PropertiesHelper;
 import org.python.pydev.core.Tuple;
@@ -41,19 +38,8 @@ import org.python.pydev.core.callbacks.ICallback;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.zip.ZipFile;
 
 

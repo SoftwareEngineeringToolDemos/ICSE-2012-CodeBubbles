@@ -21,13 +21,14 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import javax.swing.table.TableModel;
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
+
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 
-import edu.brown.cs.ivy.swing.SwingEventListenerList;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 
 class BeduTATicketList extends ArrayList<BeduStudentTicket> implements TableModel {

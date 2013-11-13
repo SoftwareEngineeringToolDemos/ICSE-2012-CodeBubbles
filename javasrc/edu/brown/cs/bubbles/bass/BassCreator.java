@@ -31,18 +31,18 @@
 package edu.brown.cs.bubbles.bass;
 
 import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import javax.swing.*;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.File;
 
 
 class BassCreator implements BassConstants, BuenoConstants, BassConstants.BassPopupHandler {
@@ -85,6 +85,7 @@ BassCreator()
 {
    switch (BoardSetup.getSetup().getLanguage()) {
       case JAVA :
+      case REBUS :
 	 addJavaButtons(bb,where,menu,fullname,forname);
 	 break;
       case PYTHON :
@@ -139,25 +140,33 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
 	    memblocs.add(BuenoFactory.getFactory().createLocation(proj,outer,inner,false));
 	    memblocs.add(BuenoFactory.getFactory().createLocation(proj,outer,inner,true));
 	  }
-	 if (pnm != null) {
-	    cnm = cnm.substring(pnm.length()+1);
-	    if (!cnm.contains(".")) {
-	       delact = new DeleteClassAction(proj,loc.getClassName(),bb);
+	 if (bass_properties.getBoolean("Bass.delete.class")) {
+	    if (pnm != null) {
+	       cnm = cnm.substring(pnm.length()+1);
+	       if (!cnm.contains(".")) {
+		  delact = new DeleteClassAction(proj,loc.getClassName(),bb);
+		}
+	     }
+	    else {
+	       if (cnm != null) {
+		  delact = new DeleteClassAction(proj,cnm,bb);
+		}
 	     }
 	  }
-	 else {
-	    if (cnm != null) {
-	       delact = new DeleteClassAction(proj,cnm,bb);
-	    }
-	 }
+	 if (delact == null && bass_properties.getBoolean("Bass.delete.file")) {
+	    File f = loc.getFile();
+	    if (f != null) {
+	       delact = new DeleteFileAction(proj,f,bb);
+	     }
+	  }
        }
-      else {
+      else if (!fullname.contains("@")) {
 	 if (bass_properties.getBoolean("Bass.delete.package"))
 	    delact = new DeletePackageAction(proj,fullname,bb);
        }
       if (loc.getPackage() != null || loc.getClassName() != null) clsloc = loc;
     }
-   else {
+   else if (forname.getNameType() != BassNameType.PROJECT) {
       BuenoLocation loc = new BassNewLocation(forname,false,false);
       memblocs.add(new BassNewLocation(forname,false,true));
       memblocs.add(new BassNewLocation(forname,true,false));
@@ -326,7 +335,7 @@ private class NewFieldAction extends NewAction implements BuenoConstants.BuenoBu
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
       int idx = name.lastIndexOf(".");
       String cnm = name.substring(0,idx);
-      BudaBubble bb = BaleFactory.getFactory().createFieldsBubble(proj,cnm);
+      BudaBubble bb = BaleFactory.getFactory().createFieldsBubble(proj,for_location.getFile(),cnm);
       if (bb != null) bba.add(bb,new BudaConstraint(p));
    }
 
@@ -505,17 +514,19 @@ private static class DeleteProjectAction extends AbstractAction implements Runna
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
-      int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete project " + project_name,
-	    "Confirm Delete Project",
-	    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
-      if (sts != JOptionPane.YES_OPTION) return;
+      if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
+	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete project " + project_name,
+						    "Confirm Delete Project",
+						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+	 if (sts != JOptionPane.YES_OPTION) return;
+       }
       BoardThreadPool.start(this);
     }
 
    @Override public void run() {
       BumpClient bc = BumpClient.getBump();
-      bc.delete(project_name,"PROJECT",project_name);
+      bc.delete(project_name,"PROJECT",project_name,bass_properties.getBoolean("Bass.delete.rebuild",true));
     }
 }	// end of inner class DeleteProjectAction
 
@@ -539,17 +550,54 @@ private static class DeletePackageAction extends AbstractAction implements Runna
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
-      int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete all of package " + package_name,
-	    "Confirm Delete Package",
-	    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
-      if (sts != JOptionPane.YES_OPTION) return;
+      if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
+	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete all of package " + package_name,
+						    "Confirm Delete Package",
+						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+	 if (sts != JOptionPane.YES_OPTION) return;
+       }
       BoardThreadPool.start(this);
    }
 
    @Override public void run() {
       BumpClient bc = BumpClient.getBump();
-      bc.delete(project_name,"PACKAGE",package_name);
+      bc.delete(project_name,"PACKAGE",package_name,bass_properties.getBoolean("Bass.delete.rebuild",true));
+    }
+}	// end of inner class DeletePackageAction
+
+
+
+
+private static class DeleteFileAction extends AbstractAction implements Runnable {
+
+   private String project_name;
+   private File file_name;
+   private BudaBubble rel_bubble;
+
+   private static final long serialVersionUID = 1;
+
+   DeleteFileAction(String proj,File fil,BudaBubble bb) {
+      super("Delete File " + fil.getName());
+      project_name = proj;
+      file_name = fil;
+      rel_bubble = bb;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
+	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete file " + file_name.getPath(),
+						    "Confirm Delete File",
+						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+	 if (sts != JOptionPane.YES_OPTION) return;
+       }
+      BoardThreadPool.start(this);
+   }
+
+   @Override public void run() {
+      BumpClient bc = BumpClient.getBump();
+      bc.delete(project_name,"FILE",file_name.getAbsolutePath(),bass_properties.getBoolean("Bass.delete.rebuild",true));
     }
 }	// end of inner class DeletePackageAction
 
@@ -572,17 +620,19 @@ private static class DeleteClassAction extends AbstractAction implements Runnabl
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
-      int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete the class " + class_name,
-	    "Confirm Delete Class",
-	    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
-      if (sts != JOptionPane.YES_OPTION) return;
+      if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
+	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete the class " + class_name,
+						    "Confirm Delete Class",
+						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+	 if (sts != JOptionPane.YES_OPTION) return;
+      }
       BoardThreadPool.start(this);
    }
 
    @Override public void run() {
       BumpClient bc = BumpClient.getBump();
-      bc.delete(project_name,"CLASS",class_name);
+      bc.delete(project_name,"CLASS",class_name,bass_properties.getBoolean("Bass.delete.rebuild",true));
     }
 
 }	// end of inner class DeleteClassAction

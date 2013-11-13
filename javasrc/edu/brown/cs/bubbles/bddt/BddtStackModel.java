@@ -32,7 +32,7 @@ import edu.brown.cs.bubbles.bump.BumpConstants;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 import edu.brown.cs.ivy.swing.SwingTreeTable;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeNode;

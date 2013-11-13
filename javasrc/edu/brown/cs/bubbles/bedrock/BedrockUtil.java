@@ -33,7 +33,8 @@
 package edu.brown.cs.bubbles.bedrock;
 
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
@@ -46,16 +47,17 @@ import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.debug.core.*;
 import org.eclipse.jdt.debug.eval.IEvaluationResult;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
 import org.eclipse.ltk.core.refactoring.*;
 import org.eclipse.ltk.core.refactoring.resource.*;
-import org.eclipse.text.edits.*;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension4;
+import org.eclipse.text.edits.*;
 
 import java.io.File;
-import java.util.*;
 import java.net.URL;
-import java.util.regex.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 class BedrockUtil implements BedrockConstants {
@@ -77,6 +79,8 @@ private static Map<String,Integer> delta_flags;
 private static Map<String,Integer> completion_types;
 private static Map<String,Integer> accessibility_types;
 private static Map<String,Integer> access_flags;
+
+private static int edit_counter = 1;
 
 private static Random		random_gen = new Random();
 
@@ -666,7 +670,13 @@ static void outputDebugTarget(IJavaDebugTarget tgt,IvyXmlWriter xw)
    if (tgt.isDisconnected()) xw.field("DISCONNECTED",true);
    else xw.field("CANDISCONNECT",tgt.canDisconnect());
 
-   xw.field("PID",tgt.getProcess().hashCode());
+   if (tgt.getProcess() != null) {
+      xw.field("PID",tgt.getProcess().hashCode());
+   }
+
+   if (tgt.getLaunch() != null) {
+      outputLaunch(tgt.getLaunch(),xw);
+    }
 
    xw.end("TARGET");
 }
@@ -738,11 +748,12 @@ static void outputThread(IJavaThread trd,IvyXmlWriter xw)
    // xw.field("TAG",trd);
 
    IDebugTarget tgt = trd.getDebugTarget();
-   if (tgt != null) xw.field("PID",tgt.getProcess().hashCode());
+   if (tgt != null) {
+      IProcess ipro = tgt.getProcess();
+      if (ipro != null) xw.field("PID",ipro.hashCode());
+   }
 
    outputLaunch(trd.getLaunch(),xw);
-
-   // if (tgt != null) BedrockUtil.outputProcess(tgt.getProcess(),xw,false);
 
    for (IBreakpoint ipt : trd.getBreakpoints()) {
       if (ipt instanceof IJavaBreakpoint) {
@@ -796,7 +807,7 @@ static void outputCompletion(CompletionProposal cp,IvyXmlWriter xw)
     }
    xw.field("RCVR",cp.getReceiverSignature());
 
-   xw.textElement("DESCRIPTION",cp.toString());
+   xw.cdataElement("DESCRIPTION",cp.toString());
 
    CompletionProposal [] rq = cp.getRequiredProposals();
    if (rq != null) {
@@ -825,6 +836,7 @@ static void outputTextEdit(TextEdit te,IvyXmlWriter xw)
    xw.field("INCEND",te.getInclusiveEnd());
    xw.field("EXCEND",te.getExclusiveEnd());
    xw.field("ID",te.hashCode());
+   xw.field("COUNTER",++edit_counter);
 
    if (te instanceof CopyingRangeMarker) {
       xw.field("TYPE","COPYRANGE");
@@ -1704,7 +1716,7 @@ static void outputValue(IValue val,IJavaVariable var,String name,int lvls,IvyXml
 	 if (txt.length() >= MAX_VALUE_SIZE) {
 	    txt = txt.substring(0,MAX_VALUE_SIZE) + "...";
 	  }
-	 xw.textElement("DESCRIPTION",txt);
+	 xw.cdataElement("DESCRIPTION",txt);
        }
       finally {
 	 xw.end("VALUE");

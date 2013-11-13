@@ -27,35 +27,16 @@ package edu.brown.cs.bubbles.pybase;
 import edu.brown.cs.bubbles.pybase.debug.PybaseDebugManager;
 
 import edu.brown.cs.ivy.exec.IvySetup;
-import edu.brown.cs.ivy.mint.MintArguments;
-import edu.brown.cs.ivy.mint.MintConstants;
-import edu.brown.cs.ivy.mint.MintControl;
-import edu.brown.cs.ivy.mint.MintDefaultReply;
-import edu.brown.cs.ivy.mint.MintHandler;
-import edu.brown.cs.ivy.mint.MintMessage;
+import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.xml.IvyXml;
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 public class PybaseMain implements PybaseConstants, MintConstants
@@ -244,7 +225,7 @@ private void scanArgs(String [] args)
 
 private void badArgs()
 {
-   System.err.println("BATT: pybasemain [-m <mint>]");
+   System.err.println("PYBLES: pybasemain [-m <mint>]");
    System.exit(1);
 }
 
@@ -419,12 +400,12 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
 	    IvyXml.getAttrBool(xml,"PACKAGE",false),
 	    IvyXml.getAttrBool(xml,"TOPDECLS",false),
 	    IvyXml.getAttrBool(xml,"MAIN",false),
+            IvyXml.getAttrBool(xml,"FIELDS",false),
 	    IvyXml.getAttrBool(xml,"ALL",false),xw);
     }
    else if (cmd.equals("SEARCH")) {
       pybase_search.handleTextSearch(proj,IvyXml.getAttrInt(xml,"FLAGS",0),
 	    IvyXml.getTextElement(xml,"PATTERN"),
-	    IvyXml.getTextElement(xml,"FILES"),
 	    IvyXml.getAttrInt(xml,"MAX",MAX_TEXT_SEARCH_RESULTS),
 	    xw);
     }
@@ -461,7 +442,8 @@ private String handleCommand(String cmd,String proj,Element xml) throws PybaseEx
    else if (cmd.equals("EDITRUNCONFIG")) {
       pybase_debug.editRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),
 	    IvyXml.getAttrString(xml,"PROP"),
-	    IvyXml.getAttrString(xml,"VALUE"),xw);    }
+	    IvyXml.getAttrString(xml,"VALUE"),xw);
+    }
    else if (cmd.equals("SAVERUNCONFIG")) {
       pybase_debug.saveRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
     }

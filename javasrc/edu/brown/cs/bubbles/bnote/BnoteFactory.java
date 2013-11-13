@@ -37,10 +37,11 @@
 
 package edu.brown.cs.bubbles.bnote;
 
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardProperties;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.util.Date;
+import java.util.List;
 
 
 public class BnoteFactory implements BnoteConstants
@@ -69,7 +70,7 @@ private static BnoteFactory	the_factory = new BnoteFactory();
 private BnoteFactory()
 {
    the_store = null;
-   
+
    BoardProperties bp = BoardProperties.getProperties("Bnote");
    if (bp.getBoolean("Bnote.record",true)) {
       the_store = BnoteStore.createStore();
@@ -92,6 +93,10 @@ public static void setup()
 {
    getFactory();
 }
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Access methods								*/
@@ -101,8 +106,8 @@ public static void setup()
 public boolean isEnabled()
 {
    if (the_store == null) return false;
-   
-   return the_store.isEnabled(); 
+
+   return the_store.isEnabled();
 }
 
 
@@ -150,7 +155,7 @@ public List<BnoteEntry> getEntriesForTask(String proj,BnoteTask task)
 public BnoteTask findTaskById(int tid)
 {
    if (the_store == null) return null;
-   
+
    return the_store.findTaskById(tid);
 }
 
@@ -159,7 +164,7 @@ public BnoteTask findTaskById(int tid)
 public File getAttachment(String aid)
 {
    if (the_store == null) return null;
-   
+
    return the_store.getAttachment(aid);
 }
 
@@ -167,7 +172,7 @@ public File getAttachment(String aid)
 public String getAttachmentAsString(String aid)
 {
    if (the_store == null) return null;
-   
+
    return the_store.getAttachmentAsString(aid);
 }
 

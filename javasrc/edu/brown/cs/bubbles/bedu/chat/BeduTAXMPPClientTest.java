@@ -20,30 +20,23 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 
-import static junit.framework.Assert.*;
-
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-import java.util.Date;
-import java.util.HashSet;
-
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.MessageListener;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 import edu.brown.cs.bubbles.bedu.chat.BeduCourse.TACourse;
 import edu.brown.cs.bubbles.bgta.BgtaChat;
 import edu.brown.cs.bubbles.bgta.BgtaUtil;
+
+import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.Message;
+import org.junit.*;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import java.io.*;
+import java.util.Date;
+import java.util.HashSet;
 
 
 public class BeduTAXMPPClientTest {

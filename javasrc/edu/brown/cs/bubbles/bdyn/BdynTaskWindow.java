@@ -24,16 +24,18 @@
 
 package edu.brown.cs.bubbles.bdyn;
 
-import edu.brown.cs.bubbles.bump.*;
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingRangeScrollBar;
 
-import java.util.*;
-import javax.swing.*;
+import javax.swing.JPanel;
+
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
+import java.awt.geom.Rectangle2D;
+import java.util.*;
 import java.util.List;
 
 
@@ -79,9 +81,9 @@ BdynTaskWindow()
    event_trace = null;
    callback_set = null;
    process_handler = new RunHandler();
-   BumpClient.getBump().getRunModel().addRunEventHandler(process_handler);
-
    active_threads = new ArrayList<BdynEntryThread>();
+
+   BumpClient.getBump().getRunModel().addRunEventHandler(process_handler);
 
    add(task_panel,BorderLayout.CENTER);
    add(time_bar,BorderLayout.SOUTH);
@@ -164,17 +166,19 @@ void setEventTrace(BdynEventTrace et)
 
 @Override public void eventsAdded()
 {
-   if (event_trace == null) return;
-   long mxt = event_trace.getEndTime();
+   BdynEventTrace evt = event_trace;
+
+   if (evt == null || active_threads == null) return;
+   long mxt = evt.getEndTime();
    if (mxt == 0) return;
 
    if (min_time < 0) {
-      min_time = event_trace.getStartTime();
+      min_time = evt.getStartTime();
     }
 
    if (mxt > max_time) {
-      if (event_trace.getActiveThreadCount() != active_threads.size()) {
-	 active_threads = event_trace.getActiveThreads();
+      if (evt.getActiveThreadCount() != active_threads.size()) {
+	 active_threads = evt.getActiveThreads();
        }
       long omax = max_time;
       max_time = mxt;

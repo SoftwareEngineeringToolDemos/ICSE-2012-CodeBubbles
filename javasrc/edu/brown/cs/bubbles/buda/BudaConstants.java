@@ -38,7 +38,8 @@ import org.w3c.dom.Element;
 import javax.swing.JComponent;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.*;
 import java.util.EventListener;
@@ -849,7 +850,8 @@ enum BudaContentNameType {
    METHOD,
    FIELD,
    CLASS_ITEM,		// all fields or class prefix or class initializers
-   FILE
+   FILE,
+   OVERVIEW
 }
 
 

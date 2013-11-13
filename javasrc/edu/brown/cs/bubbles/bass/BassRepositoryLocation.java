@@ -30,8 +30,8 @@
 
 package edu.brown.cs.bubbles.bass;
 
-import edu.brown.cs.bubbles.board.BoardThreadPool;
 import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
 import edu.brown.cs.bubbles.bump.*;
 
 import java.io.File;
@@ -403,6 +403,7 @@ private void addNamesForFile(String proj,String file,boolean rem)
 	  }
        }
     }
+   System.err.println("AFTER " + proj + " " + file + " " + all_names.size());
 
    BassFactory.reloadRepository(this);
 }

@@ -33,10 +33,7 @@ package edu.brown.cs.bubbles.pybase.symbols;
 
 import org.python.pydev.core.structure.FastStack;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.If;
-import org.python.pydev.parser.jython.ast.Module;
+import org.python.pydev.parser.jython.ast.*;
 
 
 /**

@@ -32,10 +32,11 @@ import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 
 import java.awt.Point;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
 import java.util.*;
 
 

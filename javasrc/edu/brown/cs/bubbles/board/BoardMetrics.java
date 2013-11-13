@@ -27,7 +27,8 @@ package edu.brown.cs.bubbles.board;
 
 import edu.brown.cs.ivy.exec.IvyExecQuery;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.*;
 
@@ -444,6 +445,9 @@ private String getUserId()
       BoardProperties bp = BoardProperties.getProperties("Board");
       String xpfx = bp.getProperty("Board.prefix." + cnm);
       if (xpfx != null) pfx = xpfx;
+    }
+   else if (BoardSetup.getSetup().getLanguage() == BoardLanguage.REBUS) {
+      pfx = "R";
     }
 
    return pfx + Integer.toString(rslt);

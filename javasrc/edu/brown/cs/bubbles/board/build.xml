@@ -24,6 +24,7 @@
 	 <pathelement location='${IVYBIN}' />
       </path>
    </target>
+
    <available file='/pro/java/linux/jdk1.6/jre/lib/rt.jar' type='file' property='j6'
        value='/pro/java/linux/jdk1.6/jre/lib/rt.jar' />
    <available file='/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Classes/classes.jar'

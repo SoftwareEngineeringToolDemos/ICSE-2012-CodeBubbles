@@ -25,11 +25,14 @@
 package edu.brown.cs.bubbles.bdyn;
 
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import org.w3c.dom.*;
-import java.util.*;
+import org.w3c.dom.Element;
+
 import java.awt.Point;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class BdynFactory implements BdynConstants, BumpConstants

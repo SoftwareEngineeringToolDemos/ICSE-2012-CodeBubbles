@@ -32,16 +32,9 @@
 
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.bubbles.pybase.symbols.AbstractASTManager;
-import edu.brown.cs.bubbles.pybase.symbols.AbstractInterpreterManager;
-import edu.brown.cs.bubbles.pybase.symbols.ModulesManager;
-import edu.brown.cs.bubbles.pybase.symbols.StringUtils;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**

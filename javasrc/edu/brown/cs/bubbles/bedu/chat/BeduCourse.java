@@ -21,20 +21,15 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import javax.swing.Icon;
+import edu.brown.cs.bubbles.bass.BassConstants;
+import edu.brown.cs.bubbles.bass.BassNameBase;
+import edu.brown.cs.bubbles.bgta.*;
+import edu.brown.cs.bubbles.board.BoardImage;
+import edu.brown.cs.bubbles.buda.*;
 
 import org.jivesoftware.smack.packet.Presence;
 
-import edu.brown.cs.bubbles.bass.BassConstants;
-import edu.brown.cs.bubbles.bass.BassNameBase;
-import edu.brown.cs.bubbles.bgta.BgtaLoginBubble;
-import edu.brown.cs.bubbles.bgta.BgtaManager;
-import edu.brown.cs.bubbles.bgta.BgtaUtil;
-import edu.brown.cs.bubbles.buda.BudaBubble;
-import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.buda.BudaErrorBubble;
-import edu.brown.cs.bubbles.buda.BudaRoot;
-import edu.brown.cs.bubbles.board.BoardImage;
+import javax.swing.Icon;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;

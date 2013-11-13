@@ -34,8 +34,8 @@ import edu.brown.cs.bubbles.burp.BurpConstants;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
-import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 
 
 

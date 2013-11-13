@@ -35,15 +35,9 @@ import edu.brown.cs.bubbles.pybase.PybaseConstants.VisitorType;
 
 import org.python.pydev.core.FullRepIterable;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Import;
-import org.python.pydev.parser.jython.ast.ImportFrom;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.Str;
-import org.python.pydev.parser.jython.ast.VisitorBase;
-import org.python.pydev.parser.jython.ast.aliasType;
+import org.python.pydev.parser.jython.ast.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 

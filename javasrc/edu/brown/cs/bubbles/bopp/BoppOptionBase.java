@@ -37,20 +37,25 @@
 
 package edu.brown.cs.bubbles.bopp;
 
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardFont;
+import edu.brown.cs.bubbles.board.BoardProperties;
 
-import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
-import java.util.*;
-import java.util.regex.*;
-import java.awt.event.*;
-import javax.swing.event.*;
 import javax.swing.*;
-import java.awt.*;
-import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 abstract class BoppOptionBase implements BoppConstants.BoppOptionNew, BoppConstants
@@ -176,12 +181,16 @@ void noteChange()
 {
    if (doing_add) return;
    
+   BoppFactory.handleOptionChange(this);
+   
    option_set.noteChange(package_name,option_name);
 }
 
 void noteChange(String ... props)
 {
    if (doing_add) return;
+   
+   BoppFactory.handleOptionChange(this);
    
    for (String prop : props) {
       if (prop == null) continue;

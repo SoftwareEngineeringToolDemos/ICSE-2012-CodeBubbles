@@ -25,7 +25,7 @@
 
 package edu.brown.cs.bubbles.banal;
 
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import edu.brown.cs.ivy.xml.IvyXml;
 

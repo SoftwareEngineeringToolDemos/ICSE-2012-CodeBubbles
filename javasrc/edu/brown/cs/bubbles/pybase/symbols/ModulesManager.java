@@ -31,36 +31,20 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseFileSystem;
-import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
+import edu.brown.cs.bubbles.pybase.*;
 import edu.brown.cs.bubbles.pybase.symbols.ModulesFoundStructure.ZipContents;
 
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.core.FullRepIterable;
 import org.python.pydev.core.Tuple;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.exprType;
-import org.python.pydev.parser.jython.ast.stmtType;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 
 /**

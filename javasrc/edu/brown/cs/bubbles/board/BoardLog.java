@@ -102,6 +102,20 @@ private void setupLogger()
    String jar = bp.getProperty(BOARD_PROP_JAR_DIR);
    use_stderr = bp.getBoolean(BOARD_PROP_USE_STDERR,(jar == null));
 
+   String logname = "bubbles";
+   switch (BoardSetup.getSetup().getLanguage()) {
+      default :
+      case JAVA :
+	 break;
+      case PYTHON :
+	 logname = "pybles";
+	 break;
+      case REBUS :
+	 logname = "rebus";
+	 break;
+    }
+
+
    File wsd = null;
    switch (BoardSetup.getSetup().getRunMode()) {
       case CLIENT :
@@ -128,7 +142,7 @@ private void setupLogger()
    if (use_stderr && wsd != null) {
       for (int i = 0; i < 100; ++i) {
 	 if (i > 0) id = "_" + i;
-	 String nm = "bubbles_" + i + ".lock";
+	 String nm = logname + "_" + + i + ".lock";
 	 File f1 = new File(wsd,nm);
 	 try {
 	    if (f1.createNewFile()) {
@@ -143,19 +157,24 @@ private void setupLogger()
     }
 
    if (wsd != null) {
-      bedrock_log = new File(wsd,"bedrock_log" + ".log");
-      monitor_log = new File(wsd,"monitor_log.log");
+      String lgnm = "bedrock";
+      monitor_log = null;
+      switch (BoardSetup.getSetup().getLanguage()) {
+	 case JAVA :
+	    lgnm = "bedrock";
+	    monitor_log = new File(wsd,"monitor_log.log");
+	    break;
+	 case PYTHON :
+	    lgnm = "pybase";
+	    break;
+	 case REBUS :
+	    lgnm = "rebase";
+	    break;
+       }
+      bedrock_log = new File(wsd,lgnm + "_log" + ".log");
     }
 
-   String bnm = "bubbles_log";
-   switch (BoardSetup.getSetup().getLanguage()) {
-      default :
-      case JAVA :
-	 break;
-      case PYTHON :
-	 bnm = "pybles_log";
-	 break;
-    }
+   String bnm = logname + "_log";
 
    if (wsd != null) {
       if (use_stderr) {
@@ -169,11 +188,11 @@ private void setupLogger()
       else {
 	 // normal run: find an unused file, delete after exit
 	 // file should be available for sending a bug report
-	 for (int i = 0; i < 100; ++i) {
+	 for (int i = 0; i < 5; ++i) {			// limit number of tries
 	    String lognm = bnm + "_" + i + ".log";
 	    debug_log = new File(wsd,lognm);
 	    if (!debug_log.exists()) {
-	       debug_log.deleteOnExit();
+	       // this doesn't seem to work well on windows
 	       break;
 	     }
 	  }
@@ -184,6 +203,7 @@ private void setupLogger()
    if (debug_log != null) {
       try {
 	 FileWriter fw = new FileWriter(debug_log);
+	 if (!use_stderr) debug_log.deleteOnExit();
 	 debug_writer = new PrintWriter(fw,true);
        }
       catch (IOException e) {

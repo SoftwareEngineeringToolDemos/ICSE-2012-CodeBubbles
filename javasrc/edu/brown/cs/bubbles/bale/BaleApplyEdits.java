@@ -31,7 +31,7 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import edu.brown.cs.ivy.xml.IvyXml;
 
@@ -143,7 +143,10 @@ private void extractEdits(Element xml,Set<Element> edits)
 	 extractEdits(ed,edits);
        }
     }
-   else edits.add(xml);
+   else if (typ.equals("RANGEMARKER")) ;
+   else {
+      edits.add(xml);
+   }
 }
 
 
@@ -227,7 +230,11 @@ private static class EditSorter implements Comparator<Element> {
    @Override public int compare(Element e1,Element e2) {
       int off1 = IvyXml.getAttrInt(e1,"OFFSET");
       int off2 = IvyXml.getAttrInt(e2,"OFFSET");
-      return off2 - off1;
+      if (off2 != off1) return off2-off1;
+      
+      int ct1 = IvyXml.getAttrInt(e1,"COUNTER");
+      int ct2 = IvyXml.getAttrInt(e2,"COUNTER");
+      return ct2-ct1;
     }
 
 }	// end of inner class EditSorter

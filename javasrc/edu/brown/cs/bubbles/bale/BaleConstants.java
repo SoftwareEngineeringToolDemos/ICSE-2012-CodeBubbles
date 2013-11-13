@@ -29,9 +29,7 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 import javax.swing.text.*;
 
 import java.awt.*;
@@ -351,6 +349,7 @@ enum BaleInfoBubbleType {
    DOC,
    REF,
    NOIDENTIFIER,
+   UNDEFINED,
 }
 
 
@@ -1032,7 +1031,7 @@ interface BaleAnnotation {
  *	Return the icon for the annotation area associated with this annotation. This
  *	returns null if there is no associated icon (e.g. line highlighting only).
  **/
-   Icon getIcon();
+   Icon getIcon(BudaBubble bbl);
 
 /**
  *	Return the tool tip associated with this annotation.
@@ -1043,7 +1042,7 @@ interface BaleAnnotation {
  *	Return the background color for highlighting the line associated with this
  *	annotation.  This returns null if there is no line highlighting (e.g. icon only).
  **/
-   Color getLineColor();
+   Color getLineColor(BudaBubble bbl);
 
 /**
  *	Return the background annotation area color or null if none.

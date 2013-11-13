@@ -27,22 +27,26 @@ package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
-import edu.brown.cs.ivy.swing.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
+import edu.brown.cs.ivy.swing.SwingListSet;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.filechooser.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.event.*;
-import java.util.List;
-import java.io.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.*;
 
 
 public class BuenoProjectDialog implements BuenoConstants
@@ -430,6 +434,8 @@ private static class EditPathEntryBubble extends BudaBubble implements ActionLis
       pnl.addBoolean("Exported",for_path.isExported(),this);
       pnl.addBoolean("Optional",for_path.isOptional(),this);
 
+      pnl.addBottomButton("Close","Close",this);
+      pnl.addBottomButtons();
       setContentPane(pnl);
     }
 
@@ -454,6 +460,9 @@ private static class EditPathEntryBubble extends BudaBubble implements ActionLis
       else if (cmd.equals("Optional")) {
 	 JCheckBox cbx = (JCheckBox) evt.getSource();
 	 for_path.setOptional(cbx.isSelected());
+       }
+      else if (cmd.equals("Close")) {
+	 setVisible(false);
        }
     }
 

@@ -30,41 +30,16 @@
 
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
-import edu.brown.cs.bubbles.pybase.symbols.Found;
-import edu.brown.cs.bubbles.pybase.symbols.GenAndTok;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.python.pydev.parser.jython.SimpleNode;
 import org.python.pydev.parser.jython.Visitor;
-import org.python.pydev.parser.jython.ast.Attribute;
-import org.python.pydev.parser.jython.ast.Call;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.For;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.If;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.Suite;
-import org.python.pydev.parser.jython.ast.TryExcept;
-import org.python.pydev.parser.jython.ast.TryFinally;
-import org.python.pydev.parser.jython.ast.While;
-import org.python.pydev.parser.jython.ast.commentType;
-import org.python.pydev.parser.jython.ast.excepthandlerType;
-import org.python.pydev.parser.jython.ast.exprType;
-import org.python.pydev.parser.jython.ast.expr_contextType;
-import org.python.pydev.parser.jython.ast.modType;
-import org.python.pydev.parser.jython.ast.name_contextType;
-import org.python.pydev.parser.jython.ast.stmtType;
-import org.python.pydev.parser.jython.ast.suiteType;
+import org.python.pydev.parser.jython.ast.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 class PybaseElider implements PybaseConstants {
 

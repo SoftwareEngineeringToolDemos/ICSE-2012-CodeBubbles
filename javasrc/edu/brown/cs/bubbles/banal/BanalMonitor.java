@@ -25,7 +25,8 @@
 package edu.brown.cs.bubbles.banal;
 
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 

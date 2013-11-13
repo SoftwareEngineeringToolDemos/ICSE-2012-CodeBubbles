@@ -25,13 +25,15 @@
 package edu.brown.cs.bubbles.batt;
 
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.*;
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
+
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 import java.util.*;
-import javax.swing.table.*;
 
 
 

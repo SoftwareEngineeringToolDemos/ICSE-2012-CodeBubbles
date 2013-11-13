@@ -33,31 +33,31 @@
 package edu.brown.cs.bubbles.bedrock;
 
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
-import org.osgi.service.prefs.Preferences;
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jdt.core.*;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
-import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.eclipse.ui.actions.NewProjectAction;
-
-import org.eclipse.debug.ui.*;
-import org.eclipse.jface.preference.*;
-
-import org.w3c.dom.*;
+import org.eclipse.ui.dialogs.PropertyDialogAction;
+import org.osgi.service.prefs.Preferences;
+import org.w3c.dom.Element;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
-import java.net.*;
 
 
 
@@ -216,7 +216,7 @@ void listProjects(IvyXmlWriter xw)
       catch (CoreException e) { }
       xw.field("ISJAVA",isjava);
       try {
-	 xw.textElement("DESCRIPTION",projs[i].getDescription().getComment());
+	 xw.cdataElement("DESCRIPTION",projs[i].getDescription().getComment());
        }
       catch (CoreException e) { }
       xw.textElement("BASE",projs[i].getFullPath().toOSString());

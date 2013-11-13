@@ -21,42 +21,23 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.board.BoardSetup;
-import edu.brown.cs.bubbles.board.BoardUpload;
+import edu.brown.cs.bubbles.board.*;
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
-import edu.brown.cs.ivy.xml.IvyXmlReader;
-import edu.brown.cs.ivy.xml.IvyXml;
-
-import java.util.Collection;
-import java.util.Vector;
-import java.util.Date;
-import java.util.Iterator;
-
-import java.text.SimpleDateFormat;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-
-import javax.naming.OperationNotSupportedException;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.MessageListener;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
-
-import org.w3c.dom.Element;
+import edu.brown.cs.ivy.xml.*;
 
 import net.kano.joustsim.oscar.oscar.service.icbm.*;
+
+import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.Message;
+import org.w3c.dom.Element;
+
+import javax.naming.OperationNotSupportedException;
+import javax.swing.text.*;
+import javax.swing.text.html.HTMLDocument;
+
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 

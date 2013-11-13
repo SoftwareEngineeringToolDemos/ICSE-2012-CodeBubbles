@@ -26,9 +26,7 @@
 package edu.brown.cs.bubbles.bump;
 
 import edu.brown.cs.bubbles.bandaid.BandaidConstants;
-import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.board.BoardSetup;
-import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.mint.*;
@@ -41,8 +39,10 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.regex.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 
@@ -84,7 +84,7 @@ private static Map<String,BumpThreadType> known_threads;
 
 
 private static final Pattern PORT_PATTERN = Pattern.compile("port=(\\d+)[,}]");
-private static final Pattern HOST_PATTERN = Pattern.compile("host=((\\w|.)+)[,}]");
+private static final Pattern HOST_PATTERN = Pattern.compile("hostname=((\\w|.)+)[,}]");
 
 
 static {
@@ -168,6 +168,8 @@ BumpRunManager()
 	 break;
       case PYTHON :
 	 use_debug_server = false;
+	 break;
+      case REBUS :
 	 break;
       default :
 	 break;
@@ -874,7 +876,13 @@ private void handleTargetEvent(Element xml,long when)
    BumpThreadStateDetail dtl = IvyXml.getAttrEnum(xml,"DETAIL",BumpThreadStateDetail.NONE);
    Element tgt = IvyXml.getChild(xml,"TARGET");
    ProcessData pd = findProcess(tgt);
+   if (pd == null) {
+      Element lnch = IvyXml.getChild(tgt,"LAUNCH");
+      LaunchData ld = findLaunch(lnch);
+      if (ld != null && kind != RunEventKind.TERMINATE) pd = ld.getDefaultProcess();
+    }
    if (pd == null) return;
+
    String nm = IvyXml.getAttrString(tgt,"NAME");
    if (nm != null) pd.setProcessName(nm);
 
@@ -1034,7 +1042,7 @@ private class LaunchConfig implements BumpLaunchConfig {
       use_assertions = getBoolean(xml,"ASSERTIONS",true);
       remote_host = "localhost";
       remote_port = 8000;
-      String hmap = IvyXml.getAttrString(xml,"CONNECT_MAP");
+      String hmap = getAttribute(xml,"CONNECT_MAP");
       if (hmap != null) {
 	 Matcher m1 = HOST_PATTERN.matcher(hmap);
 	 Matcher m2 = PORT_PATTERN.matcher(hmap);
@@ -1203,12 +1211,39 @@ LaunchData findLaunch(Element xml)
 
 
 
+BumpProcess findDefaultProcess(Element xml)
+{
+   LaunchData ld = findLaunch(xml);
+   return ld.getDefaultProcess();
+}
+
+
+
+private ProcessData createDefaultProcess(LaunchData ld)
+{
+   ProcessData pd = new ProcessData(ld);
+
+   ProcessEvent evt = new ProcessEvent(BumpRunEventType.PROCESS_ADD,pd);
+   for (BumpRunEventHandler reh : event_handlers) {
+      try {
+	 reh.handleProcessEvent(evt);
+       }
+      catch (Throwable t) {
+	 BoardLog.logE("BUMP","Problem handling process event",t);
+       }
+    }
+
+   return pd;
+}
+
+
 
 private class LaunchData implements BumpLaunch {
 
    private String launch_id;
    private LaunchConfig for_config;
    private boolean is_debug;
+   private ProcessData default_process;
 
    LaunchData(Element xml) {
       launch_id = IvyXml.getAttrString(xml,"ID");
@@ -1222,6 +1257,13 @@ private class LaunchData implements BumpLaunch {
    @Override public boolean isDebug()				{ return is_debug; }
 
    @Override public String getId()				{ return launch_id; }
+
+   synchronized ProcessData getDefaultProcess() {
+      if (default_process == null) {
+	 default_process = createDefaultProcess(this);
+       }
+      return default_process;
+    }
 
 }	// end of inner class LaunchData
 
@@ -1270,6 +1312,13 @@ private class ProcessData implements BumpProcess {
       updateProcess(xml);
     }
 
+   ProcessData(LaunchData ld) {
+      process_id = ld.getId();
+      process_name = "Default";
+      is_running = true;
+      for_launch = ld;
+    }
+
    @Override public Iterable<BumpThread> getThreads() {
       List<BumpThread> rslt = new ArrayList<BumpThread>();
       for (ThreadData td : active_threads.values()) {
@@ -1281,6 +1330,11 @@ private class ProcessData implements BumpProcess {
    @Override public BumpLaunch getLaunch()		{ return for_launch; }
 
    @Override public String getId()			{ return process_id; }
+
+   @Override public boolean isDummy() {
+      if (for_launch == null) return false;
+      return process_id.equals(for_launch.getId());
+    }
 
    synchronized String getName()			{ return process_name; }
    synchronized void setName(String id) {
@@ -1489,6 +1543,9 @@ private class ThreadData implements BumpThread {
       else if (IvyXml.getAttrBool(xml,"SUSPENDED")) thread_state = thread_state.getStopState();
       for_launch = findLaunch(IvyXml.getChild(xml,"LAUNCH"));
       for_process = findProcess(xml);
+      if (for_process == null && !IvyXml.getAttrPresent(xml,"PID")) {
+	 for_process = for_launch.getDefaultProcess();
+       }
     }
 
    void setThreadState(BumpThreadState ts) {

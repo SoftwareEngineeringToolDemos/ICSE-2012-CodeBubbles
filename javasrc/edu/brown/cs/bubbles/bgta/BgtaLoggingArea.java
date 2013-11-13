@@ -22,9 +22,10 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.buda.BudaCursorManager;
 
-import javax.swing.*;
+import javax.swing.JEditorPane;
+import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.Cursor;

@@ -31,6 +31,7 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaBubbleOutputer;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
+import edu.brown.cs.bubbles.board.BoardLog;
 
 import edu.brown.cs.ivy.swing.*;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -40,12 +41,11 @@ import org.w3c.dom.Element;
 import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-import javax.swing.text.*;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.List;
@@ -73,8 +73,8 @@ private JButton 		debug_button;
 private JButton 		save_button;
 private JButton 		revert_button;
 private JButton 		clone_button;
-private JComboBox<String>	project_name;
-private JComboBox<String>	start_class;
+private SwingComboBox<String>	    project_name;
+private SwingComboBox<String>	    start_class;
 private JCheckBox		stop_in_main;
 private JTextComponent		test_class;
 private JTextComponent		test_name;
@@ -142,37 +142,7 @@ private void setupPanel()
        }
     }
 
-   List<String> starts = new ArrayList<String>();
-   BassRepository br = BassFactory.getRepository(BassConstants.SearchType.SEARCH_CODE);
-   for (BassName bn : br.getAllNames()) {
-      if (lp == null || bn.getProject().equals(lp)) {
-	 switch (launch_config.getConfigType()) {
-	    case UNKNOWN :
-	       break;
-	    case JAVA_APP :
-	       if (bn.getName().endsWith(".main") &&
-		      bn.getNameType() == BassNameType.METHOD &&
-		      Modifier.isPublic(bn.getModifiers()) &&
-		      Modifier.isStatic(bn.getModifiers())) {
-		  String cn = bn.getClassName();
-		  String pn = bn.getPackageName();
-		  if (pn != null) cn = pn + "." + cn;
-		  starts.add(cn);
-		}
-	       break;
-	    case JUNIT_TEST :
-	    case REMOTE_JAVA :
-	       break;
-	    case PYTHON :
-	       if (bn.getNameType() == BassNameType.MODULE) {
-		  String cn = bn.getPackageName();
-		  starts.add(cn);
-		}
-	       break;
-	  }
-       }
-    }
-   Collections.sort(starts);
+   List<String> starts = getStartClasses();
 
    start_class = null;
    arg_area = null;
@@ -186,8 +156,9 @@ private void setupPanel()
 
    switch (launch_config.getConfigType()) {
       case JAVA_APP :
-	 start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),this);
+	 start_class = pnl.addChoice("Start Class",starts,launch_config.getMainClass(),true,this);
 	 start_class.setEditable(true);
+	 start_class.setCaseSensitive(false);
 	 if (launch_config.getMainClass() == null) {
 	    String s = (String) start_class.getSelectedItem();
 	    if (s != null) {
@@ -213,7 +184,7 @@ private void setupPanel()
 	       1000,65536,launch_config.getRemotePort(),this);
 	 break;
       case PYTHON :
-	 start_class = pnl.addChoice("Module to Run",starts,launch_config.getMainClass(),this);
+	 start_class = pnl.addChoice("Module to Run",starts,launch_config.getMainClass(),true,this);
 	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
 	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
 	 break;
@@ -233,6 +204,47 @@ private void setupPanel()
    doing_load = false;
 
    setContentPane(pnl,arg_area);
+}
+
+
+
+private List<String> getStartClasses()
+{
+   String lp = launch_config.getProject();
+   if (edit_config != null) lp = edit_config.getProject();
+
+   List<String> starts = new ArrayList<String>();
+   BassRepository br = BassFactory.getRepository(BassConstants.SearchType.SEARCH_CODE);
+   for (BassName bn : br.getAllNames()) {
+      if (lp == null || bn.getProject().equals(lp)) {
+	 switch (launch_config.getConfigType()) {
+	    case UNKNOWN :
+	       break;
+	    case JAVA_APP :
+	       if (bn.getName().endsWith(".main") &&
+		     bn.getNameType() == BassNameType.METHOD &&
+		     Modifier.isPublic(bn.getModifiers()) &&
+		     Modifier.isStatic(bn.getModifiers())) {
+		  String cn = bn.getClassName();
+		  String pn = bn.getPackageName();
+		  if (pn != null) cn = pn + "." + cn;
+		  starts.add(cn);
+		}
+	       break;
+	    case JUNIT_TEST :
+	    case REMOTE_JAVA :
+	       break;
+	    case PYTHON :
+	       if (bn.getNameType() == BassNameType.MODULE) {
+		  String cn = bn.getPackageName();
+		  starts.add(cn);
+		}
+	       break;
+	  }
+       }
+    }
+   Collections.sort(starts);
+   return starts;
 }
 
 
@@ -395,13 +407,40 @@ private String getNewName()
        }
     }
    else if (cmd.equals("Project")) {
+      if (project_name == null) return;
+      String pnm = (String) project_name.getSelectedItem();
+      if (pnm != null && edit_config != null && edit_config.getProject().equals(pnm)) return;
+      if (pnm != null && edit_config == null && launch_config != null &&
+	    launch_config.getProject().equals(pnm)) return;
+
       if (edit_config == null) edit_config = launch_config;
-      if (edit_config != null && project_name != null) {
-	 edit_config = edit_config.setProject((String) project_name.getSelectedItem());
-	 // TODO: update selection of main classes
+      if (edit_config != null) {
+	 edit_config = edit_config.setProject(pnm);
+	 if (start_class != null) {
+	    List<String> sts = getStartClasses();
+	    String nm = edit_config.getMainClass();
+	    boolean fnd = false;
+	    start_class.removeAll();
+	    for (String s : sts) {
+	       if (s.equals(nm)) {
+		  nm = s;
+		  fnd = true;
+		}
+	       start_class.addItem(s);
+	     }
+	    if (!fnd) start_class.addItem(nm);
+	    start_class.setSelectedItem(nm);
+	  }
        }
     }
-   else System.err.println("ACTION: " + cmd);
+   else if (cmd.equals("Remote Host")) { }
+   else if (cmd.equals("Remote Port")) {
+      if (edit_config == null) edit_config = launch_config;
+      if (host_name != null && port_number != null) {
+	 edit_config = edit_config.setRemoteHostPort(host_name.getText(),(int) port_number.getValue());
+       } 
+    }
+   else BoardLog.logE("BDDT","Undefined launch config action: " + cmd);
 
    fixButtons();
 }

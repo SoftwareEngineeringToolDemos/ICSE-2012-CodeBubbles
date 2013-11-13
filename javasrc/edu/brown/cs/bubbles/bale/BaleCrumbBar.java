@@ -30,8 +30,8 @@
 
 package edu.brown.cs.bubbles.bale;
 
-import edu.brown.cs.bubbles.burp.BurpHistory;
 import edu.brown.cs.bubbles.buda.BudaCursorManager;
+import edu.brown.cs.bubbles.burp.BurpHistory;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -382,7 +382,7 @@ void rebuild()
       root_node.addAllNames(dels);
 
       for (BassName ba : for_repository.getAllNames()) {
-	 if(dels.remove(ba)) continue;
+	 if (dels.remove(ba)) continue;
 	 adds.add(ba);
        }
       for (BassName ba : dels) {
@@ -390,10 +390,13 @@ void rebuild()
        }
       for (BassName ba : adds) {
 	 root_node.addNode(ba,true);
-      }
+       }
 
       max_childcount = root_node.getMaxCount();
 
+      // see if this works - doesn't
+      root_node.collapseSingletons();
+      
       UpdateEvent evt = new UpdateEvent(adds,dels);
       for (BassTreeUpdateListener ul : listener_set) {
 	 ul.handleTreeUpdated(evt);
@@ -517,6 +520,7 @@ private static class Branch extends BassTreeImpl {
 
    private String local_name;
    private String display_name;
+   private String orig_name;
    private String full_name;
    private Vector<BassTreeImpl> child_nodes;
    private int leaf_count;
@@ -526,6 +530,7 @@ private static class Branch extends BassTreeImpl {
       super(par);
       local_name = name;
       display_name = name;
+      orig_name = name;
       child_nodes = new Vector<BassTreeImpl>();
       int idx = name.indexOf("#");
       if (idx > 0) {
@@ -625,7 +630,7 @@ private static class Branch extends BassTreeImpl {
    @Override public String toString()			{ return display_name; }
    @Override public String getFullName()		{ return full_name; }
    Branch getBassParent()				{ return parent_node; }
-
+   
    void collapseSingletons() {
       if (parent_node != null) {
 	 Branch cn = this;
@@ -653,6 +658,7 @@ private static class Branch extends BassTreeImpl {
 	       cn.local_name = buf.toString() + "." + cn.local_name;
 	    else
 	       cn.local_name = buf.toString() + cn.local_name;
+	    cn.setDisplayName();
 	    cn.parent_node = parent_node;
 	    parent_node.child_nodes.set(idx,cn);
 	    cn.collapseSingletons();
@@ -664,6 +670,22 @@ private static class Branch extends BassTreeImpl {
        }
     }
 
+   private void setDisplayName() {
+      String dnm = local_name;
+      int idx2 = dnm.indexOf("#");
+      if (idx2 > 0) {
+	 dnm = dnm.substring(idx2+1);
+       }
+      int idx1 = dnm.indexOf(":");
+      if (idx1 >= 0) {
+	 String dnm1 = dnm.substring(0,idx1+1);
+	 if (local_name.equals(dnm1+orig_name)) display_name = local_name;
+	 else display_name = dnm1 + ".." + orig_name;
+      } 
+      else display_name = ".." + orig_name;
+      if (local_name.length() < 32) display_name = local_name;
+    }
+   
    Branch findNode(String txt,int priority) {
       int idx = 0;
       for (BassTreeImpl bt : child_nodes) {
@@ -684,6 +706,7 @@ private static class Branch extends BassTreeImpl {
     }
 
    BassTreeImpl addNode(BassName bn,boolean force) {
+      // handle splitting here
       String [] comps = bn.getNameComponents();
       int cidx = 0;
       Branch parent = null;
@@ -706,7 +729,7 @@ private static class Branch extends BassTreeImpl {
 		  break;
 		}
 	     }
-	    else if (bt.getLocalName().startsWith(comps[cidx])) {
+	    else if (subsetName(bt.getLocalName(),comps[cidx])) {
 	       String nm = comps[cidx];
 	       int fnd = -1;
 	       for (int i = cidx+1; i < comps.length; ++i) {
@@ -722,6 +745,22 @@ private static class Branch extends BassTreeImpl {
 		  cidx = fnd+1;
 		  break;
 		}
+	       // need to split the local name
+	       nm = comps[cidx];
+	       fnd = cidx;
+	       String nm1 = nm;
+	       for (int i = cidx+1; i < comps.length; ++i) {
+		  if (nm.endsWith(":")) nm += comps[i];
+		  else nm += "." + comps[i];
+		  if (!subsetName(bt.getLocalName(),nm)) {
+		     fnd = i;
+		     break;
+		  }
+		  nm1 += "." + comps[i];
+	        }
+	       splitNode((Branch) bt,nm1);
+	       np = (Branch) bt;
+	       cidx = fnd;
 	     }
 	  }
 	 if (np == null) break;
@@ -771,6 +810,39 @@ private static class Branch extends BassTreeImpl {
 
       return tl;
     }
+   
+   private boolean subsetName(String nm,String base) {
+      if (!nm.startsWith(base)) return false;
+      int ln = base.length();
+      if (nm.length() == ln) return true;
+      if (base.endsWith(":")) return true;
+      char ch = nm.charAt(ln);
+      if (ch == '.' || ch == ':') return true;
+      return false;
+    }
+   
+   private void splitNode(Branch nd,String nm) {
+      String nm1 = nd.getFullName();
+      int ln = nm.length();
+      nm1 = nm1.substring(ln+1);
+      nd.full_name = nm;
+      nd.local_name = nm.replace(":.", ":");
+      String orignm = nd.orig_name;
+      int oidx = nm.lastIndexOf(".");
+      nd.orig_name = nm.substring(oidx+1);
+      nd.setDisplayName();
+      if (nd.local_name.endsWith(":")) nd.setBranchType(BranchNodeType.PROJECT);
+      else nd.setBranchType(BranchNodeType.PACKAGE);
+      Branch b1 = new Branch(nm1,nd);
+      b1.orig_name = orignm;
+      
+      for (BassTreeImpl cn : nd.child_nodes) {
+	 b1.addChild(cn);
+	 cn.parent_node = b1;
+      }
+      nd.child_nodes.clear();
+      nd.addChild(b1);
+   }
 
    TreeLeaf insertChild(BassName nm) {
       String txt = nm.getNameWithParameters();

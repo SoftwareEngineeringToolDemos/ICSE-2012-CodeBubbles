@@ -25,8 +25,11 @@
 
 package edu.brown.cs.bubbles.bwiz;
 
-import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.JTextField;
+
+import java.awt.Color;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
 
 
@@ -36,11 +39,23 @@ class BwizFocusTextField extends JTextField
 
 /********************************************************************************/
 /*										*/
+/*	Private Storage 							*/
+/*										*/
+/********************************************************************************/
+
+private boolean 	showing_hint;
+private String		hint_text;
+
+
+
+/********************************************************************************/
+/*										*/
 /*	Static creation methods 						*/
 /*										*/
 /********************************************************************************/
 
 //Creates a BwizFocusTextField with the default styling and the parameter text as the tooltip
+
 static BwizFocusTextField getStyledField(String text)
 {
    return getStyledField(text, text);
@@ -49,13 +64,16 @@ static BwizFocusTextField getStyledField(String text)
 
 
 //Creates a BwizFocusTextField with the default styling and a tooltip as specified
+
 static BwizFocusTextField getStyledField(String text, String tooltip)
 {
-   BwizFocusTextField field = new BwizFocusTextField(text);
+   BwizFocusTextField field = new BwizFocusTextField("",text);
    field.setToolTipText(tooltip);
 
    return field;
 }
+
+
 
 
 
@@ -70,6 +88,9 @@ BwizFocusTextField()
 {
    super();
 
+   showing_hint = false;
+   hint_text = null;
+
    addListener();
 }
 
@@ -79,7 +100,28 @@ BwizFocusTextField(String text)
 {
    super(text);
 
+   showing_hint = false;
+   hint_text = null;
+
    addListener();
+}
+
+
+
+BwizFocusTextField(String text,String hint)
+{
+   this();
+
+   hint_text = hint;
+
+   if (text != null) {
+      setText(text);
+      showing_hint = false;
+    }
+   else {
+      setText(hint);
+      showing_hint = true;
+    }
 }
 
 
@@ -102,6 +144,23 @@ private void focusSelection()
 }
 
 
+
+/********************************************************************************/
+/*										*/
+/*	Hint methods								*/
+/*										*/
+/********************************************************************************/
+
+@Override public String getText()
+{
+   if (showing_hint) return "";
+   return super.getText();
+}
+
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Focus manager								*/
@@ -111,7 +170,24 @@ private void focusSelection()
 private class Focuser extends FocusAdapter {
 
    @Override public void focusGained(FocusEvent e) {
-      focusSelection();
+      if (hint_text != null) {
+	 if (showing_hint) {
+	    BwizFocusTextField.super.setText("");
+	    showing_hint = false;
+	  }
+	 setForeground(Color.BLACK);
+       }
+      else {
+	 focusSelection();
+       }
+    }
+
+   @Override public void focusLost(FocusEvent e) {
+      if (BwizFocusTextField.super.getText().isEmpty()) {
+	 BwizFocusTextField.super.setText(hint_text);
+	 showing_hint = true;
+	 setForeground(Color.GRAY);
+       }
     }
 
 }	// end of inner class Focuser

@@ -139,6 +139,8 @@ public BudaBubble createClassBubble(Component source,String proj,File f,String c
 {
    BconClassPanel pnl = new BconClassPanel(proj,f,cls,inner);
 
+   if (!pnl.isValid()) return null;
+
    return new BconBubble(pnl);
 }
 

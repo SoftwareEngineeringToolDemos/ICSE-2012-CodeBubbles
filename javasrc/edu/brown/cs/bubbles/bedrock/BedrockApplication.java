@@ -32,25 +32,22 @@ package edu.brown.cs.bubbles.bedrock;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.osgi.service.datalocation.Location;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.events.*;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.application.*;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.debug.ui.DebugUITools;
-import org.eclipse.core.resources.*;
+import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.*;
+import org.eclipse.ui.application.*;
 
-
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 
 public class BedrockApplication implements IApplication, BedrockConstants {

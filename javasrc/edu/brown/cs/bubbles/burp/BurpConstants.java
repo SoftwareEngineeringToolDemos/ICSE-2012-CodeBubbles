@@ -26,8 +26,8 @@
 package edu.brown.cs.bubbles.burp;
 
 
-import javax.swing.undo.UndoableEdit;
 import javax.swing.text.Document;
+import javax.swing.undo.UndoableEdit;
 
 
 /**

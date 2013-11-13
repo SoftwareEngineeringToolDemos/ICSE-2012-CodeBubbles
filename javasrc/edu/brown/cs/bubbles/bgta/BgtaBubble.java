@@ -22,25 +22,25 @@
 package edu.brown.cs.bubbles.bgta;
 
 
-import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.board.BoardFont;
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
+
 import edu.brown.cs.ivy.xml.IvyXml;
 
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import javax.swing.text.Document;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
-
-import org.w3c.dom.Element;
 
 
 

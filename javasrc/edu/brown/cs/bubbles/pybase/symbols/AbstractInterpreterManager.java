@@ -12,23 +12,12 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseConstants;
-import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybasePathNature;
-import edu.brown.cs.bubbles.pybase.PybasePreferences;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.python.pydev.core.Tuple;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 
 /**

@@ -21,13 +21,11 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import java.util.ArrayList;
-
-import edu.brown.cs.bubbles.bass.BassConstants;
-import edu.brown.cs.bubbles.bass.BassName;
-import edu.brown.cs.bubbles.bass.BassNameBase;
+import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
 import edu.brown.cs.bubbles.buda.BudaBubble;
+
+import java.util.ArrayList;
 
 
 class BeduManageCoursesRepository implements BassConstants.BassRepository {

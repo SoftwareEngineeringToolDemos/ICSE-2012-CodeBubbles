@@ -32,21 +32,21 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
-import javax.swing.filechooser.FileSystemView;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 
@@ -1120,19 +1120,19 @@ private class ExecutionAnnot implements BaleAnnotation {
       for_frame = frm;
       for_file = frm.getFile();
       boolean lcl = frm.isSystem();
-
+   
       for_document = BaleFactory.getFactory().getFileOverview(null,for_file,lcl);
       int off = for_document.findLineOffset(frm.getLineNumber());
       BoardProperties bp = BoardProperties.getProperties("Bddt");
       annot_color = bp.getColor(BDDT_EXECUTE_ANNOT_COLOR,new Color(0x4000ff00,true));
       except_color = bp.getColor(BDDT_EXECUTE_EXCEPT_COLOR,new Color(0x40ff0000,true));
-
+   
       execute_pos = null;
       try {
-	 execute_pos = for_document.createPosition(off);
+         execute_pos = for_document.createPosition(off);
        }
       catch (BadLocationException e) {
-	 BoardLog.logE("BDDT","Bad execution position",e);
+         BoardLog.logE("BDDT","Bad execution position",e);
        }
     }
 
@@ -1141,7 +1141,7 @@ private class ExecutionAnnot implements BaleAnnotation {
    @Override public int getDocumentOffset()	{ return execute_pos.getOffset(); }
    @Override public File getFile()		{ return for_file; }
 
-   @Override public Icon getIcon() {
+   @Override public Icon getIcon(BudaBubble b) {
       if (for_thread.getExceptionType() != null) return BoardImage.getIcon("execexcept");
       return BoardImage.getIcon("exec");
     }
@@ -1157,7 +1157,10 @@ private class ExecutionAnnot implements BaleAnnotation {
        }
     }
 
-   @Override public Color getLineColor() {
+   @Override public Color getLineColor(BudaBubble bbl) {
+      BumpStackFrame frm = bubble_manager.getFrameForBubble(bbl);
+      if (frm != null && frm != for_frame) return null;
+      
       if (for_thread.getExceptionType() != null) return except_color;
       return annot_color;
     }
@@ -1210,7 +1213,7 @@ private class FrameAnnot implements BaleAnnotation {
    @Override public int getDocumentOffset()	{ return execute_pos.getOffset(); }
    @Override public File getFile()		{ return for_file; }
 
-   @Override public Icon getIcon() {
+   @Override public Icon getIcon(BudaBubble bbl) {
       return BoardImage.getIcon("exec");
     }
 
@@ -1218,7 +1221,7 @@ private class FrameAnnot implements BaleAnnotation {
       return "Thread " + for_thread.getName() + " frame at " + for_frame.getLineNumber();
     }
 
-   @Override public Color getLineColor()			{ return annot_color; }
+   @Override public Color getLineColor(BudaBubble bbl)		{ return annot_color; }
    @Override public Color getBackgroundColor()			{ return null; }
 
    @Override public boolean getForceVisible(BudaBubble bb) {

@@ -10,17 +10,13 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.python.pydev.core.Tuple;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 public class SimpleJythonRunner extends SimpleRunner {

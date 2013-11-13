@@ -731,6 +731,7 @@ interface BumpProcess {
    String getId();
    boolean isRunning();
    void requestSwingData(int x,int y);
+   boolean isDummy();
 }	// end of inner interface BumpProcess
 
 

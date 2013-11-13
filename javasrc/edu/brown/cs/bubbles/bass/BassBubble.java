@@ -32,10 +32,8 @@ package edu.brown.cs.bubbles.bass;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.event.MouseEvent;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 
 
 class BassBubble extends BudaBubble implements BassConstants

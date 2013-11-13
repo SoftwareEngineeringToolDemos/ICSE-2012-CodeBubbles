@@ -31,15 +31,10 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseConstants;
-import edu.brown.cs.bubbles.pybase.PybaseFileSystem;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybaseParser;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.eclipse.jface.text.IDocument;
-import org.python.pydev.core.FullRepIterable;
-import org.python.pydev.core.ICompletionCache;
-import org.python.pydev.core.TupleN;
+import org.python.pydev.core.*;
 import org.python.pydev.core.structure.CompletionRecursionException;
 import org.python.pydev.parser.jython.SimpleNode;
 

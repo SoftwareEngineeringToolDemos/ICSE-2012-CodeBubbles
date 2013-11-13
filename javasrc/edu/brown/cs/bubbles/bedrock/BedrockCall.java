@@ -109,7 +109,9 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
    SetHandler sh = new SetHandler();
    try {
       se.search(p1,parts,scp,sh,null);
+      BedrockPlugin.logD("CALL: Source A: " + sh.getSize() + " " + p1);
       if (sh.isEmpty()) se.search(p1a,parts,scp,sh,null);
+      BedrockPlugin.logD("CALL: Source B: " + sh.getSize() + " " + p1a);
     }
    catch (CoreException e) {
       throw new BedrockException("Problem doing call search 1: " + e,e);
@@ -118,7 +120,9 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
    SetHandler th = new SetHandler();
    try {
       se.search(p2,parts,scp,th,null);
+      BedrockPlugin.logD("CALL: Target A: " + th.getSize() + " " + p2);
       if (th.isEmpty()) se.search(p2a,parts,scp,th,null);
+      BedrockPlugin.logD("CALL: Target B: " + th.getSize() + " " + p2a);
     }
    catch (CoreException e) {
       throw new BedrockException("Problem doing call search 2: " + e,e);
@@ -157,12 +161,13 @@ void getCallPath(String proj,String src,String tgt,boolean shortest,int lvls,Ivy
        }
       nm += ")";
 
-	
+
       SearchPattern p3;
       try {
 	 BedrockPlugin.logD("CALL: Search for: " + nm + " " + je.isConstructor());
 	 if (je.isConstructor()) {
-	    p3 = SearchPattern.createPattern(nm,IJavaSearchConstants.CONSTRUCTOR,
+	    String nm1 = fixConstructor(nm);
+	    p3 = SearchPattern.createPattern(nm1,IJavaSearchConstants.CONSTRUCTOR,
 						IJavaSearchConstants.REFERENCES,
 						SearchPattern.R_EXACT_MATCH);
 	  }
@@ -209,7 +214,6 @@ private String fixConstructor(String s)
    int idx1 = r.lastIndexOf(".");
    if (idx1 <= 0) return s;
    int idx2 = r.lastIndexOf(".",idx1-1);
-   if (idx2 <= 0) return s;
 
    String r1 = r.substring(idx2+1,idx1);
    String r2 = r.substring(idx1+1);
@@ -245,6 +249,7 @@ private static class SetHandler extends SearchRequestor {
        }
     }
 
+   int getSize()				{ return found_elements.size(); }
    boolean isEmpty()				{ return found_elements.isEmpty(); }
    Iterable<IMethod> getElements()		{ return found_elements; }
    boolean contains(IMethod im) 		{ return found_elements.contains(im); }

@@ -26,15 +26,15 @@ package edu.brown.cs.bubbles.bandaid;
 
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.*;
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.commons.CodeSizeEvaluator;
-import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.TraceMethodVisitor;
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.Textifier;
-
-import java.util.*;
-import java.lang.instrument.*;
-import java.security.ProtectionDomain;
-import java.lang.management.*;
+import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.TraceMethodVisitor;
 
 import java.io.*;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.security.ProtectionDomain;
+import java.util.*;
 
 
 public class BandaidAgentTracer extends BandaidAgent implements BandaidConstants,
@@ -219,7 +219,9 @@ private class ClassTransformer extends ClassVisitor {
    @Override public MethodVisitor visitMethod(int a,String nm,String d,String s,String [] exc) {
       MethodVisitor mv = super.visitMethod(a,nm,d,s,exc);
       String key = nm + d;
+      key = key.replace('$','/');
       TraceData td = method_data.get(key);
+      // System.err.println("TRACE CHECK " + key + " " + td);
       if (td == null && nm.equals("<init>") && class_name.contains("$") &&
 	     (class_access & Opcodes.ACC_STATIC) == 0) {
 	 int idx = d.indexOf(";");
@@ -286,6 +288,7 @@ private void loadTraceData(File f)
 	    if (mthd != null && cls != null && id > 0 && fgs != 0) {
 	       String mkey = mthd;
 	       if (args != null) mkey += args;
+	       mkey = mkey.replace('$','/');
 	       TraceData td = new TraceData(id,fgs,cargs);
 	       Map<String,TraceData> tm = trace_map.get(cls);
 	       // System.err.println("TRACER: Add class " + cls + " " + mkey);
@@ -293,6 +296,7 @@ private void loadTraceData(File f)
 		  tm = new HashMap<String,TraceData>();
 		  trace_map.put(cls,tm);
 		}
+	       // System.err.println("TRACE ENTER KEY " + mkey);
 	       tm.put(mkey,td);
 	     }
 	  }
@@ -427,10 +431,14 @@ private static class Tracer extends MethodVisitor {
    @Override public void visitEnd() {
       TraceMethodVisitor tmv = (TraceMethodVisitor) this.mv;
       List<?> tx = tmv.p.getText();
-      System.err.println("TRACE METHOD " + method_name);
+      // System.err.println("TRACE METHOD " + method_name);
       for (Object o : tx) {
 	 System.err.print(o.toString());
        }
+    }
+   
+   @Override public String toString() {
+      return "TRACE_METHOD " + method_name;
     }
 
 }	// end of inner class Tracer

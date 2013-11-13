@@ -37,14 +37,16 @@
 
 package edu.brown.cs.bubbles.bbook;
 
+import edu.brown.cs.bubbles.bnote.BnoteFactory;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bnote.*;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
+
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 

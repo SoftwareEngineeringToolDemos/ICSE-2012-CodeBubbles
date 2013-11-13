@@ -5,6 +5,7 @@
 <entry key="Buda.overview.stylized.viewport">true</entry>
 <entry key="Buda.mergeforreg">false</entry>
 <entry key="Buda.show.potential.task">true</entry>
+<entry key="Buda.show.tool.menu">true</entry>
 <entry key="Buda.search.multiple">false</entry>
 <entry key="Buda.shelf.by.date">false</entry>
 <entry key="Buda.border.width">1</entry>
@@ -25,5 +26,6 @@
 <entry key="Buda.help.border.color">ffa52a2a</entry>
 <entry key="Buda.help.delta.x">5</entry>
 <entry key="Buda.help.delta.y">5</entry>
+<entry key="Buda.ask.save.on.close">true</entry>
 </properties>
 

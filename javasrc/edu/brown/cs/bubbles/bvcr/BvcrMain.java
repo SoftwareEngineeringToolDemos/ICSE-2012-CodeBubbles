@@ -27,16 +27,18 @@ package edu.brown.cs.bubbles.bvcr;
 
 import edu.brown.cs.bubbles.board.BoardConstants;
 
-import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.exec.IvySetup;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
-import java.util.*;
 import java.io.File;
-import javax.crypto.*;
-import javax.crypto.spec.*;
-import java.security.*;
-import java.security.spec.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.KeySpec;
+import java.util.*;
 
 
 public class BvcrMain implements BvcrConstants

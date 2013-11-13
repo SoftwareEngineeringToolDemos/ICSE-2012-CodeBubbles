@@ -25,11 +25,10 @@
 
 package edu.brown.cs.bubbles.buda;
 
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaHelpClient;
 
-import edu.brown.cs.bubbles.board.*;
-
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingEventListenerList;
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
@@ -174,7 +173,7 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    Dimension d = t.getBestCursorSize(32,32);
    if(d.width == 32 && d.height == 32) palm_cursor= t.createCustomCursor(BoardImage.getImage("palm3"), new Point(16,16), "PALM_CURSOR");
    else palm_cursor = new Cursor(Cursor.MOVE_CURSOR);
-
+   
    BudaRoot.registerHelp(this,this);
 }
 
@@ -787,7 +786,7 @@ void fixupBubble(BudaBubble bb)
 
 
 
-private BudaBubbleGroup getBubbleGroup(BudaBubble bb)
+public BudaBubbleGroup getBubbleGroup(BudaBubble bb)
 {
    if (bb == null) return null;
 

@@ -20,10 +20,10 @@
 
 package edu.brown.cs.bubbles.bgta;
 
+import org.jivesoftware.smack.packet.Message;
+
 import javax.naming.OperationNotSupportedException;
 import javax.swing.event.DocumentEvent;
-
-import org.jivesoftware.smack.packet.Message;
 
 public class BgtaResourceSwitchingBubble extends BgtaBubble
 {

@@ -23,7 +23,8 @@
 package edu.brown.cs.bubbles.bedu.chat;
 
 
-import edu.brown.cs.bubbles.bgta.*;
+import edu.brown.cs.bubbles.bgta.BgtaBubble;
+import edu.brown.cs.bubbles.bgta.BgtaChat;
 
 
 class BeduTAChatBubble extends BgtaBubble {

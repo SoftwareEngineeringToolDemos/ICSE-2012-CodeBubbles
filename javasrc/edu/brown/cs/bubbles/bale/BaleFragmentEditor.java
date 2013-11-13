@@ -38,7 +38,7 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import edu.brown.cs.ivy.swing.SwingGridPanel;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -46,8 +46,8 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.*;
 import java.util.List;
@@ -538,7 +538,7 @@ void relocateFindBar()
       catch (BadLocationException e) { }
     }
 
-   if (ba.getLineColor() != null) repaint();
+   if (ba.getLineColor(bb) != null) repaint();
 }
 
 
@@ -659,7 +659,7 @@ private static class ProblemAnnot implements BaleAnnotation {
       return for_document.getDocumentOffset(error_pos.getOffset());
     }
 
-   @Override public Icon getIcon() {
+   @Override public Icon getIcon(BudaBubble bbl) {
       switch (for_problem.getErrorType()) {
 	 case FATAL :
 	 case ERROR :
@@ -676,7 +676,7 @@ private static class ProblemAnnot implements BaleAnnotation {
       return IvyXml.htmlSanitize(for_problem.getMessage());
     }
 
-   @Override public Color getLineColor()			{ return null; }
+   @Override public Color getLineColor(BudaBubble bbl)		{ return null; }
    @Override public Color getBackgroundColor()			{ return null; }
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
    @Override public int getPriority()				{ return 10; }
@@ -712,7 +712,7 @@ private static class BreakpointAnnot implements BaleAnnotation {
       return for_document.getDocumentOffset(break_pos.getOffset());
     }
 
-   @Override public Icon getIcon() {
+   @Override public Icon getIcon(BudaBubble bbl) {
       // TODO: different images if enabled/disabled/conditional/...
       boolean enable = for_breakpoint.getBoolProperty("ENABLED");
       boolean trace = for_breakpoint.getBoolProperty("TRACEPOINT");
@@ -733,7 +733,7 @@ private static class BreakpointAnnot implements BaleAnnotation {
       return id;
     }
 
-   @Override public Color getLineColor()			{ return null; }
+   @Override public Color getLineColor(BudaBubble bbl)		{ return null; }
    @Override public Color getBackgroundColor()			{ return null; }
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }
    @Override public int getPriority()				{ return 5; }

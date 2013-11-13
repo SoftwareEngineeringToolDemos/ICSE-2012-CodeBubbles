@@ -27,9 +27,7 @@
 package edu.brown.cs.bubbles.pybase.symbols;
 
 
-import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.eclipse.jface.text.IDocument;
 

@@ -32,10 +32,7 @@ import org.eclipse.jface.text.IDocument;
 import org.python.pydev.parser.jython.SimpleNode;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 

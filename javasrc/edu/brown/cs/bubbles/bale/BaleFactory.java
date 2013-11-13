@@ -37,19 +37,19 @@ import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
-import javax.swing.JPopupMenu;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.*;
-import java.util.List;
 
 
 /**
@@ -188,11 +188,11 @@ BaleFragmentEditor createMethodFragmentEditor(BumpLocation loc)
 /*										*/
 /********************************************************************************/
 
-BaleFragmentEditor createFieldFragmentEditor(String proj,String cls)
+BaleFragmentEditor createFieldFragmentEditor(String proj,File file,String cls)
 {
-   List<BumpLocation> locs = bump_client.findFields(proj,cls);
+   List<BumpLocation> locs = bump_client.findFields(proj,file,cls);
 
-   return getEditorFromLocations(locs);
+   return getEditorFromLocations(locs,BaleFragmentType.FIELDS,cls + ".<FIELDS>");
 }
 
 
@@ -220,9 +220,9 @@ BaleFragmentEditor createMainProgramFragmentEditor(String proj,String cls,File f
 
 
 
-BaleFragmentEditor createClassPrefixFragmentEditor(String proj,String cls)
+BaleFragmentEditor createClassPrefixFragmentEditor(String proj,File file,String cls)
 {
-   List<BumpLocation> locs = bump_client.findClassHeader(proj,cls);
+   List<BumpLocation> locs = bump_client.findClassPrefix(proj,file,cls);
 
    return getEditorFromLocations(locs,BaleFragmentType.HEADER,cls + ".<PREFIX>");
 }
@@ -367,7 +367,7 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 	 int idx = fnm.lastIndexOf(".");
 	 if (idx > 0) {
 	    String cnm = fnm.substring(0,idx);
-	    fed = createFieldFragmentEditor(bl.getSymbolProject(),cnm);
+	    fed = createFieldFragmentEditor(bl.getSymbolProject(),bl.getFile(),cnm);
 	  }
 	 break;
       case CLASS :
@@ -517,9 +517,9 @@ public BudaBubble createSystemMethodBubble(String proj,String fct,File src,int l
  *	Return the code bubble for all the fields of the given class.
  **/
 
-public BudaBubble createFieldsBubble(String proj,String cls)
+public BudaBubble createFieldsBubble(String proj,File file,String cls)
 {
-   BaleFragmentEditor bfe = createFieldFragmentEditor(proj,cls);
+   BaleFragmentEditor bfe = createFieldFragmentEditor(proj,file,cls);
    if (bfe == null) return null;
 
    return new BaleEditorBubble(bfe);
@@ -557,9 +557,9 @@ public BudaBubble createMainProgramBubble(String proj,String cls,File file)
  *	the header information (e.g. package, imports) as well as the class declaration.
  **/
 
-public BudaBubble createClassPrefixBubble(String proj,String cls)
+public BudaBubble createClassPrefixBubble(String proj,File file,String cls)
 {
-   BaleFragmentEditor bfe = createClassPrefixFragmentEditor(proj,cls);
+   BaleFragmentEditor bfe = createClassPrefixFragmentEditor(proj,file,cls);
    if (bfe == null) return null;
 
    return new BaleEditorBubble(bfe);
@@ -1029,7 +1029,7 @@ List<BaleRegion> getFragmentRegions(BaleDocument doc)
 	 locs = bump_client.findCompilationUnit(proj,fil,cnam);
 	 break;
       case FIELDS :
-	 locs = bump_client.findFields(proj,cnam);
+	 locs = bump_client.findFields(proj,fil,cnam);
 	 break;
       case STATICS :
 	 locs = bump_client.findClassInitializers(proj,cnam,fil,false);
@@ -1038,7 +1038,7 @@ List<BaleRegion> getFragmentRegions(BaleDocument doc)
 	 locs = bump_client.findClassInitializers(proj,cnam,fil,true);
 	 break;
       case HEADER :
-	 locs = bump_client.findClassHeader(proj,cnam);
+	 locs = bump_client.findClassPrefix(proj,fil,cnam);
 	 break;
       default :
 	 BoardLog.logE("BALE","Unknown fragment type : " + doc.getFragmentType());
@@ -1156,17 +1156,22 @@ private List<BaleRegion> getRegionsFromLocations(List<BumpLocation> locs)
 	    else if (havecmmt) ;
 	    else if (Character.isWhitespace(s.charAt(eoffset))) ;
 	    // TAKE PYTHON COMMENTS INTO ACCOUT (i.e. #)
-	    else if (lang == BoardLanguage.JAVA && s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
+	    else if (lang == BoardLanguage.JAVA && 
+                  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
 	       havecmmt = true;
 	     }
-	    else if (lang == BoardLanguage.PYTHON && s.charAt(eoffset) == '#') {
+	    else if (lang == BoardLanguage.REBUS && 
+                  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
 	       havecmmt = true;
-	    }
+	     }	    
+            else if (lang == BoardLanguage.PYTHON && s.charAt(eoffset) == '#') {
+	       havecmmt = true;
+             }
 	    else break;
 	    ++eoffset;
 	  }
        }
-
+      
       boolean haveeol;
       if (eoffset > s.length()) {
 	 haveeol = true;

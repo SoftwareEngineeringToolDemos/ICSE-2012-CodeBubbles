@@ -37,21 +37,24 @@
 
 package edu.brown.cs.bubbles.bbook;
 
+import edu.brown.cs.bubbles.bnote.BnoteFactory;
+import edu.brown.cs.bubbles.bnote.BnoteStore;
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bnote.*;
-import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 
-import java.awt.*;
-import java.util.*;
-import java.util.List;
-import java.io.File;
-import javax.swing.event.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+
+import java.awt.Rectangle;
+import java.io.File;
+import java.util.*;
 
 
 

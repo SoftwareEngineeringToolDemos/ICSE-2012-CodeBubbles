@@ -25,13 +25,15 @@
 package edu.brown.cs.bubbles.bvcr;
 
 
-import edu.brown.cs.ivy.exec.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.exec.IvyExec;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import java.io.*;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 
@@ -230,6 +232,33 @@ protected class XmlCommand extends StringCommand {
     }
 
 }	// end of inner class XmlMessage
+
+
+
+
+String getRelativePath(File f)
+{
+   File f1 = getRootDirectory();
+   // System.err.println("GET REL PATH " + f + " " + f1);
+
+   String s = f.getPath();
+   if (!f.isAbsolute() || f1 == null) return s;
+
+   String s1 = f1.getPath();
+   String s2 = s;
+   try {
+      s1 = f1.getCanonicalPath();
+      s2 = f.getCanonicalPath();
+    }
+   catch (IOException e) { }
+
+   // System.err.println("CHECK PATH " + s2 + " " + s1);
+   if (s2.startsWith(s1)) {
+      int ln = s1.length() + 1;
+      s = s2.substring(ln);
+    }
+   return s;
+}
 
 
 

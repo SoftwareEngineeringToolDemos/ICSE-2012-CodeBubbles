@@ -33,9 +33,7 @@ import edu.brown.cs.bubbles.pybase.PybaseSemanticVisitor;
 
 import org.python.pydev.core.structure.FastStack;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.decoratorsType;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.util.HashMap;
 import java.util.Map;

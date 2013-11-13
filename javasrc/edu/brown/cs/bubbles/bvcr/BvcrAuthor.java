@@ -24,9 +24,9 @@
 
 package edu.brown.cs.bubbles.bvcr;
 
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardProperties;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.*;
 
 

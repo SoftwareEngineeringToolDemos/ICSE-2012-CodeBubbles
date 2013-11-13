@@ -30,10 +30,10 @@
 
 package edu.brown.cs.bubbles.buss;
 
+import edu.brown.cs.bubbles.board.BoardMetrics;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BubbleViewCallback;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaWorkingSet;
-import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;

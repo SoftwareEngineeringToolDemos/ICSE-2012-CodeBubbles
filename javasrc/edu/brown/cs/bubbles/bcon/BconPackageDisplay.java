@@ -25,11 +25,12 @@
 
 package edu.brown.cs.bubbles.bcon;
 
-import edu.brown.cs.bubbles.banal.BanalConstants;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.banal.BanalConstants;
 import edu.brown.cs.bubbles.bass.BassFactory;
+import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
+import edu.brown.cs.bubbles.buda.*;
 
 import edu.brown.cs.ivy.petal.*;
 
@@ -824,7 +825,7 @@ private class Wheeler extends MouseAdapter {
 
    @Override public void mouseWheelMoved(MouseWheelEvent e) {
       int mods = e.getModifiersEx();
-      if ((mods & MouseEvent.CTRL_DOWN_MASK) == 0) return;
+      if ((mods & (MouseEvent.CTRL_DOWN_MASK|MouseEvent.META_DOWN_MASK)) == 0) return;
       int ct = e.getWheelRotation();
       zoom(ct);
       e.consume();

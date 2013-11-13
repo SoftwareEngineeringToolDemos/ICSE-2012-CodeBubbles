@@ -24,10 +24,10 @@
 
 package edu.brown.cs.bubbles.bvcr;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
+import java.io.File;
 import java.util.*;
-import java.io.*;
 
 
 class BvcrDifferenceSet implements BvcrConstants

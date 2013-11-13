@@ -37,14 +37,17 @@
 
 package edu.brown.cs.bubbles.bnote;
 
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
 
-import org.w3c.dom.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
+import org.w3c.dom.Element;
+
+import java.io.*;
 import java.sql.*;
 import java.util.*;
-import java.io.*;
 import java.util.Date;
 
 
@@ -739,7 +742,7 @@ private synchronized long getNextId()
 	 break;
        }
       catch (SQLException e) {
-	 BoardLog.logE("BNOTE","Problem getting more ids: ",e);
+	 BoardLog.logE("BNOTE","Problem getting more ids: " + e);
 	 resetDatabase();
 	 if (note_conn == null) break;
        }

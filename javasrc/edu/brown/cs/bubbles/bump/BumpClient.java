@@ -30,18 +30,19 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.ivy.exec.IvyExecQuery;
 import edu.brown.cs.ivy.file.IvyFormat;
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.xml.*;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
 import javax.swing.JOptionPane;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import java.net.InetAddress;
 
 
 /**
@@ -118,6 +119,9 @@ public synchronized static BumpClient getBump()
 	    break;
 	 case PYTHON :
 	    default_client = new BumpClientPython();
+	    break;
+	 case REBUS :
+	    default_client = new BumpClientRebus();
 	    break;
        }
       loadProperties();
@@ -272,6 +276,8 @@ private void createInitialProject()
       case JAVA :
 	 // Right now we ignore name/dir of project for eclipse
 	 sendMessage("CREATEPROJECT",null,null,null);
+	 return;
+      case REBUS :
 	 return;
       default:
 	 break;
@@ -838,6 +844,20 @@ public void compile(boolean clean,boolean full,boolean refresh)
 }
 
 
+public void build(String proj,boolean clean,boolean full,boolean refresh)
+{
+   waitForIDE();
+
+   String q = "REFRESH='" + Boolean.toString(refresh) + "'";
+   q += " CLEAN='" + Boolean.toString(clean) + "'";
+   q += " FULL='" + Boolean.toString(full) + "'";
+
+   problem_set.clearProblems(proj);
+
+   Element probs = getXmlReply("BUILDPROJECT",proj,q,null,BUILD_DELAY);
+   problem_set.handleErrors(proj,null,0,probs);
+}
+
 
 /**
  *	Open a project (if not already open) and return class information for project
@@ -1074,11 +1094,21 @@ protected String localFixupName(String nm)		{ return nm; }
  *	of the given class.
  **/
 
-public List<BumpLocation> findFields(String proj,String clsn)
+public List<BumpLocation> findFields(String proj,File file,String clsn)
 {
    waitForIDE();
 
-   return findFields(proj,clsn,false,true);
+   clsn = localFixupName(clsn);
+   clsn = IvyXml.xmlSanitize(clsn);
+
+   String flds = "CLASS='" + clsn + "' FIELDS='T'";
+   if (file != null) flds += " FILE='" + file.getAbsolutePath() + "'";
+
+   Element xml = getXmlReply("FINDREGIONS",proj,flds,null,0);
+
+   return getSearchResults(proj,xml,false);
+
+   // return findFields(proj,clsn,false,true);
 }
 
 
@@ -1116,7 +1146,7 @@ public List<BumpLocation> findFields(String proj,String pat,boolean refs,boolean
  *	with extends and implements and the end of class brace and any subsequent comments.
  **/
 
-public List<BumpLocation> findClassHeader(String proj,String clsn)
+public List<BumpLocation> findClassPrefix(String proj,File file,String clsn)
 {
    waitForIDE();
 
@@ -1124,6 +1154,8 @@ public List<BumpLocation> findClassHeader(String proj,String clsn)
    clsn = IvyXml.xmlSanitize(clsn);
 
    String flds = "CLASS='" + clsn + "' PREFIX='T'";
+   if (file != null) flds += " FILE='" + file.getAbsolutePath() + "'";
+
    Element xml = getXmlReply("FINDREGIONS",proj,flds,null,0);
 
    return getSearchResults(proj,xml,false);
@@ -1190,7 +1222,7 @@ public List<BumpLocation> findClassInitializers(String proj,String clsn,File fil
  *	Return information about headers in a file
 **/
 
-public List<BumpLocation> findClassHeader(String proj,String clsn,boolean pkg,boolean imp)
+public List<BumpLocation> findClassHeader(String proj,File file,String clsn,boolean pkg,boolean imp)
 {
    waitForIDE();
 
@@ -1201,6 +1233,7 @@ public List<BumpLocation> findClassHeader(String proj,String clsn,boolean pkg,bo
    if (imp) flds += " IMPORTS='T'";
    if (pkg) flds += " PACKAGE='T'";
    if (!imp && !pkg) flds += " TOPDECLS='T'";
+   if (file != null) flds += " FILE='" + file.getAbsolutePath() + "'";
 
    Element xml = getXmlReply("FINDREGIONS",proj,flds,null,0);
 
@@ -1736,7 +1769,7 @@ public String getFullyQualifiedName(String proj,File file,int start,int end)
    String sgn = IvyXml.getTextElement(cnt,"TYPE");
    if (sgn != null) {
       int idx0 = sgn.indexOf('(');
-      if (idx0 >= 0) {
+      if (idx0 >= 0) {							
 	 int idx1 = sgn.lastIndexOf(')');
 	 String ps = sgn.substring(idx0,idx1+1);
 	 String p = IvyFormat.formatTypeName(ps);
@@ -1826,17 +1859,19 @@ public boolean renameResource(String proj,File file,String newname)
 
 
 
-public boolean delete(String proj,String what,String path)
+public boolean delete(String proj,String what,String path,boolean rebuild)
 {
    waitForIDE();
 
-   saveAll();
+   if (rebuild) saveAll();
 
-   String rq = "WHAT='" + what + "' PATH='" + path + "'";
+   String rq = "WHAT='" + what + "'";
+   if (path != null) rq += " PATH='" + path + "'";
+   if (!rebuild) rq += " REBUILD='F'";
    Element xml = getXmlReply("DELETE",proj,rq,null,0);
    if (!IvyXml.isElement(xml,"RESULT")) return false;
 
-   compile(true,true,true);
+   if (rebuild) compile(true,true,true);
 
    return true;
 }
@@ -1853,9 +1888,9 @@ public Element format(String proj,File file,int spos,int epos)
    waitForIDE();
 
    String rq = "FILE='" + file.getPath() + "'";
-   String rgns = "<REGION START='" + spos + "' END='" + epos + "' />";
+   rq += " START='" + spos + "' END='" + epos + "'";
 
-   Element xml = getXmlReply("FORMATCODE",proj,rq,rgns,0);
+   Element xml = getXmlReply("FORMATCODE",proj,rq,null,0);
 
    if (!IvyXml.isElement(xml,"RESULT")) return null;
 
@@ -2419,6 +2454,9 @@ public BumpProcess startDebug(BumpLaunchConfig cfg,String id)
    Element lnch = IvyXml.getChild(xml,"LAUNCH");
 
    BumpProcess bp = run_manager.findProcess(lnch);
+   if (bp == null) {
+      bp  = run_manager.findDefaultProcess(lnch);
+    }
 
    if (id != null) run_manager.setProcessName(bp,id);
 
@@ -2435,6 +2473,8 @@ public boolean terminate(BumpLaunch bl)
 
 public boolean terminate(BumpProcess bp)
 {
+   if (bp.isDummy()) return terminate(bp.getLaunch());
+
    return debugAction(null,bp,null,null,"TERMINATE");
 }
 
@@ -2447,6 +2487,8 @@ public boolean suspend(BumpLaunch bl)
 
 public boolean suspend(BumpProcess bp)
 {
+   if (bp.isDummy()) return suspend(bp.getLaunch());
+
    return debugAction(null,bp,null,null,"SUSPEND");
 }
 
@@ -2465,6 +2507,8 @@ public boolean resume(BumpLaunch bl)
 
 public boolean resume(BumpProcess bp)
 {
+   if (bp.isDummy()) return resume(bp.getLaunch());
+
    return debugAction(null,bp,null,null,"RESUME");
 }
 
@@ -2526,6 +2570,7 @@ private boolean debugAction(BumpLaunch bl,BumpProcess bp,BumpThread bt,BumpStack
    if (bt != null && bp == null) bp = bt.getProcess();
    if (bp != null && bl == null) bl = bp.getLaunch();
    if (bl == null) return false;
+   if (bp != null && bp.isDummy()) bp = null;
 
    String q = "LAUNCH='" + bl.getId() + "'";
    if (bp != null) q += " PROCESS='" + bp.getId() + "'";
@@ -3049,7 +3094,7 @@ private void buildAllProjects(boolean clean,boolean full,boolean refresh)
    q += " CLEAN='" + Boolean.toString(clean) + "'";
    q += " FULL='" + Boolean.toString(full) + "'";
 
-   problem_set.clearProblems();
+   problem_set.clearProblems(null);
 
    for (Element p : IvyXml.children(e,"PROJECT")) {
       String pnm = IvyXml.getAttrString(p,"NAME");
@@ -3142,7 +3187,7 @@ protected class IDEHandler implements MintHandler {
 	    msg.replyTo("<OK/>");
 	  }
 	 else if (cmd.equals("NAMES") && name_collects != null) {
-	    // BoardLog.logD("BUMP","NAMES: " + IvyXml.convertXmlToString(e));
+//	    BoardLog.logD("BUMP","NAMES: " + IvyXml.convertXmlToString(e));
 	    String nid = IvyXml.getAttrString(e,"NID");
 	    NameCollector nc = name_collects.get(nid);
 	    if (nc != null) {
@@ -3153,7 +3198,7 @@ protected class IDEHandler implements MintHandler {
 	  }
 	 else if (cmd.equals("ENDNAMES")) {
 	    msg.replyTo("<OK/>");
-	    // BoardLog.logD("BUMP","ENDNAMES: " + IvyXml.convertXmlToString(e));
+//	    BoardLog.logD("BUMP","ENDNAMES: " + IvyXml.convertXmlToString(e));
 	    String nid = IvyXml.getAttrString(e,"NID");
 	    NameCollector nc = name_collects.remove(nid);
 	    if (nc != null) nc.noteDone();
@@ -3310,14 +3355,6 @@ private class CloseIDE extends Thread {
 
 
 
-/*
- *
- */
-
-void BoardSetup()
-{
-   // method body goes here
-}
 }	// end of class BumpClient
 
 

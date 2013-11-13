@@ -24,12 +24,13 @@
 
 package edu.brown.cs.bubbles.bale;
 
-import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
 import javax.swing.Action;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
+
 import java.awt.event.ActionEvent;
 
 

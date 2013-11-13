@@ -23,6 +23,9 @@
 <entry key="Beam.help.wiki">http://conifer.cs.brown.edu:8000/bubbles/wiki/OverView</entry>
 <entry key="Beam.help.tutorial">http://www.cs.brown.edu/people/spr/codebubbles/tutorial</entry>
 <entry key="Beam.help.mailto">spr@cs.brown.edu</entry>
+<entry key="Beam.show.save">true</entry>
+<entry key="Beam.show.build">true</entry>
+<entry key="Beam.show.refresh">true</entry>
 </properties>
 
 

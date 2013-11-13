@@ -23,13 +23,15 @@
 
 package edu.brown.cs.bubbles.beam;
 
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
 
 import javax.swing.*;
+
 import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
+import java.awt.event.ActionEvent;
+import java.net.URI;
 
 
 class BeamHelpPanel implements BeamConstants, BudaConstants {
@@ -289,15 +291,7 @@ private class HelpMailAction extends AbstractAction {
       String addr = bp.getProperty(HELP_MAIL_KEY,HELP_MAIL_URL);
       int idx = addr.indexOf("@");
       addr = addr.substring(0,idx) + "+bubbles" + addr.substring(idx);
-      String full = "mailto:" + addr + "?subject=Bubbles%20Question&body=Your%20Question%20Here";
-
-      try {
-	 URI u = new URI(full);
-	 Desktop.getDesktop().mail(u);
-       }
-      catch (Throwable t) {
-	 BoardLog.logE("BEAM","Problem sending help mail " + full,t);
-       }
+      BeamFactory.sendMail(addr,"Bubbles Question","Your Question Here");
     }
 
 }	// end of inner class HelpMailAction

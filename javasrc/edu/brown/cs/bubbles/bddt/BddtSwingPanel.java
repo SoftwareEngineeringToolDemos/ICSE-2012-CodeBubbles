@@ -25,21 +25,25 @@
 
 package edu.brown.cs.bubbles.bddt;
 
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.bass.BassFactory;
+import edu.brown.cs.bubbles.bass.BassName;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.bale.*;
-import edu.brown.cs.bubbles.bass.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.swing.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.tree.*;
-import java.awt.event.*;
+
 import java.awt.*;
-import java.io.*;
+import java.awt.event.*;
+import java.io.File;
 
 
 class BddtSwingPanel extends BudaBubble implements BddtConstants, BumpConstants, BudaConstants,

@@ -23,11 +23,7 @@
 
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
-import edu.brown.cs.bubbles.pybase.symbols.Found;
-import edu.brown.cs.bubbles.pybase.symbols.GenAndTok;
-import edu.brown.cs.bubbles.pybase.symbols.SourceToken;
-import edu.brown.cs.bubbles.pybase.symbols.NodeUtils;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
@@ -37,9 +33,8 @@ import org.python.pydev.parser.jython.SimpleNode;
 import org.python.pydev.parser.jython.ast.*;
 
 import java.io.File;
-import java.util.EnumMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 class PybaseUtil implements PybaseConstants
 {

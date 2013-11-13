@@ -29,34 +29,19 @@ package edu.brown.cs.bubbles.pybase.symbols;
 import edu.brown.cs.bubbles.pybase.PybaseConstants.ISemanticData;
 import edu.brown.cs.bubbles.pybase.PybaseConstants.LookForType;
 import edu.brown.cs.bubbles.pybase.PybaseConstants.TokenType;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybaseParser;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.eclipse.jface.text.IDocument;
-import org.python.pydev.core.FullRepIterable;
-import org.python.pydev.core.ICompletionRequest;
+import org.python.pydev.core.*;
 import org.python.pydev.core.Tuple;
-import org.python.pydev.core.Tuple3;
-import org.python.pydev.core.TupleN;
 import org.python.pydev.core.structure.CompletionRecursionException;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Import;
-import org.python.pydev.parser.jython.ast.ImportFrom;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.aliasType;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedMap;
 
 
 public abstract class AbstractASTManager {

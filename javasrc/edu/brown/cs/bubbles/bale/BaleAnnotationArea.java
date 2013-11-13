@@ -32,8 +32,8 @@ package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
-import edu.brown.cs.bubbles.buda.BudaCursorManager;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -222,7 +222,8 @@ void removeAll(BalePosition start,BalePosition end)
 	     }
 	  }
 	 for (BaleAnnotation an : lan) {
-	    Icon ic = an.getIcon();
+	    BudaBubble bbl = BudaRoot.findBudaBubble(this);
+	    Icon ic = an.getIcon(bbl);
 	    if (ic == null) continue;
 	    int wid = ic.getIconWidth();
 	    int ht = ic.getIconHeight();
@@ -232,7 +233,7 @@ void removeAll(BalePosition start,BalePosition end)
 	       ic.paintIcon(this,g,x,y);
 	     }
 	    catch (Throwable t) {
-	       BoardLog.logE("BALE","Problem drawing annotation " + an.getToolTip(),t);
+	       BoardLog.logE("BALE","Problem drawing annotation " + an.getToolTip() + " " + ic + " " + an.getClass(),t);
 	     }
 	  }
        }
@@ -248,6 +249,8 @@ void paintEditor(Graphics2D g)
 
    Map<Integer,Collection<BaleAnnotation>> amap = setupAnnotationMap();
 
+   BudaBubble bbl = BudaRoot.findBudaBubble(this);
+
    Rectangle r = g.getClipBounds();
 
    for (Map.Entry<Integer,Collection<BaleAnnotation>> ent : amap.entrySet()) {
@@ -259,7 +262,7 @@ void paintEditor(Graphics2D g)
       int y1 = ld.getBottom();
       Collection<BaleAnnotation> lan = ent.getValue();
       for (BaleAnnotation an : lan) {
-	 Color c = an.getLineColor();
+	 Color c = an.getLineColor(bbl);
 	 if (c != null) {
 	    g.setColor(c);
 	    g.fillRect(r.x,y0,r.width,y1-y0);
@@ -290,7 +293,8 @@ private Map<Integer,Collection<BaleAnnotation>> setupAnnotationMap()
 	    }
 	    lan.add(an);
 	 }
-      }
+       }
+      else if (annot_map == null) return new HashMap<Integer,Collection<BaleAnnotation>>();
       return annot_map;
    }
 }
@@ -330,16 +334,16 @@ void handleContextMenu(MouseEvent evt)
 
    JPopupMenu menu = new JPopupMenu();
 
-   if (lno > 0) {
+   if (lno > 0 && BALE_PROPERTIES.getBoolean("Bale.allow.breakpoints",true)) {
       menu.add("Toggle Breakpoint");
       menu.add("Toggle Tracepoint");
-   }
+    }
 
    if (lan != null) {
       for (BaleAnnotation ba : lan) {
 	 ba.addPopupButtons(((Component) for_editor),menu);
        }
-   }
+    }
 
    if (menu.getComponentCount() == 0) return;
 
@@ -481,7 +485,7 @@ private void recheckLines()
    if (chng) {
       synchronized (annot_set) {
 	 annot_map = null;
-       }
+	 }
       repaint();
     }
 }
@@ -647,7 +651,7 @@ private class Mouser extends MouseAdapter {
 
    @Override public void mouseClicked(MouseEvent evt) {
       int lno = findLine(evt);
-      if (lno < 0) return;
+      if (lno < 0 || !BALE_PROPERTIES.getBoolean("Bale.allow.breakpoints",true)) return;
       break_model.toggleBreakpoint(for_document.getProjectName(),for_document.getFile(),lno,BumpBreakMode.DEFAULT);
       BoardMetrics.noteCommand("BALE","ANNOT_TOGGLEBREAK");
     }

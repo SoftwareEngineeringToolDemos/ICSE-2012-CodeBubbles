@@ -26,14 +26,15 @@ package edu.brown.cs.bubbles.bandaid;
 
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.*;
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.commons.CodeSizeEvaluator;
-import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.TraceMethodVisitor;
 import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.Textifier;
+import edu.brown.cs.bubbles.bandaid.org.objectweb.asm.util.TraceMethodVisitor;
 
-import java.util.*;
-import java.lang.instrument.*;
-import java.security.ProtectionDomain;
+import javax.swing.SwingUtilities;
+
 import java.awt.*;
-import javax.swing.*;
+import java.lang.instrument.ClassFileTransformer;
+import java.security.ProtectionDomain;
+import java.util.*;
 import java.util.List;
 
 
@@ -153,6 +154,7 @@ private class Correlator {
 	 SwingUtilities.convertPointFromScreen(pt,w);
 	 if (pt.x < 0 || pt.x >= w.getWidth()) continue;
 	 if (pt.y < 0 || pt.y >= w.getHeight()) continue;
+	 if (w.getGraphics() == null) continue;
 	 best = w;
 	 bestpt = pt;
        }

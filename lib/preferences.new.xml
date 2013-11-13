@@ -583,6 +583,16 @@
 	 <EXAMPLE TEXT="Default: .xpath"/>
       </OPT>
    </PACKAGE>
+
+   <PACKAGE NAME="Bwiz">
+      <OPT NAME="Bwiz.use.method.dialog" DESCRIPTION="Use Detailed Method Dialog" TYPE="BOOLEAN">
+	 <TAB NAME="Text Editor Options"/>
+	 <TAB NAME="Popular Options"/>
+	 <TAB NAME="Search Options"/>
+      </OPT>
+   </PACKAGE>
+
+
 </OPTIONS>
 
 

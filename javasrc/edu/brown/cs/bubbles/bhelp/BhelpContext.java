@@ -10,13 +10,14 @@
 
 package edu.brown.cs.bubbles.bhelp;
 
+import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.SwingUtilities;
 
-import java.util.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 class BhelpContext implements BhelpConstants

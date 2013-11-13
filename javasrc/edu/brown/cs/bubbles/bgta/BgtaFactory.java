@@ -36,10 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Vector;
-import java.util.Iterator;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * This class sets up the chat interface and provides calls to define chat

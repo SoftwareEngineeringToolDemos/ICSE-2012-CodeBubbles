@@ -24,41 +24,21 @@
 
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.bubbles.pybase.symbols.AbstractToken;
-import edu.brown.cs.bubbles.pybase.symbols.Found;
-import edu.brown.cs.bubbles.pybase.symbols.GenAndTok;
-import edu.brown.cs.bubbles.pybase.symbols.SourceToken;
-import edu.brown.cs.bubbles.pybase.symbols.NodeUtils;
+import edu.brown.cs.bubbles.pybase.symbols.*;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.parser.jython.SimpleNode;
 import org.python.pydev.parser.jython.Visitor;
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.Import;
-import org.python.pydev.parser.jython.ast.ImportFrom;
-import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.Attribute;
-import org.python.pydev.parser.jython.ast.expr_contextType;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.util.regex.*;
 
 
 class PybaseSearch implements PybaseConstants
@@ -388,7 +368,8 @@ void getFullyQualifiedName(String proj,String file,int start,int end,
 
 void getTextRegions(String proj,String bid,String file,String cls,
       boolean prefix,boolean statics,boolean compunit,boolean imports,
-      boolean pkg,boolean topdecls,boolean main,boolean all,IvyXmlWriter xw)
+      boolean pkg,boolean topdecls,boolean main,boolean fields,
+      boolean all,IvyXmlWriter xw)
 	throws PybaseException
 {
    PybaseProject pp = pybase_main.getProjectManager().findProject(proj);
@@ -594,7 +575,7 @@ private class ModuleClassVisitor extends Visitor {
 /*										*/
 /********************************************************************************/
 
-void handleTextSearch(String proj,int fgs,String pat,String files,int maxresult,IvyXmlWriter xw)
+void handleTextSearch(String proj,int fgs,String pat,int maxresult,IvyXmlWriter xw)
 	throws PybaseException
 {
    Pattern pp = null;
@@ -606,9 +587,6 @@ void handleTextSearch(String proj,int fgs,String pat,String files,int maxresult,
     }
 
    Pattern filepat = null;
-   if (files != null) {
-      filepat = Pattern.compile(pat);
-    }
 
    List<ISemanticData> sds = pybase_main.getProjectManager().getAllSemanticData(proj);
    int rct = 0;

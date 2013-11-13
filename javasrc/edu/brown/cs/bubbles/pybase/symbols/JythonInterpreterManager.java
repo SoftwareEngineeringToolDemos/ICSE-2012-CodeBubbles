@@ -12,9 +12,7 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseFileSystem;
-import edu.brown.cs.bubbles.pybase.PybaseInterpreter;
-import edu.brown.cs.bubbles.pybase.PybasePreferences;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.python.pydev.core.Tuple;
 

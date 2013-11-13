@@ -30,26 +30,13 @@ import edu.brown.cs.ivy.exec.IvyExec;
 import edu.brown.cs.ivy.xml.IvyXml;
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.jython.ast.Import;
-import org.python.pydev.parser.jython.ast.stmtType;
+import org.python.pydev.parser.jython.ast.*;
 import org.w3c.dom.Element;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.io.*;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -258,7 +245,7 @@ void handleFindPackage(String proj,String name,IvyXmlWriter xw)
 	throws PybaseException
 {
    PybaseProject pp = findProject(proj);
-   if (pp == null) throw new PybaseException("Can't find project " + name);
+   if (pp == null) throw new PybaseException("Can't find project " + proj);
    pp.findPackage(name,xw);
 }
 
@@ -438,7 +425,7 @@ private class NameThread extends Thread {
    private List<PybaseProject> project_names;
 
    NameThread(String bid,String nid) {
-      super("Bedrock_GetNames");
+      super("Pybase_GetNames");
       bump_id = bid;
       name_id = nid;
       ifile_project = new HashMap<IFileData,PybaseProject>();

@@ -34,10 +34,10 @@ import edu.brown.cs.bubbles.bump.BumpConstants;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Document;
-import javax.swing.undo.UndoableEdit;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.undo.UndoableEdit;
 
 import java.awt.event.ActionEvent;
 import java.io.File;

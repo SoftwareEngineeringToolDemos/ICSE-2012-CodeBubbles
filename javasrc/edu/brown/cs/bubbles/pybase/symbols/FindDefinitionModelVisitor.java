@@ -33,28 +33,12 @@ package edu.brown.cs.bubbles.pybase.symbols;
 
 import org.python.pydev.core.structure.FastStack;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.Call;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.Global;
-import org.python.pydev.parser.jython.ast.ImportFrom;
-import org.python.pydev.parser.jython.ast.Module;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.NameTokType;
-import org.python.pydev.parser.jython.ast.Subscript;
-import org.python.pydev.parser.jython.ast.Tuple;
-import org.python.pydev.parser.jython.ast.aliasType;
-import org.python.pydev.parser.jython.ast.exprType;
+import org.python.pydev.parser.jython.ast.*;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 
 /**

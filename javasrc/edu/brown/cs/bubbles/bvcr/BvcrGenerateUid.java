@@ -25,8 +25,8 @@
 package edu.brown.cs.bubbles.bvcr;
 
 
-import java.util.UUID;
 import java.io.*;
+import java.util.UUID;
 
 
 public class BvcrGenerateUid implements BvcrConstants

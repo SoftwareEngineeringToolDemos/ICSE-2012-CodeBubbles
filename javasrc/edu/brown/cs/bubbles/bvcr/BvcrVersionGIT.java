@@ -24,13 +24,14 @@
 
 package edu.brown.cs.bubbles.bvcr;
 
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardProperties;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
-import java.text.*;
 
 
 
@@ -73,7 +74,7 @@ BvcrVersionGIT(BvcrProject bp)
 
    if (current_version == null) {
       current_version = "HEAD";
-      String cmd = git_command + " branch -all";
+      String cmd = git_command + " branch --all";
       StringCommand sc = new StringCommand(cmd);
       String vers = sc.getContent();
       StringTokenizer tok = new StringTokenizer(vers," \r\n\t");
@@ -230,7 +231,7 @@ void findHistory(File f,IvyXmlWriter xw)
 	 String alts = ldata[6];
 	 String msg = ldata[7];
 	 String bdy = "";
-	
+
 	 if (email != null) {
 	    if (auth != null) auth += " (" + email + ")";
 	    else auth = email;

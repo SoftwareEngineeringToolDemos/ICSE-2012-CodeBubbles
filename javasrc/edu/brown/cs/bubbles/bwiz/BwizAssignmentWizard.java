@@ -23,16 +23,21 @@
 
 package edu.brown.cs.bubbles.bwiz;
 
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bedu.*;
+import edu.brown.cs.bubbles.bedu.BeduConstants;
+import edu.brown.cs.bubbles.bedu.BeduFactory;
+import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.board.BoardSetup;
 
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 

@@ -21,13 +21,15 @@
 
 package edu.brown.cs.bubbles.bgta;
 
-import edu.brown.cs.bubbles.bgta.BgtaConstants.*;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.BgtaRoster;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.BgtaRosterEntry;
+import edu.brown.cs.bubbles.bgta.BgtaConstants.ChatServer;
 import edu.brown.cs.bubbles.board.BoardImage;
 import edu.brown.cs.bubbles.board.BoardLog;
 
 import org.jivesoftware.smack.*;
-import org.jivesoftware.smack.packet.*;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
+import org.jivesoftware.smack.packet.*;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;

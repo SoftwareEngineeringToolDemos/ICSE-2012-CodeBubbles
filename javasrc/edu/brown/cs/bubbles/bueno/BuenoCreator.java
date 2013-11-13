@@ -427,7 +427,7 @@ protected void setupMarquisComment(StringBuffer buf,BuenoProperties props)
 
    StringReader sr = new StringReader(pbuf.toString());
    try {
-      expand(sr,props,null,buf);
+      expand(sr,props,buf);
     }
    catch (IOException e) { }
 }
@@ -445,7 +445,7 @@ protected void setupBlockComment(StringBuffer buf,BuenoProperties props)
 
    StringReader sr = new StringReader(pbuf.toString());
    try {
-      expand(sr,props,null,buf);
+      expand(sr,props,buf);
     }
    catch (IOException e) { }
 }
@@ -531,7 +531,7 @@ protected void methodText(StringBuffer buf,BuenoProperties props)
 
    StringReader sr = new StringReader(pbuf.toString());
    try {
-      expand(sr,props,null,buf);
+      expand(sr,props,buf);
     }
    catch (IOException e) { }
 }
@@ -769,10 +769,10 @@ static Reader findTemplate(String id,BuenoProperties props)
 /*										*/
 /********************************************************************************/
 
-static void expand(Reader from,BuenoProperties props,String eol,StringBuffer buf) throws IOException
+static void expand(Reader from,BuenoProperties props,StringBuffer buf) throws IOException
 {
    BufferedReader br = new BufferedReader(from);
-   if (eol == null) eol = System.getProperty("line.separator");
+   String eol = "\n";
 
    for ( ; ; ) {
       String ln = br.readLine();

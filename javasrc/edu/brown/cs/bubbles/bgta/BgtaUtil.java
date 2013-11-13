@@ -21,22 +21,15 @@
 package edu.brown.cs.bubbles.bgta;
 
 
-import java.util.Collection;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.packet.Presence;
-
-import edu.brown.cs.bubbles.bass.BassConstants;
-import edu.brown.cs.bubbles.bass.BassFactory;
-import edu.brown.cs.bubbles.bass.BassName;
+import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bgta.BgtaConstants.ChatServer;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaConstants;
+
+import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.Presence;
+
+import java.util.*;
 
 public class BgtaUtil implements BassConstants{
 

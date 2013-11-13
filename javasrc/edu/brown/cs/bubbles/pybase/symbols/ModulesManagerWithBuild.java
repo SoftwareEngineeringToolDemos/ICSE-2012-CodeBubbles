@@ -26,9 +26,7 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseFileSystem;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
-import edu.brown.cs.bubbles.pybase.PybaseProject;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.eclipse.jface.text.IDocument;
 import org.python.pydev.core.DeltaSaver;
@@ -36,11 +34,7 @@ import org.python.pydev.core.IDeltaProcessor;
 import org.python.pydev.core.callbacks.ICallback;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public abstract class ModulesManagerWithBuild extends ModulesManager implements

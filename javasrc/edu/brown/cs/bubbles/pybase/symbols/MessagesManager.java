@@ -31,10 +31,7 @@
 package edu.brown.cs.bubbles.pybase.symbols;
 
 
-import edu.brown.cs.bubbles.pybase.PybaseConstants;
-import edu.brown.cs.bubbles.pybase.PybaseMessage;
-import edu.brown.cs.bubbles.pybase.PybasePreferences;
-import edu.brown.cs.bubbles.pybase.PybaseScopeItems;
+import edu.brown.cs.bubbles.pybase.*;
 import edu.brown.cs.bubbles.pybase.symbols.AbstractVisitor.ImportPartSourceToken;
 
 import org.eclipse.jface.text.IDocument;
@@ -42,20 +39,10 @@ import org.eclipse.jface.text.IRegion;
 import org.python.pydev.core.FullRepIterable;
 import org.python.pydev.core.Tuple;
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Expr;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.Import;
-import org.python.pydev.parser.jython.ast.ImportFrom;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.Pass;
-import org.python.pydev.parser.jython.ast.Str;
-import org.python.pydev.parser.jython.ast.stmtType;
+import org.python.pydev.parser.jython.ast.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 

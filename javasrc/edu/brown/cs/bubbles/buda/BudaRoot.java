@@ -30,8 +30,9 @@ import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.ivy.swing.*;
 import edu.brown.cs.ivy.xml.IvyXml;
 
+
 // import com.itextpdf.text.pdf.*;
-import gnu.jpdf.*;
+import gnu.jpdf.PDFJob;
 
 import org.w3c.dom.Element;
 
@@ -41,8 +42,8 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.awt.print.*;
-import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -85,6 +86,7 @@ private BudaShareManager	share_manager;
 private BudaDemonstration	demo_thread;
 private String			demo_text;
 private Point			demo_point;
+private boolean 		view_setup;
 
 private static MouseEvent	last_mouse;
 
@@ -229,6 +231,8 @@ public BudaRoot(Element xml)
 
 private void initialize(Element e)
 {
+   view_setup = false;
+
    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
    addWindowListener(new WindowCloser());
 
@@ -326,7 +330,10 @@ private void setupSwing()
 
 public void restoreConfiguration(Element xml)
 {
-   if (xml == null) return;
+   if (xml == null) {
+      doneSetup();
+      return;
+    }
 
    SwingUtilities.invokeLater(new RestoreSession(xml));
 }
@@ -359,6 +366,7 @@ BudaBubbleArea getBubbleArea()			{ return bubble_area; }
 
 BudaShareManager getShareManager()		{ return share_manager; }
 
+public BudaTopBar getTopBar()			{ return bubble_topbar; }
 
 
 /**
@@ -2000,6 +2008,38 @@ private void setupSession(Element config)
 
 
 
+private void setupView(Element config)
+{
+   Element vacfg = IvyXml.getChild(config,"VIEWAREA");
+   Element viewcfg = IvyXml.getChild(vacfg,"VIEW");
+   int px = (int) IvyXml.getAttrDouble(viewcfg,"X",BUBBLE_DISPLAY_START_X);
+   int py = (int) IvyXml.getAttrDouble(viewcfg,"Y",BUBBLE_DISPLAY_START_Y);
+
+   setViewport(px,py);
+}
+
+
+public synchronized void waitForSetup()
+{
+   while (!view_setup) {
+      try {
+	 wait(1000);
+       }
+      catch (InterruptedException e) { }
+    }
+}
+
+
+private synchronized void doneSetup()
+{
+   view_setup = true;
+   if (BUDA_PROPERTIES.getBoolean("Buda.show.tool.menu")) {
+      Action act = BudaToolbar.getMenuBarAction(this);
+      act.actionPerformed(null);
+    }
+   notifyAll();
+}
+
 
 private class RestoreSession implements Runnable {
 
@@ -2012,6 +2052,7 @@ private class RestoreSession implements Runnable {
    @Override public void run() {
       setupSession(session_config);
       setupView(session_config);
+      doneSetup();
     }
 
 }	// end of inner class RestoreSession
@@ -2430,14 +2471,17 @@ void handleCloseRequest()
       pnl.beginLayout();
       pnl.addBannerLabel("Exit from Code Bubbles");
       pnl.addSeparator();
-      JCheckBox savebox = pnl.addBoolean("Save Any Changes",save,null);
+      JCheckBox savebox = null;
+      if (buda_properties.getBoolean("Buda.ask.save.on.close",true)) {
+         savebox = pnl.addBoolean("Save Any Changes",save,null);
+       }
       JCheckBox askbox = pnl.addBoolean("Always exit without prompt",false,null);
       int sts = JOptionPane.showConfirmDialog(this,pnl,"Close Confirmation",
 						 JOptionPane.OK_CANCEL_OPTION,
 						 JOptionPane.QUESTION_MESSAGE);
       if (sts == JOptionPane.CANCEL_OPTION) return;
-      if (savebox.isSelected() != save || askbox.isSelected()) {
-	 save = savebox.isSelected();
+      if ((savebox != null && savebox.isSelected() != save) || askbox.isSelected()) {
+	 if (savebox != null) save = savebox.isSelected();
 	 buda_properties.setProperty("Buda.close.save",Boolean.toString(save));
 	 buda_properties.setProperty("Buda.close.ask",Boolean.toString(!askbox.isSelected()));
 	 try {
@@ -2483,18 +2527,6 @@ private class WindowCloser extends WindowAdapter {
     }
 
    return g2;
-}
-
-
-
-private void setupView(Element config)
-{
-   Element vacfg = IvyXml.getChild(config,"VIEWAREA");
-   Element viewcfg = IvyXml.getChild(vacfg,"VIEW");
-   int px = (int) IvyXml.getAttrDouble(viewcfg,"X",BUBBLE_DISPLAY_START_X);
-   int py = (int) IvyXml.getAttrDouble(viewcfg,"Y",BUBBLE_DISPLAY_START_Y);
-
-   setViewport(px,py);
 }
 
 

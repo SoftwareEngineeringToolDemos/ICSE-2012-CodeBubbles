@@ -227,11 +227,11 @@ private class PortAnnotation implements BaleAnnotation {
       return for_editor.getBaleDocument().getDocumentOffset(file_position.getOffset());
     }
 
-   @Override public Icon getIcon()				{ return null; }
+   @Override public Icon getIcon(BudaBubble b)			{ return null; }
 
    @Override public String getToolTip() 			{ return port_description; }
 
-   @Override public Color getLineColor()			{ return BALE_PORT_ANNOT_COLOR; }
+   @Override public Color getLineColor(BudaBubble b)		{ return BALE_PORT_ANNOT_COLOR; }
 
    @Override public Color getBackgroundColor()			{ return null; }
 

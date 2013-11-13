@@ -141,7 +141,6 @@ enum BedrockLogLevel {
 
 
 
-
 }	// end of interface BedrockConstants
 
 

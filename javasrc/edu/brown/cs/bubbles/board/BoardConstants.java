@@ -69,7 +69,8 @@ enum BoardHighlightStyle {
 
 enum BoardLanguage {
    JAVA,
-   PYTHON
+   PYTHON,
+   REBUS
 }
 
 
@@ -87,6 +88,7 @@ enum BoardLanguage {
 String BOARD_PROP_BASE = System.getProperty("user.home") + File.separator + ".bubbles";
 String BOARD_SUDS_PROP_BASE = System.getProperty("user.home") + File.separator + ".suds";
 String BOARD_PYTHON_PROP_BASE = System.getProperty("user.home") + File.separator + ".pybles";
+String BOARD_REBUS_PROP_BASE = System.getProperty("user.home") + File.separator + ".rebus";
 
 
 
@@ -377,7 +379,9 @@ String [] BOARD_RESOURCE_PROPS =  new String [] {
    "Board.x86.props", "Bddt.props", "Bcon.props", "Bueno.props", "Bvcr.props",
    "Batt.props", "Bedu.props", "Bnote.props", "Bbook.props", "Buda.python.props",
    "Bandaid.props","Barr.props","Bass.props","Bdoc.java.props","Bdoc.python.props",
-   "Bhelp.props", "Bwiz.props"
+   "Bhelp.props", "Bwiz.props", "Rebus.props",
+   "Bema.rebus.props","Buda.rebus.props", "Bass.rebus.props", "Bale.rebus.props",
+   "Beam.rebus.props",
 };
 
 
@@ -418,6 +422,8 @@ String [] BOARD_LIBRARY_EXTRAS = new String [] {
    "mouseusage.html",
    "cofoja.jar",
    "pydev.jar",
+   "jsoup.jar",
+   "asm4.jar",
    "helpdemos.xml",
    "helpdoc.xml",
 };
@@ -436,6 +442,7 @@ String [] BOARD_LIBRARY_URLS = new String [] {
    "freetts/freetts-jsapi10.jar",
    "freetts/mbrola.jar",
    "freetts/voices.txt",
+   "words",
 };
 
 String [] BOARD_CLASSPATH_FILES = new String [] {
@@ -572,7 +579,7 @@ String BOARD_METRIC_PROP_USERID = "edu.brown.cs.bubbles.metrics.UserId";
  *	Property to auto generate user id
  **/
 String BOARD_METRIC_PROP_AUTOID = "edu.brown.cs.bubbles.metrics.autoid";
-	
+
 /**
  *	Property indicating we can save screen dumps for metrics
  **/

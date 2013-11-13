@@ -37,8 +37,10 @@ import edu.brown.cs.ivy.xml.IvyXml;
 import org.w3c.dom.Element;
 
 import javax.swing.text.BadLocationException;
+
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -85,7 +87,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	    if (name != null) bb = bf.createMethodBubble(proj,name);
 	    break;
 	 case FIELDS :
-	    bb = bf.createFieldsBubble(proj,head);
+	    bb = bf.createFieldsBubble(proj,file,head);
 	    break;
 	 case STATICS :
 	    bb = bf.createStaticsBubble(proj,head,file);
@@ -94,7 +96,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	    bb = bf.createMainProgramBubble(proj,head,file);
 	    break;
 	 case HEADER :
-	    bb = bf.createClassPrefixBubble(proj,head);
+	    bb = bf.createClassPrefixBubble(proj,file,head);
 	    break;
 	 case CLASS :
 	    bb = bf.createClassBubble(proj,name);

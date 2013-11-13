@@ -24,23 +24,27 @@
 
 package edu.brown.cs.bubbles.bvcr;
 
-import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bale.*;
 import edu.brown.cs.bubbles.bale.BaleConstants.BaleAnnotation;
 import edu.brown.cs.bubbles.bale.BaleConstants.BaleFileOverview;
+import edu.brown.cs.bubbles.bale.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
 import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 
-import java.util.*;
-import java.io.*;
-import javax.swing.text.*;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
+
 import java.awt.Color;
 import java.awt.Component;
+import java.io.File;
+import java.util.*;
 
 
 class BvcrFileManager implements BvcrConstants, BumpConstants.BumpChangeHandler
@@ -280,11 +284,11 @@ private class BvcrAnnotation implements BaleAnnotation {
       file_pos = bfo.createPosition(off);
     }
 
-   @Override public File getFile()		{ return for_file; }
-   @Override public int getDocumentOffset()	{ return file_pos.getOffset(); }
-   @Override public Icon getIcon()		{ return null; }
-   @Override public Color getLineColor()	{ return null; }
-   @Override public int getPriority()		{ return 5; }
+   @Override public File getFile()		        { return for_file; }
+   @Override public int getDocumentOffset()	        { return file_pos.getOffset(); }
+   @Override public Icon getIcon(BudaBubble b)          { return null; }
+   @Override public Color getLineColor(BudaBubble b)	{ return null; }
+   @Override public int getPriority()		        { return 5; }
 
 
    @Override public boolean getForceVisible(BudaBubble bb)	{ return false; }

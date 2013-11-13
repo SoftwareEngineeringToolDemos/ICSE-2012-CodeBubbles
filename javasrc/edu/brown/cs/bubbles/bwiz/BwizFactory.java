@@ -25,13 +25,14 @@
 
 package edu.brown.cs.bubbles.bwiz;
 
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bueno.*;
 import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoBubbleCreator;
 import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoMethodCreatorInstance;
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.bueno.*;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Point;
 
 
 
@@ -108,10 +109,7 @@ private void setupWizards(BudaRoot br)
 
    br.addPanel(pnl,false);
 
-   BoardProperties bp = BoardProperties.getProperties("Bwiz");
-   if (bp.getBoolean("Bwiz.use.method.dialog")) {
-      BuenoFactory.getFactory().setMethodDialog(new MethodCreator());
-    }
+   BuenoFactory.getFactory().setMethodDialog(new MethodCreator());
 }
 
 
@@ -152,24 +150,28 @@ private class WizardBubble extends BudaBubble
 private class MethodCreator implements BuenoMethodCreatorInstance {
 
 
-   @Override public void showMethodDialogBubble(BudaBubble src,Point loc,
-						   BuenoProperties known,
-						   BuenoLocation insert,
-						   String lbl,
-						   BuenoBubbleCreator newer) {
-      BwizNewWizard bcwiz = new BwizNewWizard(CreateType.METHOD,
-						 insert.getClassName(),
-						 insert.getProject(),
-						 insert.getPackage());
+   @Override public boolean showMethodDialogBubble(BudaBubble src,Point loc,
+        					      BuenoProperties known,
+        					      BuenoLocation insert,
+        					      String lbl,
+        					      BuenoBubbleCreator newer) {
+      BoardProperties bp = BoardProperties.getProperties("Bwiz");
+      if (!bp.getBoolean("Bwiz.use.method.dialog")) return false;
+   
+      BwizNewWizard bcwiz = new BwizNewMethodWizard(insert.getClassName(),
+            insert.getProject(),
+            insert.getPackage());
       bcwiz.setInsertLocation(insert);
       bcwiz.setBubbleCreator(newer);
       WizardBubble bb = new WizardBubble(bcwiz,bcwiz.getFocus());
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);
       if (bba == null) bba = buda_root.getCurrentBubbleArea();
       bba.addBubble(bb,src,loc,PLACEMENT_RIGHT|PLACEMENT_GROUPED|PLACEMENT_MOVETO|
-		       PLACEMENT_LOGICAL);
-    }
+        	       PLACEMENT_LOGICAL);
    
+      return true;
+    }
+
 }	// end of inner class MethodCreator
 
 

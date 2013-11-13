@@ -25,9 +25,9 @@
 
 package edu.brown.cs.bubbles.bvcr;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 
 class BvcrProject implements BvcrConstants

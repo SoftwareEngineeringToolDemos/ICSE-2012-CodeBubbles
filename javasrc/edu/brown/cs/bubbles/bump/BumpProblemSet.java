@@ -202,12 +202,20 @@ void handleErrors(String proj,File forfile,int eid,Element ep)
 
 
 
-void clearProblems()
+void clearProblems(String proj)
 {
    List<BumpProblemImpl> clear;
    synchronized (current_problems) {
-      clear = new ArrayList<BumpProblemImpl>(current_problems.values());
-      current_problems.clear();
+      if (proj == null) {
+	 clear = new ArrayList<BumpProblemImpl>(current_problems.values());
+	 current_problems.clear();
+       }
+      else {
+	 clear = new ArrayList<BumpProblemImpl>();
+	 for (BumpProblemImpl bp : current_problems.values()) {
+	    if (bp.getProject().equals(proj)) clear.add(bp);
+	  }
+       }
     }
 
    if (clear.size() > 0) {
@@ -267,7 +275,7 @@ Collection<BumpProblem> getPrivateErrors(String privid)
       while (!private_problems.containsKey(privid)) {
 	 if ((System.currentTimeMillis() - start) > 10000) break;
 	 try {
-	    private_problems.wait(1000);
+ 	    private_problems.wait(1000);
 	  }
 	 catch (InterruptedException e) {
 	    BoardLog.logE("BUMP","Interrupted getting Private problems " + privid);
@@ -281,6 +289,8 @@ Collection<BumpProblem> getPrivateErrors(String privid)
       return new ArrayList<BumpProblem>(private_problems.get(privid));
     }
 }
+
+
 
 /********************************************************************************/
 /*										*/

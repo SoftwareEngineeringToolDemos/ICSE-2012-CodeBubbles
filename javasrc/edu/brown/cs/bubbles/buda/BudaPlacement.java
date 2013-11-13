@@ -32,11 +32,12 @@ package edu.brown.cs.bubbles.buda;
 
 
 
+import javax.swing.Timer;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
-import javax.swing.Timer;
 
 
 
@@ -138,7 +139,8 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
        }
       else if (last_focus != null) {
 	 r = BudaRoot.findBudaLocation(last_focus);
-	 grpb = last_focus;
+	 if (r == null) r = bubble_area.getViewport();
+	 else grpb = last_focus;
        }
       else {
 	 r = bubble_area.getViewport();

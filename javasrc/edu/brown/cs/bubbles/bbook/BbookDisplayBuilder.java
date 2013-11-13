@@ -37,23 +37,24 @@
 
 package edu.brown.cs.bubbles.bbook;
 
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bnote.*;
+import edu.brown.cs.bubbles.bnote.BnoteFactory;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardSetup;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.eclipse.mylyn.wikitext.core.parser.*;
-import org.eclipse.mylyn.wikitext.core.parser.builder.*;
+import org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
+import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder;
 import org.eclipse.mylyn.wikitext.tracwiki.core.TracWikiLanguage;
-
 
 import javax.activation.*;
 import javax.imageio.ImageIO;
 
-import java.util.*;
-import java.io.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 

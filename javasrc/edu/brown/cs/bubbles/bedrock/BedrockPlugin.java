@@ -35,6 +35,8 @@ import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.xml.IvyXml;
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
+import org.eclipse.core.net.proxy.IProxyData;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.debug.core.ILaunchManager;
@@ -46,11 +48,11 @@ import org.eclipse.ui.IStartup;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.*;
 import org.w3c.dom.Element;
-import org.eclipse.core.net.proxy.*;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.URI;
 import java.util.*;
-import java.net.*;
 
 
 public class BedrockPlugin extends Plugin implements IStartup,
@@ -432,6 +434,7 @@ String finishMessageWait(IvyXmlWriter xw,long delay)
 private String handleCommand(String cmd,String proj,Element xml) throws BedrockException
 {
    BedrockPlugin.logI("Handle command " + cmd + " for " + proj);
+   long start = System.currentTimeMillis();
 
    IvyXmlWriter xw = new IvyXmlWriter();
    xw.begin("RESULT");
@@ -532,7 +535,6 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("SEARCH")) {
       bedrock_java.textSearch(proj,IvyXml.getAttrInt(xml,"FLAGS",0),
 				 IvyXml.getTextElement(xml,"PATTERN"),
-				 IvyXml.getTextElement(xml,"FILES"),
 				 IvyXml.getAttrInt(xml,"MAX",MAX_TEXT_SEARCH_RESULTS),
 				 xw);
     }
@@ -749,19 +751,21 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("FORMATCODE")) {
       bedrock_editor.formatCode(proj,IvyXml.getAttrString(xml,"BID","*"),
 				   IvyXml.getAttrString(xml,"FILE"),
-				   getElements(xml,"REGION"),xw);
+                                   IvyXml.getAttrInt(xml,"START"),
+                                   IvyXml.getAttrInt(xml,"END"),xw);
     }
    else if (cmd.equals("FINDREGIONS")) {
       bedrock_editor.getTextRegions(proj,IvyXml.getAttrString(xml,"BID","*"),
-				       IvyXml.getAttrString(xml,"FILE"),
-				       IvyXml.getAttrString(xml,"CLASS"),
-				       IvyXml.getAttrBool(xml,"PREFIX",false),
-				       IvyXml.getAttrBool(xml,"STATICS",false),
-				       IvyXml.getAttrBool(xml,"COMPUNIT",false),
-				       IvyXml.getAttrBool(xml,"IMPORTS",false),
-				       IvyXml.getAttrBool(xml,"PACKAGE",false),
-				       IvyXml.getAttrBool(xml,"TOPDECLS",false),
-				       IvyXml.getAttrBool(xml,"ALL",false),xw);
+            IvyXml.getAttrString(xml,"FILE"),
+            IvyXml.getAttrString(xml,"CLASS"),
+            IvyXml.getAttrBool(xml,"PREFIX",false),
+            IvyXml.getAttrBool(xml,"STATICS",false),
+            IvyXml.getAttrBool(xml,"COMPUNIT",false),
+            IvyXml.getAttrBool(xml,"IMPORTS",false),
+            IvyXml.getAttrBool(xml,"PACKAGE",false),
+            IvyXml.getAttrBool(xml,"TOPDECLS",false),
+            IvyXml.getAttrBool(xml,"FIELDS",false),
+            IvyXml.getAttrBool(xml,"ALL",false),xw);
     }
    else if (cmd.equals("FINDBYKEY")) {
       bedrock_editor.findByKey(proj,
@@ -837,7 +841,9 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 
    xw.end("RESULT");
 
-   BedrockPlugin.logD("Result = " + xw.toString());
+   long delta = System.currentTimeMillis() - start;
+
+   BedrockPlugin.logD("Result (" + delta + ") = " + xw.toString());
    return xw.toString();
 }
 

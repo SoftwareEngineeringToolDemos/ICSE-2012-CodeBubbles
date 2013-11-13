@@ -25,10 +25,7 @@
 package edu.brown.cs.bubbles.bale;
 
 
-import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.board.BoardMetrics;
-import edu.brown.cs.bubbles.board.BoardSetup;
-import edu.brown.cs.bubbles.board.BoardThreadPool;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
@@ -303,6 +300,7 @@ BaleEditorKit(BoardLanguage lang)
    else {
       switch (lang) {
 	 case JAVA :
+	 case REBUS :
 	    language_kit = new BaleEditorKitJava();
 	    break;
 	 case PYTHON :
@@ -382,6 +380,7 @@ static Action findAction(String name,BoardLanguage lang)
    BaleLanguageKit lkit = null;
    if (lang != null) {
       switch (lang) {
+	 case REBUS :
 	 case JAVA :
 	    lkit = new BaleEditorKitJava();
 	    break;
@@ -2178,7 +2177,10 @@ private static class GotoReferenceAction extends TextAction {
 	  }
 
 	 if (fullnm == null) {
-	    BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
+	    if (be.isIdentifier())
+	       BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.UNDEFINED, sp);
+	    else
+	       BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
 	    Action act = findAction(beepAction);
 	    if (act != null) act.actionPerformed(e);
 	    return;
@@ -2284,8 +2286,11 @@ private static class GotoDocAction extends TextAction {
 	  }
        }
       else {
-	 BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
-       }
+	 if (be.isIdentifier())
+	    BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.UNDEFINED, sp);
+	 else
+	    BaleInfoBubble.createInfoBubble(target, be.getName(), BaleInfoBubbleType.NOIDENTIFIER, sp);
+      }
 
       Action act = findAction(beepAction);
       if (act != null) act.actionPerformed(e);
@@ -2549,30 +2554,30 @@ private static class QuickFixAction extends TextAction {
       int soff = target.getSelectionStart();
       List<BumpProblem> probs = bd.getProblemsAtLocation(soff);
       if (probs == null) return;
-   
+
       List<BaleFixer> fixes = new ArrayList<BaleFixer>();
       for (BumpProblem bp : probs) {
-         if (bp.getFixes() != null) {
-            for (BumpFix bf : bp.getFixes()) {
-               BaleFixer fixer = new BaleFixer(bp,bf);
-               if (fixer.isValid()) fixes.add(fixer);
-             }
-          }
+	 if (bp.getFixes() != null) {
+	    for (BumpFix bf : bp.getFixes()) {
+	       BaleFixer fixer = new BaleFixer(bp,bf);
+	       if (fixer.isValid()) fixes.add(fixer);
+	     }
+	  }
        }
       if (fixes.isEmpty()) return;
-   
+
       BaleFixer fix = null;
       if (fixes.size() == 1) fix = fixes.get(0);
       else {
-         Collections.sort(fixes);
-         Object [] fixalts = fixes.toArray();
-         // TODO:  should sort the fixes by relevance and edit size
-         fix = (BaleFixer) JOptionPane.showInputDialog(target,"Select Quick Fix","Quick Fix Selector",
-        						  JOptionPane.QUESTION_MESSAGE,
-        						  null,fixalts,fixes.get(0));
+	 Collections.sort(fixes);
+	 Object [] fixalts = fixes.toArray();
+	 // TODO:  should sort the fixes by relevance and edit size
+	 fix = (BaleFixer) JOptionPane.showInputDialog(target,"Select Quick Fix","Quick Fix Selector",
+							  JOptionPane.QUESTION_MESSAGE,
+							  null,fixalts,fixes.get(0));
        }
       if (fix == null) return;
-   
+
       fix.actionPerformed(e);
       BoardMetrics.noteCommand("BALE","QuickFix");
    }
@@ -2580,7 +2585,7 @@ private static class QuickFixAction extends TextAction {
 }	// end of inner class QuickFixAction
 
 
-      
+
 
 
 /********************************************************************************/

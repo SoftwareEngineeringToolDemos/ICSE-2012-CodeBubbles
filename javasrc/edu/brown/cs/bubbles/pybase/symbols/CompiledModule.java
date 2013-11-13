@@ -31,26 +31,15 @@
 
 package edu.brown.cs.bubbles.pybase.symbols;
 
-import edu.brown.cs.bubbles.pybase.PybaseConstants;
-import edu.brown.cs.bubbles.pybase.PybaseException;
-import edu.brown.cs.bubbles.pybase.PybaseFileSystem;
-import edu.brown.cs.bubbles.pybase.PybaseMain;
-import edu.brown.cs.bubbles.pybase.PybaseNature;
+import edu.brown.cs.bubbles.pybase.*;
 
 import org.eclipse.jface.text.Document;
-import org.python.pydev.core.FullRepIterable;
-import org.python.pydev.core.ICompletionCache;
-import org.python.pydev.core.Tuple;
+import org.python.pydev.core.*;
 import org.python.pydev.core.cache.LRUCache;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**

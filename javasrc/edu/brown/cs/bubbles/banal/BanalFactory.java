@@ -25,18 +25,18 @@
 
 package edu.brown.cs.bubbles.banal;
 
-import edu.brown.cs.bubbles.buda.BudaRoot;
-import edu.brown.cs.bubbles.board.BoardSetup;
 import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.buda.BudaRoot;
 
+import edu.brown.cs.ivy.exec.IvyExec;
 import edu.brown.cs.ivy.mint.*;
-import edu.brown.cs.ivy.exec.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
 import org.w3c.dom.Element;
 
-import java.util.*;
 import java.io.IOException;
+import java.util.*;
 
 
 public class BanalFactory implements BanalConstants, MintConstants

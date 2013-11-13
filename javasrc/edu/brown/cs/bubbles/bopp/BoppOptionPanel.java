@@ -38,12 +38,13 @@
 package edu.brown.cs.bubbles.bopp;
 
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.ivy.swing.*;
+
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
-
 import java.util.*;
 import java.util.List;
 
@@ -122,6 +123,20 @@ private class OptionBubble extends BudaBubble {
 
 }
 
+
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Handle recentoptions                                                    */
+/*                                                                              */
+/********************************************************************************/
+
+void handleOptionChange(BoppOptionNew opt)
+{
+   recent_options.addFirst(opt);
+}
 
 
 
@@ -274,6 +289,12 @@ private static class SubPanel {
 
    void addOptions(List<BoppOptionNew> opts) {
       panel_options.addAll(opts);
+    }
+   
+   void addFirst(BoppOptionNew opt) {
+      panel_options.remove(opt);
+      panel_options.add(0,opt);
+      getDisplay();
     }
 
    String getName()				{ return panel_name; }

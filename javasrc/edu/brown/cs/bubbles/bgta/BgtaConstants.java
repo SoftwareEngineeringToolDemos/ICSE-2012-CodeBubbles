@@ -23,10 +23,10 @@ package edu.brown.cs.bubbles.bgta;
 
 import edu.brown.cs.bubbles.bass.BassConstants;
 
+import org.jivesoftware.smack.packet.Presence;
+
 import java.awt.Color;
 import java.util.Collection;
-
-import org.jivesoftware.smack.packet.Presence;
 
 
 

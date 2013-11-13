@@ -34,20 +34,10 @@ package edu.brown.cs.bubbles.pybase.symbols;
 import edu.brown.cs.bubbles.pybase.PybaseConstants.LookForType;
 
 import org.python.pydev.parser.jython.SimpleNode;
-import org.python.pydev.parser.jython.ast.Assign;
-import org.python.pydev.parser.jython.ast.Attribute;
-import org.python.pydev.parser.jython.ast.Call;
-import org.python.pydev.parser.jython.ast.ClassDef;
-import org.python.pydev.parser.jython.ast.FunctionDef;
-import org.python.pydev.parser.jython.ast.If;
-import org.python.pydev.parser.jython.ast.Name;
-import org.python.pydev.parser.jython.ast.NameTok;
-import org.python.pydev.parser.jython.ast.Tuple;
-import org.python.pydev.parser.jython.ast.exprType;
+import org.python.pydev.parser.jython.ast.*;
 
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 
 /**

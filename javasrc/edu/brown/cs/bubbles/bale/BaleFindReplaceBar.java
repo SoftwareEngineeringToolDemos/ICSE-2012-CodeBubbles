@@ -37,7 +37,7 @@ import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.burp.BurpHistory;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -47,7 +47,7 @@ import javax.swing.text.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 

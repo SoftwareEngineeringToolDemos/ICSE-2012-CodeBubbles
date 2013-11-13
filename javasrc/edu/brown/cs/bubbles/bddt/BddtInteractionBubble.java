@@ -26,20 +26,23 @@
 
 package edu.brown.cs.bubbles.bddt;
 
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.board.BoardImage;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaConstants;
+import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.text.html.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.html.HTMLDocument;
 
-import java.awt.event.*;
 import java.awt.*;
-import java.awt.geom.*;
-import java.io.*;
+import java.awt.event.*;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 
 
 

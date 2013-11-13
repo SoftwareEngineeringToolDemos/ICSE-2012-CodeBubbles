@@ -11,7 +11,7 @@ $uploadpath = "uploads/";
 if (!file_exists($uploadpath))
 {
 	mkdir($uploadpath);
-	chmod($uploadpath,0744);
+	chmod($uploadpath,0755);
 }
 //check if it is a working set or some logfiles
 $workingset = $_POST["set"];
@@ -29,13 +29,13 @@ if ($workingset=="0")
 		if (file_exists($uploadpath.$user)) { }
 		else {
 			mkdir($uploadpath.$user);
-			chmod($uploadpath.$user,0744);
+			chmod($uploadpath.$user,0755);
 		}
 		$runid = $_POST["runid"];
 
 		if (!file_exists($uploadpath.$user. "/" . $runid)) {
 			mkdir($uploadpath.$user. "/" . $runid);
-			chmod($uploadpath.$user. "/" . $runid,0744);
+			chmod($uploadpath.$user. "/" . $runid,0755);
 		}
 		$dirpath = $uploadpath.$user. "/" . $runid;
 
@@ -46,6 +46,7 @@ if ($workingset=="0")
 		if (file_exists($filename)) { }
 		else {
 		   move_uploaded_file($_FILES["file"]["tmp_name"], $filename);
+		   chmod($filename,0664);
 		   echo $filename;
 		 }
    }

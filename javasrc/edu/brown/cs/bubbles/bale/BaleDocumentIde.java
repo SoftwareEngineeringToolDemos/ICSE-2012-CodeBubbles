@@ -49,6 +49,7 @@ import org.w3c.dom.Element;
 import javax.swing.SwingUtilities;
 import javax.swing.event.*;
 import javax.swing.text.*;
+
 // import javax.swing.undo.*;
 
 import java.io.*;
@@ -198,6 +199,8 @@ void checkProjectName(String name)
 @Override boolean isEditable()		{ return !is_readonly; }
 Element getReadonlyElisionData()	{ return elision_data; }
 
+String getLineSeparator()		{ return newline_string; }
+
 void setReadonly()
 {
    if (is_readonly) return;
@@ -328,6 +331,7 @@ private void setLanguage()
    String f = file_name.getName();
    file_language = BoardLanguage.JAVA;
    if (f != null) {
+      if (f.startsWith("/REBUS/")) file_language = BoardLanguage.REBUS;
       if (f.endsWith(".py") || f.endsWith(".PY")) file_language = BoardLanguage.PYTHON;
       if (f.endsWith(".java")) file_language = BoardLanguage.JAVA;
     }
@@ -513,6 +517,7 @@ private void fixupElision()
    int id = getEditCounter();
    Element ed = bump_client.setupElision(project_name,file_name,rgns,true);
    Element d = IvyXml.getChild(ed,"ELISION");
+   if (d == null) return;
 
    handleElisionData(file_name,id,d);
 }
@@ -531,8 +536,8 @@ private void fixupElision()
    if (!f.equals(file_name)) return;
 
    if (id != getEditCounter()) return;
-   
-   BoardLog.logD("BALE","ELISION ID = " + id + " " + getEditCounter() + " " + IvyXml.convertXmlToString(d));
+
+   // BoardLog.logD("BALE","ELISION ID = " + id + " " + getEditCounter() + " " + IvyXml.convertXmlToString(d));
 
    List<BaleAstNode> nodes = new ArrayList<BaleAstNode>();
    for (Element e : IvyXml.children(d,"ELIDE")) {
@@ -1417,7 +1422,6 @@ private static class IdeContent extends GapContent {
 }	// end of inner class IdeContent
 
 
-/**********************
 ***********************/
 
 

@@ -37,9 +37,10 @@
 
 package edu.brown.cs.bubbles.bnote;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Set;
 
 
 public interface BnoteConstants

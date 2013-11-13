@@ -28,8 +28,6 @@ package edu.brown.cs.bubbles.bddt;
 import edu.brown.cs.bubbles.bale.BaleConstants;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
-import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
@@ -94,14 +92,6 @@ public static void setup()
    BudaRoot.registerMenuButton(BDDT_BREAKPOINT_BUTTON, the_factory);
    BudaRoot.registerMenuButton(BDDT_CONFIG_BUTTON,the_factory);
    BudaRoot.registerMenuButton(BDDT_PROCESS_BUTTON,the_factory);
-
-   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, new SaveButton(),
-	 "Save all", BoardImage.getImage("save"));
-
-   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, new BuildButton(),
-				"Build all", BoardImage.getImage("build"));
-   BudaRoot.addToolbarButton(BDDT_TOOLBAR_MENU_BUTTON, new RefreshButton(),
-				"Refresh", BoardImage.getImage("refresh"));
 
    BddtRepository rep = new BddtRepository();
    BassFactory.registerRepository(BudaConstants.SearchType.SEARCH_LAUNCH_CONFIG,rep);
@@ -426,72 +416,6 @@ BudaBubble makeConsoleBubble(BudaBubble src,BumpProcess proc)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Button action routines for save/compile/etc				*/
-/*										*/
-/********************************************************************************/
-
-private static class SaveButton implements ActionListener, Runnable
-{
-   private BudaRoot buda_root;
-
-   @Override public void actionPerformed(ActionEvent e)  {
-      buda_root = BudaRoot.findBudaRoot((Component) e.getSource());
-      if (buda_root != null) BoardThreadPool.start(this);
-   }
-
-   @Override public void run() {
-      BoardMetrics.noteCommand("BDDT","SaveAll");
-      BowiFactory.startTask(BowiTaskType.SAVE);
-      BumpClient bc = BumpClient.getBump();
-      bc.saveAll();
-      buda_root.handleSaveAllRequest();
-      BowiFactory.stopTask(BowiTaskType.SAVE);
-   }
-
-}	// end of inner class SaveButton
-
-
-
-
-private static class BuildButton implements ActionListener, Runnable
-{
-   @Override public void actionPerformed(ActionEvent e)  {
-      BoardThreadPool.start(this);
-   }
-
-   @Override public void run() {
-      BoardMetrics.noteCommand("BDDT","Build");
-      BowiFactory.startTask(BowiTaskType.BUILD);
-      BumpClient bc = BumpClient.getBump();
-      bc.compile(false, true, false);
-      BowiFactory.stopTask(BowiTaskType.BUILD);
-   }
-
-}	// end of inner class BuildButton
-
-
-
-private static class RefreshButton implements ActionListener, Runnable
-{
-   @Override public void actionPerformed(ActionEvent e)  {
-      BoardThreadPool.start(this);
-      // BumpClient bc = BumpClient.getBump();
-      // bc.compile(false, false, true);
-   }
-
-   @Override public void run() {
-      BoardMetrics.noteCommand("BDDT","Refresh");
-      BowiFactory.startTask(BowiTaskType.REFRESH);
-      BumpClient bc = BumpClient.getBump();
-      bc.compile(false, false, true);
-      BowiFactory.stopTask(BowiTaskType.REFRESH);
-    }
-
-}	// end of inner class RefreshButton
-
-
 
 /********************************************************************************/
 /*										*/
@@ -509,6 +433,8 @@ void addNewConfigurationActions(JPopupMenu menu)
       case PYTHON :
 	 menu.add(new CreateConfigAction(BumpLaunchConfigType.PYTHON));
 	 break;
+      case REBUS :
+         break;
     }
 }
 

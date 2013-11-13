@@ -12,6 +12,7 @@
 <entry key="Bcon.class.initializer.color">orange</entry>
 <entry key="Bcon.class.comment.color">#3f7f5f</entry>
 <entry key="Bcon.class.font.size">9</entry>
+<entry key="Bcon.package.explorer">true</entry>
 </properties>
 
 

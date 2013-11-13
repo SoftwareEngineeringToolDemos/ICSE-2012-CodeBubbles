@@ -27,7 +27,8 @@ package edu.brown.cs.bubbles.bandaid;
 
 
 
-import java.lang.management.*;
+import java.lang.management.LockInfo;
+import java.lang.management.ThreadInfo;
 import java.util.*;
 
 

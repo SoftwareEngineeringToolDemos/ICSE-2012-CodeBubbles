@@ -38,15 +38,18 @@ public interface BhelpConstants {
 
 String HELP_RESOURCE = "helpdemos.xml";
 
+String HELP_DOCUMENT = "helpdoc.xml";
+
+
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Web Constants                                                           */
-/*                                                                              */
+/*										*/
+/*	Web Constants								*/
+/*										*/
 /********************************************************************************/
 
-int     HELP_SHOWME_PORT = 19888;
+int	HELP_SHOWME_PORT = 19888;
 
 }	// end of interface BhelpConstants
 

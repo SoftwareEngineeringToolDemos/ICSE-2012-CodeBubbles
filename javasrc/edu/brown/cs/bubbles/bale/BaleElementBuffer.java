@@ -27,9 +27,9 @@ package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.BoardLog;
 
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
-import javax.swing.event.DocumentEvent;
 
 import java.awt.Color;
 import java.util.*;
@@ -92,7 +92,7 @@ synchronized BaleElementEvent setup()
 
    BaleElementEvent evt = replaceParent(root_element,false);
 
-   BoardLog.logD("BALE","Initial ELEMENT buffer = " + this);
+   // BoardLog.logD("BALE","Initial ELEMENT buffer = " + this);
 
    return evt;
 }
@@ -200,7 +200,7 @@ synchronized BaleElementEvent updateAst(List<BaleAstNode> nodes)
    updateProblems();
    restoreElisions();
 
-   BoardLog.logD("BALE","Updated ELEMENT buffer = " + this);
+   // BoardLog.logD("BALE","Updated ELEMENT buffer = " + this);
 
    return ee;
 }

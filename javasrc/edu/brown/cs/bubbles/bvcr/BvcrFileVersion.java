@@ -25,10 +25,12 @@
 package edu.brown.cs.bubbles.bvcr;
 
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
-import java.io.*;
+import org.w3c.dom.Element;
+
+import java.io.File;
 import java.util.*;
 
 

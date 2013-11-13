@@ -25,18 +25,17 @@
 package edu.brown.cs.bubbles.bale;
 
 import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bump.*;
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.*;
 
-
-import javax.swing.event.*;
-import javax.swing.text.*;
 import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.event.*;
+import javax.swing.text.BadLocationException;
 
+import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.io.*;
 
 
 
@@ -370,6 +369,7 @@ private class SpellFixer implements Runnable {
       String filename = file.getAbsolutePath();
       Set<SpellFix> totry = new TreeSet<SpellFix>();
       int minsize = Math.min(min_size, for_identifier.length()-1);
+      minsize = Math.min(minsize,(for_identifier.length()+2)/3);
 
       BumpClient bc = BumpClient.getBump();
       Collection<BumpCompletion> cmps = bc.getCompletions(proj,file,-1,for_problem.getStart());
@@ -432,6 +432,7 @@ private class SpellFixer implements Runnable {
 	 if (for_identifier.startsWith("set") && sf.getText().startsWith("get")) it.remove();
 	 if (for_identifier.equals("List") && sf.getText().equals("int")) it.remove();
 	 if (for_identifier.equals("is") && sf.getText().equals("if")) it.remove();
+	 if (for_identifier.equals("add") && sf.getText().equals("do")) it.remove();
        }
 
       if (totry.size() == 0) {
@@ -581,7 +582,8 @@ private class DocHandler implements DocumentListener, CaretListener {
    @Override public void insertUpdate(DocumentEvent e) {
       int off = e.getOffset();
       int len = e.getLength();
-      if (len == 1) {
+      if (len == 0) return;
+      else if (len == 1) {
 	 handleTyped(off,1);
        }
       else {

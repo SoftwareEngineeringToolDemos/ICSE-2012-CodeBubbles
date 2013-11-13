@@ -42,7 +42,8 @@ import org.eclipse.ui.ide.IDE;
 
 import java.io.File;
 import java.util.*;
-import java.util.regex.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 class BedrockJava implements BedrockConstants {
 
@@ -799,10 +800,10 @@ private static interface FindFilter {
 /*										*/
 /********************************************************************************/
 
-void textSearch(String proj,int regexpfgs,String pat,String fp,int max,IvyXmlWriter xw)
+void textSearch(String proj,int regexpfgs,String pat,int max,IvyXmlWriter xw)
 	throws BedrockException
 {
-   if (fp == null) fp = ".*\\.java";
+   String fp = ".*\\.java";
 
    TextSearchEngine se = TextSearchEngine.createDefault();
 
@@ -1021,6 +1022,11 @@ synchronized void handleNewClass(String proj,String name,boolean frc,
 	throws BedrockException
 {
    if (name == null) return;
+
+   String linesep = System.getProperty("line.separator");
+   if (linesep != null && !linesep.equals("\n")) {
+      cnts = cnts.replace("\n",linesep);
+    }
 
    String pkg = "";
    String itm = name;

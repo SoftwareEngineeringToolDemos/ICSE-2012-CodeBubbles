@@ -22,28 +22,14 @@
 
 package edu.brown.cs.bubbles.bedu.chat;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import edu.brown.cs.bubbles.bgta.BgtaUtil;
 import edu.brown.cs.bubbles.bgta.BgtaChat;
+import edu.brown.cs.bubbles.bgta.BgtaUtil;
 
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.ChatManagerListener;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.MessageListener;
-import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.*;
+import org.jivesoftware.smack.packet.*;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
+
+import java.util.*;
 
 /**
  * This class implements the bulk of the system of ticket handling

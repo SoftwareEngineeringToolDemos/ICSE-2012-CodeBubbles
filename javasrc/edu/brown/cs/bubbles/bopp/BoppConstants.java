@@ -23,14 +23,14 @@ package edu.brown.cs.bubbles.bopp;
 
 import edu.brown.cs.bubbles.board.BoardFont;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
 import java.awt.*;
-import java.util.*;
-import java.util.regex.*;
+import java.util.Collection;
+import java.util.regex.Pattern;
 
 
 /**

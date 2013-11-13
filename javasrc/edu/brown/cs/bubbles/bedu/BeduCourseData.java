@@ -25,19 +25,21 @@
 package edu.brown.cs.bubbles.bedu;
 
 import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 
-import edu.brown.cs.ivy.xml.*;
-import edu.brown.cs.ivy.file.*;
-import edu.brown.cs.ivy.exec.*;
+import edu.brown.cs.ivy.exec.IvyExec;
+import edu.brown.cs.ivy.file.IvyFile;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
-import java.util.*;
 import java.io.*;
-import java.net.*;
-import java.util.zip.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.*;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 
 class BeduCourseData implements BeduConstants

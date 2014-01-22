@@ -27,6 +27,7 @@ import edu.brown.cs.bubbles.bale.BaleConstants;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.board.BoardFont;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaConstants;
 import edu.brown.cs.bubbles.bump.*;
@@ -64,8 +65,8 @@ private JTextField input_pane;
 private boolean   auto_scroll;
 private BddtConsoleController console_control;
 
-private static Pattern LOCATION_PATTERN = 
-   Pattern.compile("at ([a-zA-Z$_.]+)\\(([a-zA-Z_]+\\.java)\\:([0-9]+)\\)");
+private static Pattern LOCATION_PATTERN =
+   Pattern.compile("at ([a-zA-Z<>$_.]+)\\(([a-zA-Z_]+\\.java)\\:([0-9]+)\\)");
 private static final long serialVersionUID = 1;
 
 
@@ -79,17 +80,20 @@ private static final long serialVersionUID = 1;
 BddtConsoleBubble(BddtConsoleController ctrl,StyledDocument doc)
 {
    console_control = ctrl;
-   
+
    BoardProperties bp = BoardProperties.getProperties("Bddt");
    Color bg = bp.getColor("Console.background");
    Color ibg = bp.getColor("Console.input.background");
    Color ifg = bp.getColor("Console.input.foreground");
    Color icg = bp.getColor("Console.input.caret");
-   
+
    text_pane = new JTextPane(doc);
    text_pane.setEditable(false);
    text_pane.setBackground(bg);
-   text_pane.setFont(BDDT_CONSOLE_FONT);
+   String fam = bp.getString("Console.family",Font.MONOSPACED);
+   int sz = bp.getInt("Console.size",11);
+   Font ft = BoardFont.getFont(fam,Font.PLAIN,sz);
+   text_pane.setFont(ft);
    text_pane.setForeground(Color.white);
 
    scroll_pane = new JScrollPane(text_pane);
@@ -102,13 +106,13 @@ BddtConsoleBubble(BddtConsoleController ctrl,StyledDocument doc)
    auto_scroll = true;
 
    text_pane.setPreferredSize(d);
-   
+
    input_pane = new JTextField();
    input_pane.setBackground(ibg);
    input_pane.setForeground(ifg);
    input_pane.setCaretColor(icg);
    input_pane.addActionListener(new InputHandler(doc));
-   
+
    SwingGridPanel pnl = new SwingGridPanel();
    pnl.addGBComponent(scroll_pane,0,0,1,1,10,10);
    pnl.addGBComponent(input_pane,0,1,1,1,1,0);
@@ -132,7 +136,7 @@ BddtConsoleBubble(BddtConsoleController ctrl,StyledDocument doc)
 @Override public void handlePopupMenu(MouseEvent e)
 {
    JPopupMenu menu = new JPopupMenu();
-   
+
    Point pt0 = SwingUtilities.convertPoint(this,e.getPoint(),text_pane);
    GotoLine gl = checkForGoto(pt0);
    if (gl != null && gl.isValid()) {
@@ -143,9 +147,9 @@ BddtConsoleBubble(BddtConsoleController ctrl,StyledDocument doc)
    sitm.setState(auto_scroll);
    sitm.addActionListener(new AutoScrollAction());
    menu.add(sitm);
-   
+
    menu.add(getFloatBubbleAction());
-   
+
    menu.show(this,e.getX(),e.getY());
 }
 
@@ -157,34 +161,35 @@ private GotoLine checkForGoto(Point pt0)
       int start = Math.max(0,pos-100);
       int end = Math.min(text_pane.getDocument().getLength(),pos+100);
       try {
-         String txt = text_pane.getText(start,end-start);
-         int p0 = pos - start;
-         for (int i = p0; i >= 0; --i) {
-            if (i >= txt.length()) continue;
-            if (txt.charAt(i) == '\n') {
-               start = start + i + 1;
-               txt = txt.substring(i+1);
-               break;
-             }
-          }
-         p0 = pos-start;
-         for (int i = p0; i < txt.length(); ++i) {
-            if (txt.charAt(i) == '\n') {
-               txt = txt.substring(0,i);
-               break;
-               
-             }
-          }
-         Matcher m = LOCATION_PATTERN.matcher(txt);
-         if (m.find()) {
-            int spos = m.start();
-            int epos = m.end();
-            if (spos <= p0 && epos >= p0) {
-               int lno = Integer.parseInt(m.group(3));
-               GotoLine gl = new GotoLine(m.group(1),m.group(2),lno);
-               if (gl.isValid()) return gl;
-             }
-          }
+	 String txt = text_pane.getText(start,end-start);
+	 int p0 = pos - start;
+	 for (int i = p0; i >= 0; --i) {
+	    if (i >= txt.length()) continue;
+	    if (txt.charAt(i) == '\n') {
+	       start = start + i + 1;
+	       txt = txt.substring(i+1);
+	       break;
+	     }
+	  }
+	 p0 = pos-start;
+	 if (p0 < 0) return null;
+	 for (int i = p0; i < txt.length(); ++i) {
+	    if (txt.charAt(i) == '\n') {
+	       txt = txt.substring(0,i);
+	       break;
+
+	     }
+	  }
+	 Matcher m = LOCATION_PATTERN.matcher(txt);
+	 if (m.find()) {
+	    int spos = m.start();
+	    int epos = m.end();
+	    if (spos <= p0 && epos >= p0) {
+	       int lno = Integer.parseInt(m.group(3));
+	       GotoLine gl = new GotoLine(m.group(1),m.group(2),lno);
+	       if (gl.isValid()) return gl;
+	     }
+	  }
        }
       catch (BadLocationException ex) { }
     }
@@ -213,42 +218,42 @@ private class EndScroll implements DocumentListener, Runnable {
 
    @Override public void insertUpdate(DocumentEvent e) {
       if (!auto_scroll) return;
-   
+
       synchronized (this) {
-         if (!is_queued) {
-            SwingUtilities.invokeLater(this);
-            is_queued = true;
-          }
+	 if (!is_queued) {
+	    SwingUtilities.invokeLater(this);
+	    is_queued = true;
+	  }
        }
     }
 
    @Override public void run() {
       if (!auto_scroll) return;
-   
+
       synchronized (this) {
-         is_queued = false;
+	 is_queued = false;
        }
-   
+
       AbstractDocument d = (AbstractDocument) text_pane.getDocument();
       d.readLock();
       try {
-         int len = d.getLength();
-         try {
-            Rectangle r = text_pane.modelToView(len-1);
-            if (r != null) {
-               Dimension sz = text_pane.getSize();
-               r.x = 0;
-               r.y += 20;
-               if (r.y + r.height > sz.height) r.y = sz.height;
-               text_pane.scrollRectToVisible(r);
-             }
-         }
-         catch (BadLocationException ex) {
-            BoardLog.logE("BDDT","Problem scrolling to end of console: " + ex);
-         }
+	 int len = d.getLength();
+	 try {
+	    Rectangle r = text_pane.modelToView(len-1);
+	    if (r != null) {
+	       Dimension sz = text_pane.getSize();
+	       r.x = 0;
+	       r.y += 20;
+	       if (r.y + r.height > sz.height) r.y = sz.height;
+	       text_pane.scrollRectToVisible(r);
+	     }
+	 }
+	 catch (BadLocationException ex) {
+	    BoardLog.logE("BDDT","Problem scrolling to end of console: " + ex);
+	 }
        }
       finally {
-         d.readUnlock();
+	 d.readUnlock();
        }
     }
 
@@ -275,60 +280,60 @@ private class AutoScrollAction implements ActionListener {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Input handler                                                           */
-/*                                                                              */
+/*										*/
+/*	Input handler								*/
+/*										*/
 /********************************************************************************/
 
 private class InputHandler implements ActionListener {
-   
+
    private StyledDocument for_document;
-   
+
    InputHandler(StyledDocument doc) {
       for_document = doc;
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       String s = input_pane.getText() + "\n";
       input_pane.setText(null);
       console_control.handleInput(for_document,s);
     }
-   
-}       // end of inner class InputHandler
+
+}	// end of inner class InputHandler
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle mouse clicks that do a goto                                      */
-/*                                                                              */
+/*										*/
+/*	Handle mouse clicks that do a goto					*/
+/*										*/
 /********************************************************************************/
 
 private class GotoMouser extends MouseAdapter {
-   
+
    @Override public void mouseClicked(MouseEvent evt) {
       GotoLine gl = checkForGoto(evt.getPoint());
-      if (gl != null && gl.isValid()) {
-         gl.createBubble();
+      if (gl != null && gl.isValid() && evt.getClickCount() == 1) {
+	 gl.createBubble();
        }
     }
-   
-}       // end of inner class GotoMouser
+
+}	// end of inner class GotoMouser
 
 /********************************************************************************/
-/*                                                                              */
-/*      Go to a line from an error report                                       */
-/*                                                                              */
+/*										*/
+/*	Go to a line from an error report					*/
+/*										*/
 /********************************************************************************/
 
 private class GotoLine extends AbstractAction {
-   
+
    private String class_name;
    private String method_name;
    private boolean is_constructor;
    private int line_number;
    private List<BumpLocation> goto_locs;
-   
+
    GotoLine(String mthd,String file,int line) {
       super("Go To " + mthd);
       goto_locs = null;
@@ -336,15 +341,19 @@ private class GotoLine extends AbstractAction {
       if (idx < 0) return;
       class_name = mthd.substring(0,idx).replace("$",".");
       method_name = mthd.substring(idx+1);
+      String nmthd = null;
       if (method_name.equals("<init>")) {
-         idx = class_name.lastIndexOf(".");
-         if (idx >= 0) method_name = class_name.substring(idx+1);
-         else method_name = class_name;
-         is_constructor = true;
+	 idx = class_name.lastIndexOf(".");
+	 if (idx >= 0) method_name = class_name.substring(idx+1);
+	 else method_name = class_name;
+	 is_constructor = true;
+	 nmthd = class_name;
        }
-      else is_constructor = false;
+      else {
+	 is_constructor = false;
+	 nmthd = class_name + "." + method_name;
+       }
       line_number = line;
-      String nmthd = class_name + "." + method_name;
       BumpClient bc = BumpClient.getBump();
       List<BumpLocation> locs = bc.findMethods(null,nmthd,false,true,is_constructor,false);
       if (locs == null || locs.isEmpty()) return;
@@ -352,31 +361,31 @@ private class GotoLine extends AbstractAction {
       File f = bl0.getFile();
       if (!f.exists()) return;
       if (locs.size() > 1) {
-         BaleFactory bf = BaleFactory.getFactory();
-         BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,f);
-         if (bfo == null) return;
-         int loff = bfo.findLineOffset(line_number);
-         for (Iterator<BumpLocation> it = locs.iterator(); it.hasNext(); ) {
-            BumpLocation bl1 = it.next();
-            if (bl1.getOffset() > loff || bl1.getEndOffset() < loff) it.remove();
-          }
-         if (locs.size() == 0) return;
+	 BaleFactory bf = BaleFactory.getFactory();
+	 BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,f);
+	 if (bfo == null) return;
+	 int loff = bfo.findLineOffset(line_number);
+	 for (Iterator<BumpLocation> it = locs.iterator(); it.hasNext(); ) {
+	    BumpLocation bl1 = it.next();
+	    if (bl1.getOffset() > loff || bl1.getEndOffset() < loff) it.remove();
+	  }
+	 if (locs.size() == 0) return;
        }
       goto_locs = locs;
     }
-   
-   boolean isValid()                    { return goto_locs != null; }
-   
+
+   boolean isValid()			{ return goto_locs != null; }
+
    @Override public void actionPerformed(ActionEvent e) {
       if (goto_locs != null && goto_locs.size() > 0) createBubble();
     }
-   
+
    void createBubble() {
       BaleFactory bf = BaleFactory.getFactory();
       bf.createBubbleStack(BddtConsoleBubble.this,null,null,false,goto_locs,null);
     }
 
-}       // end of innter class GotoLine
+}	// end of innter class GotoLine
 
 
 }	// end of class BddtConsoleBubble

@@ -111,6 +111,7 @@ private boolean 	use_lila;
 private boolean 	use_web;
 private String		use_workspace;
 private boolean 	new_workspace;
+private boolean         ask_workspace;
 private Element 	load_config;
 private String []	java_args;
 private RunMode 	run_mode;
@@ -137,6 +138,7 @@ private BemaMain(String [] args)
    allow_debug = false;
    use_workspace = null;
    new_workspace = false;
+   ask_workspace = true;
    use_web = false;
    java_args = args;
    use_lila = false;
@@ -191,6 +193,8 @@ private void scanArgs(String [] args)
 	    BoardProperties.setPropertyDirectory(fb.getPath());
 	    if (use_workspace == null) {
 	       use_workspace = fb.getPath();
+               new_workspace = true;
+               ask_workspace = false;
 	     }
 	  }
 	 else if (args[i].startsWith("-course") && i+1 < ln) {  // -course <course>
@@ -286,6 +290,7 @@ private void start()
    if (use_lila) bs.setUseLila();
    if (new_workspace) bs.setCreateWorkspace(use_workspace);
    else if (use_workspace != null) bs.setDefaultWorkspace(use_workspace);
+   if (!ask_workspace) bs.setAskWorkspace(false);
    if (run_mode != null) bs.setRunMode(run_mode);
    bs.setJavaArgs(java_args);
 

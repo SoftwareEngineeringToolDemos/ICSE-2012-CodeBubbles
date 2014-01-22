@@ -1769,7 +1769,7 @@ public String getFullyQualifiedName(String proj,File file,int start,int end)
    String sgn = IvyXml.getTextElement(cnt,"TYPE");
    if (sgn != null) {
       int idx0 = sgn.indexOf('(');
-      if (idx0 >= 0) {							
+      if (idx0 >= 0) {						
 	 int idx1 = sgn.lastIndexOf(')');
 	 String ps = sgn.substring(idx0,idx1+1);
 	 String p = IvyFormat.formatTypeName(ps);
@@ -2966,20 +2966,24 @@ private void handleResourceChange(Element de)
    if (rtyp != null && rtyp.equals("FILE")) {
       String fp = IvyXml.getAttrString(re,"LOCATION");
       String proj = IvyXml.getAttrString(re,"PROJECT");
-      if (k.equals("ADDED") || k.equals("ADDED_PHANTOM")) {
-	 for (BumpChangeHandler bch : change_handlers.keySet()) {
-	    bch.handleFileAdded(proj,fp);
-	  }
-       }
-      else if (k.equals("REMOVED") || k.equals("REMOVED_PHANTOM")) {
-	 for (BumpChangeHandler bch : change_handlers.keySet()) {
-	    bch.handleFileRemoved(proj,fp);
-	  }
-       }
-      else {
-	 for (BumpChangeHandler bch : change_handlers.keySet()) {
-	    bch.handleFileChanged(proj,fp);
-	  }
+      switch (k) {
+	 case "ADDED" :
+	 case "ADDED_PHANTOM" :
+	    for (BumpChangeHandler bch : change_handlers.keySet()) {
+	       bch.handleFileAdded(proj,fp);
+	     }
+	    break;
+	 case "REMOVED" :
+	 case "REMOVED_PHANTOM" :
+	    for (BumpChangeHandler bch : change_handlers.keySet()) {
+	       bch.handleFileRemoved(proj,fp);
+	     }
+	    break;
+	 default :
+	    for (BumpChangeHandler bch : change_handlers.keySet()) {
+	       bch.handleFileChanged(proj,fp);
+	     }
+	    break;
        }
     }
 }

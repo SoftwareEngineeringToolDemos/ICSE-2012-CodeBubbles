@@ -88,6 +88,7 @@ private RebaseEditManager	edit_manager;
 private Map<SourceLanguage,RebaseLanguage> language_map;
 
 private RebasePreferences	rebase_props;
+private RebaseCache		rebase_cache;
 
 private static RebaseMain	rebase_main = null;
 private static PrintStream log_file = null;
@@ -143,6 +144,7 @@ RebaseMain(String [] args)
 
    project_manager = new RebaseProjectManager(this);
    edit_manager = new RebaseEditManager(this);
+   rebase_cache = new RebaseCache();
 
    language_map = new HashMap<SourceLanguage,RebaseLanguage>();
    language_map.put(SourceLanguage.JAVA,new RebaseJavaLanguage());
@@ -212,15 +214,17 @@ private void badArgs()
 /*										*/
 /********************************************************************************/
 
-static RebaseMain getRebase()			{ return rebase_main; }
+public static RebaseMain getRebase()		{ return rebase_main; }
 
-RebasePreferences getProperties()			{ return rebase_props; }
+RebasePreferences getProperties()		{ return rebase_props; }
 
 public File getWorkspaceDirectory()		{ return workspace_directory; }
 
 public RebaseProjectManager getProjectManager() { return project_manager; }
 
-public RebaseEditManager getEditorManager()   { return edit_manager; }
+public RebaseEditManager getEditorManager()	{ return edit_manager; }
+
+public RebaseCache getUrlCache()		{ return rebase_cache; }
 
 public static String getFileContents(RebaseFile rf)
 {
@@ -468,11 +472,15 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	       IvyXml.getAttrInt(xml,"EPOS"));
 	 break;
       case "REBUSEXPORT" :
-         project_manager.handleExport(proj,
-               IvyXml.getTextElement(xml,"DIR"),
-               IvyXml.getAttrBool(xml,"ACCEPT"),
-               IvyXml.getTextElement(xml,"FILE"));
-         break;
+	 project_manager.handleExport(proj,
+	       IvyXml.getTextElement(xml,"DIR"),
+	       IvyXml.getAttrBool(xml,"ACCEPT"),
+	       IvyXml.getTextElement(xml,"FILE"));
+	 break;
+      case "REBUSCACHE" :
+	 rebase_cache.setupCache(IvyXml.getTextElement(xml,"DIR"),
+	       IvyXml.getAttrBool(xml,"USE",true));
+	 break;
 	
       // commands that don't need to be implemented
       case "FILEELIDE" :

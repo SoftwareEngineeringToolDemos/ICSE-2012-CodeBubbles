@@ -379,9 +379,9 @@ String [] BOARD_RESOURCE_PROPS =  new String [] {
    "Board.x86.props", "Bddt.props", "Bcon.props", "Bueno.props", "Bvcr.props",
    "Batt.props", "Bedu.props", "Bnote.props", "Bbook.props", "Buda.python.props",
    "Bandaid.props","Barr.props","Bass.props","Bdoc.java.props","Bdoc.python.props",
-   "Bhelp.props", "Bwiz.props", "Rebus.props",
+   "Bhelp.props", "Bwiz.props", "Rebus.props", "Buss.props",
    "Bema.rebus.props","Buda.rebus.props", "Bass.rebus.props", "Bale.rebus.props",
-   "Beam.rebus.props",
+   "Beam.rebus.props","Bcon.rebus.props",
 };
 
 
@@ -426,6 +426,10 @@ String [] BOARD_LIBRARY_EXTRAS = new String [] {
    "asm4.jar",
    "helpdemos.xml",
    "helpdoc.xml",
+   "org.eclipse.jdt.core.jar",
+   "org.eclipse.osgi.jar",
+   "org.eclipse.core.contenttype.jar",
+   "org.eclipse.equinox.preferences.jar",
 };
 
 

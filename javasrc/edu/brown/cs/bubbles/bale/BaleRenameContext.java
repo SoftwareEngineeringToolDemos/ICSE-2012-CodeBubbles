@@ -38,6 +38,8 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bueno.BuenoConstants;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.burp.BurpHistory;
+import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
+import edu.brown.cs.bubbles.bowi.BowiFactory;
 
 import org.w3c.dom.Element;
 
@@ -203,12 +205,17 @@ private synchronized void handleShow()
       cur_menu = new JDialog(w);
       cur_menu.setUndecorated(true);
       cur_menu.setContentPane(the_panel);
-      Point p0 = be.getLocationOnScreen();
-      cur_menu.setLocation(p0.x + r.x + X_DELTA,p0.y + r.y + r.height + Y_DELTA);
-      cur_menu.pack();
-      cur_menu.setVisible(true);
-      rename_field.grabFocus();
-      BoardLog.logD("BALE","Show rename");
+      try {
+	 Point p0 = be.getLocationOnScreen();
+	 cur_menu.setLocation(p0.x + r.x + X_DELTA,p0.y + r.y + r.height + Y_DELTA);
+	 cur_menu.pack();
+	 cur_menu.setVisible(true);
+	 rename_field.grabFocus();
+	 BoardLog.logD("BALE","Show rename");
+       }
+      catch (IllegalComponentStateException e) {
+	 // Editor no longer on the screen -- ignore
+       }
     }
    catch (BadLocationException e) {
       removeContext();
@@ -288,30 +295,40 @@ private void rename()
 
    if (for_id == null || for_document == null) return;
 
-   int soff = for_document.mapOffsetToEclipse(for_id.getStartOffset());
-   int eoff = for_document.mapOffsetToEclipse(for_id.getEndOffset());
+   BowiFactory.startTask(BowiTaskType.RENAME);
 
-   BudaRoot br = BudaRoot.findBudaRoot(for_editor);
-   if (br != null) br.handleSaveAllRequest();
-
-   BaleEditorPane oed = for_editor;
-   BumpClient bc = BumpClient.getBump();
-   Element edits = bc.rename(for_document.getProjectName(),for_document.getFile(),soff,eoff,ntext);
-
-   removeContext();
-
-   if (edits == null) return;
-
-   BurpHistory.getHistory().beginEditAction(oed);
    try {
-      BaleApplyEdits bae = new BaleApplyEdits();
-      bae.applyEdits(edits);
+      int soff = for_document.mapOffsetToEclipse(for_id.getStartOffset());
+      int eoff = for_document.mapOffsetToEclipse(for_id.getEndOffset());
+
+      BudaRoot br = BudaRoot.findBudaRoot(for_editor);
+      if (br != null) br.handleSaveAllRequest();
+
+      BaleEditorPane oed = for_editor;
+      BumpClient bc = BumpClient.getBump();
+      Element edits = bc.rename(for_document.getProjectName(),for_document.getFile(),soff,eoff,ntext);
+
+      removeContext();
+
+      if (edits == null) return;
+
+      BurpHistory.getHistory().beginEditAction(oed);
+      try {
+	 BaleApplyEdits bae = new BaleApplyEdits();
+	 bae.applyEdits(edits);
+       }
+      finally {
+	 BurpHistory.getHistory().endEditAction(oed);
+       }
+
+      if (br != null) {
+	 br.handleSaveAllRequest();
+	 bc.compile(false,true,true);
+       }
     }
    finally {
-      BurpHistory.getHistory().endEditAction(oed);
+      BowiFactory.stopTask(BowiTaskType.RENAME);
     }
-
-   if (br != null) br.handleSaveAllRequest();
 }
 
 

@@ -521,6 +521,10 @@
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.resources.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.jobs.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.runtime.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.contenttype.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.osgi.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jdt.core.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.equinox.preferences.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='pydev.jar' />
 	 <fileset dir='.' includes='pyblesfiles.txt' />
 	 <fileset dir='${BUBBLES}/lib' includes='rebusprops.xml' />

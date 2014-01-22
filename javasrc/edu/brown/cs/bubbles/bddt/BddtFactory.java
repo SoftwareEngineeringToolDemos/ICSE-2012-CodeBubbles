@@ -25,7 +25,7 @@
 
 package edu.brown.cs.bubbles.bddt;
 
-import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.*;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
@@ -117,6 +117,8 @@ public static void initialize(BudaRoot br)
     }
 
    the_factory.setupDebugging(br);
+   
+   BaleFactory.getFactory().addContextListener(new DebugContextListener());
 }
 
 
@@ -434,7 +436,7 @@ void addNewConfigurationActions(JPopupMenu menu)
 	 menu.add(new CreateConfigAction(BumpLaunchConfigType.PYTHON));
 	 break;
       case REBUS :
-         break;
+	 break;
     }
 }
 
@@ -516,6 +518,58 @@ private static class ConfigComparator implements Comparator<BumpLaunchConfig> {
     }
 
 }	// end of inner class ConfigComparator
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	General context commands for debugging					*/
+/*										*/
+/********************************************************************************/
+
+private static class DebugContextListener implements BaleContextListener {
+
+   @Override public BudaBubble getHoverBubble(BaleContextConfig cfg) {
+      return null;
+    }
+
+   @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu m) {
+      if (cfg.inAnnotationArea()) {
+	 // check if line has code that can be breakpointed
+	 m.add(new BreakpointAction(cfg,true));
+	 m.add(new BreakpointAction(cfg,false));
+       }
+    }
+
+   @Override public String getToolTipHtml(BaleContextConfig cfg) {
+      return null;
+    }
+
+}	// end of inner class EditorContextListener
+
+
+
+private static class BreakpointAction extends AbstractAction {
+
+   private BumpBreakMode break_mode;
+   private BaleContextConfig bale_context;
+
+   BreakpointAction(BaleContextConfig cfg,boolean brk) {
+      super(brk ? "Toggle Breakpoint" : "Toggle Tracepoint");
+      break_mode = (brk ? BumpBreakMode.DEFAULT : BumpBreakMode.TRACE);
+      bale_context = cfg;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BumpBreakModel mdl = BumpClient.getBump().getBreakModel();
+      mdl.toggleBreakpoint(bale_context.getEditor().getContentProject(),
+	    bale_context.getEditor().getContentFile(),
+	    bale_context.getLineNumber(),break_mode);
+      BoardMetrics.noteCommand("BDDT","ANNOT_" + e.getActionCommand());
+    }
+
+}	// end of inner class BreakpointAction
 
 
 

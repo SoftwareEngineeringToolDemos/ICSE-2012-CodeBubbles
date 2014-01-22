@@ -133,8 +133,13 @@ static void repaintBubbleArea()
 public static BoppOptionPanel getBoppPanelNew(BudaBubbleArea area)
 {
    BoppOptionPanel pnl =  new BoppOptionPanel(option_set);
+   List<BoppOptionNew> opts = null;
 
-   for (BoppOptionNew opt : changed_options) {
+   synchronized (changed_options) {
+      opts = new ArrayList<BoppOptionNew>(changed_options);
+    }
+
+   for (BoppOptionNew opt : opts) {
       pnl.handleOptionChange(opt);
     }
 
@@ -144,7 +149,9 @@ public static BoppOptionPanel getBoppPanelNew(BudaBubbleArea area)
 
 static void handleOptionChange(BoppOptionNew opt)
 {
-   changed_options.add(opt);
+   synchronized (changed_options) {
+      changed_options.add(opt);
+    }
 
    for (BoppOptionPanel pnl : options_panel.values()) {
       pnl.handleOptionChange(opt);

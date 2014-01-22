@@ -570,12 +570,11 @@ public boolean isOverWorkingSet(int x)
       SwingText.drawText("Create Task...", g, new Rectangle(x0,0,x1-x0,r.height));
       if (fake_chevron_button == null) {
 	 fake_chevron_button = new ChevronButton(null, x1,r.height/2, x2-x1, r.height/2);
+	 add(fake_chevron_button);
        }
       else {
-	 remove(fake_chevron_button);
 	 fake_chevron_button.setBounds(x1, r.height/2, x2-x1, r.height/2);
        }
-      add(fake_chevron_button);
       overview_area.setFakeWorkingSet(true);
       // overview_area.repaint();
     }

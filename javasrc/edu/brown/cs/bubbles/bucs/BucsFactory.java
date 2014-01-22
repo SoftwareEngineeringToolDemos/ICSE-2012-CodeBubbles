@@ -141,11 +141,11 @@ private class BucsContexter implements BaleConstants.BaleContextListener {
 
    @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu menu) {
       switch (cfg.getTokenType()) {
-	 case METHOD_DECL_ID :
-	    menu.add(new BucsAction(cfg));
-	    break;
-	 default :
-	    break;
+         case METHOD_DECL_ID :
+            menu.add(new BucsAction(cfg));
+            break;
+         default :
+            break;
        }
     }
 

@@ -564,6 +564,7 @@ private static class DeletePackageAction extends AbstractAction implements Runna
       BumpClient bc = BumpClient.getBump();
       bc.delete(project_name,"PACKAGE",package_name,bass_properties.getBoolean("Bass.delete.rebuild",true));
     }
+   
 }	// end of inner class DeletePackageAction
 
 

@@ -26,7 +26,7 @@
 package edu.brown.cs.bubbles.bcon;
 
 import edu.brown.cs.bubbles.bass.*;
-import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
+import edu.brown.cs.bubbles.bass.BassConstants.BassUpdatableRepository;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.*;
@@ -38,8 +38,7 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 
 
-class BconRepository implements BconConstants, BassConstants, BassRepository,
-			BumpConstants.BumpChangeHandler,
+class BconRepository implements BconConstants, BassConstants, BassUpdatableRepository,
 			BassConstants.BassPopupHandler
 {
 
@@ -52,7 +51,6 @@ class BconRepository implements BconConstants, BassConstants, BassRepository,
 /********************************************************************************/
 
 private Map<String,BconName> active_names;
-private CheckNames	    check_names;
 
 
 
@@ -65,12 +63,14 @@ private CheckNames	    check_names;
 BconRepository()
 {
    active_names = new HashMap<String,BconName>();
-   check_names = null;
 
    switch (BoardSetup.getSetup().getLanguage()) {
       case JAVA :
       case REBUS :
 	 BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
+	 BassUpdatingRepository bur = (BassUpdatingRepository) br;
+	 bur.addUpdateRepository(this);
+	 
 	 for (BassName bn : br.getAllNames()) {
 	    switch (bn.getNameType()) {
 	       case CLASS :
@@ -82,7 +82,7 @@ BconRepository()
 	       default :
 		  continue;
 	     }
-	
+
 	    BumpLocation bl = bn.getLocation();
 	    if (bl == null) continue;
 	    String ky = bl.getKey();
@@ -96,7 +96,7 @@ BconRepository()
     }
 
    BassFactory.getFactory().addPopupHandler(this);
-   BumpClient.getBump().addChangeHandler(this);
+   // BumpClient.getBump().addChangeHandler(this);
 }
 
 
@@ -120,6 +120,11 @@ BconRepository()
 @Override public boolean includesRepository(BassRepository br)	{ return br == this; }
 
 
+
+@Override public void reloadRepository()
+{
+   reload();
+}
 
 
 /********************************************************************************/
@@ -238,56 +243,17 @@ private static class PackageAction extends AbstractAction
 
 
 
+
 /********************************************************************************/
-/*										*/
-/*	Change detection methods						*/
-/*										*/
+/*                                                                              */
+/*      Reload management                                                       */
+/*                                                                              */
 /********************************************************************************/
-
-@Override public void handleFileChanged(String proj,String file)
-{
-   checkNames();
-}
-
-
-
-@Override public void handleFileAdded(String proj,String file)
-{
-   checkNames();
-}
-
-
-
-@Override public void handleFileRemoved(String proj,String file)
-{
-   checkNames();
-}
-
-@Override public void handleFileStarted(String proj,String file)		{ }
-@Override public void handleProjectOpened(String proj)				{ }
-
-
-
-private void checkNames()
-{
-   synchronized (active_names) {
-      if (check_names != null) return;
-      check_names = new CheckNames();
-      SwingUtilities.invokeLater(check_names);
-    }
-}
-
-
 
 private void reload()
 {
    Set<String> found = new HashSet<String>();
    boolean chng = false;
-
-   try {
-      Thread.sleep(5000);
-    }
-   catch (InterruptedException e) { }
 
    synchronized (active_names) {
       BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
@@ -323,24 +289,12 @@ private void reload()
 	    chng = true;
 	  }
        }
-
-      check_names = null;
     }
 
    if (chng) {
-      BassFactory.reloadRepository(this);
+      // BassFactory.reloadRepository(this);
     }
 }
-
-
-
-private class CheckNames implements Runnable {
-
-   public void run() {
-      reload();
-    }
-
-}	// end of inner class CheckNames
 
 
 

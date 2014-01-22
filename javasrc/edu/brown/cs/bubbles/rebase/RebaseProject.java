@@ -88,7 +88,7 @@ RebaseProject(RebaseMain rm,RebaseRepo repo,String id,String name)
 RebaseFile findFile(String path)
 {
    if (path == null) return null;
-   
+
    return project_files.get(path);
 }
 
@@ -140,7 +140,7 @@ boolean addFile(RebaseFile rf)
    project_files.put(fnm,rf);
 
    new_files.add(rf);
-   
+
    project_root = null;
 
    return true;
@@ -178,10 +178,10 @@ private void addFilesForPackage(String pkgname,RebaseFile rf,Set<String> ignore)
       for (RebaseSource rs : srcs) {
 	 if (!rs.getProjectId().equals(pid)) continue;
 	 if (project_files.get(rs.getPath()) != null) continue;
-         if (ignore != null) {
-            if (ignore.contains(rs.getPath())) continue;
-            ignore.add(rs.getPath());
-          }
+	 if (ignore != null) {
+	    if (ignore.contains(rs.getPath())) continue;
+	    ignore.add(rs.getPath());
+	  }
 	 RebaseFile nrf = new RebaseFile(rs);
 	 String pkg = nrf.getPackageName();
 	 if (pkg == null || !pkg.equals(pkgname)) continue;
@@ -197,31 +197,31 @@ private void addFilesForPackage(String pkgname,RebaseFile rf,Set<String> ignore)
 void addSystemFiles(RebaseFile rf0)
 {
    if (rf0 == null) return;
-   
+
    String pkg0 = rf0.getPackageName();
-   
+
    Set<RebaseFile> filesdone = new HashSet<RebaseFile>();
    Set<String> pkgsdone = new HashSet<String>();
    Set<String> pkgstodo = new HashSet<String>();
    Set<String> ignore = new HashSet<String>();
-   
+
    for ( ; ; ) {
       List<RebaseFile> filestodo = new ArrayList<RebaseFile>(project_files.values());
       for (RebaseFile rf : filestodo) {
-         if (filesdone.contains(rf)) continue;
-         RebaseSemanticData rsd = rebase_main.getSemanticData(rf);
-         if (rsd == null) continue;
-         Set<String> pkgs = rsd.getRelatedPackages();
-         for (String pkg : pkgs) {
-            if (pkgsdone.contains(pkg) || pkgstodo.contains(pkg)) continue;
-            if (isPackageRelevant(pkg0,pkg)) pkgstodo.add(pkg);
-            else pkgsdone.add(pkg);
-          }
+	 if (filesdone.contains(rf)) continue;
+	 RebaseSemanticData rsd = rebase_main.getSemanticData(rf);
+	 if (rsd == null) continue;
+	 Set<String> pkgs = rsd.getRelatedPackages();
+	 for (String pkg : pkgs) {
+	    if (pkgsdone.contains(pkg) || pkgstodo.contains(pkg)) continue;
+	    if (isPackageRelevant(pkg0,pkg)) pkgstodo.add(pkg);
+	    else pkgsdone.add(pkg);
+	  }
        }
       if (pkgstodo.isEmpty()) break;
       for (String pkg : pkgstodo) {
-         addFilesForPackage(pkg,rf0,ignore);
-         pkgsdone.add(pkg);
+	 addFilesForPackage(pkg,rf0,ignore);
+	 pkgsdone.add(pkg);
        }
     }
 }
@@ -233,13 +233,13 @@ private boolean isPackageRelevant(String orig,String pkg)
    for (String pfx : prefix_set) {
       if (pkg.startsWith(pfx)) return false;
     }
-   
+
    if (orig != null) {
       int idx = orig.indexOf(".");
       if (idx >= 0) orig = orig.substring(0,idx+1);
       if (!pkg.startsWith(orig)) return false;
     }
-   
+
    return true;
 }
 
@@ -270,7 +270,7 @@ synchronized void buildProject(boolean clean,boolean full,boolean refresh,IvyXml
    if (xw != null) {
       List<RebaseMessage> msgs = rs.getMessages();
       for (RebaseMessage pm : msgs) {
-         pm.outputProblem(xw);
+	 pm.outputProblem(xw);
        }
     }
 }
@@ -283,9 +283,9 @@ private synchronized RebaseProjectSemantics getResolvedSemantics()
       Set<RebaseFile> files = new HashSet<RebaseFile>(project_files.values());
       project_root = rebase_main.getSemanticData(files);
     }
-   
+
    if (project_root != null) project_root.resolve();
-   
+
    return project_root;
 }
 
@@ -343,9 +343,10 @@ synchronized void outputAllNames(Set<String> files,IvyXmlWriter xw)
 synchronized void patternSearch(String pat,String typ,boolean defs,boolean refs,boolean sys,IvyXmlWriter xw)
 {
    RebaseProjectSemantics rs = getResolvedSemantics();
- 
+   if (rs == null) return;
+
    // TODO: handle Sys flag
-   
+
    RebaseSearcher search = rs.findSymbols(pat,typ);
    rs.outputLocations(search,defs,refs,false,false,false,xw);
 }
@@ -364,22 +365,22 @@ synchronized void findAll(String file,int soff,int eoff,boolean defs,boolean ref
    RebaseProjectSemantics rs = getResolvedSemantics();
 
    RebaseSearcher search = rs.findSymbolAt(file,soff,eoff);
-   
+
    rs.outputLocations(search,defs,refs,imps,ronly,wonly,xw);
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Search for name by key                                                  */
-/*                                                                              */
+/*										*/
+/*	Search for name by key							*/
+/*										*/
 /********************************************************************************/
 
 synchronized void findByKey(String file,String key,IvyXmlWriter xw)
 {
    RebaseProjectSemantics rs = getResolvedSemantics();
-   
+
    RebaseSearcher search = rs.findSymbolByKey(file,key);
    rs.outputLocations(search,true,false,false,false,false,xw);
 }
@@ -402,25 +403,25 @@ synchronized void textSearch(int fgs,String pat,int max,IvyXmlWriter xw)
    catch (PatternSyntaxException e) {
       pp = Pattern.compile(pat,fgs|Pattern.LITERAL);
     }
-   
+
    int rct = 0;
    Set<RebaseFile> files = new HashSet<RebaseFile>(project_files.values());
    RebaseProjectSemantics rs = getResolvedSemantics();
-   
+
    for (RebaseFile rf : files) {
       String filetext = RebaseMain.getFileContents(rf);
       Matcher m = pp.matcher(filetext);
       while (m.find()) {
-         if (++rct > max) break;
-         xw.begin("MATCH");
-         xw.field("STARTOFFSET",m.start());
-         xw.field("LENGTH",m.end() - m.start());
-         xw.textElement("FILE",rf.getFileName());
-         rs.outputContainer(rf,m.start(),m.end(),xw);
-         // TODO: find corresponding symbol here and output it
-         xw.end("MATCH");
+	 if (++rct > max) break;
+	 xw.begin("MATCH");
+	 xw.field("STARTOFFSET",m.start());
+	 xw.field("LENGTH",m.end() - m.start());
+	 xw.textElement("FILE",rf.getFileName());
+	 rs.outputContainer(rf,m.start(),m.end(),xw);
+	 // TODO: find corresponding symbol here and output it
+	 xw.end("MATCH");
        }
-      
+
     }
 }
 
@@ -435,35 +436,35 @@ synchronized void textSearch(int fgs,String pat,int max,IvyXmlWriter xw)
 synchronized void getFullyQualifiedName(String file,int spos,int epos,IvyXmlWriter xw)
 {
    RebaseProjectSemantics rs = getResolvedSemantics();
-   
+
    RebaseSearcher search = rs.findSymbolAt(file,spos,epos);
-   rs.outputFullName(search,xw); 
+   rs.outputFullName(search,xw);
 }
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle Region extractions                                               */
-/*                                                                              */
+/*										*/
+/*	Handle Region extractions						*/
+/*										*/
 /********************************************************************************/
 
 synchronized void getTextRegions(String bid,String file,String cls,boolean pfx,boolean statics,
       boolean compunit,boolean imports,boolean pkg,
       boolean topdecls,boolean fields,boolean all,IvyXmlWriter xw)
-        throws RebaseException
+	throws RebaseException
 {
    RebaseFile rf = findFile(file);
-   
+
    if (rf == null && cls != null) {
       rf = getFileFromClass(cls);
     }
    if (rf == null) return;
-   
+
    String cnts = RebaseMain.getFileContents(rf);
    RebaseSemanticData rsd = rebase_main.getSemanticData(rf);
-   
+
    rsd.getTextRegions(cnts,cls,pfx,statics,compunit,imports,pkg,topdecls,fields,all,xw);
 }
 
@@ -474,16 +475,16 @@ private RebaseFile getFileFromClass(String cls)
       RebaseSemanticData rsd = rebase_main.getSemanticData(rf);
       if (rsd.definesClass(cls)) return rf;
     }
-   
+
    return null;
 }
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle formatting requests                                              */
-/*                                                                              */
+/*										*/
+/*	Handle formatting requests						*/
+/*										*/
 /********************************************************************************/
 
 synchronized void formatCode(String file,int spos,int epos,IvyXmlWriter xw)
@@ -498,9 +499,9 @@ synchronized void formatCode(String file,int spos,int epos,IvyXmlWriter xw)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Check for package                                                       */
-/*                                                                              */
+/*										*/
+/*	Check for package							*/
+/*										*/
 /********************************************************************************/
 
 synchronized void findPackage(String pkg,IvyXmlWriter xw)
@@ -510,12 +511,12 @@ synchronized void findPackage(String pkg,IvyXmlWriter xw)
    for (String nm : project_files.keySet()) {
       int idx = nm.indexOf(fn);
       if (idx > 0) {
-         int ln = fn.length();
-         path = nm.substring(0,idx+ln);
-         break;
+	 int ln = fn.length();
+	 path = nm.substring(0,idx+ln);
+	 break;
        }
     }
-   
+
    if (path != null) {
       xw.begin("PACKAGE");
       xw.field("NAME",pkg);
@@ -535,51 +536,51 @@ synchronized void findPackage(String pkg,IvyXmlWriter xw)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle delete requests                                                  */
-/*                                                                              */
+/*										*/
+/*	Handle delete requests							*/
+/*										*/
 /********************************************************************************/
 
 synchronized void delete(String what,String path)
 {
    List<RebaseFile> dels = new ArrayList<RebaseFile>();
-   
+
    switch (what) {
       case "PROJECT" :
       case "FILE" :
-         notePending();
-         for (Iterator<RebaseFile> it = project_files.values().iterator(); it.hasNext(); ) {
-            RebaseFile rf = it.next();
-            if (path == null || rf.getFileName().equals(path)) {
-               it.remove();
-               dels.add(rf);
-             }
-          }
-         donePending();
-         break;
+	 notePending();
+	 for (Iterator<RebaseFile> it = project_files.values().iterator(); it.hasNext(); ) {
+	    RebaseFile rf = it.next();
+	    if (path == null || rf.getFileName().equals(path)) {
+	       it.remove();
+	       dels.add(rf);
+	     }
+	  }
+	 donePending();
+	 break;
       case "CLASS" :
-         if (path == null) return;
-         RebaseFile rf1 = getFileFromClass(path);
-         if (rf1 != null) {
-            notePending();
-            project_files.remove(rf1.getFileName());
-            dels.add(rf1);
-            donePending();
-          }         
-         break;
+	 if (path == null) return;
+	 RebaseFile rf1 = getFileFromClass(path);
+	 if (rf1 != null) {
+	    notePending();
+	    project_files.remove(rf1.getFileName());
+	    dels.add(rf1);
+	    donePending();
+	  }	
+	 break;
       case "PACKAGE" :
-         notePending();
-         for (Iterator<RebaseFile> it = project_files.values().iterator(); it.hasNext(); ) {
-            RebaseFile rf = it.next();
-            if (path == null || rf.getPackageName().startsWith(path)) {
-               it.remove();
-               dels.add(rf);
-             }
-          }
-         donePending();
-         break;
+	 notePending();
+	 for (Iterator<RebaseFile> it = project_files.values().iterator(); it.hasNext(); ) {
+	    RebaseFile rf = it.next();
+	    if (path == null || rf.getPackageName().startsWith(path)) {
+	       it.remove();
+	       dels.add(rf);
+	     }
+	  }
+	 donePending();
+	 break;
     }
-   
+
    reportDeletes(dels);
 }
 
@@ -589,7 +590,7 @@ private void reportDeletes(List<RebaseFile> dels)
 {
    if (dels == null || dels.size() == 0) return;
    RebaseEditManager em = rebase_main.getEditorManager();
-   
+
    IvyXmlWriter xw = rebase_main.beginMessage("RESOURCE");
    for (RebaseFile rf : dels) {
       em.removeFile(rf);
@@ -610,9 +611,9 @@ private void reportDeletes(List<RebaseFile> dels)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle acceptances and export requests                                  */
-/*                                                                              */
+/*										*/
+/*	Handle acceptances and export requests					*/
+/*										*/
 /********************************************************************************/
 
 synchronized void noteAccept(String file,boolean fg)
@@ -634,29 +635,29 @@ synchronized void export(File dir,String fnm,boolean accepted)
     }
    else {
       for (RebaseFile rf : project_files.values()) {
-         doExport(dir,rf,accepted);
+	 doExport(dir,rf,accepted);
        }
     }
 }
 
 
 
-private void doExport(File dir,RebaseFile rf,boolean accepted) 
+private void doExport(File dir,RebaseFile rf,boolean accepted)
 {
    if (accepted && !accepted_files.contains(rf)) return;
-   
+
    String pnm = rf.getPackageName();
    String fnm = rf.getFileName();
    int idx = fnm.lastIndexOf("/");
    if (idx >= 0) fnm = fnm.substring(idx+1);
    String name = pnm + "." + fnm;
-   
+
    File f1 = new File(dir,name);
    // might want to check if f1 exists here
-   
+
    String cnts = RebaseMain.getFileContents(rf);
    if (cnts == null) return;
-   
+
    try {
       FileWriter fw = new FileWriter(f1);
       fw.write(cnts);

@@ -250,6 +250,7 @@ static void setDefault(String proj,String pfx)
 
 
 
+
 /********************************************************************************/
 /*										*/
 /*	Callbacks for text input						*/
@@ -594,7 +595,8 @@ void handlePopupMenu(MouseEvent e)
       else {
 	 fullname.append(".");
 	 fullname.append(btb.getLocalName());
-       }
+       }      System.err.println("FLAGS COMPUTED");
+
       if (btb.getBassName() != null) forname = btb.getBassName();
     }
 
@@ -1120,6 +1122,7 @@ private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer imple
       JLabel label = this;
       BassTreeBase btb = (BassTreeBase) value;
    
+      // System.err.println("BASS RENDER " + value);
       label.setText(value.toString());
       label.setFont(tree.getFont());
       label.setOpaque(false);

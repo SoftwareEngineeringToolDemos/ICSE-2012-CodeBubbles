@@ -243,7 +243,9 @@ private void setupLogger()
    log(LogLevel.NONE,"BOARD","Logging: " + debug_log,null);
    log(LogLevel.NONE,"BOARD","Bedrock: " + bedrock_log,null);
    log(LogLevel.NONE,"BOARD","Props: " + bp.getProperty(BOARD_PROP_ECLIPSE_FOREGROUND) + " " +
-	  bp.getProperty(BOARD_PROP_AUTO_UPDATE),null);
+	  bp.getProperty(BOARD_PROP_AUTO_UPDATE) + " @" +
+	  BOARD_ARCH + " " + System.getProperty("os.arch"),
+	  null);
 }
 
 

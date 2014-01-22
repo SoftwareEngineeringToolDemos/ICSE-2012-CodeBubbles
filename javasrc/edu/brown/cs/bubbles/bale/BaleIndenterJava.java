@@ -84,7 +84,7 @@ private boolean 	pref_indent_braces_for_types;
 private boolean 	pref_has_generics;
 private int		pref_rbrace_indent;
 private boolean 	pref_indent_inner_class;
-private long            setup_time;
+private long		setup_time;
 
 private BaleElement	cur_element;
 private int		cur_indent;
@@ -106,7 +106,7 @@ private int		cur_line;
 BaleIndenterJava(BaleDocument bd)
 {
    super(bd);
-   
+
    setup_time = 0;
 
    setupPreferences();
@@ -123,8 +123,12 @@ private void setupPreferences()
 {
    if (setup_time != 0 && setup_time > BaleFactory.getFormatTime()) return;
    setup_time = System.currentTimeMillis();
-   
-   pref_tab_size = getOptionInt("tabulation.size",8);
+
+   int tz = getOptionInt("tabulation.size",8);
+   if (tz != pref_tab_size) {
+      if (pref_tab_size != 0) BaleTabHandler.setBaseTabSize(tz);
+      pref_tab_size = tz;
+    }
    pref_indentation_size = getOptionInt("indentation.size",4);
    pref_block_indent = (getOptionBool("indent_statements_compare_to_block",true) ? 1 : 0);
    pref_method_body_indent = (getOptionBool("indent_staements_compare_to_body",true) ? 1 : 0);
@@ -174,7 +178,7 @@ protected int getTabSize()			{ return pref_tab_size; }
 int getDesiredIndentation(int offset)
 {
    setupPreferences();
-   
+
    bale_document.readLock();
    try {
       return findLineReferenceIndentation(offset);
@@ -187,7 +191,7 @@ int getDesiredIndentation(int offset)
 int getCurrentIndentation(int offset)
 {
    setupPreferences();
-   
+
    bale_document.readLock();
    try {
       return getLeadingWhitespaceLength(offset);
@@ -200,7 +204,7 @@ int getCurrentIndentation(int offset)
 int getSplitIndentationDelta(int offset)
 {
    setupPreferences();
-   
+
    bale_document.readLock();
    try {
       int off0 = findReferenceIndentation(offset);

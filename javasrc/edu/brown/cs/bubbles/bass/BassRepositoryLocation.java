@@ -40,8 +40,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-class BassRepositoryLocation implements BassConstants.BassRepository, BassConstants,
-			BumpConstants.BumpChangeHandler
+class BassRepositoryLocation implements BassConstants.BassUpdatingRepository,
+                BassConstants,BumpConstants.BumpChangeHandler
 {
 
 
@@ -54,6 +54,7 @@ class BassRepositoryLocation implements BassConstants.BassRepository, BassConsta
 
 private Set<BassName>	all_names;
 private boolean 	is_ready;
+private List<BassUpdatableRepository> update_repos;
 
 private Pattern 	anonclass_pattern = Pattern.compile("\\$[0-9]");
 
@@ -70,6 +71,7 @@ BassRepositoryLocation()
 {
    all_names = new HashSet<BassName>();
    is_ready = false;
+   update_repos = new ArrayList<BassUpdatableRepository>();
 
    initialize();
 
@@ -103,6 +105,15 @@ BassRepositoryLocation()
 @Override public boolean includesRepository(BassRepository br)	{ return br == this; }
 
 
+@Override public void addUpdateRepository(BassUpdatableRepository br)
+{
+   update_repos.add(br);
+}
+
+@Override public void removeUpdateRepository(BassUpdatableRepository br)
+{
+   update_repos.remove(br);
+}
 
 
 void waitForNames()
@@ -336,6 +347,8 @@ private class Searcher implements Runnable {
 @Override public void handleFileChanged(String proj,String file)
 {
    addNamesForFile(proj,file,true);
+   
+   handleUpdated();
 }
 
 
@@ -343,6 +356,8 @@ private class Searcher implements Runnable {
 @Override public void handleFileAdded(String proj,String file)
 {
    addNamesForFile(proj,file,false);
+   
+   handleUpdated(); 
 }
 
 
@@ -351,13 +366,15 @@ private class Searcher implements Runnable {
 {
    removeNamesForFile(proj,file);
 
-   BassFactory.reloadRepository(this);
+   handleUpdated();
 }
 
 
 @Override public void handleProjectOpened(String proj)
 {
    addNamesForFile(proj,null,true);
+   
+   handleUpdated();
 }
 
 @Override public void handleFileStarted(String proj,String file)		{ }
@@ -365,19 +382,23 @@ private class Searcher implements Runnable {
 
 private void removeNamesForFile(String proj,String file)
 {
-   File f = null;
-   if (file != null) f = new File(file);
-
    synchronized (this) {
       for (Iterator<BassName> it = all_names.iterator(); it.hasNext(); ) {
 	 BassName bn = it.next();
 	 BumpLocation bl = bn.getLocation();
-	 if (bl != null &&
-	       (f == null || f.equals(bl.getFile())) &&
+	 if (bl != null && fileMatch(file,bl.getFile()) &&
 	       (proj == null || proj.equals(bl.getProject())))
 	    it.remove();
        }
     }
+}
+
+private boolean fileMatch(String file,File blf)
+{
+   if (file == null) return true;
+   if (file.equals(blf.getPath())) return true;
+   if (blf.getPath().endsWith(file)) return true;
+   return false;
 }
 
 
@@ -404,10 +425,17 @@ private void addNamesForFile(String proj,String file,boolean rem)
        }
     }
    System.err.println("AFTER " + proj + " " + file + " " + all_names.size());
-
-   BassFactory.reloadRepository(this);
 }
 
+
+private void handleUpdated()
+{
+   for (BassUpdatableRepository br : update_repos) {
+      br.reloadRepository();
+    }
+   
+   BassFactory.reloadRepository(this); 
+}
 
 
 }	// end of class BassRepositoryLocation

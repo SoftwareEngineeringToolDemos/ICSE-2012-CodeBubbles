@@ -1348,6 +1348,7 @@ private static class ProblemHover implements BaleContextListener {
    @Override public BudaBubble getHoverBubble(BaleContextConfig cfg)	{ return null; }
 
    @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu menu) {
+      if (cfg.inAnnotationArea()) return;
       BaleDocument bd = (BaleDocument) cfg.getDocument();
       List<BumpProblem> probs = bd.getProblemsAtLocation(cfg.getOffset());
       if (probs != null) {

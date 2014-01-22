@@ -92,7 +92,8 @@ void handleStartFile(String proj,String bid,String file,String id,boolean cnts,I
 	throws RebaseException
 {
    RebaseFile fd = rebase_main.getFileByName(file);
-   if (fd == null) throw new RebaseException("File " + file + " not found");
+   if (fd == null) 
+      throw new RebaseException("File " + file + " not found");
 
    addMonitor(fd,bid,id);
 

@@ -63,6 +63,8 @@ private ReadWriteLock	tree_lock;
 private SwingEventListenerList<BassTreeUpdateListener> listener_set;
 private Rebuilder	cur_rebuilder;
 
+private static long REBUILD_DELAY = bass_properties.getLong("Bass.rebuild.delay",500);
+
 
 
 /********************************************************************************/
@@ -298,7 +300,6 @@ private static class TreeSorter implements Comparator<BassName> {
 /*										*/
 /********************************************************************************/
 
-private final static long REBUILD_DELAY = 500;
 
 
 void requestRebuild()
@@ -309,7 +310,7 @@ void requestRebuild()
        }
       cur_rebuilder = new Rebuilder();
       BoardThreadPool.start(cur_rebuilder);
-    } 
+    }
 }
 
 
@@ -336,27 +337,29 @@ private class Rebuilder implements Runnable {
 
    @Override public void run() {
       for ( ; ; ) {
-         synchronized (this) {
-            for ( ; ; ) {
-               long delta = start_time - System.currentTimeMillis();
-               if (delta <= 0) break;
-               try {
-        	  wait(delta);
-        	}
-               catch (InterruptedException e) { }
-             }
-            begin_time = start_time;
-          }
-         BoardLog.logD("BASS","RUN REBUILD " + begin_time + " " + System.currentTimeMillis());
-   
-         rebuild();
-   
-         synchronized (this) {
-            if (begin_time == start_time) {
-               is_active = false;
-               break;
-             }
-          }
+	 synchronized (this) {
+	    for ( ; ; ) {
+	       long delta = start_time - System.currentTimeMillis();
+	       if (delta <= 0) break;
+	       try {
+		  wait(delta);
+		}
+	       catch (InterruptedException e) { }
+	     }
+	    begin_time = start_time;
+	  }
+	 BoardLog.logD("BASS","RUN REBUILD " + begin_time + " " + System.currentTimeMillis());
+
+	 rebuild();
+
+	 BoardLog.logD("BASS","DONE REBUILD " + begin_time + " " + System.currentTimeMillis());
+	 
+	 synchronized (this) {
+	    if (begin_time == start_time) {
+	       is_active = false;
+	       break;
+	     }
+	  }
        }
     }
 
@@ -396,7 +399,7 @@ void rebuild()
 
       // see if this works - doesn't
       root_node.collapseSingletons();
-      
+
       UpdateEvent evt = new UpdateEvent(adds,dels);
       for (BassTreeUpdateListener ul : listener_set) {
 	 ul.handleTreeUpdated(evt);
@@ -487,10 +490,12 @@ private static abstract class BassTreeImpl implements BassTreeBase, BassTreeNode
 private static class TreeLeaf extends BassTreeImpl {
 
    private BassName for_name;
+   private String short_name;
 
    TreeLeaf(BassName nm,Branch par) {
       super(par);
       for_name = nm;
+      short_name = fixDisplayName();
     }
 
    @Override public int getChildCount() 		{ return 0; }
@@ -503,6 +508,8 @@ private static class TreeLeaf extends BassTreeImpl {
       return for_name.getFullName();
     }
 
+   @Override public String toString()			{ return short_name; }
+
    @Override int getSortPriority()			{ return for_name.getSortPriority(); }
 
    @Override int getMaxCount()				{ return 0; }
@@ -510,6 +517,62 @@ private static class TreeLeaf extends BassTreeImpl {
 
    @Override void addAllNames(Collection<BassName> rslt) {
       if (for_name != null) rslt.add(for_name);
+    }
+
+   private String fixDisplayName() {
+      String nm = getLocalName();
+      if (!nm.contains(".")) return nm;
+      if (nm.startsWith("<")) return nm;
+
+      StringBuffer buf = new StringBuffer();
+      StringBuffer pbuf = null;
+      int prm = 0;
+      for (int i = 0; i < nm.length(); ++i) {
+	 char ch = nm.charAt(i);
+	 if (ch == '(' || ch == '<') {
+	    if (prm > 0) addParam(pbuf,buf);
+	    pbuf = null;
+	    buf.append(ch);
+	    ++prm;
+	  }
+	 else if (prm > 0) {
+	    if (ch == ',' || ch == ')' || ch == '>') {
+	       addParam(pbuf,buf);
+	       pbuf = null;
+	       buf.append(ch);
+	       if (ch == ')' || ch == '>') --prm;
+	     }
+	    else if (pbuf == null && ch == ' ') ;
+	    else if (ch == ' ' && pbuf != null) {
+	       addParam(pbuf,buf);
+	       pbuf = new StringBuffer();
+	       buf.append(ch);
+	     }
+	    else {
+	       if (pbuf == null) pbuf = new StringBuffer();
+	       pbuf.append(ch);
+	     }
+	  }
+	 else buf.append(ch);
+       }
+      return buf.toString();
+    }
+
+   private void addParam(StringBuffer pbuf,StringBuffer buf) {
+      if (pbuf == null) return;
+      addParam(pbuf.toString(),buf);
+    }
+
+   private void addParam(String pnm,StringBuffer buf) {
+      if (pnm.endsWith("...")) {
+	 pnm = pnm.substring(0,pnm.length()-3);
+	 addParam(pnm,buf);
+	 buf.append("...");
+	 return;
+       }
+      int idx = pnm.lastIndexOf(".");
+      if (idx >= 0) pnm = pnm.substring(idx+1);
+      buf.append(pnm);
     }
 
 }	// end of inner class TreeLeaf
@@ -630,7 +693,7 @@ private static class Branch extends BassTreeImpl {
    @Override public String toString()			{ return display_name; }
    @Override public String getFullName()		{ return full_name; }
    Branch getBassParent()				{ return parent_node; }
-   
+
    void collapseSingletons() {
       if (parent_node != null) {
 	 Branch cn = this;
@@ -671,6 +734,10 @@ private static class Branch extends BassTreeImpl {
     }
 
    private void setDisplayName() {
+      if (local_name.length() < 32) {
+	 display_name = local_name;
+	 return;
+       }
       String dnm = local_name;
       int idx2 = dnm.indexOf("#");
       if (idx2 > 0) {
@@ -681,11 +748,10 @@ private static class Branch extends BassTreeImpl {
 	 String dnm1 = dnm.substring(0,idx1+1);
 	 if (local_name.equals(dnm1+orig_name)) display_name = local_name;
 	 else display_name = dnm1 + ".." + orig_name;
-      } 
+      }
       else display_name = ".." + orig_name;
-      if (local_name.length() < 32) display_name = local_name;
     }
-   
+
    Branch findNode(String txt,int priority) {
       int idx = 0;
       for (BassTreeImpl bt : child_nodes) {
@@ -757,7 +823,7 @@ private static class Branch extends BassTreeImpl {
 		     break;
 		  }
 		  nm1 += "." + comps[i];
-	        }
+		}
 	       splitNode((Branch) bt,nm1);
 	       np = (Branch) bt;
 	       cidx = fnd;
@@ -795,22 +861,22 @@ private static class Branch extends BassTreeImpl {
 	 return bb;
        }
       else if ((bn.getNameType() == BassNameType.CLASS || bn.getNameType() == BassNameType.INTERFACE ||
-	          bn.getNameType() == BassNameType.ENUM)
-	       && bn.getClassName() != null && 
+		  bn.getNameType() == BassNameType.ENUM)
+	       && bn.getClassName() != null &&
 	       parent.getBranchType() == BranchNodeType.PACKAGE) {
 	 // System.err.println("CHECK " + parent.getFullName() + " " + bn.getName() + " " + bn.getClassName());
 	 if (parent.getFullName().endsWith(bn.getName())) {
 	    computeBranchType(bn,parent);
 	 }
        }
-	       
+
 
       TreeLeaf tl = parent.insertChild(bn);
       ++leaf_count;
 
       return tl;
     }
-   
+
    private boolean subsetName(String nm,String base) {
       if (!nm.startsWith(base)) return false;
       int ln = base.length();
@@ -820,7 +886,7 @@ private static class Branch extends BassTreeImpl {
       if (ch == '.' || ch == ':') return true;
       return false;
     }
-   
+
    private void splitNode(Branch nd,String nm) {
       String nm1 = nd.getFullName();
       int ln = nm.length();
@@ -835,7 +901,7 @@ private static class Branch extends BassTreeImpl {
       else nd.setBranchType(BranchNodeType.PACKAGE);
       Branch b1 = new Branch(nm1,nd);
       b1.orig_name = orignm;
-      
+
       for (BassTreeImpl cn : nd.child_nodes) {
 	 b1.addChild(cn);
 	 cn.parent_node = b1;

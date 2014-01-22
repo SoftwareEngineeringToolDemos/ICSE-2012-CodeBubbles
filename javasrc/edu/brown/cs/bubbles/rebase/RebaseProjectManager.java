@@ -494,19 +494,39 @@ void handleExpand(String proj,String file)
    if (rs == null) return;
    RebaseProject rp = getProject(proj,file);
    if (rp == null) return;
-   switch (rs.getSourceType()) {
-      case FILE :
-         rs.setSourceType(SourceType.PACKAGE);
-         rp.addPackageFiles(rf);
-         break;
-      case PACKAGE :
-         rs.setSourceType(SourceType.SYSTEM);
-         rp.addSystemFiles(rf);
-         break;
-      case SYSTEM :
-         break;
-    }
+   BackgroundExpander bs = new BackgroundExpander(rp,rf,rs);
+   rebase_main.startTask(bs);
 }
+
+
+private class BackgroundExpander implements Runnable {
+   
+   private RebaseProject for_project;
+   private RebaseFile for_file;
+   private RebaseSource for_source;
+   
+   BackgroundExpander(RebaseProject rp,RebaseFile rf,RebaseSource rs) {
+      for_project = rp;
+      for_file = rf;
+      for_source = rs;
+    }
+   
+   @Override public void run() {
+      switch (for_source.getSourceType()) {
+         case FILE :
+            for_source.setSourceType(SourceType.PACKAGE);
+            for_project.addPackageFiles(for_file);
+            break;
+         case PACKAGE :
+            for_source.setSourceType(SourceType.SYSTEM);
+            for_project.addSystemFiles(for_file);
+            break;
+         case SYSTEM :
+            break;
+       } 
+    }
+   
+}       // end of inner class BackgroundExpander
 
 
 

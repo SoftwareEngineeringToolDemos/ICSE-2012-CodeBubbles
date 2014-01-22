@@ -110,4 +110,5 @@
 <entry key="Bale.correct.spelling.edits">2</entry>
 <entry key="Bale.correct.spelling.user">5</entry>
 <entry key="Bale.allow.breakpoints">true</entry>
+<entry key="Bale.goto.documentation">false</entry>
 </properties>

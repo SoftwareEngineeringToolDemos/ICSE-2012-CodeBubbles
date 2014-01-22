@@ -32,8 +32,7 @@ import javax.swing.JOptionPane;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class BumpClientRebus extends BumpClientJava
@@ -56,10 +55,13 @@ private static String [] rebus_libs = new String [] {
    "org.eclipse.core.jobs.jar",
    "org.eclipse.core.resources.jar",
    "org.eclipse.core.runtime.jar",
+   "org.eclipse.core.contenttype.jar",
+   "org.eclipse.equinox.preferences.jar",
    "org.eclipse.equinox.common.jar",
    "org.eclipse.jface.jar",
    "org.eclipse.jface.text.jar",
    "org.eclipse.text.jar",
+   "org.eclipse.osgi.jar",
 };
 
 
@@ -130,8 +132,14 @@ private void ensureRunning()
    List<String> argl = new ArrayList<String>();
    argl.add("java");
 
-   argl.add("-Xdebug");
-   argl.add("-Xrunjdwp:transport=dt_socket,address=23232,server=y,suspend=n");
+   String opts = board_properties.getProperty("edu.brown.cs.bubbles.rebase.options");
+   if (opts != null) {
+      StringTokenizer tok = new StringTokenizer(opts);
+      while (tok.hasMoreTokens()) {
+	 String opt = tok.nextToken();
+	 argl.add(opt);
+       }
+    }
 
    argl.add("-Xmx1024m");
    argl.add("-Dedu.brown.cs.bubbles.MINT=" + mint_name);

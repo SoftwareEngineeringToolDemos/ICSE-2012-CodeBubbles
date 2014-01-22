@@ -85,8 +85,11 @@ enum CallbackType {
 interface BdynCallback {
    String getClassName();
    String getMethodName();
+   String getArgs();
+   String getDisplayName();
    int getId();
    CallbackType getCallbackType();
+   void setLabel(String lbl);
 }
 
 

@@ -1353,6 +1353,8 @@ private static boolean checkEclipseDirectory(File ed)
       }
     }
 
+   // check for proper architecture as well
+
    return true;
 }
 
@@ -1431,18 +1433,23 @@ private static boolean checkInstallDirectory(File ind)
    if (!libb.exists() || !libb.isDirectory()) return false;
    File inf = new File(libb,BOARD_RESOURCE_PLUGIN);
    if (!inf.exists() || !inf.canRead()) return false;
+   File elib = new File(ind,"eclipsejar");
+   if (!elib.exists() || !elib.canRead()) return false;
+
    for (String s : BOARD_RESOURCE_PROPS) {
       inf = new File(libb,s);
       if (!inf.exists() || !inf.canRead()) return false;
     }
    for (String s : BOARD_LIBRARY_FILES) {
-      inf = new File(libb,s);
+      inf = new File(elib,s);
+      if (!inf.exists() || !inf.canRead()) inf = new File(libb,s);
       if (!inf.exists() || !inf.canRead()) {
 	 BoardLog.logX("BOARD","Missing library file " + inf);
        }
     }
    for (String s : BOARD_LIBRARY_EXTRAS) {
-      inf = new File(libb,s);
+      inf = new File(elib,s);
+      if (!inf.exists() || !inf.canRead()) inf = new File(libb,s);
       if (!inf.exists() || !inf.canRead()) {
 	 BoardLog.logX("BOARD","Missing library file " + inf);
        }
@@ -2103,16 +2110,18 @@ private boolean checkDefaultInstallation()
    jar_directory = f.getParent();
    install_jar = true;
 
-   File fe = new File(jar_directory,"eclipse");
-   File fe1 = null;
-   if (f.getParentFile() != null) fe1 = new File(f.getParentFile().getParentFile(),"eclipse");
-   if (checkEclipseDirectory(fe)) {
-      eclipse_directory = fe.getPath();
-      firsttime = false;
-    }
-   else if (fe1 !=  null && checkEclipseDirectory(fe1)) {
-      eclipse_directory = fe1.getPath();
-      firsttime = false;
+   if (eclipse_directory == null) {
+      File fe = new File(jar_directory,"eclipse");
+      File fe1 = null;
+      if (f.getParentFile() != null) fe1 = new File(f.getParentFile().getParentFile(),"eclipse");
+      if (checkEclipseDirectory(fe)) {
+	 eclipse_directory = fe.getPath();
+	 firsttime = false;
+       }
+      else if (fe1 !=  null && checkEclipseDirectory(fe1)) {
+	 eclipse_directory = fe1.getPath();
+	 firsttime = false;
+       }
     }
 
    // has_changed = true;

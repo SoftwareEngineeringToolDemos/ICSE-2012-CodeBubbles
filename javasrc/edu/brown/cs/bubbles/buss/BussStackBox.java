@@ -31,6 +31,7 @@
 package edu.brown.cs.bubbles.buss;
 
 import edu.brown.cs.bubbles.board.BoardMetrics;
+import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BubbleViewCallback;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaWorkingSet;
@@ -82,7 +83,8 @@ BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussbubble)
    tree_model = mdl;
    buss_bubble = bussbubble;
 
-   Font ft = BUSS_STACK_FONT;
+   BoardProperties props = BoardProperties.getProperties("Buss");
+   Font ft = props.getFont(BUSS_STACK_FONT_PROP,BUSS_STACK_FONT);
    Font ftb = ft.deriveFont(Font.BOLD);
 
    TreeSelectionModel smdl = getSelectionModel();
@@ -309,6 +311,8 @@ private void createAllBubbles()
 private void createSelectedBubble()
 {
    TreePath tp = getSelectionPath();
+   if (tp == null) return;
+
    TreeNode tn = (TreeNode) tp.getLastPathComponent();
 
    Rectangle loc = BudaRoot.findBudaLocation(this);

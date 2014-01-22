@@ -25,9 +25,7 @@
 package edu.brown.cs.bubbles.rebus;
 
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.board.BoardImage;
-import edu.brown.cs.bubbles.board.BoardSetup;
-import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.bump.*;
 import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bale.*;
@@ -114,6 +112,8 @@ public static void initialize(BudaRoot br)
          "Export Accepted Files",BoardImage.getImage("fileexport"));
 
    BaleFactory.getFactory().addContextListener(new RebusContexter());
+   
+   setupCache();
 }
 
 
@@ -176,11 +176,15 @@ private static class ExportButton implements ActionListener
 /*										*/
 /********************************************************************************/
 
-private static class DeleteAllButton implements ActionListener {
+private static class DeleteAllButton implements ActionListener, Runnable {
 
    @Override public void actionPerformed(ActionEvent e) {
-       BumpClient bc = BumpClient.getBump();
-       bc.delete(null,"PROJECT",null,false);
+      BoardThreadPool.start(this);
+    }
+   
+   @Override public void run() {
+      BumpClient bc = BumpClient.getBump();
+      bc.delete(null,"PROJECT",null,false);
     }
 
 }	// end of inner class DeleteAllButton
@@ -207,8 +211,10 @@ private static class SearchExtender implements BassConstants.BassPopupHandler {
 	List<BumpLocation> locs = null;
 	if (name.length() > 0)
 	   locs = BumpClient.getBump().findClassDefinition(proj,name);
-	if (locs != null && locs.size() > 0) {
-	   loc = locs.get(0);
+	if (locs != null && locs.size() > 0) loc = locs.get(0);
+	else {
+	   locs = BumpClient.getBump().findClassDefinition(proj,name + ".*");
+	   if (locs != null && locs.size() > 0) loc = locs.get(0);
 	 }
       }
      else {
@@ -556,6 +562,33 @@ private static class AcceptFlag implements BassFlag {
    @Override public int getPriority()			{ return flag_priority; }
 
 }	// end of inner class AcceptFlag
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Caching setup                                                           */
+/*                                                                              */
+/********************************************************************************/
+
+private static void setupCache()
+{
+   boolean use = false;
+   BoardProperties bp = BoardProperties.getProperties("Rebus");
+   String cachedir = bp.getProperty("Rebus.cache.directory");
+   if (cachedir == null || cachedir.equals("")) use = false;
+   else use = bp.getBoolean("Rebus.cache.use",true);
+   
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
+   String cmd = "<BUBBLES DO='REBUSCACHE' DIR='" + cachedir + "'";    
+   cmd += " USE='" + Boolean.toString(use) + "'";
+   cmd += " LANG='Rebase' />";
+   mc.send(cmd);
+}
+
+
+
 
 }	// end of class RebusFactory
 

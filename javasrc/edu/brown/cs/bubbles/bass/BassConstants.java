@@ -277,8 +277,27 @@ interface BassRepository {
  *	Tell if this repository matches or includes another
  **/
    boolean includesRepository(BassRepository br);
+   
 
+}       // end of interface BassRepository
+
+
+interface BassUpdatableRepository extends BassRepository {
+   
+   void reloadRepository();
 }
+
+
+interface BassUpdatingRepository extends BassRepository {
+   
+/**
+ *      Add a dependent repository for update purposes
+ **/
+   void addUpdateRepository(BassUpdatableRepository br);
+   
+   void removeUpdateRepository(BassUpdatableRepository br);
+   
+}       // end of inner interface BassUpdatableRepository
 
 
 

@@ -334,21 +334,53 @@ void handleContextMenu(MouseEvent evt)
 
    JPopupMenu menu = new JPopupMenu();
 
-   if (lno > 0 && BALE_PROPERTIES.getBoolean("Bale.allow.breakpoints",true)) {
-      menu.add("Toggle Breakpoint");
-      menu.add("Toggle Tracepoint");
-    }
-
    if (lan != null) {
       for (BaleAnnotation ba : lan) {
 	 ba.addPopupButtons(((Component) for_editor),menu);
        }
     }
+   
+   AnnotationContext ctx = new AnnotationContext(lno);
+   BaleFactory.getFactory().addContextMenuItems(ctx,menu);
 
    if (menu.getComponentCount() == 0) return;
 
-   new ContextMenuHandler(menu,lno);
    menu.show(this,evt.getX(),evt.getY());
+}
+
+
+
+
+private class AnnotationContext implements BaleContextConfig {
+   
+   private int line_number;
+   
+   AnnotationContext(int lno) {
+      line_number = lno;
+    }
+   
+   @Override public BudaBubble getEditor() {
+      return BudaRoot.findBudaBubble(BaleAnnotationArea.this);
+    }
+   
+   @Override public BaleFileOverview getDocument() {
+      return (BaleFileOverview) for_document;
+    }
+   
+   @Override public int getOffset() {
+      return for_document.findLineOffset(line_number);
+    }
+   
+   @Override public int getDocumentOffset() {
+      return for_document.getDocumentOffset(getOffset());
+    }
+   
+   @Override public String getToken()                           { return null; }
+   @Override public BaleContextType getTokenType()              { return BaleContextType.NONE; }
+   @Override public String getMethodName()                      { return null; }
+   @Override public int getLineNumber()                         { return line_number; }
+   @Override public boolean inAnnotationArea()                  { return true; }
+   
 }
 
 
@@ -369,40 +401,6 @@ private int findLine(MouseEvent evt)
 
    return -1;
 }
-
-
-
-private class ContextMenuHandler implements ActionListener {
-
-   private int for_line;
-
-   ContextMenuHandler(JPopupMenu m,int lno) {
-      for_line = lno;
-      int ct = m.getComponentCount();
-      for (int i = 0; i < ct; ++i) {
-	 Component c = m.getComponent(i);
-	 if (c instanceof JMenuItem) {
-	    JMenuItem mi = (JMenuItem) c;
-	    mi.addActionListener(this);
-	  }
-       }
-    }
-
-   @Override public void actionPerformed(ActionEvent e) {
-      String cmd = e.getActionCommand();
-      if (cmd.equals("Toggle Breakpoint")) {
-	 break_model.toggleBreakpoint(for_document.getProjectName(),
-					 for_document.getFile(),for_line,BumpBreakMode.DEFAULT);
-       }
-      else if (cmd.equals("Toggle Tracepoint")) {
-	 break_model.toggleBreakpoint(for_document.getProjectName(),
-	       for_document.getFile(),for_line,BumpBreakMode.TRACE);
-       }
-
-      BoardMetrics.noteCommand("BALE","ANNOT_" + cmd);
-   }
-
-}	// end of inner class ContextMenuHandler
 
 
 

@@ -122,6 +122,11 @@ int getTabSize() {
 }
 
 
+static void setBaseTabSize(int tz)
+{
+   base_tab_size = tz;
+}
+
 
 /********************************************************************************/
 /*										*/

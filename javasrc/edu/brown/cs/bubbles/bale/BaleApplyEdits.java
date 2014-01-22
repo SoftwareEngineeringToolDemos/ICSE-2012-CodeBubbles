@@ -138,7 +138,7 @@ private void extractEdits(Element xml,Set<Element> edits)
 {
    String typ = IvyXml.getAttrString(xml,"TYPE");
    if (typ == null) return;
-   if (typ.equals("MULTI")) {
+   if (typ.equals("MULTI") || xml.getTagName().equals("CHANGE")) {
       for (Element ed : IvyXml.children(xml,"EDIT")) {
 	 extractEdits(ed,edits);
        }
@@ -165,12 +165,13 @@ private void applyResourceEdits(Element xml)
       else if (typ.equals("RENAMERESOURCE")) {
 	 Element r = IvyXml.getChild(xml,"RESOURCE");
 	 if (r != null) {
+	    BumpClient bc = BumpClient.getBump();
+	    bc.saveAll();
 	    String newname = IvyXml.getAttrString(xml,"NEWNAME");
 	    String proj = IvyXml.getAttrString(r,"PROJECT");
 	    File fil = new File(IvyXml.getAttrString(r,"LOCATION"));
 	    BaleDocumentIde bde = BaleFactory.getFactory().getDocument(proj,fil);
 	    bde.flushEdits();
-	    BumpClient bc = BumpClient.getBump();
 	    // bc.saveFile(proj,fil);
 	    bc.renameResource(proj,fil,newname);
 	  }
@@ -231,7 +232,7 @@ private static class EditSorter implements Comparator<Element> {
       int off1 = IvyXml.getAttrInt(e1,"OFFSET");
       int off2 = IvyXml.getAttrInt(e2,"OFFSET");
       if (off2 != off1) return off2-off1;
-      
+
       int ct1 = IvyXml.getAttrInt(e1,"COUNTER");
       int ct2 = IvyXml.getAttrInt(e2,"COUNTER");
       return ct2-ct1;

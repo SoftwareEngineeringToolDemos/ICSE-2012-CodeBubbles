@@ -737,12 +737,14 @@ private static class Contexter implements BaleContextListener {
 
 
    @Override public void addPopupMenuItems(BaleContextConfig ctx,JPopupMenu menu) {
+      if (ctx.inAnnotationArea()) return;
+      
       for (BaleCorrector bc : all_correctors.keySet()) {
-	 BudaBubble bbl = BudaRoot.findBudaBubble(bc.for_editor);
-	 if (bbl == ctx.getEditor()) {
-	    bc.addPopupMenuItems(ctx,menu);
-	    break;
-	  }
+         BudaBubble bbl = BudaRoot.findBudaBubble(bc.for_editor);
+         if (bbl == ctx.getEditor()) {
+            bc.addPopupMenuItems(ctx,menu);
+            break;
+          }
        }
     }
 

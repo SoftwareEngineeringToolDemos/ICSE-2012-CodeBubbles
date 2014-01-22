@@ -1120,19 +1120,19 @@ private class ExecutionAnnot implements BaleAnnotation {
       for_frame = frm;
       for_file = frm.getFile();
       boolean lcl = frm.isSystem();
-   
+
       for_document = BaleFactory.getFactory().getFileOverview(null,for_file,lcl);
       int off = for_document.findLineOffset(frm.getLineNumber());
       BoardProperties bp = BoardProperties.getProperties("Bddt");
       annot_color = bp.getColor(BDDT_EXECUTE_ANNOT_COLOR,new Color(0x4000ff00,true));
       except_color = bp.getColor(BDDT_EXECUTE_EXCEPT_COLOR,new Color(0x40ff0000,true));
-   
+
       execute_pos = null;
       try {
-         execute_pos = for_document.createPosition(off);
+	 execute_pos = for_document.createPosition(off);
        }
       catch (BadLocationException e) {
-         BoardLog.logE("BDDT","Bad execution position",e);
+	 BoardLog.logE("BDDT","Bad execution position",e);
        }
     }
 
@@ -1160,7 +1160,7 @@ private class ExecutionAnnot implements BaleAnnotation {
    @Override public Color getLineColor(BudaBubble bbl) {
       BumpStackFrame frm = bubble_manager.getFrameForBubble(bbl);
       if (frm != null && frm != for_frame) return null;
-      
+
       if (for_thread.getExceptionType() != null) return except_color;
       return annot_color;
     }
@@ -1429,7 +1429,6 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Evaluation handlers							*/
@@ -1482,15 +1481,20 @@ private static class EvaluationListener implements BumpEvaluationHandler, Expres
    @Override public String formatResult() {
       String s = formatRunValue(result_value);
       if (s != null) return s;
+      if (result_value == null) return null;
       return result_value.getValue();
     }
 
    private synchronized void waitForResult() {
+      long start = System.currentTimeMillis();
       while (!is_done) {
 	 try {
 	    wait(1000l);
 	  }
 	 catch (InterruptedException e) { }
+	 if ((System.currentTimeMillis() - start) > 60000) {
+	    evaluationError(null,null,"Operation Timeout");
+	  }
        }
     }
 

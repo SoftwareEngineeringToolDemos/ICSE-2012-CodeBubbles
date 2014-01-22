@@ -627,6 +627,7 @@ private static class CallbackMethod implements BdynCallback {
    private int	  method_mods;
    private String callback_args;
    private CallbackType callback_type;
+   private String user_label;
 
    CallbackMethod(String proj,String file,String cls,String mthd,String args,String rtyp,int line,CallbackType cbt) {
       project_name = proj;
@@ -640,6 +641,7 @@ private static class CallbackMethod implements BdynCallback {
       method_mods = 0;
       callback_args = null;
       callback_type = cbt;
+      user_label = null;
     }
 
    CallbackMethod(String cls,String mthd,CallbackType cbt,BumpLocation loc) {
@@ -660,6 +662,7 @@ private static class CallbackMethod implements BdynCallback {
       method_mods = IvyXml.getAttrInt(xml,"MODS");
       callback_args = IvyXml.getAttrString(xml,"CBARGS");
       callback_type = IvyXml.getAttrEnum(xml,"CBTYPE",CallbackType.UNKNOWN);
+      user_label = IvyXml.getTextElement(xml,"LABEL");
     }
 
    void update(BumpLocation loc) {
@@ -680,13 +683,19 @@ private static class CallbackMethod implements BdynCallback {
       if (callback_id == 0) callback_id = callback_counter.incrementAndGet();
       return callback_id;
     }
-   String getArgs()			{ return method_args; }
+   @Override public String getArgs()    { return method_args; }
    String getReturnType()		{ return return_type; }
    int getModifiers()			{ return method_mods; }
    void setCallbackArgs(String s)	{ callback_args = s; }
    String getCallbackArgs()		{ return callback_args; }
    @Override public CallbackType getCallbackType()	{ return callback_type; }
 
+   @Override public void setLabel(String lbl)           { user_label = lbl; }
+   
+   @Override public String getDisplayName() {
+      if (user_label != null) return user_label;
+      return class_name + "." + method_name;
+    }
    String getFullName() {
       return class_name + "@" + method_name;
     }
@@ -705,6 +714,7 @@ private static class CallbackMethod implements BdynCallback {
       xw.field("MODS",method_mods);
       xw.field("CBARGS",callback_args);
       xw.field("CBTYPE",callback_type);
+      xw.field("LABEL",user_label);
       xw.end("CALLBACK");
     }
 

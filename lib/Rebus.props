@@ -3,5 +3,7 @@
 <properties>
 <entry key="Rebus.search.engines">OHLOH,GITHUB</entry>
 <entry key="Rebus.use.tasks">false</entry>
+<entry key="Rebus.cache.directory"></entry>
+<entry key="Rebus.cache.use">true</entry>
 </properties>
 

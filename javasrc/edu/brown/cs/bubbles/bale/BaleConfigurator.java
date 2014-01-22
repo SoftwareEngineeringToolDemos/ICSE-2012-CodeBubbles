@@ -60,6 +60,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 {
    Element cnt = IvyXml.getChild(xml,"CONTENT");
    String typ = IvyXml.getAttrString(cnt,"TYPE");
+   if (typ == null) return null;
 
    BudaBubble bb = null;
    BaleFactory bf = BaleFactory.getFactory();
@@ -107,7 +108,7 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 	    break;
        }
     }
-   
+
    Element eld = IvyXml.getChild(cnt, "ELISIONS");
    if (eld != null && bb != null) {
       List<BaleElisionData> elides = new ArrayList<BaleElisionData>();
@@ -182,28 +183,28 @@ class BaleConfigurator implements BaleConstants, BudaConstants.BubbleConfigurato
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Elision information                                                     */
-/*                                                                              */
+/*										*/
+/*	Elision information							*/
+/*										*/
 /********************************************************************************/
 
 private static class ElideData implements BaleElisionData {
-   
+
    private int start_offset;
    private int end_offset;
    private String element_name;
-   
+
    ElideData(Element xml) {
       start_offset = IvyXml.getAttrInt(xml,"START");
       end_offset = IvyXml.getAttrInt(xml,"END");
       element_name = IvyXml.getAttrString(xml,"NAME");
     }
-   
-   @Override public int getStartOffset()        { return start_offset; }
-   @Override public int getEndOffset()          { return end_offset; }
-   @Override public String getElementName()     { return element_name; }
-   
-}       // end of inner class ElideData
+
+   @Override public int getStartOffset()	{ return start_offset; }
+   @Override public int getEndOffset()		{ return end_offset; }
+   @Override public String getElementName()	{ return element_name; }
+
+}	// end of inner class ElideData
 
 
 

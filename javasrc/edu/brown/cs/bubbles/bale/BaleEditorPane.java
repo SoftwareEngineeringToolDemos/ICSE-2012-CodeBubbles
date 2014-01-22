@@ -351,7 +351,9 @@ void handleContextMenu(MouseEvent evt)
    addButton(menu,"Go to Implementation",idok,hdlr,null);
    addButton(menu,"Go to Definition",idok,hdlr,null);
    addButton(menu,"Find All References",idok,hdlr,null);
-   addButton(menu,"Go to Documentation",idok,hdlr,null);
+   if (BALE_PROPERTIES.getBoolean("Bale.goto.documentation",true)) {
+      addButton(menu,"Go to Documentation",idok,hdlr,null);
+    }
    addButton(menu,"Go to Search",idok,hdlr,null);
    addButton(menu,"Go to Type",idok,hdlr,null);
    addButton(menu,"Remove Elision",elok,hdlr,null);
@@ -1184,6 +1186,9 @@ private class ContextData implements BaleContextConfig {
    @Override public int getDocumentOffset() {
       return getBaleDocument().getDocumentOffset(editor_location);
     }
+   @Override public int getLineNumber() {
+      return getBaleDocument().findLineNumber(editor_location);
+    }
 
    @Override public String getToken() {
       if (editor_element == null || !editor_element.isIdentifier()) return null;
@@ -1208,7 +1213,8 @@ private class ContextData implements BaleContextConfig {
       return editor_element.getMethodName();
     }
 
-
+   @Override public boolean inAnnotationArea()          { return false; }
+   
 }	// end of inner class ContextData
 
 

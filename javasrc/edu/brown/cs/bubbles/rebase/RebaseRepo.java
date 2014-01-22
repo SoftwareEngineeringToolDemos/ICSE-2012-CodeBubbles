@@ -25,6 +25,8 @@
 package edu.brown.cs.bubbles.rebase;
 
 
+import edu.brown.cs.bubbles.rebase.word.*;
+
 import edu.brown.cs.ivy.exec.IvyExec;
 
 import org.jsoup.Jsoup;
@@ -49,10 +51,7 @@ abstract class RebaseRepo implements RebaseConstants
 /*										*/
 /********************************************************************************/
 
-private static RebaseCache url_cache = new RebaseCache();
 
-
-			
 
 /********************************************************************************/
 /*										*/
@@ -118,10 +117,12 @@ abstract protected boolean addSources(URL base,Element doc,RebaseRequest rqst,Re
 protected static String loadURL(URL url,boolean cache) throws RebaseException
 {
    RebaseMain.logD("LOAD URI " + url + " " + cache);
+   
+   RebaseCache urlcache = RebaseMain.getRebase().getUrlCache();
 
    StringBuilder buf = new StringBuilder();
    try {
-      BufferedReader br = url_cache.getReader(url,cache);
+      BufferedReader br = urlcache.getReader(url,cache);
       for ( ; ; ) {
 	 String ln = br.readLine();
 	 if (ln == null) break;
@@ -137,6 +138,20 @@ protected static String loadURL(URL url,boolean cache) throws RebaseException
     }
 
    return buf.toString();
+}
+
+
+protected static String loadSourceURL(URL url,boolean cache) throws RebaseException
+{
+   String text = loadURL(url,cache);
+   
+   if (cache) {
+      RebaseCache urlcache = RebaseMain.getRebase().getUrlCache();
+      boolean fg = urlcache.wasAddedToCache(url);
+      RebaseWordFactory.getFactory().loadSource(text,!fg);
+    }
+   
+   return text;
 }
 
 

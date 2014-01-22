@@ -105,10 +105,11 @@ List<BoppOptionNew> getOptionsForTab(String tab)
 }
 
 
-void doingAdd(boolean fg) 
+void doingAdd(boolean fg)
 {
    doing_add = fg;
 }
+
 
 
 /********************************************************************************/
@@ -183,7 +184,7 @@ void revertOptions()
       else bp.setProperty(prop,val);
     }
    changed_options.clear();
-   
+
    for (BoppOptionBase opt : all_options) {
       opt.reset();
     }
@@ -194,7 +195,7 @@ void revertOptions()
 void noteChange(String pkg,String prop)
 {
    if (doing_add) return;
-   
+
    String key = pkg + "@" + prop;
 
    if (changed_options.containsKey(key)) return;

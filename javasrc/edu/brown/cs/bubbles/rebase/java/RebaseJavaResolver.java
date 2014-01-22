@@ -93,6 +93,9 @@ void resolveNames(RebaseJavaRoot root)
    for (CompilationUnit cu : root.getTrees()) {
       DefPass dp = new DefPass();
       cu.accept(dp);
+    }
+   
+   for (CompilationUnit cu : root.getTrees()) {
       RefPass rp = new RefPass();
       cu.accept(rp);
     }

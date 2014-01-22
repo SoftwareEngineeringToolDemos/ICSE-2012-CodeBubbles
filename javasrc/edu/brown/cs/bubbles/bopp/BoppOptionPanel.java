@@ -81,7 +81,7 @@ BoppOptionPanel(BoppOptionSet opts)
 {
    option_set = opts;
    opts.doingAdd(true);
-   
+
    sub_panels = new ArrayList<SubPanel>();
    Set<String> oset = new TreeSet<String>(opts.getTabNames());
    for (String s : oset) {
@@ -95,7 +95,7 @@ BoppOptionPanel(BoppOptionSet opts)
    sub_panels.add(search_panel);
 
    setupDisplay();
-   
+
    opts.doingAdd(false);
 }
 
@@ -128,13 +128,15 @@ private class OptionBubble extends BudaBubble {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle recentoptions                                                    */
-/*                                                                              */
+/*										*/
+/*	Handle recentoptions							*/
+/*										*/
 /********************************************************************************/
 
 void handleOptionChange(BoppOptionNew opt)
 {
+   if (tab_pane.getSelectedComponent() == recent_options.getDisplay()) return;
+   
    recent_options.addFirst(opt);
 }
 
@@ -149,7 +151,7 @@ void handleOptionChange(BoppOptionNew opt)
 private void setupDisplay()
 {
    display_panel = new SwingGridPanel();
-   
+
    search_field = new JTextField();
    search_field.addKeyListener(new SearchKeyListener());
    SwingGridPanel sbox = new SwingGridPanel();
@@ -232,7 +234,7 @@ private void search()
    search_panel.replaceOptions(opts);
 }
 
-		
+
 
 /********************************************************************************/
 /*										*/
@@ -290,8 +292,9 @@ private static class SubPanel {
    void addOptions(List<BoppOptionNew> opts) {
       panel_options.addAll(opts);
     }
-   
+
    void addFirst(BoppOptionNew opt) {
+      if (panel_options.size() > 0 && panel_options.get(0) == opt) return;
       panel_options.remove(opt);
       panel_options.add(0,opt);
       getDisplay();

@@ -353,7 +353,9 @@ private boolean createProject()
 	 xw.begin("link");
 	 xw.textElement("name",ent.getKey());
 	 xw.textElement("type","2");
-	 xw.textElement("location",ent.getValue().getPath());
+	 String xnm = ent.getValue().getPath();
+	 xnm = xnm.replace("\\","/");
+	 xw.textElement("location",xnm);
 	 xw.end("link");
        }
       xw.end("linkedResources");

@@ -1729,7 +1729,7 @@ private class FileData implements IBufferChangedListener {
     }
 
    @Override public void bufferChanged(BufferChangedEvent evt) {
-      BedrockPlugin.logD("Check change " + doing_change + " " +
+      BedrockPlugin.logD("Buffer check change " + doing_change + " " +
 			    System.identityHashCode(evt.getBuffer()));
 
       if (doing_change) return;
@@ -1745,6 +1745,7 @@ private class FileData implements IBufferChangedListener {
 			       System.identityHashCode(buf) + " " +
 			       Thread.currentThread().getName());
 	 if (len == 0 && off == 0 && txt == null) {
+	    // buffer closed event
 	    if (buf != default_buffer && default_buffer != null) {
 	       for (Map.Entry<String,BufferData> ent : buffer_map.entrySet()) {
 		  BufferData bd = ent.getValue();

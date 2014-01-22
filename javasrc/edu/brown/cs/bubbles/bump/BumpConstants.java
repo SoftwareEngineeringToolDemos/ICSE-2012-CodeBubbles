@@ -685,6 +685,7 @@ interface BumpLaunchConfig {
    boolean isWorkingCopy();
    String getContractArgs();
    String getLogFile();
+   String getWorkingDirectory();
 
    BumpLaunchConfig clone(String name);
    BumpLaunchConfig save();
@@ -703,6 +704,7 @@ interface BumpLaunchConfig {
    BumpLaunchConfig setRemoteHostPort(String host,int port);
 
    BumpLaunchConfig setLogFile(String name);
+   BumpLaunchConfig setWorkingDirectory(String name);
 
    BumpLaunchConfig setAttribute(String name,String value);
 

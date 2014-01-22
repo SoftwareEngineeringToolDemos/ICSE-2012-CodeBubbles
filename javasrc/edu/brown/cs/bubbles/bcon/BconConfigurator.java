@@ -26,6 +26,8 @@
 package edu.brown.cs.bubbles.bcon;
 
 import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.xml.IvyXml;
 
@@ -33,6 +35,7 @@ import org.w3c.dom.Element;
 
 import java.awt.Point;
 import java.io.File;
+import java.util.List;
 
 
 class BconConfigurator implements BconConstants, BudaConstants.BubbleConfigurator
@@ -58,10 +61,14 @@ class BconConfigurator implements BconConstants, BudaConstants.BubbleConfigurato
       bb = BconFactory.getFactory().createOverviewBubble(bba,p);
     }
    else if (typ.equals("CLASS")) {
+      BumpClient bc = BumpClient.getBump();
       String proj = IvyXml.getAttrString(cnt,"PROJECT");
       String cls = IvyXml.getAttrString(cnt,"CLASS");
       String fnm = IvyXml.getAttrString(cnt,"FILE");
       boolean ifg = IvyXml.getAttrBool(cnt,"INNER");
+      List<BumpLocation> locs = bc.findClassDefinition(proj, cls);
+      if (locs == null || locs.size() == 0) return null;
+      
       bb = BconFactory.getFactory().createClassBubble(bba,proj,new File(fnm),cls,ifg);
     }
    else if (typ.equals("PACKAGE")) {

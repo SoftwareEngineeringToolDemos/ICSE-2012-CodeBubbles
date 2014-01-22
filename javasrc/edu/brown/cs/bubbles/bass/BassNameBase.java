@@ -303,7 +303,13 @@ public String getNameHead()
 
 @Override public Icon getDisplayIcon()			{ return null; }
 
-@Override public String getDisplayName()		{ return getNameWithParameters(); }
+@Override public String getDisplayName()
+{
+   return getNameWithParameters();
+}
+
+
+
 
 @Override public BumpLocation getLocation()		{ return null; }
 

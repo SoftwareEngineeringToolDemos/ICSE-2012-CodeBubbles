@@ -123,7 +123,7 @@ private class ClassInfo extends InfoStruct {
       String snm = getSecondInfo().toString();
       if (snm.length() == 0) return true;
       if (!acceptableName(snm)) return false;
-      return false;
+      return true;
     }
 
 }	// end of inner class ClassInfo

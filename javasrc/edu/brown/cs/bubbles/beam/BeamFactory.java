@@ -376,7 +376,7 @@ private static class NoteHandler implements BaleContextListener {
 
    @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu menu) {
       if (cfg.getOffset() >= 0) {
-	 menu.add(new NoteAction(cfg));
+         menu.add(new NoteAction(cfg));
        }
     }
 
@@ -471,6 +471,7 @@ private static ProblemFlag error1_flag = new ProblemFlag("error_overlay1",20);
 private static ProblemFlag warning_flag = new ProblemFlag("warning_overlay",10);
 private static ProblemFlag warning1_flag = new ProblemFlag("warning_overlay1",10);
 
+
 private static class SearchProblemFlags implements BassFlagger, BumpProblemHandler {
 
    private Map<String,ProblemFlag> flag_map;
@@ -490,10 +491,17 @@ private static class SearchProblemFlags implements BassFlagger, BumpProblemHandl
 
    @Override public synchronized void handleProblemAdded(BumpProblem bp)     { flag_map = null; }
    @Override public synchronized void handleProblemRemoved(BumpProblem bp)   { flag_map = null; }
-   @Override public synchronized void handleProblemsDone()		     { }
+   @Override public synchronized void handleProblemsDone()		     { 
+      if (flag_map == null) {
+	 // System.err.println("FLAGS UPDATED");
+	 // BassFactory.getFactory().flagsUpdated();
+	 SwingUtilities.invokeLater(new FlagUpdater());
+       }
+    }
    @Override public synchronized void handleClearProblems()		     { flag_map = null; }
 
    private void computeFlagMap() {
+      // System.err.println("FLAGS COMPUTED");
       Map<String,ProblemFlag> mpf = new HashMap<String,ProblemFlag>();
       flag_map = mpf;
       for (BumpProblem bp : BumpClient.getBump().getAllProblems()) {
@@ -558,6 +566,18 @@ private static class ProblemFlag implements BassFlag {
    @Override public int getPriority()			{ return flag_priority; }
 
 }	// end of inner class ProblemFlag
+
+
+
+private static class FlagUpdater implements Runnable {
+
+   @Override public void run() {
+      // System.err.println("FLAGS UPDATED");
+      BassFactory.getFactory().flagsUpdated();
+   }
+   
+}	// end of inner class FlagUpdater
+
 
 
 /********************************************************************************/

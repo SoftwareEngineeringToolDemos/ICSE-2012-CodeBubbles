@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding='UTF-8'?>
 <OPTIONS>
    <PACKAGE NAME="Beam">
-
       <OPT NAME="Note Bubble Options" TYPE="DIVIDER">
 	 <TAB NAME="Popular Options"/>
       </OPT>
@@ -256,7 +255,10 @@
 	 <KEYWORD TEXT="gradient"/>
 	 <KEYWORD TEXT="direction"/>
       </OPT>
-      <OPT NAME="Bale.comment.wrapping" DESCRIPTION="Comment Wrapping" TYPE="BOOLEAN">
+      <OPT NAME="Bale.indent.rbrace" DESCRIPTION="Extra indent for right brace" TYPE="INTEGER">
+	 <TAB NAME="Code Editor Options"/>
+      </OPT>
+       <OPT NAME="Bale.comment.wrapping" DESCRIPTION="Comment Wrapping" TYPE="BOOLEAN">
 	 <TAB NAME="Code Editor Options"/>
 	 <TAB NAME="Popular Options"/>
 	 <WARNING TEXT="Requires restart"/>
@@ -266,7 +268,7 @@
 	 <TAB NAME="Popular Options"/>
 	 <WARNING TEXT="Requires restart"/>
       </OPT>
-      <OPT NAME="Bale.autocomplete.delay" DESCRIPTION="Autocomplete Delay" TYPE="INTEGER">
+      <OPT NAME="Bale.autocomplete.delay" DESCRIPTION="Autocomplete Delay (ms)" TYPE="INTEGER">
 	 <TAB NAME="Code Editor Options"/>
 	 <KEYWORD TEXT="autocomplete"/>
 	 <KEYWORD TEXT="delay"/>
@@ -288,7 +290,7 @@
 	 <KEYWORD TEXT="preview"/>
 	 <KEYWORD TEXT="hover"/>
       </OPT>
-      <OPT NAME="Bale.family" DESCRIPTION="Default font family for code" TYPE="FONT">
+      <OPT NAME="Bale.family" DESCRIPTION="Default font for code" TYPE="FONT">
 	 <PROPERTIES FAMILY='Bale.family' SIZE='Bale.size' />
 	 <TAB NAME="Font Options"/>
 	 <TAB NAME='Code Editor Options'/>
@@ -409,6 +411,11 @@
 	 <TAB NAME='Popular Options'/>
 	 <TAB NAME='System Options'/>
 	 <KEYWORD TEXT='help' />
+      </OPT>
+      <OPT NAME="Buda.help.font" DESCRIPTION="Default font in help bubbles" TYPE="FONT">
+	 <TAB NAME="Font Options"/>
+	 <TAB NAME="Bubble Config"/>
+	 <KEYWORD TEXT="Font" />
       </OPT>
    </PACKAGE>
 
@@ -592,6 +599,40 @@
       </OPT>
    </PACKAGE>
 
+   <PACKAGE NAME="Bddt">
+      <OPT NAME="Console.family" DESCRIPTION="Default font for console" TYPE="FONT">
+	 <PROPERTIES FAMILY='Console.family' SIZE='Console.size' />
+	 <TAB NAME="Font Options"/>
+	 <TAB NAME='Debugger Options'/>
+	 <KEYWORD TEXT="Font" />
+      </OPT>
+      <OPT NAME="StdOut.foreground" DESCRIPTION="Color for stdout in console" TYPE="COLOR">
+	 <TAB NAME='Debugger Options'/>
+      </OPT>
+      <OPT NAME="StdErr.foreground" DESCRIPTION="Color for stderr in console" TYPE="COLOR">
+	 <TAB NAME='Debugger Options'/>
+      </OPT>
+      <OPT NAME="StdIn.foreground" DESCRIPTION="Color for stdin in console" TYPE="COLOR">
+	 <TAB NAME='Debugger Options'/>
+      </OPT>
+      <OPT NAME="Bddt.show.console" DESCRIPTION="Show console window by default" TYPE="BOOLEAN">
+	 <TAB NAME="Debugger Options"/>
+      </OPT>
+      <OPT NAME="Bddt.show.threads" DESCRIPTION="Show threads window by default" TYPE="BOOLEAN">
+	 <TAB NAME="Debugger Options"/>
+      </OPT>
+      <OPT NAME="Bddt.show.library.bubbles" DESCRIPTION="Show system code when possible" TYPE="BOOLEAN">
+	 <TAB NAME="Debugger Options"/>
+      </OPT>
+   </PACKAGE>
+
+   <PACKAGE NAME="Buss">
+      <OPT NAME="Buss.stack.font" DESCRIPTION="Default font in bubble stacks" TYPE="FONT">
+	 <TAB NAME="Font Options"/>
+	 <TAB NAME="Bubble Stack Options"/>
+	 <KEYWORD TEXT="Font" />
+      </OPT>
+   </PACKAGE>
 
 </OPTIONS>
 

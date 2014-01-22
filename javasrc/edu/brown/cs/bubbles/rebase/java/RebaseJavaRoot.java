@@ -264,6 +264,7 @@ private void findSymbols(RebaseJavaSearch search,String pattern,String kind)
    ASTVisitor av = search.getFindSymbolsVisitor(pattern,kind);
 
    for (RebaseJavaFile jf : file_nodes) {
+      search.setFile(jf);
       jf.getAstNode().accept(av);
     }
 }
@@ -278,6 +279,7 @@ private void findSymbols(RebaseJavaSearch search,String pattern,String kind)
 
    for (RebaseJavaFile jf : file_nodes) {
       if (!jf.getFile().getFileName().equals(file)) continue;
+      search.setFile(jf);
       jf.getAstNode().accept(av);
       break;
     }
@@ -295,6 +297,7 @@ private void findSymbols(RebaseJavaSearch search,String pattern,String kind)
 
    for (RebaseJavaFile jf : file_nodes) {
       if (!jf.getFile().getFileName().equals(file)) continue;
+      search.setFile(jf);
       jf.getAstNode().accept(av);
     }
 

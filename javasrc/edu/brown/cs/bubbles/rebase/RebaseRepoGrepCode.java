@@ -210,12 +210,12 @@ private class GrepCodeFileSource extends BaseFileSource implements RebaseSource 
    @Override public String getProjectName()		{ return project_name; }
    public String getPath()				{ return file_name; }
 
-   @Override public String getText() {
+    @Override public String getText() {
       try {
-	 return loadURL(file_href,true);
+         return loadSourceURL(file_href,true);
        }
       catch (RebaseException e) {
-	 RebaseMain.logE("REBASE: Problem loading file " + file_href + ": " + e,e);
+         RebaseMain.logE("REBASE: Problem loading file " + file_href + ": " + e,e);
        }
       return null;
     }

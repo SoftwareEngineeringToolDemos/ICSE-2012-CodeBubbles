@@ -30,6 +30,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.*;
+
 
 
 class RebaseCache implements RebaseConstants
@@ -44,6 +46,7 @@ class RebaseCache implements RebaseConstants
 
 private File            base_directory;
 private boolean         use_cache;
+private Set<URL>        added_urls;
 
 
 
@@ -55,19 +58,28 @@ private boolean         use_cache;
 
 RebaseCache()
 {
-   base_directory = new File(CACHE_DIRECTORY);
-   use_cache = true;
+   base_directory = null;
+   use_cache = false;
+   added_urls = new HashSet<URL>();
 }
 
 
 
 /********************************************************************************/
 /*                                                                              */
-/*      Access methods                                                          */
+/*      Setup caching                                                          */
 /*                                                                              */
 /********************************************************************************/
 
-void setUseCache(boolean fg)                    { use_cache = fg; }
+void setupCache(String dir,boolean use)
+{
+   File fdir = new File(dir);
+   base_directory = fdir;
+   use_cache = use;
+   if (!base_directory.exists()) base_directory.mkdirs();
+   if (!base_directory.exists() || !base_directory.isDirectory()) use_cache = false;
+   if (!base_directory.canWrite()) use_cache = false;
+}
 
 
 
@@ -91,6 +103,14 @@ BufferedReader getReader(URL url,boolean cache) throws IOException
    
    return getURLConnection(url);
 }
+
+
+
+boolean wasAddedToCache(URL url)
+{
+   return added_urls.contains(url);
+}
+
 
 
 /********************************************************************************/
@@ -176,6 +196,7 @@ private File getDirectory(URL u) throws IOException
 	    FileWriter fw = new FileWriter(urlf);
 	    fw.write(u.toExternalForm() + "\n");
 	    fw.close();
+            added_urls.add(u);
 	    return dir;
 	  }
 	 catch (IOException e) {
@@ -199,6 +220,7 @@ private File getDirectory(URL u) throws IOException
             if (ln == null) continue;
             ln = ln.trim();
             if (ln.equalsIgnoreCase(u.toExternalForm())) {
+               added_urls.remove(u);
                return dir;
              }
           }

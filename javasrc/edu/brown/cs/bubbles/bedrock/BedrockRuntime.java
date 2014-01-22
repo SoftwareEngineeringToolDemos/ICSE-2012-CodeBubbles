@@ -79,6 +79,7 @@ static {
    prop_map.put("CONNECT_MAP","org.eclipse.jdt.launching.CONNECT_MAP");
    prop_map.put("STOP_IN_MAIN","org.eclipse.jdt.launching.STOP_IN_MAIN");
    prop_map.put("CAPTURE_IN_FILE","org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE");
+   prop_map.put("WORKING_DIRECTORY","org.eclipse.jdt.launching.WORKING_DIRECTORY");
 }
 
 
@@ -745,8 +746,17 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	     }
 	    else if (val instanceof IJavaObject) {
 	       IJavaObject ovl = (IJavaObject) val;
-	       if (!ovl.isNull())
-		  val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
+	       if (!ovl.isNull()) {
+		  IJavaType jt = ovl.getJavaType();
+		  IJavaValue xvl = null;
+		  if (jt.getName().equals("org.apache.xerces.dom.DeferredElementImpl")) {
+		     xvl = convertXml(jthrd,ovl);
+		   }
+		  if (xvl == null) {   
+		     val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
+		   }
+		  else val = xvl;
+	        }
 	     }
 	  }
 
@@ -758,6 +768,26 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
        }
     }
 }
+
+
+IJavaValue convertXml(IJavaThread thrd,IJavaValue xml)
+{
+   IJavaDebugTarget tgt = (IJavaDebugTarget) thrd.getDebugTarget();
+   try {
+      IJavaType [] typs = tgt.getJavaTypes("edu.brown.cs.ivy.xml.IvyXml");
+      if (typs == null) return null;
+      IJavaClassType ivyxml = (IJavaClassType) typs[0];
+      IJavaValue [] args = new IJavaValue[] { xml };
+      IJavaValue rslt = ivyxml.sendMessage("convertXmlToString", "(Lorg/w3c/dom/Node;)Ljava/lang/String;", args, thrd);
+      return rslt;
+   }
+   catch (Throwable t) {
+      BedrockPlugin.logE("Problem converting XML",t);
+   }
+   
+   return null;
+}
+
 
 
 
@@ -808,6 +838,7 @@ void evaluateExpression(String proj,String bid,String expr,String tname,String f
 	 IAstEvaluationEngine eeng = EvaluationManager.newAstEvaluationEngine(jproj,tgt);
 	 ICompiledExpression eexp = eeng.getCompiledExpression(expr,jsf);
 	 eeng.evaluateExpression(eexp,jsf,new EvalListener(bid,eid),detail,bkpt);
+	 BedrockPlugin.logD("START EVALUATION OF " + expr + " " + bid + " " + eid);
 	 evaldone = true;
        }
       catch (DebugException e) {
@@ -832,9 +863,17 @@ private class EvalListener implements IEvaluationListener {
     }
 
    @Override public void evaluationComplete(IEvaluationResult rslt) {
+      BedrockPlugin.logD("FINISH EVALUTAION OF " + for_id + " " + reply_id);
       IvyXmlWriter xw = our_plugin.beginMessage("EVALUATION",for_id);
       xw.field("ID",reply_id);
-      BedrockUtil.outputValue(rslt,xw);
+      try {
+	 BedrockUtil.outputValue(rslt,xw);
+       }
+      catch (Throwable t) {
+	 BedrockPlugin.logE("Problem with eval output",t);
+	 xw.textElement("ERROR",t.toString());
+       }
+      BedrockPlugin.logD("EVAL: " + xw.toString());
       our_plugin.finishMessage(xw);
     }
 
@@ -1377,7 +1416,7 @@ private class ConsoleThread extends Thread {
       xw.field("STDERR",iserr);
       //TODO: fix this correctly
       String txt = buf.toString();
-      txt = txt.replace("]]>","] ]>");
+      // txt = txt.replace("]]>","] ]>");
       txt = txt.replace("\010"," ");
       if (txt.length() == 0) return;
       xw.cdataElement("TEXT",txt);

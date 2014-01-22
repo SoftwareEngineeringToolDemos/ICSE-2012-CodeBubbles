@@ -473,7 +473,7 @@ private class FindByKeyVisitor extends ASTVisitor {
    
    @Override public void postVisit(ASTNode n) {
       RebaseJavaSymbol js = RebaseJavaAst.getDefinition(n);
-      if (js != null) {
+      if (js != null && current_file != null) {
          String hdl = js.getHandle(current_file.getFile());
          if (hdl != null && hdl.equals(using_key)) {
             match_symbols.add(js);
@@ -584,7 +584,8 @@ private class LocationVisitor extends ASTVisitor {
       RebaseJavaSymbol js = null;
       if (use_defs) {
 	 js = RebaseJavaAst.getDefinition(n);
-	 if (js != null && match_symbols.contains(js)) return js;
+	 if (js != null && match_symbols.contains(js)) 
+	    return js;
        }
       if (use_refs) {
 	 js = RebaseJavaAst.getReference(n);
@@ -640,6 +641,18 @@ private class LocationVisitor extends ASTVisitor {
                break;
             case ASTNode.ARRAY_ACCESS :
                if (spd == ArrayAccess.ARRAY_PROPERTY) done = false;
+               break;
+            case ASTNode.SIMPLE_NAME :
+            case ASTNode.QUALIFIED_NAME :
+               done = false;
+               break;
+            case ASTNode.METHOD_DECLARATION :
+            case ASTNode.VARIABLE_DECLARATION_FRAGMENT :
+            case ASTNode.FIELD_DECLARATION :
+            case ASTNode.TYPE_DECLARATION :
+            case ASTNode.ENUM_DECLARATION :
+               read = true;
+               write = true;
                break;
             default :
                break;

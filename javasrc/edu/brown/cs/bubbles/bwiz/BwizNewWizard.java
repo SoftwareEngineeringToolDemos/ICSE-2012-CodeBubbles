@@ -33,6 +33,8 @@ import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoKey;
 import edu.brown.cs.bubbles.bueno.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.bass.*;
+import edu.brown.cs.bubbles.bass.BassConstants.BassRepository;
 
 import edu.brown.cs.ivy.swing.SwingComboBox;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
@@ -342,28 +344,34 @@ private void setupPackage() {
 
 private List<String> getPackages()
 {
-   Set<String> rslt = new TreeSet<String>();
-   BumpClient bc = BumpClient.getBump();
    String proj = info_structure.getProjectName();
-   List<BumpLocation> locs = bc.findTypes(proj,"*");
-
-   if (locs != null) {
-      Set<String> cls = new HashSet<String>();
-      for (BumpLocation bl : locs) {
-	 cls.add(bl.getSymbolName());
-       }
-      for (BumpLocation bl : locs) {
-	 String nm = bl.getSymbolName();
-	 int idx = nm.lastIndexOf(".");
-	 String cnm = null;
-	 if (idx > 0) {
-	    cnm = nm.substring(0,idx);
-	  }
-	 else cnm = DEFAULT_PACKAGE;
-	 if (cls.contains(cnm)) continue;
-	 rslt.add(cnm);
-       }
-    }
+   Set<String> rslt = new TreeSet<String>();
+   
+   BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
+   for (BassName bn : br.getAllNames()) {
+      if (proj != null && !proj.equals(bn.getProject())) continue;
+      switch (bn.getNameType()) {
+	 case CLASS :
+	 case INTERFACE :
+	 case ENUM :
+	 case THROWABLE :
+	    break;
+	 default :
+	    continue;
+      }
+      String pkg = bn.getNameHead();
+      if (pkg == null) continue;
+      int idx = pkg.lastIndexOf(".");
+      if (idx < 0) pkg = DEFAULT_PACKAGE;
+      else pkg = pkg.substring(0,idx);
+      if (rslt.contains(pkg)) continue;
+      BumpLocation bl = bn.getLocation();
+      if (bl == null) continue;
+      String key = bl.getKey();
+      if (key.contains("$")) continue;
+      rslt.add(pkg);
+   }
+      
    return new ArrayList<String>(rslt);
 }
 
@@ -853,12 +861,14 @@ private static class InterfaceVerifier implements BwizConstants.IVerifier
 {
    //Checks if is a String of valid interface(s) (separated by commas if more than one)
    @Override public boolean verify(String test) {
+      if (test == null || test.equals("")) return true;
       List<String> rslt = results(test);
       return rslt.size() > 0;
     }
 
     @Override public List<String> results(String test) {
       List<String> rslt = new ArrayList<String>();
+      if (test == null || test.equals("")) return rslt;
       try {
 	 StreamTokenizer tok = new StreamTokenizer(new StringReader(test));
 	 BwizParser parser = new BwizParser();

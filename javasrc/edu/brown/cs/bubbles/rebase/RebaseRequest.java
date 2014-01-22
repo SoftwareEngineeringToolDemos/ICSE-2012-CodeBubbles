@@ -47,8 +47,8 @@ public class RebaseRequest implements RebaseConstants
 private RebaseMain	rebase_main;
 private List<String>	search_string;
 private SourceType	search_type;
-private String          search_task;
-private RebaseProject   for_project;
+private String		search_task;
+private RebaseProject	for_project;
 private Map<RebaseRepo,List<URI>>  repo_uris;
 private int		current_index;
 
@@ -96,7 +96,7 @@ RebaseRequest(RebaseMain rm,String rqst,String repos,String task,String proj,Sou
 
 List<String> getSearchTokens()		{ return search_string; }
 SourceType getSearchType()		{ return search_type; }
-String getSearchTask()                  { return search_task; }
+String getSearchTask()			{ return search_task; }
 
 
 
@@ -126,6 +126,7 @@ void doNextSearch()
       try {
 	 URL url = uri.toURL();
 	 String text = RebaseRepo.loadURL(url,true);
+	 if (text == null) throw new RebaseException("Nothing loaded");
 	 Element doc = Jsoup.parse(text,url.toString());
 	 if (!rr.addSources(url,doc,this,null,null,rslt)) {
 	    while (uris.size() > current_index+1) {
@@ -149,7 +150,7 @@ void doNextSearch()
       RebaseProject proj = pm.findNewProject(pid,pnm,src.getRepository());
       RebaseFile rf = new RebaseFile(src);
       if (proj.addFile(rf)) {
-         proj.notePending();
+	 proj.notePending();
 	 // these probably should be done in background
 	 switch (search_type) {
 	    case FILE :
@@ -161,7 +162,7 @@ void doNextSearch()
 	       proj.addSystemFiles(rf);
 	       break;
 	  }
-         proj.donePending();
+	 proj.donePending();
        }
     }
 
@@ -170,12 +171,12 @@ void doNextSearch()
 
 
 private class NextSearch implements Runnable {
-   
+
    @Override public void run() {
       doNextSearch();
     }
 
-}       // end of inner class NextSearch
+}	// end of inner class NextSearch
 
 
 

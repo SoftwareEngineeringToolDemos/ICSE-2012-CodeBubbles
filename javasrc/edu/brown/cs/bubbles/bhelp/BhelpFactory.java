@@ -132,7 +132,7 @@ public static void initialize(BudaRoot br)
 /*										*/
 /********************************************************************************/
 
-public void startDemonstration(Component comp,String name)
+void startDemonstration(Component comp,String name)
 {
    if (comp == null) {
       comp = buda_root.getCurrentBubbleArea();

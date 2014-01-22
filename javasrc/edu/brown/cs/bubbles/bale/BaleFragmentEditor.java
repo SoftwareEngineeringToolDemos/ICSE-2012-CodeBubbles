@@ -140,7 +140,7 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
    BaleFactory.getFactory().addAnnotationListener(this);
 
    new BaleCorrector(this,BALE_PROPERTIES.getBoolean("Bale.correct.spelling"));
-   
+
    for (BumpProblem bp : BumpClient.getBump().getProblems(fdoc.getFile())) {
       handleProblemAdded(bp);
     }

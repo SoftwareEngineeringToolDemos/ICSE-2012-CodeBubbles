@@ -199,7 +199,7 @@ protected int getPositionWhitespaceLength(int offset)
 
 protected int computeVisualLength(CharSequence indent)
 {
-   final int tabsize = getTabSize();
+   int tabsize = getTabSize();
    int length = 0;
    for (int i = 0; i < indent.length(); i++) {
       char ch = indent.charAt(i);

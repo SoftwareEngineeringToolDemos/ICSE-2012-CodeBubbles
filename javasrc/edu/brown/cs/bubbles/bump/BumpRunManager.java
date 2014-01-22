@@ -1006,6 +1006,7 @@ private class LaunchConfig implements BumpLaunchConfig {
    private String program_args;
    private String java_args;
    private String launch_id;
+   private String working_directory;
    private BumpLaunchConfigType config_type;
    private String test_case;
    private String remote_host;
@@ -1040,6 +1041,7 @@ private class LaunchConfig implements BumpLaunchConfig {
       log_file = getAttribute(xml,"CAPTURE_IN_FILE");
       use_contracts = getBoolean(xml,"CONTRACTS",true);
       use_assertions = getBoolean(xml,"ASSERTIONS",true);
+      working_directory = getAttribute(xml,"WORKING_DIRECTORY");
       remote_host = "localhost";
       remote_port = 8000;
       String hmap = getAttribute(xml,"CONNECT_MAP");
@@ -1067,6 +1069,7 @@ private class LaunchConfig implements BumpLaunchConfig {
    @Override public String getTestName()		{ return test_case; }
    @Override public String getRemoteHost()		{ return remote_host; }
    @Override public String getLogFile() 		{ return log_file; }
+   @Override public String getWorkingDirectory()	{ return working_directory; }
    @Override public int getRemotePort() 		{ return remote_port; }
    @Override public boolean isWorkingCopy()		{ return is_working; }
    @Override public boolean getStopInMain()		{ return stop_in_main; }
@@ -1155,6 +1158,11 @@ private class LaunchConfig implements BumpLaunchConfig {
 
    @Override public BumpLaunchConfig setLogFile(String arg) {
       Element x = bump_client.editRunConfiguration(getId(),"CAPTURE_IN_FILE",arg);
+      return getLaunchResult(x);
+    }
+
+   @Override public BumpLaunchConfig setWorkingDirectory(String arg) {
+      Element x = bump_client.editRunConfiguration(getId(),"WORKING_DIRECTORY",arg);
       return getLaunchResult(x);
     }
 

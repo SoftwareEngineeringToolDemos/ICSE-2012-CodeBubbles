@@ -346,32 +346,26 @@ void defineAll(String cls,RebaseJavaScope scp)
 /*										*/
 /********************************************************************************/
 
-void assignTypes(ASTNode n)
-{
-   Map<String,String> knownnames = new HashMap<String,String>(initial_types);
-   Map<String,String> specificnames = new HashMap<String,String>();
-   List<String> prefixes = new ArrayList<String>();
-
-   prefixes.add("java.lang.");
-
-   TypeFinder tf = new TypeFinder(specificnames,prefixes);
-   n.accept(tf);
-   TypeSetter ts = new TypeSetter(knownnames,specificnames,prefixes);
-   n.accept(ts);
-}
-
-
-
 void assignTypes(RebaseJavaRoot root)
 {
+   Map<CompilationUnit,Map<String,String>> specmap = new HashMap<CompilationUnit,Map<String,String>>();
+   Map<CompilationUnit,List<String>> prefmap = new HashMap<CompilationUnit,List<String>>();
+
    for (CompilationUnit cu : root.getTrees()) {
-      Map<String,String> knownnames = new HashMap<String,String>(initial_types);
       Map<String,String> specificnames = new HashMap<String,String>();
+      specmap.put(cu,specificnames);
       List<String> prefixes = new ArrayList<String>();
       prefixes.add("java.lang.");
+      prefmap.put(cu,prefixes);
 
       TypeFinder tf = new TypeFinder(specificnames,prefixes);
       cu.accept(tf);
+    }
+
+   for (CompilationUnit cu : root.getTrees()) {
+      Map<String,String> knownnames = new HashMap<String,String>(initial_types);
+      Map<String,String> specificnames = specmap.get(cu);
+      List<String> prefixes = prefmap.get(cu);
 
       TypeSetter ts = new TypeSetter(knownnames,specificnames,prefixes);
       cu.accept(ts);
@@ -745,14 +739,19 @@ private class TypeSetter extends ASTVisitor {
       if (idx < 0) type_prefix = null;
       else type_prefix = type_prefix.substring(0,idx);
       RebaseJavaType jt = RebaseJavaAst.getJavaType(t);
-      ClassInstanceCreation cic = (ClassInstanceCreation) t.getParent();
-      Type sty = cic.getType();
-      RebaseJavaType xjt = RebaseJavaAst.getJavaType(sty);
-      if (xjt.isInterfaceType()) {
-	 jt.setSuperType(findType("java.lang.Object"));
-	 jt.addInterface(xjt);
+      if (t.getParent() instanceof ClassInstanceCreation) {
+	 ClassInstanceCreation cic = (ClassInstanceCreation) t.getParent();
+	 Type sty = cic.getType();
+	 RebaseJavaType xjt = RebaseJavaAst.getJavaType(sty);
+	 if (xjt.isInterfaceType()) {
+	    jt.setSuperType(findType("java.lang.Object"));
+	    jt.addInterface(xjt);
+	  }
+	 else jt.setSuperType(xjt);
        }
-      else jt.setSuperType(xjt);
+      else if (t.getParent() instanceof EnumConstantDeclaration) {
+	 // What do we do here?
+       }
     }
 
    public void endVisit(PrimitiveType t) {
@@ -1031,19 +1030,19 @@ private class TypeSetter extends ASTVisitor {
       String s = findTypeName(nm,true);
       RebaseJavaType jt = type_map.get(s);
       if (jt != null) return jt;
-   
+
       jt = findSystemType(s);
       jt = findSystemType(s);
       if (jt != null && !canbe_type) {
-         System.err.println("FOUND UNEXPECTED TYPE " + s);
+	 System.err.println("FOUND UNEXPECTED TYPE " + s);
        }
-   
+
       if (jt == null) {
-         jt = fixJavaType(RebaseJavaType.createUnknownType(nm));
-         jt.setUndefined(true);
-         jt.setSuperType(type_map.get("java.lang.Object"));
+	 jt = fixJavaType(RebaseJavaType.createUnknownType(nm));
+	 jt.setUndefined(true);
+	 jt.setSuperType(type_map.get("java.lang.Object"));
        }
-   
+
       return jt;
     }
 
@@ -1085,6 +1084,10 @@ private class TypeSetter extends ASTVisitor {
 	 if (spn != null) {
 	    known_names.put(nm,spn);
 	    return spn;
+	  }
+	 if (canbe_type && findType(t) != null) {
+	    known_names.put(nm,t);
+	    return t;
 	  }
 	 if (canbe_type && findSystemType(t) != null) {
 	    known_names.put(nm,t);

@@ -213,7 +213,7 @@ private class OhlohFileSource extends BaseFileSource implements RebaseSource {
 
    @Override public String getText() {
       try {
-         return loadURL(file_href,true);
+         return loadSourceURL(file_href,true);
        }
       catch (RebaseException e) {
          RebaseMain.logE("REBASE: Problem loading file " + file_href + ": " + e,e);

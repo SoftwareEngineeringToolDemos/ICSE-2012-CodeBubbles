@@ -401,6 +401,14 @@ BassFlag getFlagForName(BassName bnm,String name)
 }
 
 
+public void flagsUpdated()
+{
+   for (BassBubble bb : package_explorers.values()) {
+      bb.getContentPane().repaint();
+   }
+}
+
+
 
 /********************************************************************************/
 /*										*/

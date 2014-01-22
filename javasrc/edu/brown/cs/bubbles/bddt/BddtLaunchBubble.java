@@ -80,6 +80,7 @@ private JTextComponent		test_class;
 private JTextComponent		test_name;
 private JTextComponent		host_name;
 private JTextComponent		log_file;
+private JTextComponent		working_directory;
 private SwingNumericField	port_number;
 private boolean 		doing_load;
 
@@ -153,6 +154,7 @@ private void setupPanel()
    host_name = null;
    port_number = null;
    log_file = null;
+   working_directory = null;
 
    switch (launch_config.getConfigType()) {
       case JAVA_APP :
@@ -192,7 +194,10 @@ private void setupPanel()
 	 break;
     }
 
-   log_file = pnl.addFileField("Record Output",launch_config.getLogFile(),JFileChooser.FILES_ONLY,null,this);
+   log_file = pnl.addFileField("Record Output",launch_config.getLogFile(),
+				  JFileChooser.FILES_ONLY,null,this);
+   working_directory = pnl.addFileField("Working Directory",launch_config.getWorkingDirectory(),
+					   JFileChooser.DIRECTORIES_ONLY,null,this);
    pnl.addSeparator();
    debug_button = pnl.addBottomButton("Debug","DEBUG",this);
    save_button = pnl.addBottomButton("Save","SAVE",this);
@@ -438,7 +443,7 @@ private String getNewName()
       if (edit_config == null) edit_config = launch_config;
       if (host_name != null && port_number != null) {
 	 edit_config = edit_config.setRemoteHostPort(host_name.getText(),(int) port_number.getValue());
-       } 
+       }
     }
    else BoardLog.logE("BDDT","Undefined launch config action: " + cmd);
 
@@ -483,6 +488,12 @@ private String getNewName()
       String nm = log_file.getText().trim();
       if (nm.length() == 0) nm = null;
       edit_config = edit_config.setLogFile(nm);
+    }
+   else if (isArea(working_directory,doc)) {
+      if (edit_config == null) edit_config = launch_config;
+      String nm = working_directory.getText().trim();
+      if (nm.length() == 0) nm = null;
+      edit_config = edit_config.setWorkingDirectory(nm);
     }
 
    fixButtons();

@@ -24,9 +24,8 @@
 
 package edu.brown.cs.bubbles.rebase.word;
 
-import edu.brown.cs.bubbles.rebase.*;
-
 import java.util.*;
+import java.util.zip.*;
 import java.io.*;
 
 
@@ -42,38 +41,8 @@ public class RebaseWordBag implements RebaseWordConstants
 
 private Map<String,Count>		word_table;
 private double				total_squared;
+private int                             total_documents;
 
-
-
-private static Set<String>		stop_words;
-private static Map<String,String>	short_words;
-private static Set<String>		dictionary_words;
-
-static {
-   stop_words = new HashSet<String>();
-   String wds = "a,able,about,across,after,all,almost,also,am,among,an,and,any,are,as,at," +
-      "be,because,been,but,by,can,cannot,could,dear,did,do,does,either,else,ever,every," +
-      "for,from,get,got,had,has,have,he,her,hers,him,his,how,however,i,if,in,into,is,it,its," +
-      "just,least,let,like,likely,may,me,might,most,must,my,neither,no,nor,not," +
-      "of,off,often,on,only,or,other,our,own,rather,said,say,says,she,should,since,so,some," +
-      "than,that,the,their,them,then,there,these,they,this,tis,to,too,twas,us," +
-      "wants,was,we,were,what,when,where,which,while,who,whom,why,will,with,would," +
-      "yet,you,your";
-   String keys = "abstract,break,boolean,byte,case,catch,char,class,const,continue," +
-      "default,do,double,else,enum,extends,false,final,finally,float,for,goto,if," +
-      "implements,import,instanceof,int,interface,long,native,new,null,package,private," +
-      "protected,public,return,short,static,super,switch,synchronized,this,throw,throws," +
-      "true,try,void,while,java,com,org,javax";
-
-   for (StringTokenizer tok = new StringTokenizer(wds," ,"); tok.hasMoreTokens(); ) {
-      stop_words.add(tok.nextToken());
-    }
-   for (StringTokenizer tok = new StringTokenizer(keys," ,"); tok.hasMoreTokens(); ) {
-      stop_words.add(tok.nextToken());
-    }
-
-   createShortWordSet();
-}
 
 
 /********************************************************************************/
@@ -86,6 +55,7 @@ public RebaseWordBag()
 {
    word_table = new HashMap<String,Count>();
    total_squared = 0;
+   total_documents = 0;
 }
 
 
@@ -94,6 +64,16 @@ public RebaseWordBag(String text)
    this();
 
    addWords(text);
+   total_documents = 1;
+}
+
+
+public RebaseWordBag(RebaseWordBag bag)
+{
+   this();
+   
+   addWords(bag);
+   total_documents = bag.total_documents;
 }
 
 
@@ -113,84 +93,28 @@ public void addWords(String text)
    int ln = text.length();
    for (int i = 0; i < ln; ++i) {
       char ch = text.charAt(i);
-      if (Character.isAlphabetic(ch)) {
+      if (Character.isJavaIdentifierPart(ch)) {
+         boolean havealpha = Character.isAlphabetic(ch);
 	 int start = i;
-	 while (Character.isAlphabetic(ch)) {
-	    if (++i >= ln) break;
-	    ch = text.charAt(i);
+	 while (Character.isJavaIdentifierPart(ch)) {
+            havealpha |= Character.isAlphabetic(ch);
+            if (++i >= ln) break;
+            ch = text.charAt(i);
 	  }
-	 addCandidates(stm,text,start,i-start);
+	 if (havealpha) {
+            Collection<String> wds =  RebaseWordFactory.getCandidateWords(stm,text,start,i-start);
+            if (wds != null) {
+               for (String wd : wds) { 
+                  addWord(wd);
+                }
+             }
+            // addCandidates(stm,text,start,i-start);
+          }
        }
     }
+   
+   ++total_documents;
 }
-
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Process potential words 						*/
-/*										*/
-/********************************************************************************/
-
-private void addCandidates(RebaseWordStemmer stm,String text,int off,int len)
-{
-   if (len < 3 || len > 32) return;
-   int [] breaks = new int[32];
-   int breakct = 0;
-
-   // try to break the word up using camelCase
-   boolean islower = false;
-   for (int i = 0; i < len; ++i) {
-      char ch = text.charAt(off+i);
-      if (Character.isUpperCase(ch)) {
-	 if (islower) breaks[breakct++] = i;
-	 islower = false;
-       }
-      else islower = true;
-    }
-
-   // first use whole word
-   addCandidate(stm,text,off,len);
-   if (breakct > 0) {
-      int lbrk = 0;
-      for (int i = 0; i < breakct; ++i) {
-	 addCandidate(stm,text,off+lbrk,breaks[i]-lbrk);
-	 lbrk = breaks[i];
-       }
-      addCandidates(stm,text,off+lbrk,len-lbrk);
-    }
-}
-
-
-private void addCandidate(RebaseWordStemmer stm,String text,int off,int len)
-{
-   String wd0 = text.substring(off,off+len).toLowerCase();
-   addCandidateWord(wd0);
-
-   for (int i = 0; i < len; ++i) {
-      stm.add(text.charAt(off+i));
-    }
-   String wd = stm.stem();    // stem and convert to lower case
-
-   if (dictionary_words.contains(wd) && !wd0.equals(wd)) {
-      System.err.println("STEM " + wd0 + " => " + wd);
-      addCandidateWord(wd);
-    }
-}
-
-
-
-private void addCandidateWord(String wd)
-{
-   if (stop_words.contains(wd)) return;
-
-   addWord(wd);
-
-   String nwd = short_words.get(wd);
-   if (nwd != null) addWord(nwd);
-}
-
 
 
 
@@ -209,8 +133,8 @@ public void addWords(RebaseWordBag bag)
       String s = ent.getKey();
       addWord(s,ent.getValue());
     }
+   total_documents += bag.total_documents;
 }
-
 
 
 private void addWord(String s)
@@ -252,15 +176,18 @@ public void removeWords(RebaseWordBag bag)
       Count ct = word_table.get(wd);
       if (ct == null) continue;
       int oct = ent.getValue().getCount();
+      int odct = ent.getValue().getDocCount();
+      
       int nct = ct.getCount();
-      if (oct > nct) oct = nct;
       total_squared -= nct*nct;
-      if (oct == nct) word_table.remove(wd);
+      
+      int xct = ct.decr(oct,odct);
+      if (xct == 0) word_table.remove(wd);
       else {
-	 int xct = ct.decr(oct);
 	 total_squared += xct*xct;
        }
     }
+   total_documents -= bag.total_documents;
 }
 
 
@@ -303,10 +230,23 @@ public double cosine(RebaseWordBag b2)
 
 public void outputBag(File f) throws IOException
 {
-   PrintWriter pw = new PrintWriter(new FileWriter(f));
-   for (Map.Entry<String,Count> ent : word_table.entrySet()) {
-      pw.println(ent.getKey() + "," + ent.getValue().getCount());
+   PrintStream pw = null;
+   ZipOutputStream zip = null;
+
+   if (f.getPath().endsWith(".zip")) {
+      zip = new ZipOutputStream(new FileOutputStream(f));
+      zip.putNextEntry(new ZipEntry("wordbag"));
+      pw = new PrintStream(zip);
     }
+   else {
+      pw = new PrintStream(new FileOutputStream(f));
+    }
+   pw.println(total_documents);
+   for (Map.Entry<String,Count> ent : word_table.entrySet()) {
+      Count c = ent.getValue();
+      pw.println(ent.getKey() + "," + c.getCount() + "," + c.getDocCount());
+    }
+
    pw.close();
 }
 
@@ -314,23 +254,43 @@ public void outputBag(File f) throws IOException
 
 public void inputBag(File f) throws IOException
 {
-   BufferedReader br = new BufferedReader(new FileReader(f));
-   for ( ; ; ) {
-      String ln = br.readLine();
-      if (ln == null) break;
-      int idx = ln.indexOf(",");
-      String wd = ln.substring(0,idx);
-      int ct = Integer.parseInt(ln.substring(idx+1));
-      Count c = word_table.get(wd);
-      int oct = 0;
-      if (c == null) word_table.put(wd,new Count(ct));
-      else {
-	 oct = c.getCount();
-	 ct = c.add(ct);
-       }
-      total_squared += ct*ct - oct*oct;
+   BufferedReader br = null;
+   ZipInputStream zin = null;
+   
+   if (f.getPath().endsWith(".zip")) {
+      zin = new ZipInputStream(new FileInputStream(f));
+      zin.getNextEntry();
+      br = new BufferedReader(new InputStreamReader(zin));
     }
-   br.close();
+   else {
+      br = new BufferedReader(new FileReader(f));
+    }
+
+   Scanner scn = new Scanner(br);
+   scn.useDelimiter("\\n|,");
+   if (scn.hasNextInt()) total_documents = scn.nextInt();
+   while (scn.hasNext()) {
+      String wd = scn.next();
+      int wct = 0;
+      int dct = 0;
+      if (scn.hasNextInt()) wct = scn.nextInt();
+      if (scn.hasNextInt()) {
+         int oct = 0;
+         dct = scn.nextInt();
+         Count c = word_table.get(wd);
+         if (c == null) {
+            word_table.put(wd,new Count(wct,dct));
+          }
+         else {
+            oct = c.getCount();
+            wct = c.add(wct,dct);
+          }
+         total_squared += wct*wct - oct*oct;
+       }
+    }
+
+   scn.close();
+   
 }
 
 
@@ -344,58 +304,39 @@ public void inputBag(File f) throws IOException
 private static class Count {
 
    private int count_value;
+   private int num_document;
 
-   Count()				{ count_value = 0; }
-   Count(int ct)			{ count_value = ct; }
+   Count()				{ count_value = num_document = 0; }
+   Count(int ct,int dct)		{ count_value = ct; num_document = dct; }
 
-   int incr()				{ return ++count_value; }
-   int add(int ct)			{ count_value += ct; return count_value; }
+   int incr() {
+      if (num_document == 0) num_document = 1;
+      return ++count_value;
+    }
+   int add(int ct,int dct) {
+      count_value += ct;
+      num_document += dct;
+      return count_value;
+    }
    int getCount()			{ return count_value; }
-   int decr(int ct)			{ count_value -= ct; return count_value; }
+   int getDocCount()                    { return num_document; }
+   int decr(int ct,int dct) { 
+      count_value -= ct;
+      num_document -= dct;
+      if (count_value < 0) count_value = 0;
+      if (num_document < 0) num_document = 0;
+      return count_value;
+    }
 
    int add(Count c) {
-      if (c != null) count_value += c.count_value;
+      if (c != null) {
+         count_value += c.count_value;
+         num_document += c.num_document;
+       }  
       return count_value;
     }
 
 }	// end of inner class Count
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Create programmer abbreviations of common words 			*/
-/*										*/
-/********************************************************************************/
-
-private static void createShortWordSet()
-{
-   dictionary_words = new HashSet<String>();
-   short_words = new HashMap<String,String>();
-
-   String root = System.getProperty("edu.brown.cs.bubbles.rebase.ROOT");
-   File f1 = new File(root);
-   File f2 = new File(f1,"lib");
-   File f = new File(f2,WORD_LIST_FILE);
-
-   try {
-      BufferedReader br = new BufferedReader(new FileReader(f));
-      for ( ; ; ) {
-	 String wd = br.readLine();
-	 if (wd == null) break;
-	 if (wd.contains("'") || wd.contains("-")) continue;
-	 if (wd.length() < 3 || wd.length() > 24) continue;
-	 wd = wd.toLowerCase();
-	 dictionary_words.add(wd);
-	 String nwd = wd.replaceAll("[aeiou]","");
-	 if (!nwd.equals(wd)) short_words.put(nwd,wd);
-       }
-      br.close();
-    }
-   catch (IOException e) {
-      RebaseMain.logE("Problem reading word file",e);
-    }
-}
 
 
 

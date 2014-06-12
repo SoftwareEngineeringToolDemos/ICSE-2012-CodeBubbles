@@ -139,7 +139,7 @@ private void scanArgs(String args)
 	    String host = cntf.substring(idx+1);
 	    int port = Integer.parseInt(cntf.substring(0,idx));
 	    host = fixHost(host);
-            @SuppressWarnings("resource")
+	    @SuppressWarnings("resource")
 	    Socket s = new Socket(host,port);
 	    result_stream = s.getOutputStream();
 	  }
@@ -351,8 +351,10 @@ int getBlockId(int mid,int offset)
    int bid = ++id_counter;
    RtBlock rb = new RtBlock(bid,offset);
    index_table.setElement(bid,rb);
-   RtMethod rm = index_table.getMethod(mid);
-   rm.addBlock(rb);
+   if (mid > 0) {
+      RtMethod rm = index_table.getMethod(mid);
+      rm.addBlock(rb);
+    }
 
    return bid;
 }

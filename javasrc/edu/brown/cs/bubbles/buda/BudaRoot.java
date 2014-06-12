@@ -71,8 +71,8 @@ private BudaBubbleArea		bubble_area;
 private BudaViewport		bubble_view;
 private BudaOverviewBar 	bubble_overview;
 private BudaTopBar		bubble_topbar;
-private double			scale_factor;
-private MouseScaler		mouse_scaler;
+// private double			scale_factor;
+// private MouseScaler		mouse_scaler;
 private BudaBubble		search_bubble;
 private BudaBubble		docsearch_bubble;
 private JPanel			button_panel;
@@ -89,6 +89,7 @@ private Point			demo_point;
 private boolean 		view_setup;
 
 private static MouseEvent	last_mouse;
+
 
 private static SwingEventListenerList<BubbleViewCallback> view_callbacks;
 private static SwingEventListenerList<BudaFileHandler> file_handlers;
@@ -236,8 +237,8 @@ private void initialize(Element e)
    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
    addWindowListener(new WindowCloser());
 
-   scale_factor = 1.0;
-   mouse_scaler = new MouseScaler();
+   // scale_factor = 1.0;
+   // mouse_scaler = new MouseScaler();
    search_bubble = null;
    docsearch_bubble = null;
    button_panel = null;
@@ -768,7 +769,7 @@ public static void hideSearchBubble(Object src)
    if (src == null) return;
    if (src instanceof Component) {
       Component c = (Component) src;
-      BudaRoot br = BudaRoot.findBudaRoot(c);
+      BudaRoot br = findBudaRoot(c);
       if (br == null || br.search_bubble == null) return;
       for (Component c1 = c; c1 != null; c1 = c1.getParent()) {
 	 if (c1 instanceof JPopupMenu && c1 != br.search_bubble) {
@@ -1202,45 +1203,49 @@ public Rectangle getViewport()
 }
 
 
-double getScaleFactor() 			{ return scale_factor; }
+double getScaleFactor() 	{ return getCurrentBubbleArea().getScaleFactor(); }
 
 
 
-void setScaleFactor(double sf)
-{
-   Rectangle vr = bubble_view.getViewRect();
-   int cx = (int) ((vr.x + vr.width / 2)/scale_factor);
-   int cy = (int) ((vr.y + vr.height / 2)/scale_factor);
-   setScaleFactor(sf,cx,cy);
-}
+// void setScaleFactor(double sf)
+// {
+   // Rectangle vr = bubble_view.getViewRect();
+   // int cx = (int) ((vr.x + vr.width / 2)/scale_factor);
+   // int cy = (int) ((vr.y + vr.height / 2)/scale_factor);
+   // setScaleFactor(sf,cx,cy);
+// }
 
 
+
+/**************
 
 void setScaleFactor(double sf,int cx,int cy)
 {
    if (scale_factor == 1 && sf != 1) {
-      Component c = getGlassPane();
-      c.addMouseListener(mouse_scaler);
-      c.addMouseMotionListener(mouse_scaler);
-      c.setVisible(true);
+      // Component c = getGlassPane();
+      // c.addMouseListener(mouse_scaler);
+      // c.addMouseMotionListener(mouse_scaler);
+      // c.setVisible(true);
    }
    else if (scale_factor != 1 && sf == 1) {
-      Component c = getGlassPane();
-      c.removeMouseListener(mouse_scaler);
-      c.removeMouseMotionListener(mouse_scaler);
-      c.setVisible(false);
+      // Component c = getGlassPane();
+      // c.removeMouseListener(mouse_scaler);
+      // c.removeMouseMotionListener(mouse_scaler);
+      // c.setVisible(false);
    }
 
    scale_factor = sf;
    bubble_area.setScaleFactor(sf);
    // cx,cy are the center in the original coordinate system
 
-   Rectangle vr = bubble_view.getViewRect();
-   int x = (int) (cx*scale_factor - vr.width/2.0);
+  // Rectangle vr = bubble_view.getViewRect();
+  // int x = (int) (cx*scale_factor - vr.width/2.0);
    // x = (int)(cx - vr.width/2.0/scale_factor);
-   int y = (int) (cy*scale_factor - vr.height/2.0);
-   setViewport(x,y);
+  // int y = (int) (cy*scale_factor - vr.height/2.0);
+ //  setViewport(x,y);
 }
+
+*************/
 
 
 private class ViewportHandler implements ChangeListener {
@@ -1248,12 +1253,12 @@ private class ViewportHandler implements ChangeListener {
    @Override public void stateChanged(ChangeEvent e) {
       Rectangle vr = bubble_view.getViewRect();
 
-      if (scale_factor != 1) {
-	 vr.x /= scale_factor;
-	 vr.y /= scale_factor;
-	 vr.width /= scale_factor;
-	 vr.height /= scale_factor;
-       }
+      // if (scale_factor != 1) {
+	 // vr.x /= scale_factor;
+	 // vr.y /= scale_factor;
+	 // vr.width /= scale_factor;
+	 // vr.height /= scale_factor;
+       // }
       bubble_area.setViewPosition(vr);
       bubble_overview.setViewPosition(vr);
     }
@@ -1275,7 +1280,8 @@ private class ViewportCallback implements BubbleAreaCallback {
 
 
 
-private class MouseScaler extends MouseInputAdapter {
+/*********
+ *private class MouseScaler extends MouseInputAdapter {
 
    @Override public void mouseEntered(MouseEvent e) {
       sendScaled(e);
@@ -1331,6 +1337,118 @@ private class MouseScaler extends MouseInputAdapter {
    }
 
 }	// end of inner class MouseScaler
+****************************/
+
+
+
+
+public Point convertPoint(Component src,Point pt,Component dst)
+{
+   if (src == dst) return pt;
+
+   BudaBubbleArea srcbba = null;
+   BudaBubbleArea dstbba = null;
+
+   for (Component p = src; p != null; p = getParentComponent(p)) {
+      if (p instanceof BudaBubbleArea) {
+	 srcbba = (BudaBubbleArea) p;
+	 break;
+       }
+    }
+   for (Component p = dst; p != null; p = getParentComponent(p)) {
+      if (p instanceof BudaBubbleArea) {
+	 dstbba = (BudaBubbleArea) p;
+	 break;
+       }
+    }
+
+   if ((srcbba == null || srcbba.getScaleFactor() == 1) &&
+	  (dstbba == null || dstbba.getScaleFactor() == 1)) {
+      return SwingUtilities.convertPoint(src,pt,dst);
+    }
+
+   Point p1 = pt;
+   if (srcbba != null) {
+      p1 = SwingUtilities.convertPoint(src,pt,srcbba);
+      double sf = srcbba.getScaleFactor();
+      p1.x *= sf;
+      p1.y *= sf;
+      p1 = SwingUtilities.convertPoint(srcbba,p1,this);
+      src = this;
+    }
+   Point p2 = p1;
+   if (dstbba != null) {
+      double sf = dstbba.getScaleFactor();
+      p2 = SwingUtilities.convertPoint(src,p1,dstbba);
+      p2.x /= sf;
+      p1.y /= sf;
+      src = dstbba;
+    }
+   if (src != dst) {
+      p2 = SwingUtilities.convertPoint(src,p2,dst);
+    }
+
+   return p2;
+}
+
+
+
+// public static Point computeToolTipLocation(MouseEvent evt)
+// {
+   // if (evt == null) return null;
+   // JComponent from = (JComponent) evt.getSource();
+//
+   // BudaRoot broot = null;
+   // BudaBubbleArea bba = null;
+   // for (Component p = from; p != null; p = getParentComponent(p)) {
+      // if (p instanceof BudaBubbleArea) {
+// bba = (BudaBubbleArea) p;
+   //	 }
+      // else if (p instanceof BudaRoot) {
+       // broot = (BudaRoot) p;
+       // }
+    // }
+   // if (broot == null || bba == null) return null;
+   // double sf = bba.getScaleFactor();
+   // if (sf == 1.0) return null;
+//
+   // Point p0 = from.getLocationOnScreen();
+   // Point p1 = broot.convertPoint(from,new Point(0,0),broot);
+   // int x = ((int)(evt.getX() * sf));
+   // int y = ((int)(evt.getY() * sf));
+   // int tx = p1.x + x;
+   // int ty = p1.y + y + 20;
+   // int dx = tx - p0.x;
+   // int dy = ty - p0.y;
+//
+   // return new Point(dx,dy);
+// }
+
+
+
+// public static Point computeLocationOnScreen(JComponent jc)
+// {
+   // if (jc == null) return new Point(0,0);
+//
+   // BudaRoot broot = null;
+   // BudaBubbleArea bba = null;
+   // for (Component p = jc; p != null; p = getParentComponent(p)) {
+      // if (p instanceof BudaBubbleArea) {
+	 // bba = (BudaBubbleArea) p;
+       // }
+      // else if (p instanceof BudaRoot) {
+	 // broot = (BudaRoot) p;
+       // }
+    // }
+   // Point p0 = new Point(0,0);
+   // if (broot == null || bba == null || bba.getScaleFactor() != 1.0) {
+      // SwingUtilities.convertPointToScreen(p0,jc);
+      // return p0;
+    // }
+   // Point p1 = broot.convertPoint(jc,new Point(0,0),broot);
+   // SwingUtilities.convertPointToScreen(p1,broot);
+   // return p1;
+// }
 
 
 
@@ -1642,11 +1760,11 @@ private class ZoomHandler extends AbstractAction implements ActionListener {
     }
 
    @Override public void actionPerformed(ActionEvent e) {
-      double v = getScaleFactor();
+      double v = getCurrentBubbleArea().getScaleFactor();
       if (zoom_direction > 0) v /= 0.9;
       else if (zoom_direction < 0) v *= 0.9;
       else v = 1.0;
-      setScaleFactor(v);
+      getCurrentBubbleArea().setScaleFactor(v);
     }
 
 }	// end of inner class ZoomHandler
@@ -2473,7 +2591,7 @@ void handleCloseRequest()
       pnl.addSeparator();
       JCheckBox savebox = null;
       if (buda_properties.getBoolean("Buda.ask.save.on.close",true)) {
-         savebox = pnl.addBoolean("Save Any Changes",save,null);
+	 savebox = pnl.addBoolean("Save Any Changes",save,null);
        }
       JCheckBox askbox = pnl.addBoolean("Always exit without prompt",false,null);
       int sts = JOptionPane.showConfirmDialog(this,pnl,"Close Confirmation",

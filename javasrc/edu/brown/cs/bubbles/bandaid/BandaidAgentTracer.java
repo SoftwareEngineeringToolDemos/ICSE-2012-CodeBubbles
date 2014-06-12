@@ -113,6 +113,7 @@ BandaidAgentTracer(BandaidController bc)
 
 @Override void enableMonitoring(boolean fg,long now)
 {
+   System.err.println("TRACE ENABLED " + fg);
    trace_enabled = fg;
    super.enableMonitoring(fg,now);
 }
@@ -148,6 +149,7 @@ BandaidAgentTracer(BandaidController bc)
 	 loadTraceData(f1);
        }
       else {
+	 System.err.println("TRACE DISABLED");
 	 trace_enabled = false;
        }
     }
@@ -185,8 +187,8 @@ private byte [] patchClass(String nm,byte [] buf,Map<String,TraceData> mthds)
       rsltcode = writer.toByteArray();
     }
    catch (Throwable t) {
-//	System.err.println("BANDAID: Problem instrumenting class: " + t);
-//	t.printStackTrace();
+     // System.err.println("BANDAID: Problem instrumenting class: " + t);
+     // t.printStackTrace();
     }
 
    return rsltcode;
@@ -221,13 +223,14 @@ private class ClassTransformer extends ClassVisitor {
       String key = nm + d;
       key = key.replace('$','/');
       TraceData td = method_data.get(key);
-      // System.err.println("TRACE CHECK " + key + " " + td);
+      // System.err.println("TRACE CHECK " + class_name + " " + key + " " + td);
       if (td == null && nm.equals("<init>") && class_name.contains("$") &&
 	     (class_access & Opcodes.ACC_STATIC) == 0) {
 	 int idx = d.indexOf(";");
 	 key = nm + "(" + d.substring(idx+1);
 	 td = method_data.get(key);
        }
+      // System.err.println("TRACE CHECK1 " + class_name + " " + key + " " + td);
       if (td != null) {
 	 if (do_debug) mv = new Tracer(mv,key);
 	 mv = new TracePatcher(mv,td,super_name);
@@ -395,6 +398,7 @@ private class TracePatcher extends MethodVisitor {
       if (exit) v = -v;
       super.visitLdcInsn(Integer.valueOf(v));
       int args = trace_data.getTraceArgs();
+      // System.err.println("PATCH " + v + " " + args);
       String atyp = "(I";
       for (int i = 0; args != 0; ++i) {
 	 if ((args & 1) != 0) {
@@ -436,7 +440,7 @@ private static class Tracer extends MethodVisitor {
 	 System.err.print(o.toString());
        }
     }
-   
+
    @Override public String toString() {
       return "TRACE_METHOD " + method_name;
     }
@@ -476,6 +480,8 @@ public static void traceEntry(int id,Object o1,Object o2)
 
 private void addEntry(int id,Object o1,Object o2)
 {
+   // System.err.println("TRACE " + id + " " + current_set + " " + trace_enabled);
+
    if (!trace_enabled) return;
 
    long time = System.nanoTime() - start_time;
@@ -499,9 +505,8 @@ private void collectStatistics(Writer w)
 
    try {
       if (w != null) {
-
 	 boolean out = eval.output(w);
-
+	 // System.err.println("TRACEOUT " + prior + " " + out);
 	 if (out || now - last_output > NULL_DELAY * 1000000) {
 	    w.append("DONE ");
 	    w.append(Long.toString(now));
@@ -524,11 +529,11 @@ private void collectStatistics(Writer w)
 
 private class TraceSet {
 
-   private WeakHashMap<Thread,ThreadSet> thread_map;
+   private HashMap<Thread,ThreadSet> thread_map;
    private long last_cputime;
 
    TraceSet() {
-      thread_map = new WeakHashMap<Thread,ThreadSet>();
+      thread_map = new HashMap<Thread,ThreadSet>();
       last_cputime = 0;
     }
 
@@ -556,9 +561,10 @@ private class TraceSet {
     }
 
    void reset() {
-      for (Map.Entry<Thread,ThreadSet> ent : thread_map.entrySet()) {
-	 ThreadSet ts = ent.getValue();
-	 ts.reset();
+      for (Iterator<Map.Entry<Thread,ThreadSet>> it = thread_map.entrySet().iterator(); it.hasNext(); ) {
+	 Map.Entry<Thread,ThreadSet> ent = it.next();
+	 if (ent.getKey().isAlive()) ent.getValue().reset();
+	 else it.remove();
        }
     }
 

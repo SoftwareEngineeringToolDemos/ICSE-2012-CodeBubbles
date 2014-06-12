@@ -160,22 +160,24 @@ private class GrepCodeFileSource extends BaseFileSource implements RebaseSource 
    private String project_name;
    private URL file_href;
    private String file_name;
+   private String s6_source;
 
    GrepCodeFileSource(URL base,Element tag,RebaseRequest rqst,RebaseSource orig) {
       super(rqst,orig);
-
+   
       file_href = null;
       project_id = null;
       project_name = null;
       file_name = null;
-
+      s6_source = null;
+   
       String href = tag.attr("href");
       String pnam = tag.attr("title");
       String vers = tag.text();
-
+   
       int idx0 = href.lastIndexOf("#");
       if (idx0 > 0) href = href.substring(0,idx0);
-
+   
       if (!href.startsWith("file/")) return;
       String h1 = href.substring(5);
       int idx1 = h1.indexOf(vers);
@@ -183,19 +185,21 @@ private class GrepCodeFileSource extends BaseFileSource implements RebaseSource 
       idx1 += vers.length() + 1;
       String proj = h1.substring(0,idx1-1);
       String h3 = h1.substring(idx1);
-
+      
+      s6_source = "GREPCODE:" + href;
+   
       try {
-	 String fref = GREPCODE_SCHEME + "://" + GREPCODE_AUTHORITY +
-	 "/file_/" + h1 + "/?v=source";
-	 file_href = new URL(fref);
-	
-	 project_name = pnam.replace("/","@");
-	 project_id = proj.replace("/","@");
-	
-	 file_name = "/REBUS/" + project_id + "/GREPCODE/" + h3;
+         String fref = GREPCODE_SCHEME + "://" + GREPCODE_AUTHORITY +
+         "/file_/" + h1 + "/?v=source";
+         file_href = new URL(fref);
+        
+         project_name = pnam.replace("/","@").replace("&","_");
+         project_id = proj.replace("/","@");
+        
+         file_name = "/REBUS/" + project_id + "/GREPCODE/" + h3;
        }
       catch (MalformedURLException e) {
-	 file_href = null;
+         file_href = null;
        }
     }
 
@@ -209,6 +213,7 @@ private class GrepCodeFileSource extends BaseFileSource implements RebaseSource 
    @Override public String getProjectId()		{ return project_id; }
    @Override public String getProjectName()		{ return project_name; }
    public String getPath()				{ return file_name; }
+   @Override public String getS6Source()                { return s6_source; }
 
     @Override public String getText() {
       try {

@@ -26,6 +26,11 @@ package edu.brown.cs.bubbles.bdyn;
 
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
+import edu.brown.cs.ivy.xml.*;
+
+import org.w3c.dom.*;
+
+import java.awt.Color;
 import java.util.*;
 
 
@@ -40,6 +45,7 @@ public interface BdynConstants extends BumpConstants
 /********************************************************************************/
 
 interface TrieNode {
+   
    TrieNode getParent();
    Collection<TrieNode> getChildren();
    int [] getCounts();
@@ -50,6 +56,10 @@ interface TrieNode {
    String getMethodName();
    int getLineNumber();
    String getFileName();
+   
+   int [] getTotals();
+   void computeTotals();
+   
 }
 
 
@@ -76,9 +86,17 @@ int OP_COUNT = 3;
 
 enum CallbackType {
    UNKNOWN,
-   EVENT,			// event handler
+   EVENT,		// event handler
    CONSTRUCTOR, 	// constructor for event recognition
+   KEY,                 // key routine (significant time spent here
+   MAIN,                // main program
 };
+
+
+
+long    MAX_TIME        = Long.MAX_VALUE;
+long    MERGE_TIME      = 100000000;    // 100 ms 
+long    IGNORE_TIME     = 10000000;     // 10 ms
 
 
 
@@ -90,6 +108,8 @@ interface BdynCallback {
    int getId();
    CallbackType getCallbackType();
    void setLabel(String lbl);
+   void setUserColor(Color c);
+   Color getUserColor();
 }
 
 
@@ -102,20 +122,21 @@ interface BdynCallback {
 
 interface BdynEntry {
    long getStartTime();
-   long getEndTime();
+   long getEndTime(long max);
    BdynEntryThread getEntryThread();
    BdynCallback getEntryTask();
    BdynCallback getEntryTransaction();
+   long getTotalTime(long max);
    
 }
 
 interface BdynEntryThread {
    String getThreadName();
-}
+}       // end of interface BdynEntryThread
 
 interface BdynEntryTask {
    BdynCallback getTaskRoot();
-}
+}       // end of interface BdynEntryTask
 
 
 class BdynRangeSet extends HashMap<BdynEntryThread,Set<BdynEntry>> { }
@@ -125,7 +146,30 @@ interface BdynEventUpdater extends EventListener {
    
    void eventsAdded();
    
-}
+}       // end of interface BdynEventUpdater
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Options                                                                 */
+/*                                                                              */
+/********************************************************************************/
+
+interface BdynOptions { 
+   
+   boolean useKeyCallback();
+   boolean useMainCallback();
+   boolean useMainTask();
+   
+   void setUseKeyCallback(boolean fg);
+   void setUseMainCallback(boolean fg);
+   void setUseMainTask(boolean fg);
+   
+   void save(IvyXmlWriter xw);
+   void load(Element elt);
+   
+}       // end of interface BdynOptions
+
 
 
 /********************************************************************************/

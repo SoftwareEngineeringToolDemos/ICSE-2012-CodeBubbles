@@ -55,7 +55,8 @@ private TestState	test_state;
 private String		fail_message;
 private String		fail_trace;
 private CountData	count_data;
-
+private long		update_time;
+private String          test_class;
 
 
 
@@ -73,6 +74,7 @@ BattTestCase(String name)
    test_state = TestState.UNKNOWN;
    fail_message = null;
    fail_trace = null;
+   update_time = System.currentTimeMillis();
 }
 
 
@@ -90,8 +92,19 @@ BattTestCase(String name)
 synchronized TestStatus getStatus()				{ return test_status; }
 synchronized TestState getState()				{ return test_state; }
 
-synchronized void setStatus(TestStatus sts)			{ test_status = sts; }
-synchronized void setState(TestState st)			{ test_state = st; }
+synchronized void setStatus(TestStatus sts)	
+{
+   if (sts == test_status) return;
+   update();
+   test_status = sts;
+}
+
+synchronized void setState(TestState st)	
+{
+   if (st == test_state) return;
+   update();
+   test_state = st;
+}
 
 
 
@@ -109,6 +122,7 @@ synchronized boolean handleTestState(Element e)
    class_name = IvyXml.getAttrString(e,"CLASS");
    method_name = IvyXml.getAttrString(e,"METHOD");
    test_name = IvyXml.getAttrString(e,"NAME");
+   test_class = IvyXml.getAttrString(e,"TCLASS");
 
    TestStatus osts = test_status;
    TestState ost = test_state;
@@ -161,6 +175,8 @@ synchronized boolean handleTestState(Element e)
    Element xe = IvyXml.getChild(e,"COVERAGE");
    if (xe != null) count_data = new CountData(xe);
 
+   if (chng) update();
+
    return chng;
 }
 
@@ -200,6 +216,17 @@ synchronized FileState usesClasses(Map<String,FileState> clsmap)
 }
 
 
+long getUpdateTime()			{ return update_time; }
+
+
+private void update()
+{
+   update_time = System.currentTimeMillis();
+}
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Output methods								*/
@@ -213,6 +240,7 @@ synchronized void shortReport(IvyXmlWriter xw)
    xw.field("STATUS",test_status);
    xw.field("STATE",test_state);
    xw.field("CLASS",class_name);
+   if (test_class != null) xw.field("TCLASS",test_class);
    xw.field("METHOD",method_name);
    xw.end("TEST");
 }
@@ -226,6 +254,7 @@ synchronized void longReport(IvyXmlWriter xw)
    xw.field("STATUS",test_status);
    xw.field("STATE",test_state);
    xw.field("CLASS",class_name);
+   if (test_class != null) xw.field("TCLASS",test_class);
    xw.field("METHOD",method_name);
 
    if (fail_message != null) {

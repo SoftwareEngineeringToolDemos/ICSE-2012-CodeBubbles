@@ -108,54 +108,12 @@ protected void setupPanel(SwingGridPanel pnl)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Signature parsing methods						*/
-/*										*/
-/********************************************************************************/
-
-protected boolean checkParsing()
-{
-   String sgn = property_set.getStringProperty(BuenoKey.KEY_SIGNATURE);
-   if (sgn != null) {
-      try {
-	 parseInnerClassSignature(sgn);
-       }
-      catch (BuenoException e) {
-	 return false;
-       }
-    }
-
-   if (property_set.getStringProperty(BuenoKey.KEY_NAME) == null) return false;
-
-   return true;
-}
 
 
 
 
-private void parseInnerClassSignature(String txt) throws BuenoException
-{
-   StreamTokenizer tok = new StreamTokenizer(new StringReader(txt));
 
-   parseModifiers(tok);
 
-   if (checkNextToken(tok,"class")) {
-      create_type = BuenoType.NEW_INNER_CLASS;
-    }
-   else if (checkNextToken(tok,"enum")) {
-      create_type = BuenoType.NEW_INNER_ENUM;
-    }
-   else if (checkNextToken(tok,"interface")) {
-      create_type = BuenoType.NEW_INNER_INTERFACE;
-    }
-   else throw new BuenoException("No class/enum/interface keyword");
-
-   parseName(tok);
-   parseExtends(tok);
-   parseImplements(tok);
-   parseEnd(tok);
-}
 
 
 

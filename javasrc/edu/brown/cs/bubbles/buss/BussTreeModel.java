@@ -113,10 +113,15 @@ void setup()
 
 void setSelection(BussTreeNode tn)
 {
-   BussTreeImpl bti = (BussTreeImpl) tn;
 
    if (cur_selection != null) nodeChanged(cur_selection);
+   
+   if (tn == null) {
+      cur_selection = null;
+      return;
+    }
 
+   BussTreeImpl bti = (BussTreeImpl) tn;
    if (bti.isLeaf()) {
       cur_selection = bti;
       nodeChanged(cur_selection);
@@ -297,17 +302,27 @@ private static class Branch extends BussTreeImpl {
 
    @Override boolean removeEntry(BussTreeModel mdl,BussEntry be) {
       for (TreeNode tn : child_nodes) {
-	 BussTreeImpl btn = (BussTreeImpl) tn;
-	 if (tn.isLeaf() && btn.getEntry() == be) {
-	    TreeNode [] rem = new TreeNode[1];
-	    int [] idx = new int[1];
-	    rem[0] = tn;
-	    idx[0] = getIndex(tn);
-	    child_nodes.remove(tn);
-	    mdl.nodesWereRemoved(this,idx,rem);
-	    return true;
-	  }
-	 else if (btn.removeEntry(mdl,be)) return true;
+         BussTreeImpl btn = (BussTreeImpl) tn;
+         if (tn.isLeaf() && btn.getEntry() == be) {
+            TreeNode [] rem = new TreeNode[1];
+            int [] idx = new int[1];
+            rem[0] = tn;
+            idx[0] = getIndex(tn);
+            child_nodes.remove(tn);
+            mdl.nodesWereRemoved(this,idx,rem);
+            return true;
+          }
+         else if (btn.removeEntry(mdl,be)) {
+            if (tn.getChildCount() == 0) {
+               TreeNode [] rem = new TreeNode[1];
+               int [] idx = new int[1];
+               rem[0] = tn;
+               idx[0] = getIndex(tn);
+               child_nodes.remove(tn);
+               mdl.nodesWereRemoved(this,idx,rem);
+             }
+            return true;
+          } 
        }
       return false;
     }

@@ -150,7 +150,7 @@ private class CreateClassAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
-      BwizNewWizard bcwiz = new BwizNewClassWizard();
+      BwizNewWizard bcwiz = new BwizNewClassWizard(null);
       BwizFactory.getFactory().createBubble(bcwiz,bcwiz.getFocus());
     }
 
@@ -165,7 +165,7 @@ CreateInterfaceAction() {
  }
 
 @Override public void actionPerformed(ActionEvent evt) {
-   BwizNewWizard bcwiz = new BwizNewInterfaceWizard();
+   BwizNewWizard bcwiz = new BwizNewInterfaceWizard(null);
    BwizFactory.getFactory().createBubble(bcwiz,bcwiz.getFocus());
  }
 
@@ -180,7 +180,7 @@ CreateEnumAction() {
  }
 
 @Override public void actionPerformed(ActionEvent evt) {
-   BwizNewWizard bcwiz = new BwizNewEnumWizard();
+   BwizNewWizard bcwiz = new BwizNewEnumWizard(null);
    BwizFactory.getFactory().createBubble(bcwiz,bcwiz.getFocus());
  }
 

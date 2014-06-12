@@ -70,7 +70,7 @@ public String getProjectId()		{ return source_data.getProjectId(); }
 RebaseRepo getRepository()		{ return source_data.getRepository(); }
 
 RebaseRequest getRequest()		{ return source_data.getRequest(); }
-RebaseSource getSource()                { return source_data; }
+public RebaseSource getSource()                 { return source_data; }
 
 public String getProjectName()	
 {

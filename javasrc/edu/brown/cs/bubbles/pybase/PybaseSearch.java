@@ -320,7 +320,7 @@ void getFullyQualifiedName(String proj,String file,int start,int end,
     }
    catch (Exception e) { }
    if (ftok == null) throw new PybaseException("No symbol at location");
-   
+
    String rslt = null;
 
    Found f = sd.getGlobalScope().findByToken(ftok);
@@ -338,7 +338,8 @@ void getFullyQualifiedName(String proj,String file,int start,int end,
 	       case BUILTIN :
 	       case OBJECT_FOUND_INTERFACE :
 		  rslt = t1.getAsAbsoluteImport();
-		  rslt += "." + ftok.getImage().toString();
+		  if (rslt == null) rslt = ftok.getImage().toString();
+		  else rslt += "." + ftok.getImage().toString();
 		  break;
 	       default :
 		  break;

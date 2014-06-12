@@ -120,14 +120,14 @@ boolean isResolved()				{ return is_resolved; }
 @Override synchronized public void resolve()
 {
    if (isResolved()) return;
-   
+
    RebaseMain.logD("START RESOLVE");
    for (RebaseJavaFile jf : file_nodes) {
       RebaseMain.logD("FILE: " + jf.getFile().getFileName());
     }
- 
+
    clearResolve();
-   
+
    RebaseJavaTyper jt = new RebaseJavaTyper(base_context);
    RebaseJavaResolver jr = new RebaseJavaResolver(jt);
    jt.assignTypes(this);
@@ -152,10 +152,10 @@ boolean isResolved()				{ return is_resolved; }
 
 
 
-private void clearResolve() 
+private void clearResolve()
 {
    ClearVisitor cv = new ClearVisitor();
-   
+
    for (RebaseJavaFile jf : file_nodes) {
       CompilationUnit cu = jf.getAstNode();
       if (cu != null) cu.accept(cv);
@@ -169,8 +169,8 @@ private static class ClearVisitor extends ASTVisitor {
    @Override public void postVisit(ASTNode n) {
       RebaseJavaAst.clearAll(n);
    }
-   
-}	// end of inner class ClearVisitor 
+
+}	// end of inner class ClearVisitor
 
 
 
@@ -413,8 +413,13 @@ private class OutputVisitor extends RebaseJavaVisitor {
     }
 
    @Override public void endVisit(Initializer it) {
-      AbstractTypeDeclaration atd = (AbstractTypeDeclaration) it.getParent();
-      RebaseJavaSymbol js = RebaseJavaAst.getDefinition(atd);
+      RebaseJavaSymbol js = null;
+
+      if (it.getParent() != null) {
+	 // find class for the initializer
+	 js = RebaseJavaAst.getDefinition(it.getParent());
+       }
+
       if (js == null) return;
       xml_writer.begin("ITEM");
       xml_writer.field("PROJECT",java_file.getProjectName());

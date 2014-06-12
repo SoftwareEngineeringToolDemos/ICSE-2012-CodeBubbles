@@ -53,6 +53,7 @@ private SwingEventListenerList<BuenoInserter> insertion_handlers;
 private Map<BuenoMethod,BuenoCreator> creation_map;
 private BuenoCreator		cur_creator;
 private BuenoMethodCreatorInstance method_creator;
+private BuenoClassCreatorInstance class_creator;
 
 
 private static BuenoFactory	the_factory = null;
@@ -84,6 +85,9 @@ private BuenoFactory()
    creation_map.put(BuenoMethod.METHOD_ECLIPSE,new BuenoCreatorEclipse());
    creation_map.put(BuenoMethod.METHOD_TEMPLATE,new BuenoCreatorTemplate());
    creation_map.put(BuenoMethod.METHOD_USER,new BuenoCreatorUser());
+
+   method_creator = null;
+   class_creator = null;
 
    BoardProperties bp = BoardProperties.getProperties("Bueno");
    BuenoMethod mthd = bp.getEnum(BUENO_CREATION_METHOD,"METHOD_",BuenoMethod.METHOD_TEMPLATE);
@@ -136,6 +140,12 @@ public void setCreationMethod(BuenoMethod bm)
 }
 
 
+BuenoCreator getCreator()
+{
+   return cur_creator;
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -167,6 +177,11 @@ public void setMethodDialog(BuenoMethodCreatorInstance bmc)
    method_creator = bmc;
 }
 
+public void setClassDialog(BuenoClassCreatorInstance bcc)
+{
+   class_creator = bcc;
+}
+
 
 
 public void createMethodDialog(BudaBubble src,Point loc,BuenoProperties known,
@@ -183,6 +198,31 @@ public void createMethodDialog(BudaBubble src,Point loc,BuenoProperties known,
    md.showDialog();
 }
 
+
+
+
+public void createClassDialog(BudaBubble src,Point loc,BuenoType type,
+      BuenoProperties known,
+      BuenoLocation insert,String lbl,BuenoBubbleCreator newer)
+{
+   if (class_creator != null) {
+      if (class_creator.showClassDialogBubble(src,loc,type,known,insert,lbl,newer))
+	 return;
+    }
+
+   BuenoClassDialog cd = new BuenoClassDialog(src,loc,type,known,insert,newer);
+   if (lbl != null) cd.setLabel(lbl);
+   cd.showDialog();
+}
+
+
+
+public boolean useSeparateTypeButtons()
+{
+   if (class_creator == null) return false;
+
+   return class_creator.useSeparateTypeButtons();
+}
 
 
 
@@ -234,6 +274,8 @@ public void createNew(BuenoType what,BuenoLocation where,BuenoProperties props)
       case NEW_INTERFACE :
       case NEW_ENUM :
       case NEW_ANNOTATION :
+	 BuenoClassSetup bcs = new BuenoClassSetup(props);
+	 bcs.extendProperties();
 	 cur_creator.createType(what,where,props);
 	 break;
       case NEW_INNER_TYPE :

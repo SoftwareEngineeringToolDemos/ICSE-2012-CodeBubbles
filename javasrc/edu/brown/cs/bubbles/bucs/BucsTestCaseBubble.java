@@ -291,6 +291,10 @@ private class SearchRequest implements BucsSearchRequest {
       BudaBubbleLink bbl = new BudaBubbleLink(BucsTestCaseBubble.this,new BudaDefaultPort(),bb,new BudaDefaultPort());
       bba.addLink(bbl);
     }
+   
+   @Override public void handleSearchInputs(List<BucsSearchInput> result) {
+      
+    }
 
 }	// end of inner class SearchRequest
 

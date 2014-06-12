@@ -27,8 +27,6 @@ package edu.brown.cs.bubbles.bwiz;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoKey;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoType;
 import edu.brown.cs.bubbles.bueno.*;
 
 import java.awt.Point;
@@ -52,9 +50,9 @@ class BwizNewMethodWizard extends BwizNewWizard
 /*                                                                              */
 /********************************************************************************/
 
-BwizNewMethodWizard(String cls,String proj,String pkg)
-{   
-   super(proj,pkg,cls);
+BwizNewMethodWizard(BuenoLocation loc)
+{
+   super(loc,BuenoType.NEW_METHOD);
 }
 
 
@@ -65,8 +63,6 @@ BwizNewMethodWizard(String cls,String proj,String pkg)
 /*      Access methods                                                          */
 /*                                                                              */
 /********************************************************************************/
-
-@Override protected InfoStruct getInfoStruct()  { return new MethodInfo(); }
 
 @Override protected int getAccessibilityInfo()
 {
@@ -99,29 +95,6 @@ BwizNewMethodWizard(String cls,String proj,String pkg)
 }
 
 
-
-/********************************************************************************/
-/*                                                                              */
-/*      Info Structure                                                          */
-/*                                                                              */
-/********************************************************************************/
-
-private class MethodInfo extends InfoStruct {
-   
-   protected String getSetSeparator()           { return ","; }
-   
-   protected String getSignature(String pfx,String itms) {
-      String rslt = pfx;
-      rslt += " " + getSecondInfo().toString().trim();
-      rslt += " " + getMainName().toString().trim() + "(";
-      if (itms != null) rslt += itms;
-      rslt += ")";
-      return rslt;
-    }   
-   
-}       // end of inner class MethodInfo
-
-
 /********************************************************************************/
 /*                                                                              */
 /*      Method Creator                                                          *//*                                                                              */
@@ -133,30 +106,12 @@ private class MethodCreator extends Creator {
       BudaBubble nbbl = null;
       BuenoLocation bl = at_location;
       BuenoFactory bf = BuenoFactory.getFactory();
-      String proj = info_structure.getProjectName();
-      String pkg = info_structure.getPackageName();
+      String proj = property_set.getProjectName();
+      String pkg = property_set.getPackageName();
       
-      String cls = info_structure.getClassName();
-      String mthd = info_structure.getMainName().toString();
+      String cls = new_validator.getClassName();
+      String fmthd = new_validator.getMethodName();
       
-      bp.put(BuenoKey.KEY_NAME,mthd);
-      bp.put(BuenoKey.KEY_TYPE,fullname);
-      bp.put(BuenoKey.KEY_RETURNS,info_structure.getSecondInfo().toString());
-      bp.put(BuenoKey.KEY_PARAMETERS,info_structure.getSet());
-      StringBuffer buf = new StringBuffer();
-      buf.append(fullname);
-      buf.append(".");
-      buf.append(mthd);
-      buf.append("(");
-      int i = 0;
-      for (String s : info_structure.getSet()) {
-         if (i++ > 0) buf.append(",");
-         int idx = s.lastIndexOf(" ");
-         String typ = s.substring(0,idx);
-         buf.append(typ);
-       }
-      buf.append(")");
-      String fmthd = buf.toString();
       if (bl == null) bl = bf.createLocation(proj,pkg,cls,true);
       bf.createNew(BuenoType.NEW_METHOD,bl,bp);
       if (bubble_creator == null)

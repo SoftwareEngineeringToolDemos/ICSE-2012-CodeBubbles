@@ -38,6 +38,8 @@ import java.lang.reflect.Method;
 import java.net.*;
 import java.security.Permission;
 import java.util.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 
 
 public class BattJUnit implements BattConstants
@@ -224,7 +226,7 @@ private void scanArgs(String [] args)
 	 System.err.println("BATT: Class " + cnm + " can't be loaded: " + t);
        }
 
-      // System.err.println("DONE: " + cnm);
+      System.err.println("DONE: " + cnm);
     }
 
    class_set = new Class<?>[clss.size()];
@@ -321,7 +323,11 @@ private void process()
    TestListener ll = new TestListener();
    juc.addListener(ll);
 
+   System.err.println("BATTJ: START RUN: " + list_only);
+
    juc.run(rq);
+
+   System.err.println("BATTJ: FINISH RUN: " + list_only);
 
    if (result_stream != null) {
       try {
@@ -330,7 +336,8 @@ private void process()
       catch (IOException e) { }
     }
 
-   System.exit(0);
+// System.exit(0);
+   Runtime.getRuntime().halt(0);
 }
 
 
@@ -346,6 +353,7 @@ synchronized JunitTest addTestCase(Description d,JunitTestStatus sts)
    JunitTest btc = test_cases.get(d);
    if (btc == null) {
       btc = new JunitTest(d);
+      System.err.println("BATT: Create new test case for " + d + " " + test_cases.size());
       test_cases.put(d,btc);
     }
    btc.setStatus(sts);
@@ -361,6 +369,8 @@ synchronized JunitTest addTestCase(Description d,JunitTestStatus sts)
 
 synchronized void removeTestCase(Description d)
 {
+   System.err.println("BATT: Remove test case " + d);
+
    test_cases.remove(d);
 }
 
@@ -460,13 +470,21 @@ void outputTestCase(JunitTest btc,XMLStreamWriter xw) throws XMLStreamException
    Description d = btc.getDescription();
    if (d.getClassName() != null) xw.writeAttribute("CLASS",d.getClassName());
    if (d.getMethodName() != null) xw.writeAttribute("METHOD",d.getMethodName());
+   if (d.getTestClass() != null) {
+      Class<?> tcls = d.getTestClass();
+      if (Modifier.isAbstract(tcls.getModifiers())) xw.writeAttribute("ABSTRACT","true");
+      String tc = d.getTestClass().getName();
+      if (!tc.equals(d.getClassName())) {
+	 xw.writeAttribute("TCLASS",tc);
+       }
+    }
    if (d.isEmpty()) xw.writeAttribute("EMPTY","TRUE");
    if (d.isSuite()) xw.writeAttribute("SUITE","TRUE");
    if (d.isTest()) xw.writeAttribute("TEST","TRUE");
    if (d.testCount() > 1) xw.writeAttribute("COUNT",Integer.toString(d.testCount()));
    xw.writeAttribute("STATUS",btc.getStatus().getType().toString());
-
    xw.writeAttribute("NAME",d.getDisplayName());
+   xw.writeAttribute("HASH",Integer.toString(d.hashCode()));
 
    Failure f = btc.getStatus().getFailure();
    if (f != null) {
@@ -475,6 +493,12 @@ void outputTestCase(JunitTest btc,XMLStreamWriter xw) throws XMLStreamException
       xw.writeEndElement();
       xw.writeStartElement("TRACE");
       xw.writeCData(shortenTrace(f.getTrace()));
+      xw.writeEndElement();
+    }
+
+   for (Annotation an : d.getAnnotations()) {
+      xw.writeStartElement("ANNOT");
+      xw.writeCData(an.toString());
       xw.writeEndElement();
     }
 
@@ -522,11 +546,12 @@ private class ListFilter extends Filter {
       if (d.getMethodName() != null) {
 	 if (d.getClassName().startsWith("junit.") || d.getClassName().startsWith("org.junit."))
 	    return false;
-
+	 if (Modifier.isAbstract(d.getTestClass().getModifiers())) return false;
 	 JunitTest jt = addTestCase(d,STATUS_LISTING);
 	 outputSingleTest(jt);
 	 return false;
        }
+      
       System.err.println("BATT: Unknown test: " + d.isTest() + " " + d.isEmpty() + " " +
 			    d.getClassName() + " " + d.isSuite() + " " + d.getChildren().size() + " " + d);
       setTestStatus(d,STATUS_UNKNOWN);
@@ -611,9 +636,12 @@ private class TestListener extends RunListener {
 	 removeTestCase(f.getDescription());
        }
       else {
-	 System.err.println("BATT: FAIL " + f.getDescription() + " " + f.getException() + " " + f.getMessage() + "\nTRACE: " + f.getTrace());
+	 System.err.println("BATT: FAIL " + f.getTestHeader() + " " + f.getDescription() + " " + f.getException() + " " + f.getMessage() + "\nTRACE: " + f.getTrace());
 	 addTestCase(f.getDescription(),new JunitTestStatus(f));
        }
+
+      JunitTest jt = test_cases.get(f.getDescription());
+      if (jt != null) outputSingleTest(jt);
     }
 
 }	// end of inner class TestListener
@@ -699,12 +727,6 @@ private static class JunitTestStatus {
 
 
 }	// end of class BattJUnit
-
-
-
-
-/* end of BattJUnit.java */
-// end of class BattJUnit
 
 
 

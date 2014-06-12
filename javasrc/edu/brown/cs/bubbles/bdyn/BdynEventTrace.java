@@ -29,6 +29,7 @@ import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.io.*;
 
 
 class BdynEventTrace implements BdynConstants
@@ -44,6 +45,7 @@ class BdynEventTrace implements BdynConstants
 private BumpProcess	for_process;
 private ThreadData	current_thread;
 private PriorityQueue<TraceEntry> pending_entries;
+private List<TraceEntry> thread_entries;
 private Map<Integer,ThreadData> thread_map;
 private long		next_time;
 private Boolean 	cpu_time;
@@ -53,9 +55,21 @@ private BdynFactory	bdyn_factory;
 private Map<Integer,OutputTask> object_tasks;
 private OutputTask	dummy_task;
 private SortedSet<OutputEntry> output_set;
+private long		end_time;
 private long		max_delta;
 private SortedSet<ThreadData> active_threads;
 private SwingEventListenerList<BdynEventUpdater> update_listeners;
+private SortedSet<Long> time_marks;
+
+
+private static PrintWriter     trace_writer = null;
+static {
+   try {
+      trace_writer = new PrintWriter(new FileWriter("/vol/tmp/bdyntrace.out"));
+      // trace_writer = null;
+    }
+   catch (IOException e) { }
+}
 
 
 
@@ -70,8 +84,10 @@ BdynEventTrace(BumpProcess bp)
    for_process = bp;
    current_thread = null;
    pending_entries = new PriorityQueue<TraceEntry>(100,new EntryComparator());
+   thread_entries = null;
    thread_map = new HashMap<Integer,ThreadData>();
    next_time = 0;
+   end_time = 0;
    cpu_time = null;
    thread_counter = 0;
    task_counter = 0;
@@ -80,6 +96,7 @@ BdynEventTrace(BumpProcess bp)
    dummy_task = new OutputTask(0,null);
    output_set = new ConcurrentSkipListSet<OutputEntry>();
    active_threads = new TreeSet<ThreadData>();
+   time_marks = new ConcurrentSkipListSet<Long>();
    max_delta = 1;
    update_listeners = new SwingEventListenerList<BdynEventUpdater>(BdynEventUpdater.class);
 }
@@ -113,8 +130,7 @@ long getStartTime()
 
 long getEndTime()
 {
-   if (output_set.isEmpty()) return 0;
-   return output_set.last().getEndTime();
+   return end_time;
 }
 
 int getActiveThreadCount()
@@ -132,13 +148,22 @@ List<BdynEntryThread> getActiveThreads()
 BumpProcess getProcess()		{ return for_process; }
 
 
+Set<Long> getTimeMarks()
+{
+   return time_marks;
+}
+
+
 void clear()
 {
    pending_entries.clear();
    output_set.clear();
    object_tasks.clear();
    active_threads.clear();
+   time_marks.clear();
+   thread_entries = null;
    next_time = 0;
+   end_time = 0;
    current_thread = null;
    thread_map.clear();
    cpu_time = null;
@@ -146,6 +171,15 @@ void clear()
    task_counter = 0;
    max_delta = 1;
 }
+
+
+void addTimeMark(long when)
+{
+   time_marks.add(when);
+}
+
+
+Iterator<Long> getTimeMarkIterator()		{ return time_marks.iterator(); }
 
 
 
@@ -157,8 +191,15 @@ void clear()
 
 void addEntry(String s)
 {
+   // System.err.println("TRACX: " + s);
+   if (trace_writer != null) trace_writer.println(s);
+   
    char s0 = s.charAt(0);
    if (s0 == 'T') {                             // THREAD
+      if (thread_entries != null) {
+	 for (TraceEntry te : thread_entries) pending_entries.add(te);
+	 thread_entries = null;
+       }
       StringTokenizer tok = new StringTokenizer(s);
       tok.nextToken();
       int id = Integer.parseInt(tok.nextToken());
@@ -169,13 +210,20 @@ void addEntry(String s)
 	 current_thread = new ThreadData(++thread_counter,tid,tnm);
 	 thread_map.put(id,current_thread);
        }
+      thread_entries = new ArrayList<TraceEntry>();
     }
    else if (s0 == 'D') {                        // DONE
+      if (trace_writer != null) trace_writer.flush();
+      if (thread_entries != null) {
+	 for (TraceEntry te : thread_entries) pending_entries.add(te);
+	 thread_entries = null;
+       }
       StringTokenizer tok = new StringTokenizer(s);
       tok.nextToken();
       long time = Long.parseLong(tok.nextToken());
       if (next_time != 0) {
 	 int ct = 0;
+	 // System.err.println("TRACE: Pending size = " + pending_entries.size());
 	 while (!pending_entries.isEmpty() && pending_entries.peek().getTime() < next_time) {
 	    TraceEntry te = pending_entries.remove();
 	    ++ct;
@@ -186,6 +234,7 @@ void addEntry(String s)
 	       eu.eventsAdded();
 	     }
 	  }
+	 end_time = Math.max(next_time,end_time);
        }
       next_time = time;
     }
@@ -198,7 +247,29 @@ void addEntry(String s)
     }
    else if (cpu_time != null) {
       TraceEntry te = new TraceEntry(s,current_thread,cpu_time);
-      pending_entries.add(te);
+      if (thread_entries == null) pending_entries.add(te);
+      else {
+	 thread_entries.add(te);
+	 if (te.isExit()) {
+	    int sz = thread_entries.size();
+	    int loc = te.getEntryLocation();
+	    if (sz >= 4) {
+	       TraceEntry t3 = thread_entries.get(sz-2);
+	       if (!t3.isExit() && t3.getEntryLocation() == loc) {
+		  TraceEntry t2 = thread_entries.get(sz-3);
+		  if (t2.isExit() && t2.getEntryLocation() == loc) {
+		     TraceEntry t1 = thread_entries.get(sz-4);
+		     if (!t1.isExit() && t1.getEntryLocation() == loc &&
+			   (te.getTime() - t1.getTime()) < MERGE_TIME) {
+			t1.merge(t2.getTime(),t3.getTime(),te.getTime());
+			thread_entries.remove(sz-2);
+			thread_entries.remove(sz-3);
+		      }
+		   }
+		}
+	     }
+	  }
+       }
     }
 }
 
@@ -209,60 +280,27 @@ private void outputEntry(TraceEntry te)
    ThreadData td = te.getThread();
    if (td == null) return;
 
-   System.err.println("TRACE: " + te);
+   // System.err.println("TRACE: " + te);
 
    BdynCallback cb = bdyn_factory.getCallback(te.getEntryLocation());
    if (cb == null) return;
-   OutputTask ot = td.getCurrentTask();
 
    if (cb.getCallbackType() == CallbackType.CONSTRUCTOR) {
+      OutputTask ot = td.getCurrentTransaction();
       if (ot == null) return;
+      if (ot.isMainTask() && !BdynFactory.getOptions().useMainTask()) return;
       int i0 = te.getObject1();
       if (i0 != 0) {
-	 // System.err.println("ASSOC TASK " + i0 + " " + te.getObject2() + " " + ot.getTaskId());
+	 // System.err.println("ASSOC TASK " + i0 + " " + te.getObject2() + " " + ot.getTaskRoot().getDisplayName());
 	 OutputTask ot1 = object_tasks.get(i0);
 	 if (ot1 == null) object_tasks.put(i0,ot);
 	 else if (ot1 != dummy_task && ot1 != ot) object_tasks.put(i0,dummy_task);
-	 return;
        }
+      return;
     }
-   else if (ot == null) {
-      if (te.isExit()) return;
-      int i0 = te.getObject1();
-      int i1 = te.getObject2();
-      if (i0 != 0) {
-	 ot = object_tasks.get(i0);
-	 if (ot == dummy_task) ot = null;
-       }
-      if (ot == null) {
-	 if (i1!= 0) {
-	    ot = object_tasks.get(i1);
-	    if (ot == dummy_task) ot = null;
-	  }
-       }
-      if (ot == null) {
-	 // System.err.println("CREATE TASK " + (task_counter+1) + " " + i0 + " " + i1);
-	 ot = new OutputTask(++task_counter,cb);
-       }
-      td.beginTask(ot,cb,te.getTime());
-    }
-   else if (te.isExit() && td.getNestLevel() == 1) {
-      long start = td.getStartTime();
-      max_delta = Math.max(max_delta,te.getTime() - start);
-      // BdynCallback cbs = td.getTaskCallback();
-      // System.err.println("TASK " + td.getOutputId() + " " + td.getThreadId() + " " +
-			    // td.getThreadName() + " " + start + " " + te.getTime() + " " +
-			    // (te.getTime() - start) + " " +
-			    // cbs.getId() + " " + cb.getId() + " " +
-			    // ot.getTaskId() + " " + ot.getTaskRoot().getId() + " " +
-			    // te.getCpuTime() + " " +
-			    // cbs.getClassName() + "." + cbs.getMethodName());
-      OutputEntry oe = new OutputEntry(start,te.getTime(),td,ot,td.getTaskCallback());
-      output_set.add(oe);
-      active_threads.add(td);
-      td.endTask();
-    }
-   else td.nestTask(te.isExit());
+
+   td.beginTask(te);
+   end_time = Math.max(end_time,te.getTime());
 }
 
 
@@ -299,7 +337,8 @@ private BdynRangeSet pruneRange(BdynRangeSet rslt,long t0,long t1)
       int ct = 0;
       for (Iterator<BdynEntry> it1 = vals.iterator(); it1.hasNext(); ) {
 	 BdynEntry oe = it1.next();
-	 if (oe.getEndTime() < t0) it1.remove();
+	 if (oe.getEndTime(t1) < t0) 
+	    it1.remove();
 	 else ++ct;
        }
       if (ct == 0) it.remove();
@@ -318,17 +357,17 @@ private BdynRangeSet addToRange(long start,long t0,long t1,BdynRangeSet rslt)
    SortedSet<OutputEntry> ss = output_set.tailSet(timee);
    for (OutputEntry e1 : ss) {
       if (e1.getStartTime() > t1) break;
-      if (e1.getEndTime() >= t0) {
+      if (e1.getEndTime(t1) >= t0) {
 	 ThreadData td = e1.getThread();
 	 if (rslt == null) rslt = new BdynRangeSet();
 	 Set<BdynEntry> r1 = rslt.get(td);
 	 if (r1 == null) {
 	    r1 = new HashSet<BdynEntry>();
 	    rslt.put(td,r1);
-	 }
+	  }
 	 r1.add(e1);
-      }
-   }
+       }
+    }
 
    return rslt;
 }
@@ -342,54 +381,159 @@ private BdynRangeSet addToRange(long start,long t0,long t1,BdynRangeSet rslt)
 /*										*/
 /********************************************************************************/
 
-private static class ThreadData implements Comparable<ThreadData>, BdynEntryThread {
+private class ThreadData implements Comparable<ThreadData>, BdynEntryThread {
 
    private int	output_id;
    private String thread_name;
-   private OutputTask current_task;
-   private BdynCallback task_root;
-   private long task_start;
+   private OutputTask current_transaction;
    private int	nest_level;
+   private Stack<OutputEntry> output_stack;
+   private OutputEntry last_entry;
 
    ThreadData(int oid,int tid,String tnm) {
       output_id = oid;
       thread_name = tnm;
-      current_task = null;
+      current_transaction = null;
       nest_level = 0;
+      output_stack = new Stack<OutputEntry>();
+      last_entry = null;
     }
 
    @Override public String getThreadName() { return thread_name; }
    int getOutputId()			{ return output_id; }
-   OutputTask getCurrentTask()		{ return current_task; }
-   int getNestLevel()			{ return nest_level; }
-   BdynCallback getTaskCallback()	{ return task_root; }
-   long getStartTime()			{ return task_start; }
+   OutputTask getCurrentTransaction()	{ return current_transaction; }
 
-   void beginTask(OutputTask ot,BdynCallback cb,long when) {
-      current_task = ot;
-      task_root = cb;
-      task_start = when;
-      nest_level = 1;
+   void beginTask(TraceEntry te) {
+      BdynCallback cb = bdyn_factory.getCallback(te.getEntryLocation());
+      if (cb == null) return;
+      
+      if (trace_writer != null) trace_writer.println("PROCESS " + te.getEntryLocation() + " " + te.isExit() + " " + te.getTime());
+   
+      if (current_transaction == null) {
+         OutputTask ot = null;
+         if (te.isExit()) return;
+         int i0 = te.getObject1();
+         int i1 = te.getObject2();
+         if (i0 != 0) {
+            ot = object_tasks.get(i0);
+            if (ot == dummy_task) ot = null;
+          }
+         if (ot == null) {
+            if (i1!= 0) {
+               ot = object_tasks.get(i1);
+               if (ot == dummy_task) ot = null;
+             }
+          }
+         if (ot == null) {
+            ot = new OutputTask(++task_counter,cb);
+          }
+         current_transaction = ot;
+         nest_level = 0;
+       }
+      if (!te.isExit()) {
+         OutputEntry oe = null;
+         if (nest_level == 0) {
+            oe = createOutputEntry(te);
+          }
+         else if (cb.getCallbackType() == CallbackType.KEY && BdynFactory.getOptions().useKeyCallback()) {
+            for (int i = output_stack.size()-1; i >= 0; --i) {
+               OutputEntry poe = output_stack.get(i);
+               if (poe != null) {
+        	  poe.finishAt(te.getTime());
+        	  if (trace_writer != null) trace_writer.println("FINISHINT " + poe.getEntryTask().getId() + " " + nest_level + " " + poe.getTotalTime(0) + " " + poe.hashCode());
+        	  break;
+        	}
+             }
+            oe = createOutputEntry(te);
+          }
+         else {
+            if (trace_writer != null) trace_writer.println("IGNORE " + cb.getId() + " " + nest_level);
+            // System.err.println("TRACE: Ignore " + cb.getDisplayName() + " " + nest_level);
+          }
+         output_stack.push(oe);
+         active_threads.add(this);
+         ++nest_level;
+       }
+      else {
+         if (nest_level <= 0) {
+            return;
+          }
+         --nest_level;
+         OutputEntry oe = output_stack.pop();
+         if (oe != null) {
+            // TODO: max_delta doesn't take into account calls that haven't ended yet
+            max_delta = Math.max(max_delta,te.getTime() - oe.getStartTime());
+            oe.finishAt(te.getTime());
+            if (trace_writer != null) trace_writer.println("FINISH " + oe.getEntryTask().getId() + " " + nest_level + " " + oe.getTotalTime(0) + " " + oe.hashCode());
+            if (!oe.isRelevant()) {
+               output_set.remove(oe);
+               if (trace_writer != null) trace_writer.println("REMOVE KEY " + oe.getEntryTask().getId() + " " + nest_level);
+               // System.err.println("REMOVE KEY " + oe.getEntryTask().getDisplayName());
+               oe = null;
+               for (int i = output_stack.size()-1; i >= 0; --i) {
+                  OutputEntry poe = output_stack.get(i);
+                  if (poe != null) {
+                     poe.finishAt(0);
+                     if (trace_writer != null) trace_writer.println("NO END " + poe.getEntryTask().getId() + " " + nest_level + " " + poe.hashCode());
+                     break;
+                   }
+                }
+             }
+          }
+   
+         if (last_entry != null && oe != null &&
+               last_entry.getEntryTask() == oe.getEntryTask() &&
+               (te.getTime() - last_entry.getStartTime()) < MERGE_TIME) {
+            last_entry.mergeWith(oe);
+            output_set.remove(oe);
+            if (trace_writer != null) trace_writer.println("MERGE KEY " + oe.getEntryTask().getId() + " " + nest_level);
+            // System.err.println("REMOVE " + oe.getEntryTask().getDisplayName());
+          }
+   
+         if (oe != null) last_entry = oe;
+   
+         if (nest_level == 0) endTask();
+         else if (oe != null) {
+            for (int i = output_stack.size()-1; i >= 0; --i) {
+               OutputEntry poe = output_stack.get(i);
+               if (poe != null) {
+        	  if (!poe.isSignificant()) {
+        	     output_set.remove(poe);
+        	   }
+        	  if (trace_writer != null) trace_writer.println("NEST KEY " + poe.getEntryTask().getId() + " " + nest_level + " " + poe.isSignificant());
+        	  oe = new OutputEntry(te.getTime(),0,this,current_transaction,poe.getEntryTask());
+        	  oe.setDeletable();
+        	  output_set.add(oe);
+        	  output_stack.set(i,oe);
+        	  break;
+        	}
+             }
+          }
+       }
     }
 
    void endTask() {
-      current_task = null;
-      task_root = null;
-      task_start = 0;
+      current_transaction = null;
       nest_level = 0;
+      output_stack.clear();
     }
 
-   void nestTask(boolean exit) {
-      if (exit) {
-	 if (--nest_level == 0) {
-	    endTask();
-	  }
-       }
-      else ++nest_level;
+   OutputEntry createOutputEntry(TraceEntry te) {
+      BdynCallback cb = bdyn_factory.getCallback(te.getEntryLocation());
+      OutputEntry oe = new OutputEntry(te.getTime(),0,this,current_transaction,cb);
+      if (te.getUseCount() > 1) oe.setUse(te.getUseCount(),te.getFractionUsed());
+      output_set.add(oe);
+      if (trace_writer != null) trace_writer.println("START " + cb.getId() + " " + nest_level + " " + te.getTime() + " " + oe.hashCode());
+      return oe;
     }
 
    @Override public int compareTo(ThreadData td) {
       return getThreadName().compareTo(td.getThreadName());
+    }
+
+   @Override public String toString() {
+      if (nest_level <= 0) return thread_name;
+      return thread_name + "@" + nest_level;
     }
 
 }	// end of inner class ThreadData
@@ -410,6 +554,8 @@ private static class TraceEntry {
    private int		entry_o1;
    private int		entry_o2;
    private boolean	is_exit;
+   private int		use_count;
+   private double	fraction_used;
 
    TraceEntry(String s,ThreadData td,boolean cputime) {
       String [] args = s.split(" ");
@@ -427,6 +573,8 @@ private static class TraceEntry {
       else entry_o1 = 0;
       if (ct < args.length) entry_o2 = Integer.parseInt(args[ct++]);
       else entry_o2 = 0;
+      use_count = 1;
+      fraction_used = 1;
     }
 
    long getTime()			{ return entry_time; }
@@ -435,6 +583,19 @@ private static class TraceEntry {
    int getObject1()			{ return entry_o1; }
    int getObject2()			{ return entry_o2; }
    boolean isExit()			{ return is_exit; }
+   int getUseCount()			{ return use_count; }
+   double getFractionUsed()		{ return fraction_used; }
+
+
+   void merge(long et0,long st1,long et1) {
+      double tot = et1 - st1;
+      if (use_count <= 1) tot += et0 - entry_time;
+      else {
+	 tot += (et0 - entry_time) * fraction_used;
+       }
+      ++use_count;
+      fraction_used = tot / (et1 - entry_time);
+    }
 
    @Override public String toString() {
       StringBuffer buf = new StringBuffer();
@@ -480,13 +641,19 @@ private static class OutputEntry implements Comparable<OutputEntry>, BdynEntry {
    private ThreadData entry_thread;
    private OutputTask entry_transaction;
    private BdynCallback entry_task;
+   private int num_traces;
+   private boolean can_delete;
+   private float trace_fraction;
 
    OutputEntry(long startt,long endt,ThreadData td,OutputTask ot,BdynCallback tt) {
       start_time = startt;
-      finish_time = endt;
+      finish_time = (endt == 0 ? MAX_TIME : endt);
       entry_thread = td;
       entry_transaction = ot;
       entry_task = tt;
+      num_traces = 1;
+      trace_fraction = 1;
+      can_delete = (tt.getCallbackType() == CallbackType.KEY);
     }
 
    OutputEntry(long time) {
@@ -495,26 +662,92 @@ private static class OutputEntry implements Comparable<OutputEntry>, BdynEntry {
       entry_thread = null;
       entry_transaction = null;
       entry_task = null;
+      num_traces = 0;
+      trace_fraction = 1;
+      can_delete = true;
     }
 
    @Override public long getStartTime() 	{ return start_time; }
-   @Override public long getEndTime()		{ return finish_time; }
-   ThreadData getThread()			{ return entry_thread; }
+   @Override public long getEndTime(long max) {
+      if (max == 0) {
+         if (finish_time == MAX_TIME) return 0;
+         return finish_time;
+       }
+      return Math.min(max,finish_time);
+    }
+   @Override public long getTotalTime(long max) {
+      long d0 = getEndTime(max) - start_time;
+      if (num_traces > 0) d0 = (long) (d0 * trace_fraction);
+      return d0;
+    }
+
+   void finishAt(long time) {
+      if (time == 0 || time == MAX_TIME) finish_time = MAX_TIME;
+      else if (finish_time == MAX_TIME || finish_time == 0) finish_time = time;
+      else finish_time = Math.max(finish_time,time);
+    }
+   
+   void setUse(int count,double fract) {
+      num_traces = count;
+      trace_fraction = (float) fract;
+    }
+
+   ThreadData getThread()				{ return entry_thread; }
    @Override public BdynEntryThread getEntryThread()	{ return entry_thread; }
-   @Override public BdynCallback getEntryTask() { return entry_task; }
+   @Override public BdynCallback getEntryTask() 	{ return entry_task; }
    @Override public BdynCallback getEntryTransaction()	{ return entry_transaction.getTaskRoot(); }
+   
+   void setDeletable()                                  { can_delete = true; }
+
+   boolean isRelevant() {
+      if (finish_time == MAX_TIME) return true;
+      // ignore KEY events with less than 10 ms times
+      if (can_delete && getTotalTime(0) < IGNORE_TIME) return false;
+      return true;
+    }
+   
+   boolean isSignificant() {
+      if (finish_time == MAX_TIME) return true;
+      if (getTotalTime(0) < IGNORE_TIME) return false;
+      return true;
+   }
+     
+   void mergeWith(OutputEntry oe) {
+      num_traces += oe.num_traces;
+      double tot = getTotalTime(0) + oe.getTotalTime(0);
+      finish_time = oe.finish_time;
+      trace_fraction = ((float)(tot / (finish_time - start_time)));
+    }
 
    @Override public int compareTo(OutputEntry e) {
       long dl = start_time - e.start_time;
       if (dl < 0) return -1;
       if (dl > 0) return 1;
-      dl = finish_time = e.finish_time;
+      dl = finish_time - e.finish_time;
       if (dl < 0) return -1;
       if (dl > 0) return 1;
       int idl = entry_thread.getOutputId() - e.entry_thread.getOutputId();
       if (idl < 0) return -1;
       if (idl > 0) return 1;
       return 0;
+    }
+
+   @Override public String toString() {
+      StringBuffer buf = new StringBuffer();
+      if (entry_transaction != null && getEntryTransaction() != entry_task) {
+	 buf.append(getEntryTransaction().toString());
+	 buf.append("::");
+       }
+      if (entry_task != null) {
+	 buf.append(entry_task.toString());
+       }
+      buf.append("@");
+      buf.append(start_time);
+      if (finish_time != 0 && finish_time != MAX_TIME) {
+	 buf.append("-");
+	 buf.append(finish_time);
+       }
+      return buf.toString();
     }
 
 }	// end of inner class OutputEntry
@@ -530,6 +763,12 @@ private static class OutputTask implements BdynEntryTask {
     }
 
    @Override public BdynCallback getTaskRoot()	{ return task_root; }
+   
+   boolean isMainTask() {
+      if (task_root == null) return true;
+      if (task_root.getCallbackType() == CallbackType.MAIN) return true;
+      return false;
+    }
 
 }
 

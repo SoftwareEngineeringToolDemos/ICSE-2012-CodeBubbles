@@ -27,8 +27,6 @@ package edu.brown.cs.bubbles.bwiz;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoKey;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoType;
 import edu.brown.cs.bubbles.bueno.*;
 
 import java.awt.Point;
@@ -52,16 +50,9 @@ class BwizNewClassWizard extends BwizNewWizard
 /*										*/
 /********************************************************************************/
 
-BwizNewClassWizard()
+BwizNewClassWizard(BuenoLocation loc)
 {
-   this(null,null);
-}
-
-
-
-BwizNewClassWizard(String proj,String pkg)
-{
-   super(proj,pkg,null);
+   super(loc,BuenoType.NEW_CLASS);
 }
 
 
@@ -72,8 +63,6 @@ BwizNewClassWizard(String proj,String pkg)
 /*	Access methods								*/
 /*										*/
 /********************************************************************************/
-
-@Override protected InfoStruct getInfoStruct()	{ return new ClassInfo(); }
 
 @Override protected int getAccessibilityInfo()
 {
@@ -106,33 +95,6 @@ BwizNewClassWizard(String proj,String pkg)
 
 /********************************************************************************/
 /*										*/
-/*	Info Structure								*/
-/*										*/
-/********************************************************************************/
-
-private class ClassInfo extends InfoStruct {
-
-   protected String getSignature(String pfx,String itms) {
-      String rslt = pfx + " class " + getMainName().toString().trim();
-      if (getSecondInfo().length() > 0) rslt += " extends " + getSecondInfo().toString().trim();
-      if (itms != null) rslt += " implements " + itms;
-      return rslt;
-    }
-
-   protected boolean initialCheck() {
-      String snm = getSecondInfo().toString();
-      if (snm.length() == 0) return true;
-      if (!acceptableName(snm)) return false;
-      return true;
-    }
-
-}	// end of inner class ClassInfo
-
-
-
-
-/********************************************************************************/
-/*										*/
 /*	Class Creator								*/
 /*										*/
 /********************************************************************************/
@@ -143,11 +105,9 @@ private class ClassCreator extends Creator {
       BudaBubble nbbl = null;
       BuenoLocation bl = at_location;
       BuenoFactory bf = BuenoFactory.getFactory();
-      String proj = info_structure.getProjectName();
-      String pkg = info_structure.getPackageName();
+      String proj = property_set.getProjectName();
+      String pkg = property_set.getPackageName();
    
-      bp.put(BuenoKey.KEY_EXTENDS,info_structure.getSecondInfo().toString());
-      bp.put(BuenoKey.KEY_IMPLEMENTS,info_structure.getSet());
       if (bl == null) bl = bf.createLocation(proj,pkg,null,true);
       bf.createNew(BuenoType.NEW_CLASS,bl,bp);
       if (bubble_creator == null)

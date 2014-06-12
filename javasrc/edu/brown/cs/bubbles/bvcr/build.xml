@@ -58,6 +58,15 @@
       </java>
    </target>
 
+   <target name='test01a' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bvcr.BvcrMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value="-S" />
+	 <arg value="-m" />
+	 <arg value="BUBBLES_DEBUG_spr_netty" />
+      </java>
+   </target>
+
    <target name='test02' depends='compile'>
       <java classname='edu.brown.cs.bubbles.bvcr.BvcrMain' fork='true'>
 	 <classpath refid='test.classpath' />

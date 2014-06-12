@@ -37,6 +37,9 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
+import javax.imageio.ImageIO;
+import javax.xml.bind.DatatypeConverter;
+
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
@@ -45,6 +48,7 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
+import java.awt.image.*;
 
 
 class BucsS6Engine implements BucsConstants
@@ -217,6 +221,15 @@ void startSearch(BucsSearchRequest sr)
 }
 
 
+void startUISearch(BucsSearchRequest sr)
+{
+   SearchRunner searcher = new SearchRunner(sr,createUIRequest());
+   
+   BoardThreadPool.start(searcher);
+}
+
+
+
 private String createSearchRequest()
 {
    Element sgn = checkSignature();
@@ -295,6 +308,42 @@ private String createSearchRequest()
 }
 
 
+private String createUIRequest()
+{
+   String scope = "FILE";
+   List<String> srcs = new ArrayList<String>();
+   String s6 = bump_location.getS6Source();
+   srcs.add(s6);
+   
+   String xml = "<SEARCH FORMAT='NONE' SCOPE='" + scope + "' WHAT='UIFRAMEWORK'>";
+   xml += "<SIGNATURE><UI CLASS='S6_UI_CLASS' PACKAGE='spr.sampler.uitest'>";
+   xml += "<COMPONENT HEIGHT='100' WIDTH='100' X='0' Y='0' ID='U_1' TYPES='java.awt.Container' />";
+   xml += "<CLASS NAME='S6_UI_CLASS'><METHOD NAME='S6_UI' RETURN='java.awt.Component' /></CLASS>";
+   xml += "</UI></SIGNATURE>";
+   xml += "<TESTS><TESTCASE NAME='SVIUI_1' TYPE='CALLS'>";
+   xml += "<CALL METHOD='S6_UI_CLASS' NEW='true' OP='SAVE'>";
+   xml += "<OUTPUT TYPE='SAVE' VALUE='x'><CODE>S6_UI_CLASS x;</CODE></OUTPUT>";
+   xml += "</CALL>";
+   xml += "<CALL METHOD='S6_UI' THIS='x' OP='SAVE'>";
+   xml += "<OUTPUT TYPE='SAVE' VALUE='y'><CODE>java.awt.Component y;</CODE></OUTPUT>";
+   xml += "</CALL>";
+   xml += "<CALL OP='SCOREHIER' THIS='y'>";
+   xml += "<OUTPUT TYPE='SAVE' VALUE='__score__'><CODE>double __score__;</CODE></OUTPUT>";
+   xml += "</CALL>";
+   xml += "<CALL OP='INTERACT' THIS='y'><INPUT TYPE='VARIABLE' VALUE='__score__' /></CALL>";
+   xml += "</TESTCASE></TESTS>";
+   xml += "<SOURCES>";
+   for (String s : srcs) {
+      s = IvyXml.xmlSanitize(s,false);
+      xml += "<SOURCE USE='TRUE'>" + s + "</SOURCE>";
+    }
+   xml += "</SOURCES>";
+   xml += "</SEARCH>";
+
+   return xml; 
+}
+
+
 
 
 private class SearchRunner implements Runnable {
@@ -320,9 +369,18 @@ private class SearchRunner implements Runnable {
 	 S6SearchResult sr = new S6SearchResult(sol);
 	 rslts.add(sr);
        }
-
-      if (rslts.size() == 0) search_callback.handleSearchFailed();
-      else search_callback.handleSearchSucceeded(rslts);
+      
+      List<BucsSearchInput> irslt = new ArrayList<BucsSearchInput>();
+      Element inps = IvyXml.getChild(rslt,"USERINPUT");
+      Element test = IvyXml.getChild(inps,"TESTCASE");
+      for (Element uc : IvyXml.children(test,"USERCASE")) {
+	 S6UIResult sr = new S6UIResult(uc);
+	 irslt.add(sr);
+       }
+      
+      if (rslts.size() > 0) search_callback.handleSearchSucceeded(rslts);
+      else if (irslt.size() > 0) search_callback.handleSearchInputs(irslt);
+      else search_callback.handleSearchFailed();
     }
 
 }	// end of inner class SearchRunner
@@ -645,6 +703,7 @@ private static class S6SearchResult implements BucsSearchResult {
    private int	  result_lines;
    private int	  result_size;
    private String result_license;
+   
 
    S6SearchResult(Element xml) {
       result_name = IvyXml.getTextElement(xml,"NAME");
@@ -665,6 +724,38 @@ private static class S6SearchResult implements BucsSearchResult {
    @Override public String getLicenseUid()	{ return result_license; }
 
 }	// end of inner class SearchResult
+
+
+
+private static class S6UIResult implements BucsSearchInput {
+
+   private BufferedImage user_image;
+   
+   S6UIResult(Element xml) {
+      user_image = null;
+      String imghtml = IvyXml.getTextElement(xml,"VALUE");
+      Element x1 = IvyXml.convertStringToXml(imghtml);		// <IMG ...></IMG>
+      String src = IvyXml.getAttrString(x1,"SRC");
+      int idx = src.indexOf(",");
+      src = src.substring(idx+1);
+      byte [] img = DatatypeConverter.parseBase64Binary(src);
+      ByteArrayInputStream bas = new ByteArrayInputStream(img);
+      try {
+	 user_image = ImageIO.read(bas);
+      }
+      catch (IOException e) {
+	 BoardLog.logE("BUCS","Problem converting image",e);
+      }
+	 
+      // jar_string = IvyXml.getTextElement(xml,"RUNJAR");
+    }
+   
+   @Override public BufferedImage getImage()    { return user_image; }
+   
+}	// end of inner class S6UIResult
+
+
+
 
 }	// end of class BucsS6Engine
 

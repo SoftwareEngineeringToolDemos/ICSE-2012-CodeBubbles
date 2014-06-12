@@ -189,7 +189,15 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
        }
     }
    if (clsloc != null) {
-      menu.add(new NewTypeAction(clsloc));
+      if (BuenoFactory.getFactory().useSeparateTypeButtons()) {
+	 menu.add(new NewTypeAction(BuenoType.NEW_CLASS,clsloc));
+	 menu.add(new NewTypeAction(BuenoType.NEW_ENUM,clsloc));
+	 menu.add(new NewTypeAction(BuenoType.NEW_INTERFACE,clsloc));
+       }
+      else {
+	 menu.add(new NewTypeAction(clsloc));
+       }
+
       if (clsloc.getPackage() != null) {
 	 menu.add(new NewPackageAction(clsloc));
        }
@@ -348,6 +356,10 @@ private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBub
 
    private final static long serialVersionUID = 1;
 
+   NewTypeAction(BuenoType typ,BuenoLocation loc) {
+      super(typ,loc);
+    }
+
    NewTypeAction(BuenoLocation loc) {
       super(BuenoType.NEW_TYPE,loc);
     }
@@ -355,9 +367,7 @@ private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBub
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","NewType");
       BudaRoot.hideSearchBubble(e);
-      BuenoClassDialog bcd = new BuenoClassDialog(search_bubble,access_point,create_type,
-						     property_set,for_location,this);
-      bcd.showDialog();
+      BuenoFactory.getFactory().createClassDialog(search_bubble,access_point,create_type,property_set,for_location,null,this);
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
@@ -503,20 +513,17 @@ private static class BassNewLocation extends BuenoLocation {
 private static class DeleteProjectAction extends AbstractAction implements Runnable {
 
    private String project_name;
-   private BudaBubble rel_bubble;
-
+   
    private static final long serialVersionUID = 1;
 
    DeleteProjectAction(String proj,BudaBubble bb) {
       super("Delete Project " + proj);
       project_name = proj;
-      rel_bubble = bb;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
-	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
-	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete project " + project_name,
+	 int sts = JOptionPane.showConfirmDialog(null,"Do you really want to delete project " + project_name,
 						    "Confirm Delete Project",
 						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
 	 if (sts != JOptionPane.YES_OPTION) return;
@@ -538,7 +545,6 @@ private static class DeletePackageAction extends AbstractAction implements Runna
 
    private String project_name;
    private String package_name;
-   private BudaBubble rel_bubble;
 
    private static final long serialVersionUID = 1;
 
@@ -546,13 +552,11 @@ private static class DeletePackageAction extends AbstractAction implements Runna
       super("Delete Package " + pkg);
       project_name = proj;
       package_name = pkg;
-      rel_bubble = bb;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
-	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
-	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete all of package " + package_name,
+	 int sts = JOptionPane.showConfirmDialog(null,"Do you really want to delete all of package " + package_name,
 						    "Confirm Delete Package",
 						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
 	 if (sts != JOptionPane.YES_OPTION) return;
@@ -564,7 +568,7 @@ private static class DeletePackageAction extends AbstractAction implements Runna
       BumpClient bc = BumpClient.getBump();
       bc.delete(project_name,"PACKAGE",package_name,bass_properties.getBoolean("Bass.delete.rebuild",true));
     }
-   
+
 }	// end of inner class DeletePackageAction
 
 
@@ -574,7 +578,6 @@ private static class DeleteFileAction extends AbstractAction implements Runnable
 
    private String project_name;
    private File file_name;
-   private BudaBubble rel_bubble;
 
    private static final long serialVersionUID = 1;
 
@@ -582,13 +585,11 @@ private static class DeleteFileAction extends AbstractAction implements Runnable
       super("Delete File " + fil.getName());
       project_name = proj;
       file_name = fil;
-      rel_bubble = bb;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
-	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
-	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete file " + file_name.getPath(),
+	 int sts = JOptionPane.showConfirmDialog(null,"Do you really want to delete file " + file_name.getPath(),
 						    "Confirm Delete File",
 						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
 	 if (sts != JOptionPane.YES_OPTION) return;
@@ -609,7 +610,6 @@ private static class DeleteClassAction extends AbstractAction implements Runnabl
 
    private String project_name;
    private String class_name;
-   private BudaBubble rel_bubble;
 
    private static final long serialVersionUID = 1;
 
@@ -617,13 +617,11 @@ private static class DeleteClassAction extends AbstractAction implements Runnabl
       super("Delete Class " + cls);
       project_name = proj;
       class_name = cls;
-      rel_bubble = bb;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
-	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(rel_bubble);
-	 int sts = JOptionPane.showConfirmDialog(bba,"Do you really want to delete the class " + class_name,
+	 int sts = JOptionPane.showConfirmDialog(null,"Do you really want to delete the class " + class_name,
 						    "Confirm Delete Class",
 						    JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
 	 if (sts != JOptionPane.YES_OPTION) return;

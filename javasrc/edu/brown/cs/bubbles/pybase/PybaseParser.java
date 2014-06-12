@@ -406,38 +406,38 @@ private class ParentSetter extends Visitor {
 
    @Override protected Object unhandled_node(SimpleNode n) throws Exception {
       if (!parent_stack.empty()) {
-	 if (n.parent != null  && n.parent != parent_stack.peek()) {
-	    System.err.println("Parent already set for " + n);
-	 }
-	 n.parent = parent_stack.peek();
-
-	 if (n instanceof Print) {		// PRINT not done correctly in parser
-	    fixMissingKey(n,"print");
-	  }
-	 else if (n instanceof Import) {
-	    fixMissingKey(n,"import");
-	  }
-	 else if (n instanceof Compare) {
-	    Compare cmp = (Compare) n;
-	    for (int i = 0; i < cmp.comparators.length; ++i) {
-	       if (cmp.ops[i] == cmpopType.NotIn) {
-		  fixMissingKey(cmp.comparators[i],"not in");
-		}
-	     }
-	  }
-
-
-	 Point pt = getExtendedStart(n);
-	 int bline = pt.x;
-	 int bcol = pt.y;
-
-	 for (SimpleNode p : parent_stack) {
-	    if (p.beginLine > bline || p.beginLine == 0 ||
-		   (p.beginLine == bline && p.beginColumn > bcol)) {
-	       p.beginLine = bline;
-	       p.beginColumn = bcol;
-	     }
-	  }
+         if (n.parent != null  && n.parent != parent_stack.peek()) {
+            System.err.println("Parent already set for " + n);
+         }
+         n.parent = parent_stack.peek();
+   
+         if (n instanceof Print) {		// PRINT not done correctly in parser
+            fixMissingKey(n,"print");
+          }
+         else if (n instanceof Import) {
+            fixMissingKey(n,"import");
+          }
+         else if (n instanceof Compare) {
+            Compare cmp = (Compare) n;
+            for (int i = 0; i < cmp.comparators.length; ++i) {
+               if (cmp.ops[i] == cmpopType.NotIn) {
+        	  fixMissingKey(cmp.comparators[i],"not in");
+        	}
+             }
+          }
+   
+   
+         Point pt = getExtendedStart(n);
+         int bline = pt.x;
+         int bcol = pt.y;
+   
+         for (SimpleNode p : parent_stack) {
+            if (p.beginLine > bline || p.beginLine == 0 ||
+        	   (p.beginLine == bline && p.beginColumn > bcol)) {
+               p.beginLine = bline;
+               p.beginColumn = bcol;
+             }
+          }
        }
       last_node = n;
       return super.unhandled_node(n);

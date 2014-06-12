@@ -233,8 +233,10 @@ private void setupLabel()
       if (ctr++ == 0) {
 	 buf.append("<th");
 	 buf.append(" width='" + title_width + "' align='LEFT'><font size='10pt' face='monospace'>");
+	 // buf.append(" width='" + title_width + "' align='LEFT'><code>");
 	 buf.append(item_name);
 	 buf.append("</font></th>");
+	 // buf.append("</code></th>");
        }
       else {
 	 buf.append("<th></td>");
@@ -517,6 +519,7 @@ private class ContentData {
 
    private void generateHTML(int startIndex, int endIndex) {
       StringBuffer htmlBuf = new StringBuffer("<td height='" + INIT_HEIGHT + "'><font size='10pt' face='monospace'>");
+      // StringBuffer htmlBuf = new StringBuffer("<td height='" + INIT_HEIGHT + "'><code>");
       StringBuffer middleHtmlBuf = new StringBuffer();
 
       int index = 0;
@@ -598,7 +601,8 @@ private class ContentData {
 	 htmlBuf.append("...");
 
       htmlBuf.append("</font></td></tr>");
-
+      // htmlBuf.append("</code></td></tr>");
+      
       result_html = htmlBuf.toString();
     }
 

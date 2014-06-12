@@ -49,11 +49,11 @@ class BudaExpose extends AbstractAction implements ActionListener, BudaConstants
 
 private BudaRoot	for_root;
 private BudaBubbleArea	bubble_area;
-private Rectangle	start_viewport;
-private int		center_x;
-private int		center_y;
-private int		target_x;
-private int		target_y;
+// private Rectangle	start_viewport;
+// private int		center_x;
+// private int		center_y;
+// private int		target_x;
+// private int		target_y;
 private Mouser		mouse_handler;
 private Keyer		key_handler;
 
@@ -86,11 +86,11 @@ BudaExpose(BudaRoot br,BudaBubbleArea ba)
 {
    bubble_area = for_root.getCurrentBubbleArea();
 
-   start_viewport = for_root.getViewport();
-   center_x = start_viewport.x + start_viewport.width/2;
-   center_y = start_viewport.y + start_viewport.height/2;
-   target_x = center_x;
-   target_y = center_y;
+  // start_viewport = for_root.getViewport();
+   // center_x = start_viewport.x + start_viewport.width/2;
+  //  center_y = start_viewport.y + start_viewport.height/2;
+  // target_x = center_x;
+  // target_y = center_y;
 
    JComponent glass = (JComponent) for_root.getGlassPane();
    glass.addMouseListener(mouse_handler);
@@ -112,13 +112,13 @@ BudaExpose(BudaRoot br,BudaBubbleArea ba)
 
 private void restore(boolean aimAtBubble)
 {
-   start_viewport = for_root.getViewport();
-   center_x = (int)(start_viewport.x / for_root.getScaleFactor()) + start_viewport.width;
-   center_y = (int)(start_viewport.y / for_root.getScaleFactor()) + start_viewport.height;
+  // start_viewport = for_root.getViewport();
+   // center_x = (int)(start_viewport.x / for_root.getScaleFactor()) + start_viewport.width;
+   // center_y = (int)(start_viewport.y / for_root.getScaleFactor()) + start_viewport.height;
 
    if(!aimAtBubble){
-      target_x = center_x;
-      target_y = center_y;
+      // target_x = center_x;
+      // target_y = center_y;
     }
 
    JComponent glass = (JComponent) for_root.getGlassPane();
@@ -172,8 +172,8 @@ private class Mouser extends MouseAdapter {
 						bubble_area);
       BudaBubble bb = findBubble(p0.x,p0.y);
       if (bb != null) {
-	 target_x = bb.getX() + bb.getWidth()/2;
-	 target_y = bb.getY() + bb.getHeight()/2;
+	//  target_x = bb.getX() + bb.getWidth()/2;
+	// target_y = bb.getY() + bb.getHeight()/2;
 	 restore(true);
        }
     }
@@ -245,23 +245,23 @@ private class Scaler implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
       if (start_scale < end_scale) {
-	 cur_scale += scale_delta;
-	 if (cur_scale > end_scale) cur_scale = end_scale;
+         cur_scale += scale_delta;
+         if (cur_scale > end_scale) cur_scale = end_scale;
        }
       else {
-	 cur_scale -= scale_delta;
-	 if (cur_scale < end_scale) cur_scale = end_scale;
+         cur_scale -= scale_delta;
+         if (cur_scale < end_scale) cur_scale = end_scale;
        }
-
-      double d = (cur_scale - start_scale)/(end_scale - start_scale);
-      int x0 = (int)(center_x + d*(target_x - center_x));
-      int y0 = (int)(center_y + d*(target_y - center_y));
-
-      for_root.setScaleFactor(cur_scale,x0,y0);
-
+   
+      // double d = (cur_scale - start_scale)/(end_scale - start_scale);
+      // int x0 = (int)(center_x + d*(target_x - center_x));
+      // int y0 = (int)(center_y + d*(target_y - center_y));
+      // for_root.setScaleFactor(cur_scale,x0,y0);
+      bubble_area.setScaleFactor(cur_scale);
+   
       if (cur_scale == end_scale) {
-	 Timer t = (Timer) e.getSource();
-	 t.stop();
+         Timer t = (Timer) e.getSource();
+         t.stop();
        }
     }
 

@@ -91,7 +91,7 @@ CompilationUnit getAstNode()
    if (ast_root == null) {
       String txt = RebaseMain.getFileContents(for_file);
       if (txt != null) {
-	 ASTParser parser = ASTParser.newParser(AST.JLS3);
+	 ASTParser parser = ASTParser.newParser(AST.JLS4);
 	 Map<?,?> options = JavaCore.getOptions();
 	 JavaCore.setComplianceOptions(JavaCore.VERSION_1_6,options);
 	 parser.setCompilerOptions(options);

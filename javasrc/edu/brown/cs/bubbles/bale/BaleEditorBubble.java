@@ -118,7 +118,7 @@ BaleEditorBubble(BaleFragmentEditor bfe)
 	 break;
     }
    int maxbht = Math.max(maxht,BALE_MAX_INITIAL_BUBBLE_HEIGHT);
-   
+
    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
    GraphicsDevice gd = ge.getDefaultScreenDevice();
    DisplayMode dm = gd.getDisplayMode();
@@ -264,6 +264,10 @@ BaleEditorBubble(BaleFragmentEditor bfe)
    if (bfe == null) return null;
    return bfe.getDocument();
 }
+
+
+
+
 
 
 
@@ -414,7 +418,7 @@ private class EditorBubbleListener extends ComponentAdapter {
 
    @Override public void componentMoved(ComponentEvent e) {
       if (getContentPane() != null) {
-	 ((BaleFragmentEditor) getContentPane()).relocateFindBar();
+         ((BaleFragmentEditor) getContentPane()).relocateFindBar();
        }
     }
 

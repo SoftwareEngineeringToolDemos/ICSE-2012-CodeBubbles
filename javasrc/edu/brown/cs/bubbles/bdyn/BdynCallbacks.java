@@ -35,10 +35,12 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
 
 
 class BdynCallbacks implements BdynConstants, BanalConstants
@@ -56,6 +58,7 @@ private File callback_file;
 private Map<Integer,CallbackMethod> callback_index;
 private Map<String,Boolean> valid_methods;
 private Map<String,Boolean> user_classes;
+private boolean clear_flag;
 
 private static AtomicInteger callback_counter = new AtomicInteger();
 
@@ -94,6 +97,7 @@ BdynCallbacks()
    callback_index = new HashMap<Integer,CallbackMethod>();
    valid_methods = new HashMap<String,Boolean>();
    user_classes = new HashMap<String,Boolean>();
+   clear_flag = false;
 }
 
 
@@ -127,6 +131,15 @@ BdynCallback getCallback(int id)
 }
 
 
+Set<Color> getKnownColors()
+{
+   Set<Color> rslt = new HashSet<Color>();
+   for (CallbackMethod cm : callback_methods.values()) {
+      Color c = cm.getUserColor();
+      if (c != null) rslt.add(c);
+    }
+   return rslt;
+}
 
 
 /********************************************************************************/
@@ -134,6 +147,14 @@ BdynCallback getCallback(int id)
 /*	Processing methods							*/
 /*										*/
 /********************************************************************************/
+
+void clear()
+{
+   clear_flag = true;
+   callback_file.delete();
+}
+
+
 
 void setup()
 {
@@ -181,6 +202,8 @@ private void setCallbacks()
 	    case UNKNOWN :
 	       continue;
 	    case EVENT :
+	    case KEY :
+	    case MAIN :
 	       break;
 	  }
 
@@ -194,43 +217,59 @@ private void setCallbacks()
 	     }
 	    ++act;
 	  }
-         if (cm.getCallbackArgs() == null) {
-            String args = cm.getArgs();
-            if (args != null) {
-               List<String> prms = BumpLocation.getParameterList(args);
-               for (String s : prms) {
-                  if (isUserClass(s)) {
-                     Element hxml = BumpClient.getBump().getTypeHierarchy(cm.getProject(), null, s, false);
-                     addClasses(cm.getProject(),hxml,s,classes);
-                     rargs += Integer.toString(act);
-                     if (rargs.length() >= 2) break;
-                   }
-                  else if (s.equals("double") || s.equals("long")) ++act;
-                  ++act;
-                  if (act > 9) break;
-                }
-             }
-            // if (rags.length() == 0) remove the callback
-            cm.setCallbackArgs(rargs);
-          }
+	 if (cm.getCallbackArgs() == null) {
+	    String args = cm.getArgs();
+	    if (args != null) {
+	       List<String> prms = BumpLocation.getParameterList(args);
+	       for (String s : prms) {
+		  if (isUserClass(s)) {
+		     Element hxml = BumpClient.getBump().getTypeHierarchy(cm.getProject(), null, s, false);
+		     addClasses(cm.getProject(),hxml,s,classes);
+		     rargs += Integer.toString(act);
+		     if (rargs.length() >= 2) break;
+		   }
+		  else if (s.equals("double") || s.equals("long")) ++act;
+		  ++act;
+		  if (act > 9) break;
+		}
+	     }
+	    // if (rags.length() == 0) remove the callback
+	    cm.setCallbackArgs(rargs);
+	  }
        }
 
       for (String s : classes) {
 	 List<BumpLocation> cnsts = BumpClient.getBump().findMethods(null,s,false,true,true,false);
 	 if (cnsts != null) {
-	    for (BumpLocation bl : cnsts) {
-	       if (!Modifier.isProtected(bl.getModifiers())) {
-		  String nm = bl.getSymbolName();
-		  int idx = nm.lastIndexOf(".");
-		  if (idx < 0) continue;
-		  String cnm = nm.substring(0,idx);
-		  String mnm = nm.substring(idx+1);
-		  String key = cnm + "@" + mnm;
-		  if (!callback_methods.containsKey(key)) {
-		     CallbackMethod cm = new CallbackMethod(cnm,mnm,CallbackType.CONSTRUCTOR,bl);
-		     cm.setCallbackArgs("0");
-		     callback_methods.put(key,cm);
-		   }
+	    if (cnsts.size() > 0) {
+	       for (BumpLocation bl : cnsts) {
+		  if (!Modifier.isProtected(bl.getModifiers())) {
+		     String nm = bl.getSymbolName();
+		     int idx = nm.lastIndexOf(".");
+		     if (idx < 0) continue;
+		     String cnm = nm.substring(0,idx);
+		     String mnm = nm.substring(idx+1);
+		     String key = cnm + "@" + mnm;
+		     if (!callback_methods.containsKey(key)) {
+			CallbackMethod cm = new CallbackMethod(cnm,mnm,CallbackType.CONSTRUCTOR,bl);
+			cm.setCallbackArgs("0");
+			callback_methods.put(key,cm);
+		     }
+		  }
+	       }
+	    }
+	    else {
+	       // no user constructor -- assume there is a generated one
+	       String mnm = s;
+	       int idx = s.lastIndexOf("$");
+	       int idx1 = s.lastIndexOf(".");
+	       if (idx >= 0) mnm = s.substring(idx+1);
+	       else if (idx1 >= 0) mnm = s.substring(idx1+1);
+	       String key = s + "@" + mnm;
+	       if (!callback_methods.containsKey(key)) {
+		  CallbackMethod cm = new CallbackMethod(s,mnm,CallbackType.CONSTRUCTOR,null);
+		  cm.setCallbackArgs("0");
+		  callback_methods.put(key,cm);
 		}
 	     }
 	  }
@@ -308,15 +347,26 @@ private class CallbackUpdater implements Runnable {
 
    private TrieNode root_node;
    private Map<String,BanalHierarchyNode> package_hierarchy;
+   private Set<TrieNode> key_nodes;
 
    CallbackUpdater(TrieNode root) {
       root_node = root;
       package_hierarchy = null;
+      key_nodes = null;
     }
 
    @Override public void run() {
+      if (clear_flag) {
+	 clear_flag = false;
+	 callback_methods = new HashMap<String,CallbackMethod>();
+	 callback_index = new HashMap<Integer,CallbackMethod>();
+	 valid_methods = new HashMap<String,Boolean>();
+	 user_classes = new HashMap<String,Boolean>();
+       }
       package_hierarchy = BanalFactory.getFactory().computePackageHierarchy(null);
+      root_node.computeTotals();
       addNode(root_node,null);
+      addKeyNodes();
       setCallbacks();
       saveCallbacks();
     }
@@ -324,6 +374,7 @@ private class CallbackUpdater implements Runnable {
    private void addNode(TrieNode tn,TrieNode par) {
       boolean cb = false;
       boolean chld = true;
+      CallbackType cbt = CallbackType.EVENT;
       if (par != null) {
 	 BanalHierarchyNode ppkg = getPackage(par);
 	 BanalHierarchyNode npkg = getPackage(tn);
@@ -332,20 +383,37 @@ private class CallbackUpdater implements Runnable {
 	    else if (ppkg.getLevel() == npkg.getLevel() &&
 		  ppkg.getCycle() != npkg.getCycle()) cb = true;
 	  }
+	 if (par.getParent() == null && ppkg == null && npkg != null &&
+	       tn.getMethodName().equals("main")) {
+	    cb = true;
+	    cbt = CallbackType.MAIN;
+	  }
        }
       if (cb) {
 	 CallbackMethod cm = new CallbackMethod(null,tn.getFileName(),tn.getClassName(),
-	       tn.getMethodName(),null,null,tn.getLineNumber(),CallbackType.EVENT);
+	       tn.getMethodName(),null,null,tn.getLineNumber(),cbt);
 	 synchronized (callback_methods) {
 	    CallbackMethod ocm = callback_methods.get(cm.getFullName());
 	    if (ocm == null) {
 	       if (validate(cm)) {
+		  ocm = cm;
 		  callback_methods.put(cm.getFullName(),cm);
 		  chld = false;
 		}
 	     }
 	    else chld = false;
-	  }
+	    if (ocm != null) {
+	       double rtot = getCount(root_node.getTotals());
+	       if (rtot > 1000) {
+		  double thr = rtot * 0.05;
+		  Set<TrieNode> keys = getKeyNodes(tn,0,thr);
+		  if (keys != null) {
+		     if (key_nodes == null) key_nodes = keys;
+		     else key_nodes.addAll(keys);
+		  }
+	       }
+	    }
+	 }
        }
       else {
 	 boolean usecur = false;
@@ -382,6 +450,53 @@ private class CallbackUpdater implements Runnable {
       return package_hierarchy.get(cn.substring(0,idx));
     }
 
+   private Set<TrieNode> getKeyNodes(TrieNode tn,int lvl,double threshold) {
+      double stot = getCount(tn.getTotals());
+      if (stot < threshold) return null;
+      Set<TrieNode> rslt = new HashSet<TrieNode>();
+      for (TrieNode cn : tn.getChildren()) {
+	 Set<TrieNode> cr = getKeyNodes(cn,lvl+1,threshold);
+	 if (cr != null) {
+	    rslt.addAll(cr);
+	  }
+       }
+      if (lvl > 0) {
+	 double tot = 0;
+	 for (TrieNode cn : rslt) {
+	    tot += getCount(cn.getTotals());
+	  }
+	 double lcl = stot - tot;
+	 if (lcl >= threshold / 100 || lcl > 5) {
+	    rslt.add(tn);
+	  }
+       }
+      if (rslt.size() > 0) return rslt;
+      return null;
+    }
+
+   private void addKeyNodes() {
+      if (key_nodes == null) return;
+      for (TrieNode tn : key_nodes) {
+	 CallbackMethod cm = new CallbackMethod(null,tn.getFileName(),tn.getClassName(),
+		  tn.getMethodName(),null,null,tn.getLineNumber(),CallbackType.KEY);
+	 synchronized (callback_methods) {
+	    CallbackMethod ocm = callback_methods.get(cm.getFullName());
+	    if (ocm == null) {
+	       if (validate(cm)) {
+		  ocm = cm;
+		  callback_methods.put(cm.getFullName(),cm);
+	       }
+	    }
+	 }
+      }
+   }
+
+  double getCount(int [] tots) {
+     if (tots == null) return 0;
+     return tots[OP_RUN] + tots[OP_IO];
+   }
+
+
 }	// end of inner class CallbackUpdater
 
 
@@ -399,6 +514,7 @@ void saveCallbacks()
       try {
 	 IvyXmlWriter xw = new IvyXmlWriter(callback_file);
 	 xw.begin("CALLBACKS");
+	 BdynFactory.getOptions().save(xw);
 	 for (CallbackMethod cm : callback_methods.values()) {
 	    cm.outputXml(xw);
 	  }
@@ -416,6 +532,8 @@ void loadCallbacks()
 {
    Element xml = IvyXml.loadXmlFromFile(callback_file);
    if (xml == null) return;
+
+   BdynFactory.getOptions().load(xml);
 
    synchronized (callback_methods) {
       for (Element ce : IvyXml.children(xml,"CALLBACK")) {
@@ -446,6 +564,10 @@ private boolean validate(CallbackMethod cm)
    if (cm.getCallbackType() == CallbackType.CONSTRUCTOR) {
       cnst = true;
       pat = cm.getClassName().replace("$",".");
+      int idx = pat.lastIndexOf(".");
+      String mnm = pat;
+      if (idx >= 0) mnm = pat.substring(idx+1);
+      if (!cm.getMethodName().equals("<init>") && !cm.getMethodName().equals(mnm)) return false;
     }
    else if (cm.getMethodName().equals("<init>")) {
       cnst = true;
@@ -463,6 +585,10 @@ private boolean validate(CallbackMethod cm)
 
    List<BumpLocation> locs = BumpClient.getBump().findMethods(cm.getProject(),pat,false,true,cnst,false);
    if (locs == null || locs.isEmpty()) {
+      if (cnst && locs != null) {
+	 locs = BumpClient.getBump().findTypes(cm.getProject(),pat);
+	 if (locs != null && locs.size() > 0) return true;
+      }
       valid_methods.put(pat,false);
       return false;
     }
@@ -506,6 +632,16 @@ private void writeCallbackFile()
       FileWriter fw = new FileWriter(cbf);
       PrintWriter pw = new PrintWriter(fw);
       for (CallbackMethod cm : callback_methods.values()) {
+	 switch (cm.getCallbackType()) {
+	    case MAIN :
+	       if (!BdynFactory.getOptions().useMainCallback()) continue;
+	       break;
+	    case KEY :
+	       if (!BdynFactory.getOptions().useKeyCallback()) continue;
+	       break;
+	    default :
+	       break;
+	  }
 	 writeBandaidEntry(pw,cm);
        }
       pw.close();
@@ -527,7 +663,9 @@ private void writeBandaidEntry(PrintWriter pw,CallbackMethod cm)
 	 fgs = 4;		// CONSTRUCTOR ENTRY
 	 mthd = "<init>";
 	 break;
+      case KEY :
       case EVENT :
+      case MAIN :
 	 fgs = 3;		// ENTER AND EXIT
 	 break;
       default :
@@ -568,6 +706,8 @@ private String getInternalType(String args,String ret)
     }
    buf.append(")");
    if (ret != null) buf.append(getInternalType(ret));
+   else buf.append("V");
+
    return buf.toString();
 }
 
@@ -628,6 +768,7 @@ private static class CallbackMethod implements BdynCallback {
    private String callback_args;
    private CallbackType callback_type;
    private String user_label;
+   private Color  user_color;
 
    CallbackMethod(String proj,String file,String cls,String mthd,String args,String rtyp,int line,CallbackType cbt) {
       project_name = proj;
@@ -642,11 +783,12 @@ private static class CallbackMethod implements BdynCallback {
       callback_args = null;
       callback_type = cbt;
       user_label = null;
+      user_color = null;
     }
 
    CallbackMethod(String cls,String mthd,CallbackType cbt,BumpLocation loc) {
       this(null,null,cls,mthd,null,null,0,cbt);
-      update(loc);
+      if (loc != null) update(loc);
    }
 
    CallbackMethod(Element xml) {
@@ -663,6 +805,8 @@ private static class CallbackMethod implements BdynCallback {
       callback_args = IvyXml.getAttrString(xml,"CBARGS");
       callback_type = IvyXml.getAttrEnum(xml,"CBTYPE",CallbackType.UNKNOWN);
       user_label = IvyXml.getTextElement(xml,"LABEL");
+      if (user_label != null && user_label.length() == 0) user_label = null;
+      user_color = IvyXml.getAttrColor(xml,"COLOR");
     }
 
    void update(BumpLocation loc) {
@@ -683,21 +827,27 @@ private static class CallbackMethod implements BdynCallback {
       if (callback_id == 0) callback_id = callback_counter.incrementAndGet();
       return callback_id;
     }
-   @Override public String getArgs()    { return method_args; }
+   @Override public String getArgs()	{ return method_args; }
    String getReturnType()		{ return return_type; }
    int getModifiers()			{ return method_mods; }
    void setCallbackArgs(String s)	{ callback_args = s; }
    String getCallbackArgs()		{ return callback_args; }
    @Override public CallbackType getCallbackType()	{ return callback_type; }
 
-   @Override public void setLabel(String lbl)           { user_label = lbl; }
-   
+   @Override public void setLabel(String lbl)		{ user_label = lbl; }
+   @Override public void setUserColor(Color c)		{ user_color = c; }
+   @Override public Color getUserColor()		{ return user_color; }
+
    @Override public String getDisplayName() {
-      if (user_label != null) return user_label;
+      if (user_label != null && user_label.length() > 0) return user_label;
       return class_name + "." + method_name;
     }
    String getFullName() {
       return class_name + "@" + method_name;
+    }
+
+   @Override public String toString() {
+      return getDisplayName();
     }
 
    void outputXml(IvyXmlWriter xw) {
@@ -714,7 +864,8 @@ private static class CallbackMethod implements BdynCallback {
       xw.field("MODS",method_mods);
       xw.field("CBARGS",callback_args);
       xw.field("CBTYPE",callback_type);
-      xw.field("LABEL",user_label);
+      if (user_label != null) xw.field("LABEL",user_label);
+      if (user_color != null) xw.field("COLOR",user_color);
       xw.end("CALLBACK");
     }
 

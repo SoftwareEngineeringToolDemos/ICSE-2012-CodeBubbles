@@ -39,6 +39,8 @@ import javax.swing.text.Position;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.io.File;
+
 
 class BaleBubbleStack implements BaleConstants, BudaConstants, BussConstants
 {
@@ -59,6 +61,11 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
    Map<String,List<BumpLocation>> keys = new HashMap<String,List<BumpLocation>>();
    for (Iterator<BumpLocation> it = locs.iterator(); it.hasNext(); ) {
       BumpLocation bl = it.next();
+      File f = bl.getFile();
+      if (f == null || !f.exists() || f.getName().endsWith(".jar")) {
+	 it.remove();
+	 continue;
+      }
       String key = null;
       switch (bl.getSymbolType()) {
 	 default :
@@ -355,7 +362,7 @@ private class FieldStackEntry extends GenericStackEntry {
 
    @Override protected BaleFragmentEditor createFullFragment() {
       BaleFragmentEditor ed = BaleFactory.getFactory().createFieldFragmentEditor(
-         def_location.getSymbolProject(),def_location.getFile(),class_name);
+	 def_location.getSymbolProject(),def_location.getFile(),class_name);
       ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
       return ed;
     }
@@ -432,7 +439,7 @@ private class TypeStackEntry extends GenericStackEntry {
 
    @Override protected BaleFragmentEditor createFullFragment() {
       BaleFragmentEditor ed = BaleFactory.getFactory().createClassPrefixFragmentEditor(
-         def_location.getSymbolProject(),def_location.getFile(),class_name);
+	 def_location.getSymbolProject(),def_location.getFile(),class_name);
       ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
       return ed;
     }
@@ -440,64 +447,6 @@ private class TypeStackEntry extends GenericStackEntry {
 }	// end of inner class TypeStackEntry
 
 
-
-
-/********************************************************************************/
-/*										*/
-/*	Classes for maintaining bubble windows as part of the bubble stack	*/
-/*										*/
-/********************************************************************************/
-/**************** now done in BussStackBox
- *
-private static class EditorBubbleCallback implements BubbleViewCallback {
-
-   private static final double DISTANCE_LIMIT = 100;
-   private BussBubble buss_bubble;
-
-   EditorBubbleCallback(BussBubble bussBubble){
-      buss_bubble = bussBubble;
-    }
-
-   @Override public void focusChanged(BudaBubble bb,boolean set)	{ }
-   @Override public void bubbleAdded(BudaBubble bb)			{ }
-   @Override public void bubbleRemoved(BudaBubble bb)			{ }
-   @Override public void workingSetAdded(BudaWorkingSet ws)		{ }
-   @Override public void workingSetRemoved(BudaWorkingSet ws)		{ }
-   @Override public void doneConfiguration()				{ }
-   @Override public void copyFromTo(BudaBubble f,BudaBubble t)		{ }
-
-   @Override public boolean bubbleActionDone(BudaBubble bb) {
-      if (!(bb instanceof BaleEditorBubble)) return false;
-
-      BaleEditorBubble editorbubble = (BaleEditorBubble) bb;
-
-      if (buss_bubble.getEditorBubble() != editorbubble) return false;
-
-      Point editorloc = editorbubble.getLocation();
-      Point originallocation = buss_bubble.getEditorBubbleLocation();
-
-      if (editorloc == null || originallocation == null) return false;
-
-      double distance = Point.distance(editorloc.x, editorloc.y, originallocation.x, originallocation.y);
-
-      if (distance <= DISTANCE_LIMIT) {
-	 buss_bubble.updateEditorBubbleLocation();
-	 return true;
-       }
-      else {
-	 buss_bubble.setPreviewBubble(null);
-
-	 editorbubble.setFixed(false);
-
-	 buss_bubble.removeEditorBubble();
-       }
-
-      return false;
-   }
-
-}	// end of inner class EditorBubbleCallback
-
-***************************/
 
 
 }	// end of class BaleBubbleStack

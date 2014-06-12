@@ -29,7 +29,7 @@ import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.bump.BumpClient;
 
 import java.util.*;
-
+import java.lang.reflect.Modifier;
 
 public class BuenoProperties extends HashMap<BuenoConstants.BuenoKey,Object> implements BuenoConstants
 {
@@ -60,11 +60,11 @@ public BuenoProperties()
 
 /********************************************************************************/
 /*										*/
-/*	Local access methods							*/
+/*	Access methods				        			*/
 /*										*/
 /********************************************************************************/
 
-String getStringProperty(BuenoKey k)
+public String getStringProperty(BuenoKey k)
 {
    Object v = get(k);
    if (v == null) return null;
@@ -73,8 +73,21 @@ String getStringProperty(BuenoKey k)
 }
 
 
+public String getProjectName()
+{
+   return getStringProperty(BuenoKey.KEY_PROJECT);
+}
 
-boolean getBooleanProperty(BuenoKey k)
+public String getPackageName()
+{
+   return getStringProperty(BuenoKey.KEY_PACKAGE);
+}
+
+
+
+
+
+public boolean getBooleanProperty(BuenoKey k)
 {
    Object v = get(k);
    if (v == null) return false;
@@ -86,7 +99,7 @@ boolean getBooleanProperty(BuenoKey k)
 
 
 
-int getModifiers()
+public int getModifiers()
 {
    Object v = get(BuenoKey.KEY_MODIFIERS);
    if (v == null) return 0;
@@ -97,16 +110,45 @@ int getModifiers()
    return 0;
 }
 
+public String getModifierString()
+{
+   StringBuffer buf = new StringBuffer();
+   int mods = getModifiers();
+   addModifier(buf,"@Override",(mods & MODIFIER_OVERRIDES) != 0);
+   addModifier(buf,"private",Modifier.isPrivate(mods));
+   addModifier(buf,"public",Modifier.isPublic(mods));
+   addModifier(buf,"protected",Modifier.isProtected(mods));
+   addModifier(buf,"abstract",Modifier.isAbstract(mods));
+   addModifier(buf,"static",Modifier.isStatic(mods));
+   addModifier(buf,"native",Modifier.isNative(mods));
+   addModifier(buf,"final",Modifier.isFinal(mods));
+   addModifier(buf,"strictfp",Modifier.isStrict(mods));
+   addModifier(buf,"synchronized",Modifier.isSynchronized(mods));
+   addModifier(buf,"transient",Modifier.isTransient(mods));
+   addModifier(buf,"volatile",Modifier.isVolatile(mods));
+   
+   return buf.toString();
+}
 
 
-String [] getParameters()		{ return getArrayProperty(BuenoKey.KEY_PARAMETERS); }
-String [] getExtends()			{ return getArrayProperty(BuenoKey.KEY_EXTENDS); }
-String [] getImplements()		{ return getArrayProperty(BuenoKey.KEY_IMPLEMENTS); }
-String [] getThrows()			{ return getArrayProperty(BuenoKey.KEY_THROWS); }
-String [] getImports()			{ return getArrayProperty(BuenoKey.KEY_IMPORTS); }
+private void addModifier(StringBuffer buf,String txt,boolean fg)
+{
+   if (fg) {
+      buf.append(txt);
+      buf.append(" ");
+    }
+}
 
 
-String [] getArrayProperty(BuenoKey k)
+
+public String [] getParameters()        { return getArrayProperty(BuenoKey.KEY_PARAMETERS); }
+public String [] getExtends()		{ return getArrayProperty(BuenoKey.KEY_EXTENDS); }
+public String [] getImplements()	{ return getArrayProperty(BuenoKey.KEY_IMPLEMENTS); }
+public String [] getThrows()		{ return getArrayProperty(BuenoKey.KEY_THROWS); }
+public String [] getImports()		{ return getArrayProperty(BuenoKey.KEY_IMPORTS); }
+
+
+public String [] getArrayProperty(BuenoKey k)
 {
    Object v = get(k);
    if (v == null) return null;
@@ -169,8 +211,7 @@ public void addToArrayProperty(BuenoKey k,String v)
 
 
 
-
-String getIndentString()		{ return getIndentProperty(BuenoKey.KEY_INDENT,-1); }
+String getIndentString()                { return getIndentProperty(BuenoKey.KEY_INDENT,-1); }
 String getInitialIndentString() 	{ return getIndentProperty(BuenoKey.KEY_INITIAL_INDENT,0); }
 
 String getIndentProperty(BuenoKey k,int dflt)

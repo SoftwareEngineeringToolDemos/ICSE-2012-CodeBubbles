@@ -30,6 +30,7 @@ import edu.brown.cs.bubbles.org.objectweb.asm.commons.CodeSizeEvaluator;
 import edu.brown.cs.bubbles.org.objectweb.asm.util.TraceMethodVisitor;
 
 import java.lang.instrument.ClassFileTransformer;
+import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import java.util.*;
 
@@ -101,6 +102,16 @@ void setClasses(String [] clsset)
       if (isBattClass(s) || isSystemClass(s)) continue;
       user_classes.add(s);
     }
+
+   for (String s : user_classes) {
+      String s1 = s.replace("/",".");
+      String s2 = s1.replace("$",".");
+      try {
+	 // System.err.println("TRY " + s2);
+	 Class.forName(s2);
+       }
+      catch (Throwable t) { }
+    }
 }
 
 
@@ -114,18 +125,30 @@ void setClasses(String [] clsset)
 public byte [] transform(ClassLoader ldr,String name,Class<?> cls,
 			    ProtectionDomain dom,byte [] buf)
 {
+   // System.err.println("BATTAGENT: CHECK " + name + " " + Thread.currentThread().getName());
+   if (Modifier.isAbstract(cls.getModifiers())) return null;
+
    if (user_classes == null) {
       if (isBattClass(name) || isSystemClass(name)) return null;
     }
    else if (!user_classes.contains(name)) return null;
 
-   return instrument(name,buf);
+   try {
+      return instrument(name,buf);
+    }
+   catch (Throwable t) {
+      System.err.println("BATT: Instrumentation issue: " + t);
+    }
+
+   return null;
 }
 
 
 
 private byte [] instrument(String name,byte [] buf)
 {
+   // System.err.println("BATTAGENT: INSTRUMENT " + name + " " + buf.length);
+
    byte [] rsltcode;
    try {
       ClassReader reader = new ClassReader(buf);
@@ -139,6 +162,8 @@ private byte [] instrument(String name,byte [] buf)
       t.printStackTrace();
       return null;
     }
+
+   // System.err.println("BATTAGENT: INSTRUMENT RETURN " + name + " " + rsltcode.length);
 
    return rsltcode;
 }

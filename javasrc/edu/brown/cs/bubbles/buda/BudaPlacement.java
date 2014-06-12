@@ -139,18 +139,19 @@ void placeBubble(BudaBubble bbl,Component rcom,Point relpt,int place,BudaBubbleP
        }
       else if (last_focus != null) {
 	 r = BudaRoot.findBudaLocation(last_focus);
-	 if (r == null) r = bubble_area.getViewport();
-	 else grpb = last_focus;
+	 if (r != null)  grpb = last_focus;
        }
-      else {
-	 r = bubble_area.getViewport();
-      }
       if (r == null) {
 	 if (last_placement != null) {
 	    r = BudaRoot.findBudaLocation(last_placement);
 	    grpb = last_placement;
 	  }
        }
+      if (r == null) {
+	 r = bubble_area.getViewport();
+	 // where in the viewport should we put the bubble: center, left, right
+	 // also, adjust for any fixed bubbles
+      }
       if (r == null) {
 	 r = new Rectangle(300,100);
        }

@@ -88,7 +88,6 @@ BussCellRenderer(int contentwidth, BussBubble bussbubble)
 	 if (buss_bubble.getEditorBubble() != null) {
 	    buss_bubble.getLayeredPane().remove(buss_bubble.getEditorBubble());
 	  }
-
 	 buss_bubble.setEditorBubble(null);
        }
       return simpleComponent(t,val,sel,exp,leaf,row,focus);

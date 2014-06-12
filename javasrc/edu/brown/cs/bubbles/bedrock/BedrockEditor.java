@@ -368,7 +368,7 @@ void fileElide(byte [] bytes,IvyXmlWriter xw)
 
    // would really like to resolvie bindings here
 
-   ASTParser ap = ASTParser.newParser(AST.JLS3);
+   ASTParser ap = ASTParser.newParser(AST.JLS4);
    String s1 = new String(bytes);
    char [] cdata = s1.toCharArray();
    be.addElideRegion(0,cdata.length);
@@ -1950,7 +1950,7 @@ private class BufferData {
 
    synchronized CompilationUnit getDefaultRoot() {
       if (last_ast != null) return last_ast;
-      ASTParser p = ASTParser.newParser(AST.JLS3);
+      ASTParser p = ASTParser.newParser(AST.JLS4);
       p.setKind(ASTParser.K_COMPILATION_UNIT);
       p.setResolveBindings(true);
       p.setSource(comp_unit);
@@ -1963,20 +1963,20 @@ private class BufferData {
       ICompilationUnit icu = getEditableUnit();
       CompilationUnit cu = null;
       try {
-	 if (!is_private) copy_owner.setId(id);
-	 copy_owner.suppressErrors(false);
-	 cu = icu.reconcile(AST.JLS3,true,true,null,null);
-	 if (cu == null) cu = last_ast;
-	 else last_ast = cu;
-	 if (last_ast == null) getDefaultRoot();
+         if (!is_private) copy_owner.setId(id);
+         copy_owner.suppressErrors(false);
+         cu = icu.reconcile(AST.JLS4,true,true,null,null);
+         if (cu == null) cu = last_ast;
+         else last_ast = cu;
+         if (last_ast == null) getDefaultRoot();
        }
       catch (JavaModelException e) {
-	 BedrockPlugin.logE("Problem getting AST for file " +
-			       file_data.getFileName() + ": " + e,e);
+         BedrockPlugin.logE("Problem getting AST for file " +
+        		       file_data.getFileName() + ": " + e,e);
        }
       catch (Throwable t) {
-	 BedrockPlugin.logE("Problem getting AST for file " +
-			       file_data.getFileName() + ": " + t,t);
+         BedrockPlugin.logE("Problem getting AST for file " +
+        		       file_data.getFileName() + ": " + t,t);
        }
       return last_ast;
     }

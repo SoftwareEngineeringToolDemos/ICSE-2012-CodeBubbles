@@ -305,6 +305,25 @@ void sendMessage(String typ,String cnts)
 
 
 
+void sendMessageAndWait(String typ,String cnts)
+{
+   StringBuffer buf = new StringBuffer();
+   buf.append("<BATT TYPE='" + typ + "'>");
+   if (cnts != null) buf.append(cnts);
+   buf.append("</BATT>");
+
+   System.err.println("BATT: Sending message: " + buf);
+
+   MintDefaultReply rply = new MintDefaultReply();
+
+   mint_control.send(buf.toString(),rply,MINT_MSG_FIRST_NON_NULL);
+
+   rply.waitFor();
+}
+
+
+
+
 
 /********************************************************************************/
 /*										*/

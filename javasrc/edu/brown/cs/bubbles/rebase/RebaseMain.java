@@ -25,6 +25,7 @@
 package edu.brown.cs.bubbles.rebase;
 
 import edu.brown.cs.bubbles.rebase.java.RebaseJavaLanguage;
+import edu.brown.cs.bubbles.rebase.word.RebaseWordFactory;
 
 import edu.brown.cs.ivy.exec.IvySetup;
 import edu.brown.cs.ivy.mint.*;
@@ -224,7 +225,11 @@ public RebaseProjectManager getProjectManager() { return project_manager; }
 
 public RebaseEditManager getEditorManager()	{ return edit_manager; }
 
-public RebaseCache getUrlCache()		{ return rebase_cache; }
+public RebaseCache getUrlCache()		
+{ 
+   if (rebase_cache == null) rebase_cache = new RebaseCache();
+   return rebase_cache;
+}
 
 public static String getFileContents(RebaseFile rf)
 {
@@ -263,6 +268,17 @@ public RebaseProjectSemantics getSemanticData(Collection<RebaseFile> rfs)
    RebaseProjectSemantics rs = rl.getSemanticData(rfs);
 
    return rs;
+}
+
+
+
+public static String fixFileName(String nm)
+{
+   if (nm == null) return nm;
+
+   if (File.separatorChar == '/') return nm;
+
+   return nm.replace('\\','/');
 }
 
 
@@ -325,13 +341,13 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
       case "STARTFILE" :
 	 edit_manager.handleStartFile(proj,
 	       IvyXml.getAttrString(xml,"BID","*"),
-	       IvyXml.getAttrString(xml,"FILE"),
+	       fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrString(xml,"ID"),
 	       IvyXml.getAttrBool(xml,"CONTENTS",false),xw);
 	 break;
       case "EDITFILE" :
 	 edit_manager.handleEdit(proj,IvyXml.getAttrString(xml,"BID","*"),
-	       IvyXml.getAttrString(xml,"FILE"),
+	       fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrString(xml,"ID"),
 	       getEditSet(xml),xw);
 	 break;
@@ -344,7 +360,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	 break;
       case "ELIDESET" :
 	 edit_manager.elisionSetup(proj,IvyXml.getAttrString(xml,"BID","*"),
-	       IvyXml.getAttrString(xml,"FILE"),
+	       fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrBool(xml,"COMPUTE",true),
 	       getElements(xml,"REGION"),xw);
 	 break;
@@ -365,10 +381,11 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	 project_manager.findByKey(proj,
 	       IvyXml.getAttrString(xml,"BID","*"),
 	       IvyXml.getAttrString(xml,"KEY"),
-	       IvyXml.getAttrString(xml,"FILE"), xw);
+	       fixFileName(IvyXml.getAttrString(xml,"FILE")), xw);
 	 break;
       case "FINDDEFINITIONS" :
-	 project_manager.findAll(proj,IvyXml.getAttrString(xml,"FILE"),
+	 project_manager.findAll(proj,
+	       fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrInt(xml,"START"),IvyXml.getAttrInt(xml,"END"),
 	       IvyXml.getAttrBool(xml,"DEFS",true),
 	       IvyXml.getAttrBool(xml,"REFS",false),
@@ -378,7 +395,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	       xw);
 	 break;
       case "FINDREFERENCES" :
-	 project_manager.findAll(proj,IvyXml.getAttrString(xml,"FILE"),
+	 project_manager.findAll(proj,fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrInt(xml,"START"),IvyXml.getAttrInt(xml,"END"),
 	       IvyXml.getAttrBool(xml,"DEFS",true),
 	       IvyXml.getAttrBool(xml,"REFS",true),
@@ -389,13 +406,13 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	       xw);
 	 break;
       case "GETFULLYQUALIFIEDNAME" :
-	 project_manager.getFullyQualifiedName(proj,IvyXml.getAttrString(xml,"FILE"),
+	 project_manager.getFullyQualifiedName(proj,fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrInt(xml,"START"),
 	       IvyXml.getAttrInt(xml,"END"),xw);
 	 break;
       case "FINDREGIONS" :
 	 project_manager.getTextRegions(proj,IvyXml.getAttrString(xml,"BID","*"),
-	       IvyXml.getAttrString(xml,"FILE"),
+	       fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrString(xml,"CLASS"),
 	       IvyXml.getAttrBool(xml,"PREFIX",false),
 	       IvyXml.getAttrBool(xml,"STATICS",false),
@@ -420,7 +437,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	 break;
       case "FORMATCODE" :
 	 project_manager.formatCode(proj,IvyXml.getAttrString(xml,"BID","*"),
-	       IvyXml.getAttrString(xml,"FILE"),
+	       fixFileName(IvyXml.getAttrString(xml,"FILE")),
 	       IvyXml.getAttrInt(xml,"START"),
 	       IvyXml.getAttrInt(xml,"END"),xw);
 	 break;
@@ -456,17 +473,20 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	       IvyXml.getAttrEnum(xml,"TYPE",SourceType.FILE));
 	 rq.startNextSearch();
 	 break;
+      case "REBUSSUGGEST" :
+	RebaseWordFactory.getFactory().getQuery(xw);
+	break;
       case "REBUSNEXT" :
 	 project_manager.handleNext(proj,
-	       IvyXml.getTextElement(xml,"FILE"));
+	       fixFileName(IvyXml.getTextElement(xml,"FILE")));
 	 break;
       case "REBUSEXPAND" :
 	 project_manager.handleExpand(proj,
-	       IvyXml.getTextElement(xml,"FILE"));
+	       fixFileName(IvyXml.getTextElement(xml,"FILE")));
 	 break;
       case "REBUSACCEPT" :
 	 project_manager.handleAccept(proj,
-	       IvyXml.getTextElement(xml,"FILE"),
+	       fixFileName(IvyXml.getTextElement(xml,"FILE")),
 	       IvyXml.getAttrBool(xml,"FLAG",true),
 	       IvyXml.getAttrInt(xml,"SPOS"),
 	       IvyXml.getAttrInt(xml,"EPOS"));
@@ -475,13 +495,22 @@ private String handleCommand(String cmd,String proj,Element xml) throws RebaseEx
 	 project_manager.handleExport(proj,
 	       IvyXml.getTextElement(xml,"DIR"),
 	       IvyXml.getAttrBool(xml,"ACCEPT"),
-	       IvyXml.getTextElement(xml,"FILE"));
+	       fixFileName(IvyXml.getTextElement(xml,"FILE")));
+	 break;
+      case "REBUSREQUERY" :
+	 rq = new RebaseRequest(this,
+	       null,
+	       IvyXml.getTextElement(xml,"REPO"),
+	       IvyXml.getTextElement(xml,"TASK"),
+	       proj,
+	       IvyXml.getAttrEnum(xml,"TYPE",SourceType.FILE));
+	 rq.startNextSearch();
 	 break;
       case "REBUSCACHE" :
 	 rebase_cache.setupCache(IvyXml.getTextElement(xml,"DIR"),
 	       IvyXml.getAttrBool(xml,"USE",true));
 	 break;
-	
+
       // commands that don't need to be implemented
       case "FILEELIDE" :
       case "CREATECLASS" :

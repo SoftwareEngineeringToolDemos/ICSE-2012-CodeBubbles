@@ -735,7 +735,7 @@ private abstract class ElideData {
       end_offset = eoff;
     }
 
-   boolean contains(int soff,int len) {
+   boolean contains(int soff,int len) { 							  
       return (start_offset <= soff && end_offset >= soff+len-1);
     }
 
@@ -774,11 +774,11 @@ private abstract class ElideData {
    boolean noteEdit(int soff,int len,int rlen) {
       if (end_offset <= soff) ; 			// before the change
       else if (start_offset > soff + len - 1) { 	// after the change
-         start_offset += rlen - len;
-         end_offset += rlen - len;
+	 start_offset += rlen - len;
+	 end_offset += rlen - len;
        }
       else if (start_offset <= soff && end_offset >= soff+len-1) {	// containing the change
-         end_offset += rlen -len;
+	 end_offset += rlen -len;
        }
       else return false;				     // in the edit -- remove it
       return true;

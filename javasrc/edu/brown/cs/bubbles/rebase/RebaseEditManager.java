@@ -92,7 +92,7 @@ void handleStartFile(String proj,String bid,String file,String id,boolean cnts,I
 	throws RebaseException
 {
    RebaseFile fd = rebase_main.getFileByName(file);
-   if (fd == null) 
+   if (fd == null)
       throw new RebaseException("File " + file + " not found");
 
    addMonitor(fd,bid,id);
@@ -286,6 +286,7 @@ void handleCommit(String proj,String bid,boolean refresh,boolean save,
       for (Element e : files) {
 	 String fnm = IvyXml.getAttrString(e,"NAME");
 	 if (fnm == null) fnm = IvyXml.getText(e);
+	 fnm = RebaseMain.fixFileName(fnm);
 	 RebaseFile ifd = rebase_main.getFileByName(fnm);
 	 if (ifd != null) {
 	    boolean r = IvyXml.getAttrBool(e,"REFRESH",refresh);

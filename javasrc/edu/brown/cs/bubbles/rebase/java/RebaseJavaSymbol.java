@@ -303,6 +303,11 @@ void outputNameData(RebaseFile rf,IvyXmlWriter xw)
    xw.field("ENDOFFSET",spos + len);
    String hdl = getHandle(rf);
    if (hdl != null) xw.field("HANDLE",hdl);
+  
+   if (rf.getSource() != null) { 
+      String s6 = rf.getSource().getS6Source();
+      if (s6 != null) xw.field("S6",s6);
+    }
 
    outputLocalNameData(rf,xw);
    xw.end("ITEM");

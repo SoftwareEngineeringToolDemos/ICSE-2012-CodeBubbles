@@ -951,7 +951,7 @@ private void getProxyForHost(String host,IvyXmlWriter xw)
       Bundle bdl = getBundle();
       if (bdl == null) return;
       BundleContext ctx = bdl.getBundleContext();
-      ServiceReference svr = ctx.getServiceReference("org.eclipse.core.net.proxy.IProxyService");
+      ServiceReference<?> svr = ctx.getServiceReference("org.eclipse.core.net.proxy.IProxyService");
       if (svr == null) return;
       IProxyService ips = (IProxyService) ctx.getService(svr);
       if (ips == null) return;

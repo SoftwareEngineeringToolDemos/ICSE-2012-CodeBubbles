@@ -116,6 +116,8 @@ void finish()
 
 synchronized void handleTrieEvent(Element xml)
 {
+   // System.err.println("TRIE: " + IvyXml.convertXmlToString(xml));
+   
    int seqid = IvyXml.getAttrInt(xml,"SEQ");
    if (seqid == event_seq+1) {
       processTrieEvent(xml);
@@ -290,6 +292,7 @@ private class TrieNodeImpl implements TrieNode {
    private int	  line_number;
    private String file_name;
    private int [] count_data;
+   private int [] total_data;
    private Map<BumpThread,int []> thread_counts;
 
    TrieNodeImpl(Element xml) {
@@ -300,6 +303,7 @@ private class TrieNodeImpl implements TrieNode {
       line_number = 0;
       file_name = null;
       count_data = null;
+      total_data = null;
       thread_counts = null;
       setValues(xml);
       updateCounts(xml);
@@ -327,6 +331,8 @@ private class TrieNodeImpl implements TrieNode {
    @Override public int getLineNumber() 		{ return line_number; }
    @Override public String getFileName()		{ return file_name; }
 
+   @Override public int [] getTotals()                  { return total_data; }
+   
    void update(Element xml) {
       if (parent_node == null && IvyXml.getAttrPresent(xml,"PARENT")) {
 	 setValues(xml);
@@ -356,18 +362,18 @@ private class TrieNodeImpl implements TrieNode {
    private void updateCounts(Element xml) {
       count_data = getCounts(xml,count_data);
       for (Element th : IvyXml.children(xml,"THREAD")) {
-	 int tid = IvyXml.getAttrInt(th,"ID");
-	 ThreadData td = thread_data.get(tid);
-	 BumpThread bt = (td == null ? null : td.getBumpThread());
-	 if (bt != null) {
-	    if (thread_counts == null) thread_counts = new HashMap<BumpThread,int []>();
-	    int [] cts = thread_counts.get(bt);
-	    if (cts == null) {
-	       cts = getCounts(th,cts);
-	       if (cts != null) thread_counts.put(bt,cts);
-	     }
-	    else getCounts(th,cts);
-	  }
+         int tid = IvyXml.getAttrInt(th,"ID");
+         ThreadData td = thread_data.get(tid);
+         BumpThread bt = (td == null ? null : td.getBumpThread());
+         if (bt != null) {
+            if (thread_counts == null) thread_counts = new HashMap<BumpThread,int []>();
+            int [] cts = thread_counts.get(bt);
+            if (cts == null) {
+               cts = getCounts(th,cts);
+               if (cts != null) thread_counts.put(bt,cts);
+             }
+            else getCounts(th,cts);
+          }
        }
     }
 
@@ -384,6 +390,44 @@ private class TrieNodeImpl implements TrieNode {
       return cts;
     }
 
+   @Override public void computeTotals() {
+      if (count_data == null && child_nodes == null) {
+         total_data = null;
+       }
+      else {
+         boolean ok = false;
+         total_data = new int[OP_COUNT];
+         if (count_data != null) {
+            ok = true;
+            for (int i = 0; i < OP_COUNT; ++i) total_data[i] += count_data[i];
+          }
+         if (child_nodes != null) {
+            for (TrieNodeImpl tni : child_nodes) {
+               tni.computeTotals();
+               int [] tots = tni.total_data;
+               if (tots != null) {
+                  ok = true;
+                  for (int i = 0; i < OP_COUNT; ++i) total_data[i] += tots[i];
+                }
+             }
+          }
+         if (!ok) total_data = null;
+       }
+    }
+   
+   @Override public String toString() {
+      String s = "<";
+      if (getClassName() == null) s += "^";
+      else {
+         s += getClassName() + "." + getMethodName() + "@" + getLineNumber();
+       }
+      if (count_data != null) {
+         s += " " + count_data;
+       }
+      s += ">";
+      return s;
+    }
+	 
 }	// end of inner class TrieNode
 
 

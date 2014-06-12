@@ -31,8 +31,6 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import java.awt.Point;
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 
@@ -40,13 +38,13 @@ public class BuenoPythonModuleDialog extends BuenoAbstractDialog implements Buen
 {
 
 
-   /********************************************************************************/
+/********************************************************************************/
 /*                                                                              */
 /*      Private Storage                                                         */
 /*                                                                              */
 /********************************************************************************/
    
-private static Pattern module_pattern = Pattern.compile("[A-Za-z_]\\w*"); 
+
    
    
    
@@ -105,21 +103,7 @@ protected void setupPanel(SwingGridPanel pnl)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Signature parsing methods						*/
-/*										*/
-/********************************************************************************/
 
-protected boolean checkParsing()
-{
-   String mod = property_set.getStringProperty(BuenoKey.KEY_NAME);
-   if (mod == null || mod.length() == 0) return false;
-   Matcher m = module_pattern.matcher(mod);
-   if (!m.matches()) return false;
-   
-   return true;
-}
 
 
 

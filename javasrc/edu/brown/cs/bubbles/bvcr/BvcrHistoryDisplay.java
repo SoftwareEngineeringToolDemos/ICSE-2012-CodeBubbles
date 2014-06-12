@@ -1337,11 +1337,11 @@ private String getChangeDescription(LineData ld,HistoryNode node)
 /*										*/
 /********************************************************************************/
 
-private class AuthorWindow extends JPanel implements HistoryCallback {
+private class AuthorWindow extends JPanel implements HistoryCallback, Scrollable {
 
    AuthorWindow(HistoryGather hg) {
       super(new FlowLayout(FlowLayout.CENTER,10,10));
-      setPreferredSize(new Dimension(300,75));
+      setPreferredSize(new Dimension(300,175));
       hg.addCallback(this);
     }
 
@@ -1349,6 +1349,9 @@ private class AuthorWindow extends JPanel implements HistoryCallback {
       Map<HistoryNode,Node> nodes = new HashMap<HistoryNode,Node>();
       Set<BvcrAuthor> authors = new TreeSet<BvcrAuthor>();
       addNode(root,nodes,authors);
+      Dimension sz = getParent().getSize();
+      sz.height = 300;
+      setMaximumSize(sz);
       for (BvcrAuthor ba : authors) {
 	 JLabel lbl = new JLabel(ba.getName());
 	 Color c = ba.getColor();
@@ -1360,7 +1363,16 @@ private class AuthorWindow extends JPanel implements HistoryCallback {
 	 lbl.setBorder(new EmptyBorder(3,10,3,10));
 	 add(lbl);
        }
+      
     }
+   
+   @Override public Dimension getPreferredScrollableViewportSize() {
+      return new Dimension(300,75);
+   }
+   @Override public int getScrollableBlockIncrement(Rectangle r,int o,int d) 	{ return 10; }
+   @Override public boolean getScrollableTracksViewportHeight()			{ return false; }
+   @Override public boolean getScrollableTracksViewportWidth()			{ return true; }
+   @Override public int getScrollableUnitIncrement(Rectangle r,int o,int d)	{ return 1; }
 
    private void addNode(HistoryNode hn,Map<HistoryNode,Node> done,Set<BvcrAuthor> authors) {
       Node n1 = done.get(hn);

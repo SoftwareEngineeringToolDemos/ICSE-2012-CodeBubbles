@@ -660,42 +660,42 @@ private class ElidePass2 extends ASTVisitor {
    private void outputDeclInfo(Name name) {
       RebaseJavaSymbol js = RebaseJavaAst.getDefinition(name);
       if (js == null) return;
-
+   
       StringBuffer buf;
-
+   
       switch (js.getSymbolKind()) {
-	 case ANNOTATION :
-	    xml_writer.field("FULLNAME",js.getFullName());
-	    break;
-	 case PACKAGE :
-	    break;
-	 case METHOD :
-	 case CONSTRUCTOR :
-	    buf = new StringBuffer();
-	    buf.append(js.getFullName());
-	    buf.append("(");
-	    int ct = 0;
-	    for (RebaseJavaType pty : js.getType().getComponents()) {
-	       if (ct++ > 0) buf.append(",");
-	       buf.append(pty.getName());
-	     }
-	    buf.append(")");
-	    xml_writer.field("FULLNAME",buf.toString());
-	    break;
-	 case FIELD :
-	    buf = new StringBuffer();
-	    if (js.getClassType() != null) {
-	       xml_writer.field("FULLNAME",js.getFullName());
-	     }
-	    break;
-	 case CLASS :
-	 case INTERFACE :
-	    xml_writer.field("FULLNAME",js.getFullName());
-	    break;
-	 case ENUM :
-	 case LOCAL :
-	 case NONE :
-	    break;
+         case ANNOTATION :
+            xml_writer.field("FULLNAME",js.getFullName());
+            break;
+         case PACKAGE :
+            break;
+         case METHOD :
+         case CONSTRUCTOR :
+            buf = new StringBuffer();
+            buf.append(js.getFullName());
+            buf.append("(");
+            int ct = 0;
+            for (RebaseJavaType pty : js.getType().getComponents()) {
+               if (ct++ > 0) buf.append(",");
+               buf.append(pty.getName());
+             }
+            buf.append(")");
+            xml_writer.field("FULLNAME",buf.toString());
+            break;
+         case FIELD :
+            buf = new StringBuffer();
+            if (js.getClassType() != null) {
+               xml_writer.field("FULLNAME",js.getFullName());
+             }
+            break;
+         case CLASS :
+         case INTERFACE :
+            xml_writer.field("FULLNAME",js.getFullName());
+            break;
+         case ENUM :
+         case LOCAL :
+         case NONE :
+            break;
        }
     }
 

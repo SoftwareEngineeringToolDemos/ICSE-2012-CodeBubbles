@@ -33,8 +33,7 @@ package edu.brown.cs.bubbles.bale;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
-import edu.brown.cs.bubbles.bump.BumpClient;
-import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.bump.*;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -58,7 +57,7 @@ import java.util.*;
  **/
 
 public class BaleFactory implements BaleConstants, BudaConstants, BuenoConstants,
-		BudaConstants.BudaFileHandler
+		BudaConstants.BudaFileHandler, BumpConstants.BumpChangeHandler
 {
 
 
@@ -76,6 +75,7 @@ private BaleHighlightContext		global_highlights;
 private SwingEventListenerList<BaleAnnotationListener> annot_listeners;
 private Set<BaleAnnotation>		active_annotations;
 private SwingEventListenerList<BaleContextListener> context_listeners;
+private BudaRoot                        buda_root;
 
 private static BaleFactory	the_factory;
 
@@ -104,6 +104,8 @@ private BaleFactory()
    active_annotations = new HashSet<BaleAnnotation>();
    context_listeners = new SwingEventListenerList<BaleContextListener>(BaleContextListener.class);
    BudaRoot.addFileHandler(this);
+
+   bump_client.addChangeHandler(this);
 
    addContextListener(new ProblemHover());
 }
@@ -150,6 +152,7 @@ public static void initialize(BudaRoot br)
    bump_client = BumpClient.getBump();
 
    bump_client.addOpenEditorBubbleHandler(new BaleOpenEditorHandler(br));
+   getFactory().buda_root = br;
 }
 
 
@@ -713,6 +716,12 @@ public BudaBubble createNewMethod(String proj,
 
 
 
+double getScaleFactor()
+{
+   return buda_root.getCurrentBubbleArea().getScaleFactor();
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -861,6 +870,32 @@ BaleDocumentIde getDocument(String proj,File f,boolean lcl)
 
 
 
+@Override public void handleFileStarted(String proj,String file)
+{ }
+
+@Override public void handleFileChanged(String proj,String file)
+{ }
+
+@Override public void handleFileAdded(String proj,String file)
+{ }
+
+@Override public void handleProjectOpened(String proj)
+{ }
+
+@Override public void handleFileRemoved(String proj,String file)
+{
+   File f = new File(file);
+
+   synchronized (file_documents) {
+      BaleDocumentIde fdoc = file_documents.remove(f);
+      if (fdoc != null) {
+	 fdoc.dispose();
+       }
+    }
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Annotation methods							*/
@@ -969,9 +1004,13 @@ BudaBubble getContextHoverBubble(BaleContextConfig cfg)
 
 void addContextMenuItems(BaleContextConfig cfg,JPopupMenu menu)
 {
+   LinkedList<BaleContextListener> lstn = new LinkedList<BaleContextListener>();
    for (BaleContextListener bcl : context_listeners) {
-      bcl.addPopupMenuItems(cfg,menu);
+      lstn.addFirst(bcl);
     }
+   for (BaleContextListener bcl : lstn) {
+      bcl.addPopupMenuItems(cfg,menu);
+    } 
 }
 
 
@@ -1156,22 +1195,22 @@ private List<BaleRegion> getRegionsFromLocations(List<BumpLocation> locs)
 	    else if (havecmmt) ;
 	    else if (Character.isWhitespace(s.charAt(eoffset))) ;
 	    // TAKE PYTHON COMMENTS INTO ACCOUT (i.e. #)
-	    else if (lang == BoardLanguage.JAVA && 
-                  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
+	    else if (lang == BoardLanguage.JAVA &&
+		  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
 	       havecmmt = true;
 	     }
-	    else if (lang == BoardLanguage.REBUS && 
-                  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
+	    else if (lang == BoardLanguage.REBUS &&
+		  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
 	       havecmmt = true;
-	     }	    
-            else if (lang == BoardLanguage.PYTHON && s.charAt(eoffset) == '#') {
+	     }
+	    else if (lang == BoardLanguage.PYTHON && s.charAt(eoffset) == '#') {
 	       havecmmt = true;
-             }
+	     }
 	    else break;
 	    ++eoffset;
 	  }
        }
-      
+
       boolean haveeol;
       if (eoffset > s.length()) {
 	 haveeol = true;
@@ -1352,9 +1391,9 @@ private static class ProblemHover implements BaleContextListener {
       BaleDocument bd = (BaleDocument) cfg.getDocument();
       List<BumpProblem> probs = bd.getProblemsAtLocation(cfg.getOffset());
       if (probs != null) {
-         for (BumpProblem bp : probs) {
-            menu.add(new QuickFix(cfg.getEditor(),bp));
-          }
+	 for (BumpProblem bp : probs) {
+	    menu.add(new QuickFix(cfg.getEditor(),bp));
+	  }
        }
     }
 
@@ -1411,6 +1450,7 @@ static class QuickFix extends AbstractAction {
        }
 
       BaleFixer fix = null;
+      Collections.sort(fixes);
       Object [] fixalts = fixes.toArray();
       fix = (BaleFixer) JOptionPane.showInputDialog(for_editor,"Select Quick Fix",
 						       "Quick Fix Selector",

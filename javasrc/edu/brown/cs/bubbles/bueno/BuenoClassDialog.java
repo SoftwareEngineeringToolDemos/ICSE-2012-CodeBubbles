@@ -34,7 +34,6 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import java.awt.Point;
 import java.io.File;
-import java.util.List;
 
 
 
@@ -113,38 +112,7 @@ protected void setupPanel(SwingGridPanel pnl)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Signature parsing methods						*/
-/*										*/
-/********************************************************************************/
 
-protected boolean checkParsing()
-{
-   String sgn = property_set.getStringProperty(BuenoKey.KEY_SIGNATURE);
-   if (sgn != null) {
-      try {
-	 parseClassSignature(sgn);
-       }
-      catch (BuenoException e) {
-	 return false;
-       }
-    }
-
-   if (property_set.getStringProperty(BuenoKey.KEY_NAME) == null) return false;
-
-   String prj = property_set.getStringProperty(BuenoKey.KEY_PROJECT);
-   if (prj == null) prj = insertion_point.getProject();
-   String pkg = property_set.getStringProperty(BuenoKey.KEY_PACKAGE);
-   if (pkg == null) pkg = insertion_point.getPackage();
-   String nm = property_set.getStringProperty(BuenoKey.KEY_NAME);
-   if (pkg != null) nm = pkg + "." + nm;
-   BumpClient bc = BumpClient.getBump();
-   List<BumpLocation> locs = bc.findClassDefinition(prj,nm);
-   if (locs != null && locs.size() > 0) return false;
-
-   return true;
-}
 
 
 

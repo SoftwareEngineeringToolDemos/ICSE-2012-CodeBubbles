@@ -143,7 +143,7 @@ interface BussEntry {
 
 /**
  *	Return the text to be used for an expanded display.  This is only called if
- *	gbetExpandComponent returns null.
+ *	getExpandComponent returns null.
  **/
    String getExpandText();
 

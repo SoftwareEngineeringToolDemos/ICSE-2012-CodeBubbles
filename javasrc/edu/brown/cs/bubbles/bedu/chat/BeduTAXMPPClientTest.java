@@ -1,27 +1,27 @@
 /********************************************************************************/
 /*										*/
-/*		StudentXMPPBotTest.java						*/
+/*		StudentXMPPBotTest.java 					*/
 /*										*/
 /*	Bubbles for education							*/
 /********************************************************************************/
 /*	Copyright 2011 Brown University -- Andrew Kovacs			*/
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 package edu.brown.cs.bubbles.bedu.chat;
 
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import edu.brown.cs.bubbles.bedu.chat.BeduCourse.TACourse;
 import edu.brown.cs.bubbles.bgta.BgtaChat;
@@ -43,11 +43,11 @@ public class BeduTAXMPPClientTest {
 private static BeduTAXMPPClient  ta_client;
 private static BeduTAXMPPClient  ta_client2;
 private static BeduTAXMPPClient  ta_client3;
-private static XMPPConnection    student_conn1;
-private static XMPPConnection    student_conn2;
+private static XMPPConnection	 student_conn1;
+private static XMPPConnection	 student_conn2;
 
 // login names
-private static String	    ta_login       = "codebubbles@jabber.org";
+private static String	    ta_login	   = "codebubbles@jabber.org";
 private static String	    student_login  = "codebubbles2";
 private static String	    student2_login = "codebubbles3";
 
@@ -56,43 +56,46 @@ private static PipedOutputStream pipe_err;
 // result bools for the routing test that have
 // to be members so we can set them inside
 // anonymous message listeners
-private boolean		  t2ToS1Received = false;
-private boolean		  t1ToS2Received = false;
+private boolean 	  t2ToS1Received = false;
+private boolean 	  t1ToS2Received = false;
 private BgtaChat		 bs1ToT2;
 private BgtaChat		 bs2ToT1;
 
 
 @BeforeClass public static void setUpOnce() throws XMPPException
 {
-   BeduChatFactory.DEBUG = true;
-   ta_client = new BeduTAXMPPClient(new TACourse("testcourse",ta_login,"brownbears",
-	    "jabber.org"));
-   ta_client.connectAndLogin("TA1");
+   try {
+      BeduChatFactory.DEBUG = true;
+      ta_client = new BeduTAXMPPClient(new TACourse("testcourse",ta_login,"brownbears",
+						       "jabber.org"));
+      ta_client.connectAndLogin("TA1");
 
-   ta_client2 = new BeduTAXMPPClient(new TACourse("testcourse",ta_login,"brownbears",
-	    "jabber.org"));
-// ta_client2.connectAndLogin("TA2");
+      ta_client2 = new BeduTAXMPPClient(new TACourse("testcourse",ta_login,"brownbears",
+							"jabber.org"));
+      // ta_client2.connectAndLogin("TA2");
 
-   ta_client3 = new BeduTAXMPPClient(new TACourse("testcourse",ta_login,"brownbears",
-	    "jabber.org"));
+      ta_client3 = new BeduTAXMPPClient(new TACourse("testcourse",ta_login,"brownbears",
+							"jabber.org"));
 
-   XMPPConnection.DEBUG_ENABLED = true;
-   ConnectionConfiguration config = new ConnectionConfiguration("jabber.org",5222);
-   config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
-   config.setSendPresence(true);
+      XMPPConnection.DEBUG_ENABLED = true;
+      ConnectionConfiguration config = new ConnectionConfiguration("jabber.org",5222);
+      config.setSecurityMode(ConnectionConfiguration.SecurityMode.required);
+      config.setSendPresence(true);
 
-   student_conn1 = new XMPPConnection(config);
-   student_conn1.connect();
-   student_conn1.login(student_login, "brownbears");
+      student_conn1 = new XMPPConnection(config);
+      student_conn1.connect();
+      student_conn1.login(student_login, "brownbears");
+    }
+   catch (Throwable e) { }
 }
 
 
 @AfterClass public static void staticTearDown() throws XMPPException
 {
-   student_conn1.disconnect();
-   ta_client.disconnect();
-   ta_client2.disconnect();
-   ta_client3.disconnect();
+   if (student_conn1 != null) student_conn1.disconnect();
+   if (ta_client != null) ta_client.disconnect();
+   if (ta_client2 != null) ta_client2.disconnect();
+   if (ta_client3 != null) ta_client3.disconnect();
 }
 
 
@@ -102,6 +105,9 @@ private BgtaChat		 bs2ToT1;
  */
 @Test public void testTicketReceiveAndAccept() throws XMPPException
 {
+   assertTrue(ta_client != null);
+   assertTrue(student_conn1 != null);
+
    System.out.println("Testing ticket receipt");
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1",
 	    new MessageListener() {
@@ -139,6 +145,10 @@ private BgtaChat		 bs2ToT1;
 
 @Test public void testTicketForwardAndAccept() throws XMPPException, InterruptedException
 {
+   assertTrue(ta_client != null);
+   assertTrue(ta_client2 != null);
+   assertTrue(student_conn1 != null);
+
    System.out.println("Testing forward and accept");
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
    ta_client2.connectAndLogin("TA2");
@@ -167,6 +177,10 @@ private BgtaChat		 bs2ToT1;
  */
 @Test public void testInitialTicketForwards() throws XMPPException, InterruptedException
 {
+   assertTrue(ta_client != null);
+   assertTrue(ta_client3 != null);
+   assertTrue(student_conn1 != null);
+
    System.out.println("Testing initial ticket forwarding...");
 
    Chat c = student_conn1.getChatManager().createChat("codebubbles@jabber.org/TA1", null);
@@ -195,20 +209,25 @@ private BgtaChat		 bs2ToT1;
 }
 
 /**
- * Tests the methodology used to make sure 
+ * Tests the methodology used to make sure
  * that chats are setup appropriately
- * Note that this does not test the actual code because it's difficult to divorce from the UI so 
+ * Note that this does not test the actual code because it's difficult to divorce from the UI so
  * manual testing is required
  * @throws Exception
  */
 @Test public void testMessageRouting() throws Exception
 {
+   assertTrue(ta_client != null);
+   assertTrue(ta_client2 != null);
+   assertTrue(student_conn1 != null);
+   assertTrue(student_conn2 != null);
+
    /**
     * With 2 TAs and 2 student connections have the two students
     * send tickets to different TAs, have TAs accept tickets from students
     * from whom they didn't receive the intial ticket and then try to send messages
-    * in both directions once the sessions are established and check if the 
-    * messages reach their destinations 
+    * in both directions once the sessions are established and check if the
+    * messages reach their destinations
     */
    System.out.println("Testing correct routing of messages");
    assertTrue(ta_client.getTickets().size() == 0);

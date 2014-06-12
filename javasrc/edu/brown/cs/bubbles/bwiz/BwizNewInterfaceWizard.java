@@ -27,8 +27,6 @@ package edu.brown.cs.bubbles.bwiz;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoKey;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoType;
 import edu.brown.cs.bubbles.bueno.*;
 
 import java.awt.Point;
@@ -52,16 +50,13 @@ class BwizNewInterfaceWizard extends BwizNewWizard
 /*                                                                              */
 /********************************************************************************/
 
-BwizNewInterfaceWizard()
+
+
+
+
+BwizNewInterfaceWizard(BuenoLocation loc)
 {
-   this(null,null);
-}
-
-
-
-BwizNewInterfaceWizard(String proj,String pkg)
-{   
-   super(proj,pkg,null);
+   super(loc,BuenoType.NEW_INTERFACE);
 }
 
 
@@ -72,8 +67,6 @@ BwizNewInterfaceWizard(String proj,String pkg)
 /*      Access methods                                                          */
 /*                                                                              */
 /********************************************************************************/
-
-@Override protected InfoStruct getInfoStruct()  { return new InterfaceInfo(); }
 
 @Override protected Creator getCreator()        { return new InterfaceCreator(); }
 
@@ -95,23 +88,6 @@ BwizNewInterfaceWizard(String proj,String pkg)
 }
 
 
-/********************************************************************************/
-/*                                                                              */
-/*      Info Structure                                                          */
-/*                                                                              */
-/********************************************************************************/
-
-private class InterfaceInfo extends InfoStruct {
-   
-   protected String getSignature(String pfx,String itms) {
-      String rslt = pfx + " interface " + getMainName().toString().trim();
-      if (itms != null) rslt += " extends " + itms;
-      return rslt;
-    }
-   
-}       // end of inner class MethodInfo
-
-
 
 /********************************************************************************/
 /*                                                                              */
@@ -124,10 +100,9 @@ private class InterfaceCreator extends Creator {
       BudaBubble nbbl = null;
       BuenoLocation bl = at_location;
       BuenoFactory bf = BuenoFactory.getFactory();
-      String proj = info_structure.getProjectName();
-      String pkg = info_structure.getPackageName();
+      String proj = property_set.getProjectName();
+      String pkg = property_set.getPackageName();
       
-      bp.put(BuenoKey.KEY_EXTENDS,info_structure.getSet());
       if (bl == null) bl = bf.createLocation(proj,pkg,null,true);
       bf.createNew(BuenoType.NEW_INTERFACE,bl,bp);
       if (bubble_creator == null)

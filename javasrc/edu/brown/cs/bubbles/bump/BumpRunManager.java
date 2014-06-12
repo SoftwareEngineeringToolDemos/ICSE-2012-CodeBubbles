@@ -1551,7 +1551,7 @@ private class ThreadData implements BumpThread {
       else if (IvyXml.getAttrBool(xml,"SUSPENDED")) thread_state = thread_state.getStopState();
       for_launch = findLaunch(IvyXml.getChild(xml,"LAUNCH"));
       for_process = findProcess(xml);
-      if (for_process == null && !IvyXml.getAttrPresent(xml,"PID")) {
+      if (for_process == null && !IvyXml.getAttrPresent(xml,"PID") && for_launch != null) {
 	 for_process = for_launch.getDefaultProcess();
        }
     }

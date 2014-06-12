@@ -1322,7 +1322,12 @@ private static String formatRunValue(BumpRunValue rv)
 	 break;
       case OBJECT :
 	 String s = rv.getDetail();
-	 if (s != null) return IvyXml.htmlSanitize(s);
+	 if (s != null) {
+	    s = IvyXml.htmlSanitize(s);
+	    s = s.replace("&#0a;","<br>");
+	    s = s.replace("&#x0a;","<br>");
+	    return s;
+	  }
 	 break;
       case ARRAY :
 	 if (rv.getLength() <= 100) {
@@ -1334,8 +1339,13 @@ private static String formatRunValue(BumpRunValue rv)
 	  }
 	 break;
       case PRIMITIVE :
-      case STRING :
 	 return IvyXml.htmlSanitize(rv.getValue());
+      case STRING :
+	 String sx = IvyXml.htmlSanitize(rv.getValue());
+	 sx = sx.replace("&#0a;","<br>"); 
+	 sx = sx.replace("&#x0a;","<br>");
+	 sx = "&quot;" + sx + "&quot;";
+         return sx;
     }
 
    return null;
@@ -1378,7 +1388,8 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 		  break;
 	     }
 	    if (rv == null) rv = frm.getValue(id);
-	    return getEvaluationString(frm,rv,id);
+	    String st = getEvaluationString(frm,rv,id);
+	    return st;
 	  }
        }
       else if (isRelevantFrame(cfg)) {

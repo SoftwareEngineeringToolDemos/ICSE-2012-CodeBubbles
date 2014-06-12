@@ -86,7 +86,6 @@ private static final long	serialVersionUID = 1;
 
 BtedBubble(String path,boolean newFile)
 {
-
    DefaultSyntaxKit.initKit(bted_props.getBoolean(WRAPPING));
    text_editor = new BtedEditorPane();
    text_editor.setOpaque(false);
@@ -252,7 +251,6 @@ private void setupGui()
     }
    super.setBounds(r);
 }
-
 
 
 

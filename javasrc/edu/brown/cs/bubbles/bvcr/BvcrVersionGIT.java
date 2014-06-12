@@ -54,6 +54,7 @@ private static BoardProperties bvcr_properties = BoardProperties.getProperties("
 private static SimpleDateFormat GIT_DATE = new SimpleDateFormat("EEE MMM dd kk:mm:ss yyyy ZZZZZ");
 
 private static String GIT_LOG_FORMAT = "%H%x09%h%x09%an%x09%ae%x09%ad%x09%P%x09%d%x09%s%n%b%n***EOF";
+private static String GIT_PRIOR_FORMAT = "%H%x09%P%x09%d%n";
 
 
 
@@ -205,19 +206,52 @@ private void findGitRoot()
 
 void findHistory(File f,IvyXmlWriter xw)
 {
+   String head = null;
+   Map<String,List<String>> priors = new HashMap<String,List<String>>();
+   String cmd1 = git_command + " log --reverse '--pretty=format:" + GIT_PRIOR_FORMAT + "'";
+   StringCommand cmd = new StringCommand(cmd1);
+   StringTokenizer tok = new StringTokenizer(cmd.getContent(),"\n\r");
+   while (tok.hasMoreTokens()) {
+      String ent = tok.nextToken();
+      try {
+	 String [] ldata = ent.split("\t",3);
+	 String rev = ldata[0];
+	 String prev = ldata[1];
+	 String alts = ldata[2];
+	 List<String> prevs = priors.get(rev);
+	 if (prevs == null) {
+	    prevs = new ArrayList<String>();
+	    priors.put(rev,prevs);
+	  }
+	 for (StringTokenizer ltok = new StringTokenizer(prev,"(, )"); ltok.hasMoreTokens(); ) {
+	    String pid = ltok.nextToken();
+	    prevs.add(pid);
+	  }
+	 if (head == null && alts != null && alts.length() > 0) {
+	    for (StringTokenizer ltok = new StringTokenizer(alts,"(, )"); ltok.hasMoreTokens(); ) {
+	       String nm = ltok.nextToken();
+	       if (nm.equals("HEAD")) head = rev;
+	     }
+	  }
+       }
+      catch (Throwable t) {
+	 System.err.println("BVCR: Problem parsing priors log entry: " + t);
+       }
+    }
+
    String cmds = git_command + " log --reverse '--pretty=format:" + GIT_LOG_FORMAT + "'";
    try {
       f = f.getCanonicalFile();
     }
    catch (IOException e) { }
-   // cmds += " " + f.getAbsolutePath();
+   cmds += " -- " + f.getAbsolutePath();
    // parent version information is inaccurate in this case
 
-   StringCommand cmd = new StringCommand(cmds);
+   cmd = new StringCommand(cmds);
 
    Map<String,BvcrFileVersion> fvs = new LinkedHashMap<String,BvcrFileVersion>();
 
-   StringTokenizer tok = new StringTokenizer(cmd.getContent(),"\n\r");
+   tok = new StringTokenizer(cmd.getContent(),"\n\r");
    while (tok.hasMoreTokens()) {
       String ent = tok.nextToken();
       try {
@@ -238,13 +272,10 @@ void findHistory(File f,IvyXmlWriter xw)
 	  }
 
 	 BvcrFileVersion fv = new BvcrFileVersion(f,rev,d,auth,msg);
+	 Set<String> done = new HashSet<String>();
 	 for (StringTokenizer ltok = new StringTokenizer(prev,"(, )"); ltok.hasMoreTokens(); ) {
 	    String pid = ltok.nextToken();
-	    BvcrFileVersion pv = fvs.get(pid);
-	    if (pv != null) fv.addPriorVersion(pv);
-	    else {
-	       System.err.println("BVCR: Can't find prior version " + pv);
-	     }
+	    addPriors(fv,pid,fvs,priors,done);
 	  }
 	 if (srev != null && srev.length() > 0) fv.addAlternativeId(srev,null);
 	 if (alts != null && alts.length() > 0) {
@@ -267,12 +298,50 @@ void findHistory(File f,IvyXmlWriter xw)
        }
     }
 
+   if (head != null && !fvs.containsKey(head)) {
+      BvcrFileVersion fv = new BvcrFileVersion(f,head,null,null,null);
+      Set<String> done = new HashSet<String>();
+      addPriors(fv,head,fvs,priors,done);
+      for (BvcrFileVersion pv : fv.getPriorVersions(null)) {
+	 pv.addAlternativeId("HEAD",null);
+	 break;
+       }
+    }
+
    xw.begin("HISTORY");
    xw.field("FILE",f.getPath());
    for (BvcrFileVersion fv : fvs.values()) {
       fv.outputXml(xw);
     }
    xw.end("HISTORY");
+}
+
+
+
+private void addPriors(BvcrFileVersion fv,String id,Map<String,BvcrFileVersion> known,
+			  Map<String,List<String>> priors,
+			  Set<String> done)
+{
+   if (id == null) return;
+   if (done.contains(id)) return;
+   done.add(id);
+
+   BvcrFileVersion pv = known.get(id);
+   if (pv != null) {
+      fv.addPriorVersion(pv);
+      return;
+    }
+
+   List<String> prs = priors.get(id);
+   if (prs == null) {
+      System.err.println("BVCR: Can't find prior version " + id);
+      return;
+    }
+
+   for (String s : prs) {
+      if (s == null || s.equals(id)) continue;
+      addPriors(fv,s,known,priors,done);
+    }
 }
 
 

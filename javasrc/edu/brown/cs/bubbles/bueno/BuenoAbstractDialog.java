@@ -58,6 +58,8 @@ protected BuenoBubbleCreator bubble_creator;
 protected JTextField focus_field;
 protected BuenoType	create_type;
 
+protected BuenoValidator the_validator;
+
 protected Font		button_font;
 protected Font		title_font;
 
@@ -92,6 +94,7 @@ protected BuenoAbstractDialog(Component src,Point p,BuenoProperties known,BuenoL
    title_text = null;
 
    create_type = typ;
+   the_validator = new BuenoValidator(new ValidCallback(),property_set,insertion_point,create_type);
 
    JLabel lbl = new JLabel();
    button_font = lbl.getFont().deriveFont(10f);
@@ -171,10 +174,20 @@ abstract void doCreate(BudaBubbleArea bba,Point p);
 private void update()
 {
    if (accept_button != null) {
-      if (checkParsing()) accept_button.setEnabled(true);
-      else accept_button.setEnabled(false);
+      the_validator.updateParsing();
     }
 }
+
+
+private class ValidCallback implements BuenoValidatorCallback {
+   
+   @Override public void validationDone(BuenoValidator bv,boolean fg) {
+      if (accept_button != null) {
+         accept_button.setEnabled(fg);
+       }
+    }
+   
+}       // end of inner class ValidCallback
 
 
 
@@ -251,6 +264,7 @@ protected class BooleanField extends JCheckBox implements ActionListener {
 
    @Override public void actionPerformed(ActionEvent e) {
       property_set.put(field_key,isSelected());
+      BuenoAbstractDialog.this.update();
     }
 
 }	// end of inner class BooleanField
@@ -288,6 +302,7 @@ protected class ProtectionButton extends JRadioButton implements ChangeListener 
 	 v0 &= ~modifier_value;
        }
       property_set.put(BuenoKey.KEY_MODIFIERS,v0);
+      BuenoAbstractDialog.this.update();
     }
 
 }	// end of inner class ProtectionButton
@@ -318,6 +333,7 @@ protected class ModifierButton extends JToggleButton implements ActionListener {
 	 v0 &= ~modifier_value;
        }
       property_set.put(BuenoKey.KEY_MODIFIERS,v0);
+      BuenoAbstractDialog.this.update();
     }
 
 }	// end of inner class ModiferButton
@@ -361,15 +377,11 @@ private class DialogBubble extends BudaBubble {
       bb.setVisible(false);
     }
    else {				// accept from text box as well
-      if (!checkParsing()) return;
+      if (!the_validator.checkParsing()) return;
       bb.setVisible(false);
       doCreate(bba,where);
     }
 }
-
-
-protected boolean checkParsing()		{ return true; }
-
 
 
 

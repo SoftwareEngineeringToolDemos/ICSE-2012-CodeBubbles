@@ -24,6 +24,8 @@
 
 package edu.brown.cs.bubbles.rebase;
 
+import edu.brown.cs.bubbles.rebase.word.*;
+
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import java.util.*;
@@ -70,19 +72,24 @@ RebaseProjectManager(RebaseMain rm)
 RebaseProject findProject(String nm)
 {
    if (nm == null) return null;
-   
+
    return project_map.get(nm);
 }
 
 
 RebaseFile findFile(String path)
 {
+   path = RebaseMain.fixFileName(path);
+
    StringTokenizer tok = new StringTokenizer(path,"/");
    if (!tok.hasMoreTokens()) return null;
    String hd = tok.nextToken();
    if (!hd.equals("REBUS")) return null;
    String pid = tok.nextToken();
    RebaseProject rp = project_map.get(pid);
+   if (rp == null) {
+      rp = project_map.get("P_" + pid);
+    }
    if (rp == null) return null;
 
    return rp.findFile(path);
@@ -127,16 +134,17 @@ void dumpPackage(String proj,String nm,IvyXmlWriter xw)  throws RebaseException
 void delete(String proj,String what,String path)
 {
    if (proj == null && path == null && what.equals("PROJECT")) {
+      RebaseWordFactory.getFactory().clear();
       Set<RebaseProject> pjts = new HashSet<RebaseProject>(project_map.values());
       for (RebaseProject rp : pjts) {
-         delete(rp.getId(),what,null);
+	 delete(rp.getId(),what,null);
        }
       return;
     }
-   
+
    RebaseProject rp = getProject(proj,path);
    if (rp == null) return;
-   
+
    if (what.equals("PROJECT")) {
       rp.delete(what,null);
       project_map.remove(rp.getName());
@@ -208,6 +216,15 @@ void getAllNames(String proj,String bid,Set<String> files,String bkg,
    NameThread nt = null;
    if (bkg != null) nt = new NameThread(bid,bkg,files);
 
+   if (files != null && File.separatorChar != '/') {
+      Set<String> nf = new HashSet<String>();
+      for (String f : files) {
+	 String f1 = RebaseMain.fixFileName(f);
+	 nf.add(f1);
+       }
+      files = nf;
+    }
+
    if (proj != null) {
       RebaseProject rp = findProject(proj);
       if (rp == null) throw new RebaseException("Unknown project " + proj);
@@ -256,36 +273,36 @@ private class NameThread extends Thread {
 
    @Override public void run() {
       RebaseMain.logD("START NAMES FOR " + name_id);
-   
+
       IvyXmlWriter xw = null;
       try {
-         for (RebaseProject rp : project_names) {
-            if (xw == null) {
-               xw = rebase_main.beginMessage("NAMES",bump_id);
-               xw.field("NID",name_id);
-             }
-            try {
-               rp.outputAllNames(file_set,xw);
-               if (xw.getLength() <= 0 || xw.getLength() > 1000000) {
-        	  rebase_main.finishMessageWait(xw,15000);
-        	  xw = null;
-        	}
-             }
-            catch (Throwable t) {
-               RebaseMain.logE("Problem getting names",t);
-               xw = null;
-             }
-          }
-   
-         if (xw != null) {
-            rebase_main.finishMessageWait(xw);
-          }
+	 for (RebaseProject rp : project_names) {
+	    if (xw == null) {
+	       xw = rebase_main.beginMessage("NAMES",bump_id);
+	       xw.field("NID",name_id);
+	     }
+	    try {
+	       rp.outputAllNames(file_set,xw);
+	       if (xw.getLength() <= 0 || xw.getLength() > 1000000) {
+		  rebase_main.finishMessageWait(xw,15000);
+		  xw = null;
+		}
+	     }
+	    catch (Throwable t) {
+	       RebaseMain.logE("Problem getting names",t);
+	       xw = null;
+	     }
+	  }
+
+	 if (xw != null) {
+	    rebase_main.finishMessageWait(xw);
+	  }
        }
       finally {
-         RebaseMain.logD("FINISH NAMES FOR " + name_id);
-         xw = rebase_main.beginMessage("ENDNAMES",bump_id);
-         xw.field("NID",name_id);
-         rebase_main.finishMessage(xw);
+	 RebaseMain.logD("FINISH NAMES FOR " + name_id);
+	 xw = rebase_main.beginMessage("ENDNAMES",bump_id);
+	 xw.field("NID",name_id);
+	 rebase_main.finishMessage(xw);
        }
     }
 
@@ -294,14 +311,14 @@ private class NameThread extends Thread {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Search commands                                                         */
-/*                                                                              */
+/*										*/
+/*	Search commands 							*/
+/*										*/
 /********************************************************************************/
 
 void patternSearch(String proj,String pat,String typ,boolean defs,boolean refs,
       boolean sys,IvyXmlWriter xw)
-        throws RebaseException
+	throws RebaseException
 {
    if (proj != null) {
       RebaseProject rp = findProject(proj);
@@ -309,11 +326,11 @@ void patternSearch(String proj,String pat,String typ,boolean defs,boolean refs,
     }
    else {
       for (RebaseProject rp : new ArrayList<RebaseProject>(all_projects)) {
-         rp.patternSearch(pat,typ,defs,refs,sys,xw);
+	 rp.patternSearch(pat,typ,defs,refs,sys,xw);
        }
     }
-   
-   
+
+
 }
 
 
@@ -327,16 +344,16 @@ void findAll(String proj,String file,int soffset,int eoffset,boolean defs,
     }
    else if (proj == null) {
       for (RebaseProject rp0 : new ArrayList<RebaseProject>(all_projects)) {
-         rp0.findAll(file,soffset,eoffset,defs,refs,imps,type,ronly,wonly,xw);
+	 rp0.findAll(file,soffset,eoffset,defs,refs,imps,type,ronly,wonly,xw);
        }
-    } 
+    }
 }
 
 void findPackage(String proj,String pkg,IvyXmlWriter xw)
 {
    RebaseProject rp = findProject(proj);
    if (rp == null) return;
-   
+
    rp.findPackage(pkg,xw);
 }
 
@@ -352,13 +369,13 @@ void textSearch(String proj,int fgs,String pat,int max,IvyXmlWriter xw)
    if (proj != null) {
       RebaseProject rp = findProject(proj);
       if (rp != null)
-         rp.textSearch(fgs,pat,max,xw);
+	 rp.textSearch(fgs,pat,max,xw);
     }
    else {
       for (RebaseProject rp : new ArrayList<RebaseProject>(all_projects)) {
-         rp.textSearch(fgs,pat,max,xw);
+	 rp.textSearch(fgs,pat,max,xw);
        }
-    }  
+    }
 }
 
 
@@ -381,9 +398,9 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Formatting methods                                                      */
-/*                                                                              */
+/*										*/
+/*	Formatting methods							*/
+/*										*/
 /********************************************************************************/
 
 void formatCode(String proj,String bid,String file,
@@ -395,9 +412,9 @@ void formatCode(String proj,String bid,String file,
     }
    else if (proj == null) {
       for (RebaseProject rp0 : new ArrayList<RebaseProject>(all_projects)) {
-         rp0.formatCode(file,spos,epos,xw);
+	 rp0.formatCode(file,spos,epos,xw);
        }
-    }   
+    }
 }
 
 
@@ -405,9 +422,9 @@ void formatCode(String proj,String bid,String file,
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle user selections of good/bad items                                */
-/*                                                                              */
+/*										*/
+/*	Handle user selections of good/bad items				*/
+/*										*/
 /********************************************************************************/
 
 void handleAccept(String proj,String file,boolean fg,int spos,int epos)
@@ -419,27 +436,27 @@ void handleAccept(String proj,String file,boolean fg,int spos,int epos)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Handle export requests                                                  */
-/*                                                                              */
+/*										*/
+/*	Handle export requests							*/
+/*										*/
 /********************************************************************************/
 
 void handleExport(String proj,String dir,boolean accepted,String file)
-        throws RebaseException
+	throws RebaseException
 {
    File fdir = new File(dir);
-   if (!fdir.exists() && !fdir.mkdirs()) 
+   if (!fdir.exists() && !fdir.mkdirs())
       throw new RebaseException("Can't create export directory " + dir);
-   if (!fdir.isDirectory()) 
+   if (!fdir.isDirectory())
       throw new RebaseException("Not a directory: " + dir);
-   
+
    RebaseProject rp = getProject(proj,file);
    if (rp != null) {
       rp.export(fdir,file,accepted);
     }
    else {
       for (RebaseProject rp0 : new ArrayList<RebaseProject>(all_projects)) {
-         rp0.export(fdir,file,accepted);
+	 rp0.export(fdir,file,accepted);
        }
     }
 }
@@ -447,32 +464,32 @@ void handleExport(String proj,String dir,boolean accepted,String file)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Utility methods                                                         */
-/*                                                                              */
+/*										*/
+/*	Utility methods 							*/
+/*										*/
 /********************************************************************************/
 
 private RebaseProject getProject(String proj,String file)
 {
    if (proj == null && file != null) {
       StringTokenizer tok = new StringTokenizer(file,"/");
-      if (tok.countTokens() > 3) {      // File is /REBUS/<project>/<Engine>/...
-         String rebus = tok.nextToken();
-         if (!rebus.equals("REBUS")) return null;
-         proj = tok.nextToken();
+      if (tok.countTokens() > 3) {	// File is /REBUS/<project>/<Engine>/...
+	 String rebus = tok.nextToken();
+	 if (!rebus.equals("REBUS")) return null;
+	 proj = tok.nextToken();
        }
     }
-   
+
    if (proj == null) return null;
-   
+
    return findProject(proj);
 }
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Search Commands                                                         */
-/*                                                                              */
+/*										*/
+/*	Search Commands 							*/
+/*										*/
 /********************************************************************************/
 
 void handleNext(String proj,String file)
@@ -500,33 +517,33 @@ void handleExpand(String proj,String file)
 
 
 private class BackgroundExpander implements Runnable {
-   
+
    private RebaseProject for_project;
    private RebaseFile for_file;
    private RebaseSource for_source;
-   
+
    BackgroundExpander(RebaseProject rp,RebaseFile rf,RebaseSource rs) {
       for_project = rp;
       for_file = rf;
       for_source = rs;
     }
-   
+
    @Override public void run() {
       switch (for_source.getSourceType()) {
-         case FILE :
-            for_source.setSourceType(SourceType.PACKAGE);
-            for_project.addPackageFiles(for_file);
-            break;
-         case PACKAGE :
-            for_source.setSourceType(SourceType.SYSTEM);
-            for_project.addSystemFiles(for_file);
-            break;
-         case SYSTEM :
-            break;
-       } 
+	 case FILE :
+	    for_source.setSourceType(SourceType.PACKAGE);
+	    for_project.addPackageFiles(for_file);
+	    break;
+	 case PACKAGE :
+	    for_source.setSourceType(SourceType.SYSTEM);
+	    for_project.addSystemFiles(for_file);
+	    break;
+	 case SYSTEM :
+	    break;
+       }
     }
-   
-}       // end of inner class BackgroundExpander
+
+}	// end of inner class BackgroundExpander
 
 
 

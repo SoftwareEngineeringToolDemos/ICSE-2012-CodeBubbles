@@ -599,7 +599,8 @@ private class ValueTable extends SwingTreeTable implements BudaConstants.BudaBub
 	 String evl = launch_control.getEvaluationString(tn.getFrame(),tn.getRunValue(),what);
 	 if (evl != null) {
 	    buf.append("<hr>");
-	    buf.append(IvyXml.htmlSanitize(evl));
+	    // buf.append(IvyXml.htmlSanitize(evl));
+	    buf.append(evl);
 	  }
 	 return buf.toString();
        }

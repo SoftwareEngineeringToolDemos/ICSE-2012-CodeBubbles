@@ -87,7 +87,7 @@ protected static BoardProperties board_properties = null;
 private static BumpClient default_client = null;
 
 private static final int MAX_DELAY = 30000;
-private static final int BUILD_DELAY = 300000;
+private static final int BUILD_DELAY = 600000;
 
 
 
@@ -1355,6 +1355,24 @@ public List<BumpLocation> findAllClasses(String nm)
 
 
 
+public List<BumpLocation> findAllTypes(String nm)
+{
+   waitForIDE();
+
+   StringWriter sw = new StringWriter();
+   sw.write("PATTERN='");
+   IvyXml.outputXmlString(nm,sw);
+   sw.write("' DEFS='true' REFS='false' SYSTEM='true'");
+   sw.write(" FOR='TYPE'");
+
+   Element xml = getXmlReply("PATTERNSEARCH",null,sw.toString(),null,0);
+
+   return getSearchResults(null,xml,false);
+}
+
+
+
+
 /**
  *	Return a list of BumpLocations containing the definitions of all annotations
  *	matching the given pattern.								 JI
@@ -1769,11 +1787,17 @@ public String getFullyQualifiedName(String proj,File file,int start,int end)
    String sgn = IvyXml.getTextElement(cnt,"TYPE");
    if (sgn != null) {
       int idx0 = sgn.indexOf('(');
-      if (idx0 >= 0) {						
+      if (idx0 >= 0) {		
 	 int idx1 = sgn.lastIndexOf(')');
 	 String ps = sgn.substring(idx0,idx1+1);
-	 String p = IvyFormat.formatTypeName(ps);
-	 nm += p;
+	 try {
+	    String p = IvyFormat.formatTypeName(ps);
+	    nm += p;
+	  }
+	 catch (Throwable t) {
+	    BoardLog.logE("BUMP","Problem formating type " + ps,t);
+	  }
+
       }
     }
 

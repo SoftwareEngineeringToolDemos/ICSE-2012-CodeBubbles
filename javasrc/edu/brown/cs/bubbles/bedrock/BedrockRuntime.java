@@ -63,6 +63,8 @@ private ConsoleThread		console_thread;
 private Map<Integer,ConsoleData> console_map;
 private Set<ILaunchConfiguration> working_configs;
 
+private static Map<String,CallFormatter> format_map;
+
 private static Map<String,String> prop_map;
 
 static {
@@ -80,6 +82,14 @@ static {
    prop_map.put("STOP_IN_MAIN","org.eclipse.jdt.launching.STOP_IN_MAIN");
    prop_map.put("CAPTURE_IN_FILE","org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE");
    prop_map.put("WORKING_DIRECTORY","org.eclipse.jdt.launching.WORKING_DIRECTORY");
+
+   format_map = new HashMap<String,CallFormatter>();
+   CallFormatter xmlfmt = new CallFormatter("edu.brown.cs.ivy.xml.IvyXml.convertXmlToString",
+	 "(Lorg/w3c/dom/Node;)Ljava/lang/String;",null);
+   format_map.put("org.apache.xerces.dom.DeferredElementImpl",xmlfmt);
+   format_map.put("org.apache.xerces.dom.DeferredElementNSImpl",xmlfmt);
+   format_map.put("com.sun.apache.xerces.internal.dom.DeferredElementImpl",xmlfmt);
+   format_map.put("com.sun.apache.xerces.internal.dom.DeferredElementNSImpl",xmlfmt);
 }
 
 
@@ -744,19 +754,8 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 		  val = avl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
 		}
 	     }
-	    else if (val instanceof IJavaObject) {
-	       IJavaObject ovl = (IJavaObject) val;
-	       if (!ovl.isNull()) {
-		  IJavaType jt = ovl.getJavaType();
-		  IJavaValue xvl = null;
-		  if (jt.getName().equals("org.apache.xerces.dom.DeferredElementImpl")) {
-		     xvl = convertXml(jthrd,ovl);
-		   }
-		  if (xvl == null) {   
-		     val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
-		   }
-		  else val = xvl;
-	        }
+	    else {
+	       val = handleSpecialCases(val,thrd);
 	     }
 	  }
 
@@ -767,6 +766,44 @@ void getVariableValue(String tname,String frid,String vname,int lvls,IvyXmlWrite
 	 throw new BedrockException("Problem accessing variable: " + e,e);
        }
     }
+}
+
+
+private IValue handleSpecialCases(IValue val,IThread thrd)
+{
+   if (!(val instanceof IJavaObject)) return val;
+   if (!(thrd instanceof IJavaThread)) return val;
+
+   IJavaObject ovl = (IJavaObject) val;
+   IJavaThread jthrd = (IJavaThread) thrd;
+
+   try {
+      if (!ovl.isNull()) {
+	 IJavaType jt = ovl.getJavaType();
+	 IJavaValue xvl = null;
+	 CallFormatter cfmt = format_map.get(jt.getName());
+	 if (cfmt != null) {
+	    xvl = cfmt.convertValue(ovl,jthrd);
+	  }
+	 if (xvl == null) {
+	    if (jt.getName().equals("org.apache.xerces.dom.DeferredElementImpl")) {
+	       xvl = convertXml(jthrd,ovl);
+	     }
+	    else if (jt.getName().equals("com.sun.apache.xerces.internal.dom.DeferredElementImpl")) {
+	       xvl = convertXml(jthrd,ovl);
+	     }
+	  }
+	 if (xvl == null) {
+	    val = ovl.sendMessage("toString","()Ljava/lang/String;",null,jthrd,false);
+	  }
+	 else val = xvl;
+       }
+    }
+   catch (DebugException e) {
+      BedrockPlugin.logE("Problem handling variable values",e);
+    }
+
+   return val;
 }
 
 
@@ -784,9 +821,94 @@ IJavaValue convertXml(IJavaThread thrd,IJavaValue xml)
    catch (Throwable t) {
       BedrockPlugin.logE("Problem converting XML",t);
    }
-   
+
    return null;
 }
+
+
+
+private static class CallFormatter {
+
+   private String static_class;
+   private String method_name;
+   private String method_signature;
+   private List<Object> arg_values;
+
+   CallFormatter(String method,String sign,Iterable<Object> args) {
+      int idx = method.lastIndexOf(".");
+      if (idx > 0) {
+	 static_class = method.substring(0,idx);
+	 method_name = method.substring(idx+1);
+       }
+      else {
+	 static_class = null;
+	 method_name = method;
+       }
+      method_signature = sign;
+      arg_values = null;
+      if (args != null) {
+	 for (Object o : args) {
+	    arg_values.add(o);
+	  }
+       }
+    }
+
+   IJavaValue convertValue(IJavaObject v,IJavaThread thrd) {
+      IJavaValue rslt = null;
+      try {
+	 IJavaDebugTarget tgt = (IJavaDebugTarget) thrd.getDebugTarget();
+	 IJavaType [] typs = tgt.getJavaTypes(static_class);
+	 if (static_class == null) {
+	    // method call on v
+	    IJavaValue [] args = setupArgs(tgt,null);
+	    rslt = v.sendMessage(method_name,method_signature,args,thrd,false);
+	  }
+	 else {
+	    // static method call
+	    if (typs == null) return null;
+	    IJavaClassType clstyp = (IJavaClassType) typs[0];
+	    IJavaValue [] args = setupArgs(tgt,v);
+	    rslt = clstyp.sendMessage(method_name,method_signature,args,thrd);
+	  }
+       }
+      catch (DebugException e) {
+	 BedrockPlugin.logE("Problem handling value conversion",e);
+       }
+      return rslt;
+    }
+
+   IJavaValue [] setupArgs(IJavaDebugTarget tgt,IJavaValue arg0) {
+      int ct = (arg_values == null ? 0 : arg_values.size());
+      if (arg0 != null) ++ct;
+      if (ct == 0) return null;
+      IJavaValue [] args = new IJavaValue[ct];
+      int idx = 0;
+      if (arg0 != null) args[idx++] = arg0;
+      if (arg_values != null) {
+	 for (Object o : arg_values) {
+	    IJavaValue v = null;
+	    if (o == null) v = tgt.nullValue();
+	    else if (o instanceof Boolean) v = tgt.newValue(((Boolean) o).booleanValue());
+	    else if (o instanceof Byte) v = tgt.newValue(((Byte) o).byteValue());
+	    else if (o instanceof Character) v = tgt.newValue(((Character) o).charValue());
+	    else if (o instanceof Double) v = tgt.newValue(((Double) o).doubleValue());
+	    else if (o instanceof Float) v = tgt.newValue(((Float) o).floatValue());
+	    else if (o instanceof Integer) v = tgt.newValue(((Integer) o).intValue());
+	    else if (o instanceof Long) v = tgt.newValue(((Long) o).longValue());
+	    else if (o instanceof Short) v = tgt.newValue(((Short) o).shortValue());
+	    else if (o instanceof String) v = tgt.newValue(((String) o));
+	    else {
+	       BedrockPlugin.logE("Unknown type for conversion args" + o);
+	       v = tgt.nullValue();
+	     }
+	    args[idx++] = v;
+	  }
+       }
+
+      return args;
+    }
+
+}	// end of inner class CallFormatter
 
 
 
@@ -1152,6 +1274,23 @@ public void launchConfigurationChanged(ILaunchConfiguration cfg)
 public void launchConfigurationRemoved(ILaunchConfiguration cfg)
 {
    IvyXmlWriter xw = our_plugin.beginMessage("LAUNCHCONFIGEVENT");
+
+   // need to make suer it is realy removed here.  If it was just renamed, then
+   // we are using the same ID and it hasn't been removed
+   ILaunchManager lm = debug_plugin.getLaunchManager();
+
+   String rid = BedrockUtil.getId(cfg);
+
+   try {
+      ILaunchConfiguration [] cnfg = lm.getLaunchConfigurations();
+
+      for (int i = 0; i < cnfg.length; ++i) {
+	 if (cnfg[i] == cfg) continue;
+	 String id = BedrockUtil.getId(cnfg[i]);
+	 if (id.equals(rid)) continue;
+       }
+    }
+   catch (Throwable t) { }
 
    xw.begin("LAUNCH");
    xw.field("REASON","REMOVE");

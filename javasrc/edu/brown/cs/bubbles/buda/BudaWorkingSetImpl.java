@@ -289,14 +289,15 @@ void createTask(BudaXmlWriter xw)
    //xw.field("PDF", my_pdf.getName());
 
    outputXml(xw);
-
+   
+   BudaBubbleScaler bsc = bubble_area.getUnscaler();
    Set<BudaBubble> bbls = new HashSet<BudaBubble>(bubble_area.getBubblesInRegion(set_region));
    Set<BudaBubbleGroup> grps = new HashSet<BudaBubbleGroup>();
 
    xw.begin("BUBBLES");
    for (BudaBubble bb : bbls) {
       if (bb.isFloating()) continue;
-      bb.outputBubbleXml(xw);
+      bb.outputBubbleXml(xw,bsc);
       BudaBubbleGroup bbg = bb.getGroup();
       if (bbg != null && bbg.getTitle() != null) grps.add(bbg);
       //TODO: only output movable bubbles

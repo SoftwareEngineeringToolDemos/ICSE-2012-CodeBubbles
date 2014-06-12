@@ -1256,8 +1256,8 @@ private class MethodCreator extends AbstractCreator implements BuenoBubbleCreato
 
    @Override public void actionPerformed(ActionEvent e) {
       BuenoFactory.getFactory().createMethodDialog(getBubble(),popup_point,
-						      property_set,getLocation(),null,
-						      this);
+        					      property_set,getLocation(),null,
+        					      this);
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {

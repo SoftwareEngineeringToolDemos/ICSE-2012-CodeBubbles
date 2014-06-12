@@ -57,7 +57,7 @@ import java.util.List;
 
 class BassSearchBox extends SwingGridPanel implements BassConstants, CaretListener,
 	TreeExpansionListener, ActionListener, BudaConstants.BudaBubbleOutputer,
-	BudaConstants
+	BudaConstants, BudaConstants.Scalable
 {
 
 
@@ -292,6 +292,20 @@ void setDefaultText(String text)
    fixupDisplay(text);
 }
 
+
+
+@Override public void setScaleFactor(double sf)
+{
+   Font ft = bass_properties.getFontOption(BASS_TEXT_FONT_PROP,BASS_TEXT_FONT);
+   float f = ft.getSize2D();
+   if (f != 1.0) {
+      f *= sf;
+      ft = ft.deriveFont(f);
+    }
+   Font ftb = ft.deriveFont(Font.BOLD);
+   input_field.setFont(ft);
+   active_options.setFont(ftb);
+}
 
 
 

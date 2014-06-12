@@ -84,7 +84,7 @@ private BudaBubble	  focus_bubble;
 private BudaChannelSet	  channel_set;
 private Cursor		  palm_cursor;
 private boolean 	  first_time;
-private Dimension	  base_size;
+// private Dimension	  base_size;
 private Map<String,Object>	property_map;
 
 private Map<BudaBubble,Point> floating_bubbles;
@@ -160,8 +160,6 @@ BudaBubbleArea(BudaRoot br,Element cfg,BudaChannelSet cs)
    if (h > BUBBLE_DISPLAY_HEIGHT && h > h0) h = Math.max(h0,BUBBLE_DISPLAY_HEIGHT);
    w = Math.max(w,BUBBLE_DISPLAY_WIDTH);
    h = Math.max(h,BUBBLE_DISPLAY_HEIGHT);
-
-   base_size = new Dimension(w,h);
 
    setSize(w,h);
 
@@ -271,10 +269,6 @@ public Collection<BudaBubble> getBubblesInRegion(Rectangle r)
 
 
 
-
-
-
-
 void removeCurrentBubble(MouseEvent e)
 {
    MouseRegion mr = last_mouse;
@@ -291,9 +285,6 @@ void removeCurrentBubble(MouseEvent e)
    if (bb != null) userRemoveBubble(bb);
    else if (grp != null) userRemoveGroup(grp);
 }
-
-
-
 
 
 
@@ -426,6 +417,7 @@ private void localAddBubble(BudaBubble bb,boolean spacer)
 {
    synchronized (active_bubbles) {
       active_bubbles.add(bb);
+      bb.setScaleFactor(scale_factor);
     }
 
    // routes_valid = false;		// if we take bubbles into account when routing
@@ -594,7 +586,7 @@ void setFocusBubble(BudaBubble bb,boolean fg)
        }
     }
 
-   if (scale_factor != 1.0) repaint();
+   // if (scale_factor != 1.0) repaint();
 
    focusLinks(bb,fg);
 
@@ -865,7 +857,7 @@ void checkAreaDimensions()
    if (maxx > osz.width || maxy > osz.height) {
       osz.width = Math.max(osz.width,maxx);
       osz.height = Math.max(osz.height,maxy);
-      base_size = new Dimension(osz);
+      // base_size = new Dimension(osz);
       setSize(osz);
     }
 }
@@ -941,19 +933,132 @@ private static class LinkComparator implements Comparator<BudaBubbleLink> {
 /*										*/
 /********************************************************************************/
 
-double getScaleFactor() 			{ return scale_factor; }
+public double getScaleFactor() 	{ return scale_factor; }
+
 
 void setScaleFactor(double sf)
 {
+   double sf1 = Math.floor(sf+ 0.25);
+   if (Math.abs(sf-sf1) < 0.05) sf = sf1;
+   if (sf <= 0) return;
+   
+   double oldsf = scale_factor;
+   if (oldsf == sf) return;
    scale_factor = sf;
-   Dimension nsz = new Dimension();
-   nsz.width = (int) (base_size.width * scale_factor);
-   nsz.height = (int) (base_size.height * scale_factor);
-   setSize(nsz);
+   
+   BubbleScaler bsc = new BubbleScaler(oldsf,sf);
+   
+   for (BudaBubble bb : getBubbles()) {
+      Rectangle bnds = bsc.getScaledBounds(bb);
+      bb.setBounds(bnds);
+      bb.setScaleFactor(sf);
+    }
+   
+   for (BudaBubbleGroup bg : getBubbleGroups()) {
+      bg.setScaleFactor(sf);
+    }
+   checkAreaDimensions();
+   
+   // Dimension nsz = new Dimension();
+   // nsz.width = (int) (base_size.width * scale_factor);
+   // nsz.height = (int) (base_size.height * scale_factor);
+   // setSize(nsz);
 
-   // need to resize the bubble area to take new scale factor into account
    repaint();
 }
+
+
+BudaBubbleScaler getUnscaler()
+{
+   BudaBubbleScaler bbs = null;
+   if (scale_factor != 1) {
+      bbs = new BubbleScaler(scale_factor,1.0);
+    }
+   return bbs;
+}
+
+
+
+private class BubbleScaler implements BudaBubbleScaler {
+   
+   private double old_scale;
+   private double new_scale;
+   
+   BubbleScaler(double oldsf,double newsf) {
+      old_scale = oldsf;
+      new_scale = newsf;
+    }
+   
+   @Override public Rectangle getScaledBounds(BudaBubble bb) { 
+      Rectangle bnds = bb.getBounds();
+      
+      if (bb.isFixed() || bb.isFloating() || bb.isDocked()) {
+         double x1a = bnds.getMinX();
+         double x2a = bnds.getMaxX();
+         double x1b = rescaleX(x1a,old_scale,new_scale);
+         if (x1a >= cur_viewport.getMinX() && x1b < cur_viewport.getMinX()) x1b = cur_viewport.getMinX();
+         double xda = x1a - cur_viewport.getMinX();
+         double xdb = x1b - cur_viewport.getMinX();
+         if (xda < 5 && xdb > 5) x1b = x1a;
+         double x2b = x1b + bnds.getWidth() * new_scale/old_scale;
+         double x2c = x2b;
+         if (x2a <= cur_viewport.getMaxX() && x2b > cur_viewport.getMaxX()) x2b = cur_viewport.getMaxX();
+         double xda1 = cur_viewport.getMaxX() - x2a;
+         double xdb1 = cur_viewport.getMaxX() - x2b;
+         if (xda1 < 5 && xdb1 > 5) x2b = x2a;
+         if (x2b != x2c) {
+            double x1c = x2b - bnds.getWidth() * new_scale/old_scale;
+            if (x1c > cur_viewport.getMinX() && xda > 5) x1b = x1c;
+            else x1b = cur_viewport.getMinX();
+          }
+         
+         double y1a = bnds.getMinY();
+         double y2a = bnds.getMaxY();
+         double y1b = rescaleY(x1a,old_scale,new_scale);
+         if (y1a >= cur_viewport.getMinY() && y1b < cur_viewport.getMinY()) y1b = cur_viewport.getMinX();
+         double yda = y1a - cur_viewport.getMinY();
+         double ydb = y1b - cur_viewport.getMinY();
+         if (yda < 5 && ydb > 5) y1b = y1a;
+         double y2b = y1b + bnds.getHeight() * new_scale/old_scale;
+         double y2c = y2b;
+         if (y2a <= cur_viewport.getMaxY() && y2b > cur_viewport.getMaxY()) y2b = cur_viewport.getMaxY();
+         double yda1 = cur_viewport.getMaxY() - y2a;
+         double ydb1 = cur_viewport.getMaxY() - y2b;
+         if (yda1 < 5 && ydb1 > 5) y2b = y2a;
+         if (y2b != y2c) {
+            double y1c = y2b - bnds.getHeight() * new_scale/old_scale;
+            if (y1c > cur_viewport.getMinY() && yda > 5) y1b = y1c;
+            else y1b = cur_viewport.getMinY();
+          }
+         
+         bnds.setFrameFromDiagonal(x1b,y1b,x2b,y2b);
+       }
+      else {
+         double x1 = rescaleX(bnds.getMinX(),old_scale,new_scale);
+         double y1 = rescaleY(bnds.getMinY(),old_scale,new_scale);
+         double x2 = rescaleX(bnds.getMaxX(),old_scale,new_scale);
+         double y2 = rescaleY(bnds.getMaxY(),old_scale,new_scale);
+         bnds.setFrameFromDiagonal(x1,y1,x2,y2);
+       }
+      
+      return bnds;
+    }
+
+   private double rescaleX(double x0,double oldsf,double sf) {
+      double x1 = x0 - cur_viewport.getCenterX();
+      x1 = x1 * sf/oldsf;
+      return cur_viewport.getCenterX() + x1;
+    }
+   
+   
+   private double rescaleY(double y0,double oldsf,double sf) {
+      double y1 = y0 - cur_viewport.getCenterY();
+      y1 = y1 * sf/oldsf;
+      return cur_viewport.getCenterY() + y1;
+    }
+   
+}       // end of inner class BubbleScaler
+
 
 
 
@@ -1137,21 +1242,15 @@ public BudaHelpRegion getHelpRegion(Point pt)
       synchronized (active_bubbles) {
 	 for (Component c : getComponents()) {
 	    if (c instanceof BudaBubble) {
-	       active_bubbles.add(((BudaBubble) c));
+               BudaBubble bb = (BudaBubble) c;
+               bb.setScaleFactor(scale_factor);
+	       active_bubbles.add(bb);
 	     }
 	  }
        }
     }
 
-   if (scale_factor != 1.0 && g instanceof Graphics2D) {
-      Graphics2D g1 = (Graphics2D) g.create();
-      g1.scale(scale_factor,scale_factor);
-      g1.setClip(cur_viewport); 	// clip is bad if given by children.  This isn't quite right either
-      super.paint(g1);
-    }
-   else {
-      super.paint(g);
-    }
+   super.paint(g);
 }
 
 
@@ -1256,16 +1355,17 @@ void paintOverview(Graphics2D g)
 
 @Override public void repaint(long tm, int x, int y, int width, int height)
 {
-   if (scale_factor == 1.0 || (x == 0 && y == 0)) {
-      super.repaint(tm,x,y,width,height);
-    }
-   else {
-      int x0 = (int)(x * scale_factor);
-      int y0 = (int)(y * scale_factor);
-      int w0 = (int)(width * scale_factor);
-      int h0 = (int)(height * scale_factor);
-      super.repaint(tm,x0,y0,w0,h0);
-    }
+   super.repaint(tm,x,y,width,height);
+   // if (scale_factor == 1.0 || (x == 0 && y == 0)) {
+      // super.repaint(tm,x,y,width,height);
+    // }
+   // else {
+      // int x0 = (int)(x * scale_factor);
+      // int y0 = (int)(y * scale_factor);
+      // int w0 = (int)(width * scale_factor);
+      // int h0 = (int)(height * scale_factor);
+      // super.repaint(tm,x0,y0,w0,h0);
+    // }
 }
 
 
@@ -1439,13 +1539,14 @@ void outputXml(BudaXmlWriter xw)
 
    xw.field("MAXX",maxx);
    xw.field("MAXY",maxy);
-
+   xw.field("SCALE",scale_factor);
+   BudaBubbleScaler bbs = getUnscaler();
    xw.element("SHAPE",getBounds());
 
    xw.begin("BUBBLES");
    for (BudaBubble bb : getBubbles()) {
       if (!bb.isTransient()) {
-	 bb.outputBubbleXml(xw);
+	 bb.outputBubbleXml(xw,bbs);
        }
     }
    xw.end("BUBBLES");
@@ -1852,7 +1953,7 @@ void removeMovingBubble(BudaBubble bb)
 
 
 
-void addMovingBubble(BudaBubble bubble)
+public void addMovingBubble(BudaBubble bubble)
 {
    synchronized (moving_bubbles) {
       moving_bubbles.add(bubble);
@@ -2224,57 +2325,57 @@ private class MouseRegion implements BudaHelpRegion {
     }
 
    MouseRegion(int x,int y) {
-      if (scale_factor != 1.0) {
-	 x = (int)(x / scale_factor);
-	 y = (int)(y / scale_factor);
-       }
-
+      // if (scale_factor != 1.0) {
+         // x = (int)(x / scale_factor);
+         // y = (int)(y / scale_factor);
+       // }
+   
       region_type = BudaRegion.NONE;
       in_bubble = null;
       in_group = null;
       in_link = null;
       mouse_loc = new Point(x,y);
-
+   
       int maxlayer = Integer.MIN_VALUE;
       // First see if the mouse is inside a bubble
-
+   
       synchronized (active_bubbles) {
-	 for (BudaBubble bb : active_bubbles) {
-	    BudaRegion br = bb.correlate(x,y);
-	    if (br != BudaRegion.NONE && JLayeredPane.getLayer(bb) > maxlayer) {
-	       maxlayer = JLayeredPane.getLayer(bb);
-	       region_type = br;
-	       in_bubble = bb;
-	     }
-	  }
+         for (BudaBubble bb : active_bubbles) {
+            BudaRegion br = bb.correlate(x,y);
+            if (br != BudaRegion.NONE && JLayeredPane.getLayer(bb) > maxlayer) {
+               maxlayer = JLayeredPane.getLayer(bb);
+               region_type = br;
+               in_bubble = bb;
+             }
+          }
        }
-
+   
       // Next see if the mouse is on a link
       if (region_type == BudaRegion.NONE) {
-	 synchronized (bubble_links) {
-	    for (BudaBubbleLink bl : bubble_links) {
-	       BudaRegion br = bl.correlate(x,y);
-	       if (br != BudaRegion.NONE) {
-		  region_type = br;
-		  in_link = bl;
-		  break;
-		}
-	     }
-	  }
+         synchronized (bubble_links) {
+            for (BudaBubbleLink bl : bubble_links) {
+               BudaRegion br = bl.correlate(x,y);
+               if (br != BudaRegion.NONE) {
+        	  region_type = br;
+        	  in_link = bl;
+        	  break;
+        	}
+             }
+          }
        }
-
+   
       // If not, check if it is inside a bubble group
       if (region_type == BudaRegion.NONE) {
-	 synchronized (bubble_groups) {
-	    for (BudaBubbleGroup bg : bubble_groups) {
-	       BudaRegion br = bg.correlate(x,y);
-	       if (br != BudaRegion.NONE) {
-		  region_type = br;
-		  in_group = bg;
-		  break;
-		}
-	     }
-	  }
+         synchronized (bubble_groups) {
+            for (BudaBubbleGroup bg : bubble_groups) {
+               BudaRegion br = bg.correlate(x,y);
+               if (br != BudaRegion.NONE) {
+        	  region_type = br;
+        	  in_group = bg;
+        	  break;
+        	}
+             }
+          }
        }
     }
 
@@ -2307,7 +2408,8 @@ private abstract class MouseContext {
    protected Point initial_mouse;
 
    MouseContext(MouseEvent e) {
-      initial_mouse = new Point((int)(e.getPoint().x / scale_factor), (int)(e.getPoint().y / scale_factor));
+      // initial_mouse = new Point((int)(e.getPoint().x / scale_factor), (int)(e.getPoint().y / scale_factor));
+      initial_mouse = e.getPoint();
       auto_scroller.setDelta(0,0);
     }
 
@@ -2345,40 +2447,42 @@ private class BubbleMoveContext extends MouseContext {
 
    void next(MouseEvent e) {
       if (for_bubble == null) return;
-
+   
       for_bubble.forceFreeze();
       if (docked_bubbles.containsKey(for_bubble)) {
-	 docked_bubbles.remove(for_bubble);
-	 for_bubble.setDocked(false);
+         docked_bubbles.remove(for_bubble);
+         for_bubble.setDocked(false);
        }
-
+   
       BudaCursorManager.setGlobalCursorForComponent(for_bubble, palm_cursor);
-
+   
       ++move_count;
       setLayer(for_bubble,DRAG_LAYER,0);
       Point p0 = e.getPoint();
-      int x0 = initial_location.x + (int)(p0.x / scale_factor) - initial_mouse.x;
-      int y0 = initial_location.y + (int)(p0.y / scale_factor) - initial_mouse.y;
-
-      if (scale_factor != 1.0) {
-	 p0 = new Point((int)(p0.x / scale_factor), (int)(p0.y / scale_factor));
-       }
-
+      // int x0 = initial_location.x + (int)(p0.x / scale_factor) - initial_mouse.x;
+      // int y0 = initial_location.y + (int)(p0.y / scale_factor) - initial_mouse.y;
+      int x0 = initial_location.x + p0.x - initial_mouse.x;
+      int y0 = initial_location.y + p0.y - initial_mouse.y;
+      
+      // if (scale_factor != 1.0) {
+         // p0 = new Point((int)(p0.x / scale_factor), (int)(p0.y / scale_factor));
+       // }
+   
       checkMoveViewport(p0);
-
+   
       if (x0 + bubble_size.width < MIN_SHOW_SIZE) {
-	 x0 = MIN_SHOW_SIZE - bubble_size.width;
+         x0 = MIN_SHOW_SIZE - bubble_size.width;
        }
       else if (x0 > area_size.width - MIN_SHOW_SIZE) {
-	 x0 = area_size.width - MIN_SHOW_SIZE;
+         x0 = area_size.width - MIN_SHOW_SIZE;
        }
       if (y0 + bubble_size.height < MIN_SHOW_SIZE) {
-	 y0 = MIN_SHOW_SIZE - bubble_size.height;
+         y0 = MIN_SHOW_SIZE - bubble_size.height;
        }
       else if (y0 > area_size.height - MIN_SHOW_SIZE) {
-	 y0 = area_size.height - MIN_SHOW_SIZE;
+         y0 = area_size.height - MIN_SHOW_SIZE;
        }
-
+   
       for_bubble.setLocation(x0,y0);
       fixupGroups(for_bubble);
       if (for_bubble.isUserPos()) repaint();
@@ -2387,20 +2491,20 @@ private class BubbleMoveContext extends MouseContext {
    void finish() {
       super.finish();
       if (for_bubble == null) return;
-
+   
       for_bubble.unfreeze();
       for_bubble.grabFocus();
       setLayer(for_bubble,start_layer,0);
-
+   
       if (for_root.noteBubbleActionDone(for_bubble)) return;
-
+   
       fixupBubble(for_bubble);
       fixupGroups(for_bubble);
       if (for_bubble.isUserPos()) repaint();
-
+   
       BudaCursorManager.resetDefaults(for_bubble);
       //for_bubble.setCursor(for_bubble.getBubbleCursor());
-
+   
       if (move_count > 0) BoardMetrics.noteCommand("BUDA","bubbleMoved");
       removeMovingBubble(for_bubble);
     }
@@ -2514,32 +2618,34 @@ private class GroupMoveContext extends MouseContext {
 
    void next(MouseEvent e) {
       for (BudaBubble b : move_bubbles) b.forceFreeze();
-
+   
       ++move_count;
       BudaCursorManager.setGlobalCursorForComponent(BudaBubbleArea.this, Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
       Point p1 = e.getPoint();
       Point p0 = e.getPoint();
-      int dx = (int)((p1.x - mouse_point.x) / scale_factor);
-      int dy = (int)((p1.y - mouse_point.y)/ scale_factor);
-
+      // int dx = (int)((p1.x - mouse_point.x) / scale_factor);
+      // int dy = (int)((p1.y - mouse_point.y)/ scale_factor);
+      int dx = (p1.x - mouse_point.x);
+      int dy = (p1.y - mouse_point.y);
+      
       if (dx == 0 && dy == 0) return;
-
-      if (scale_factor != 1.0) {
-	  p0 = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(),
-					BudaBubbleArea.this);
-	  p0 = new Point((int)(p0.x / scale_factor), (int)(p0.y / scale_factor));
-       }
-
+   
+      // if (scale_factor != 1.0) {
+          // p0 = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(),
+        				// BudaBubbleArea.this);
+          // p0 = new Point((int)(p0.x / scale_factor), (int)(p0.y / scale_factor));
+       // }
+   
       checkMoveViewport(p0);
       //TODO: if p1 is on the overview bar and e is a release, move to that position
       //TODO: prevent the group from going off the screen completely
-
+   
       mouse_point = p1;
       for (BudaBubble bb : move_bubbles) {
-	 Point p = bb.getLocation();
-	 p.x += dx;
-	 p.y += dy;
-	 bb.setLocation(p);
+         Point p = bb.getLocation();
+         p.x += dx;
+         p.y += dy;
+         bb.setLocation(p);
        }
     }
 
@@ -2932,29 +3038,29 @@ private class BubbleManager implements ComponentListener, ContainerListener {
    public void componentMoved(ComponentEvent e) {
       if (cur_viewport == null) return;
       if (e.getSource() instanceof BudaBubble) {
-	 BudaBubble bbl = (BudaBubble) e.getSource();
-	 if (bbl.isFloating()) {
-	    Point floc = new Point(bbl.getLocation());
-	    floc.x -= cur_viewport.x;
-	    floc.y -= cur_viewport.y;
-	    floating_bubbles.put(bbl,floc);
-	  }
-	 else {
-	    if (moving_bubbles.contains(bbl)) fixupGroups(bbl);
-	    else repaint();
-	    routes_valid = false;
-	  }
-	 updateOverview();
+         BudaBubble bbl = (BudaBubble) e.getSource();
+         if (bbl.isFloating()) {
+            Point floc = new Point(bbl.getLocation());
+            floc.x -= cur_viewport.x;
+            floc.y -= cur_viewport.y;
+            floating_bubbles.put(bbl,floc);
+          }
+         else {
+            if (moving_bubbles.contains(bbl)) fixupGroups(bbl);
+            else repaint();
+            routes_valid = false;
+          }
+         updateOverview();
       }
    }
 
    public void componentResized(ComponentEvent e) {
       if (e.getSource() instanceof BudaBubble) {
-	 BudaBubble bb = (BudaBubble) e.getSource();
-	 fixupBubble(bb);
-	 fixupGroups(bb);
-	 routes_valid = false;
-	 updateOverview();
+         BudaBubble bb = (BudaBubble) e.getSource();
+         fixupBubble(bb);
+         fixupGroups(bb);
+         routes_valid = false;
+         updateOverview();
        }
     }
 
@@ -2988,7 +3094,7 @@ private class BubbleManager implements ComponentListener, ContainerListener {
    private void updateOverview() {
       checkAreaDimensions();
       for (BubbleAreaCallback cb : area_callbacks) {
-	 cb.updateOverview();
+         cb.updateOverview();
        }
     }
 

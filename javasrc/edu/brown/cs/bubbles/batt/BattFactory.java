@@ -249,6 +249,14 @@ void stopTest()
 }
 
 
+void runTest(BattTestCase test)
+{
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl();
+   mc.send("<BATT DO='RUNTEST' TEST='" + test.getName() + "' />");
+}
+
+
 TestMode getTestMode()
 {
    BoardSetup bs = BoardSetup.getSetup();

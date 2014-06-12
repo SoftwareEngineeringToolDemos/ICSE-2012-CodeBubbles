@@ -167,13 +167,20 @@ private class OhlohFileSource extends BaseFileSource implements RebaseSource {
    private String project_name;
    private URL file_href;
    private String file_name;
+   private String s6_source;
 
    OhlohFileSource(URL base,Element ptag,Element ftag,RebaseRequest rqst,RebaseSource orig) {
       super(rqst,orig);
       
+      s6_source = null;
+      project_name = null;
+      file_href = null;
+      file_name = null;
+      project_id = null;
+      
       String url = ptag.attr("href");
    
-      project_name = ptag.attr("title");
+      project_name = ptag.attr("title").replace("/","@").replace("&","_");
       int idx = url.indexOf("pid=");
       int idx1 = url.indexOf("&",idx);
       if (idx > 0 && idx1 > 0) project_id = url.substring(idx+4,idx1);
@@ -187,6 +194,7 @@ private class OhlohFileSource extends BaseFileSource implements RebaseSource {
          String cid = getParam(url,"cid");
          idx1 = key.lastIndexOf("/");
          if (fid != null && cid != null) {
+            s6_source = "OHLOH:/file?fid=" + fid + "&cid=" + cid;
             file_name = "/REBUS/" + project_id + "/OHLOH/" + cid + "/" + fid + "/" + key;
             int idx2 = url.indexOf("?");
             String nurl = url.substring(0,idx2+1);
@@ -210,6 +218,7 @@ private class OhlohFileSource extends BaseFileSource implements RebaseSource {
    @Override public String getProjectId()		{ return project_id; }
    @Override public String getProjectName()		{ return project_name; }
    public String getPath()				{ return file_name; }
+   @Override public String getS6Source()                { return s6_source; }
 
    @Override public String getText() {
       try {

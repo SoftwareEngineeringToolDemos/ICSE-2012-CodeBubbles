@@ -373,25 +373,22 @@ private class SpellFixer implements Runnable {
 
       BumpClient bc = BumpClient.getBump();
       Collection<BumpCompletion> cmps = bc.getCompletions(proj,file,-1,for_problem.getStart());
-      int ct = 0;
       for (BumpCompletion bcm : cmps) {
 	 String txt = bcm.getCompletion();
 	 if (txt == null || txt.length() == 0) continue;
 	 int d = stringDiff(for_identifier,txt);
-	 ++ct;
 	 if (d <= minsize && d > 0) {
 	    BoardLog.logD("BALE","SPELL: Consider replacing " + for_identifier + " WITH " + txt);
 	    SpellFix sf = new SpellFix(txt,d);
 	    totry.add(sf);
 	  }
        }
-      if (ct == 0) {
+      if (totry.size() == 0) {
 	 cmps = bc.getCompletions(proj,file,-1,for_problem.getStart()+1);
 	 for (BumpCompletion bcm : cmps) {
 	    String txt = bcm.getCompletion();
 	    if (txt == null || txt.length() == 0) continue;
 	    int d = stringDiff(for_identifier,txt);
-	    ++ct;
 	    if (d <= minsize && d > 0) {
 	       BoardLog.logD("BALE","SPELL: Consider replacing " + for_identifier + " WITH " + txt);
 	       SpellFix sf = new SpellFix(txt,d);

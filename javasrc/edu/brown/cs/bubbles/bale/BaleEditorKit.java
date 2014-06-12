@@ -2423,6 +2423,7 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
 
    BumpSymbolType bst = null;
    BumpLocation baseloc = null;
+   File fil = null;
 
    for (BumpLocation bl : locs) {
       BumpSymbolType nst = bl.getSymbolType();
@@ -2433,6 +2434,9 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
       if (bst == null) bst = nst;
       else if (bst != nst) return false;
       baseloc = bl;
+      File nfil = bl.getFile();
+      if (fil != null && nfil != null && !nfil.equals(fil)) return false;
+      fil = nfil;
     }
 
    if (bst == null || baseloc == null) return false;

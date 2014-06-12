@@ -32,8 +32,6 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import java.awt.Point;
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 
@@ -49,7 +47,7 @@ public class BuenoPackageDialog extends BuenoAbstractDialog implements BuenoCons
 /*										*/
 /********************************************************************************/
 
-private static Pattern package_pattern = Pattern.compile("[A-Za-z_]\\w*(\\.[A-Za-z_]\\w*)*");
+
 
 
 
@@ -125,35 +123,7 @@ protected void setupPanel(SwingGridPanel pnl)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Package parsing methods 						*/
-/*										*/
-/********************************************************************************/
 
-protected boolean checkParsing()
-{
-   String pkg = property_set.getStringProperty(BuenoKey.KEY_PACKAGE);
-
-   if (pkg == null || pkg.length() == 0) return false;
-
-   Matcher m = package_pattern.matcher(pkg);
-   if (!m.matches()) return false;
-
-   String sgn = property_set.getStringProperty(BuenoKey.KEY_SIGNATURE);
-   if (sgn != null) {
-      try {
-	 parseClassSignature(sgn);
-       }
-      catch (BuenoException e) {
-	 return false;
-       }
-    }
-
-   if (property_set.getStringProperty(BuenoKey.KEY_NAME) == null) return false;
-
-   return true;
-}
 
 
 

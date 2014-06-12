@@ -80,7 +80,7 @@ private Collection<ActiveRegion>	active_regions;
 private static final long serialVersionUID = 1;
 
 
-		
+
 
 /********************************************************************************/
 /*										*/
@@ -917,6 +917,12 @@ private class HighlightArea {
 }
 
 
+// @Override public Point getToolTipLocation(MouseEvent e)
+// {
+   // return BudaRoot.computeToolTipLocation(e);
+// }
+
+
 
 
 private String getHoverText(MouseEvent e)
@@ -942,6 +948,8 @@ private String getHoverText(MouseEvent e)
       try {
 	 txt = bd.getText(soff,eoff-soff);
 	 txt = IvyXml.xmlSanitize(txt,false,true);
+	 txt = txt.replace("&apos;","'");
+	 txt = txt.replace("&quot;","\"");
 	 txt = "<html><pre>" + txt + "</pre></html>";
        }
       catch (BadLocationException ex) { }
@@ -1213,8 +1221,8 @@ private class ContextData implements BaleContextConfig {
       return editor_element.getMethodName();
     }
 
-   @Override public boolean inAnnotationArea()          { return false; }
-   
+   @Override public boolean inAnnotationArea()		{ return false; }
+
 }	// end of inner class ContextData
 
 

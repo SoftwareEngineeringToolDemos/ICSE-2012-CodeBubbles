@@ -253,6 +253,8 @@ private void insertBeforeEnd(Element e,String txt)
       hd.insertBeforeEnd(e,txt);
       Rectangle r = display_area.modelToView(hd.getLength());
       display_area.scrollRectToVisible(r);
+      String xtxt = hd.getText(0, hd.getLength());
+      System.err.println("RESULT IS " + xtxt);
     }
    catch (IOException ex) {
       BoardLog.logE("BDDT","Problem inserting evaluation output",ex);

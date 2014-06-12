@@ -112,6 +112,7 @@ interface RebaseSource {
    String getProjectId();
    String getProjectName();
    RebaseSource getBaseSource();
+   String getS6Source();
  
    void setSourceType(SourceType st);
 

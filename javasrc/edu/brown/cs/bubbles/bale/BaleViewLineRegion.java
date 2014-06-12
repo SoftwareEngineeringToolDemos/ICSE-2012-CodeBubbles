@@ -25,6 +25,8 @@
 
 package edu.brown.cs.bubbles.bale;
 
+import edu.brown.cs.bubbles.buda.*;
+
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 
@@ -361,7 +363,16 @@ private Font getFont(View v)
 {
    StyleContext ctx = BaleFactory.getFactory().getStyleContext();
    Font fn = ctx.getFont(v.getElement().getAttributes());
-
+   
+   // need to scale the font here
+   BudaBubble bb = BudaRoot.findBudaBubble(getBaleEditorPane());
+   double sf = bb.getScaleFactor();
+   if (sf != 0 && sf != 1) {
+      float sz = fn.getSize2D();
+      sz *= sf;
+      fn = fn.deriveFont(sz);
+    }
+ 
    return fn;
 }
 

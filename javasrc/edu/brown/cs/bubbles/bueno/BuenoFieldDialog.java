@@ -111,50 +111,16 @@ protected void setupPanel(SwingGridPanel pnl)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Signature parsing methods						*/
-/*										*/
-/********************************************************************************/
-
-protected boolean checkParsing()
-{
-   String sgn = property_set.getStringProperty(BuenoKey.KEY_SIGNATURE);
-   if (sgn != null) {
-      try {
-	 parseFieldSignature(sgn);
-       }
-      catch (BuenoException e) {
-	 return false;
-       }
-    }
-
-   if (property_set.getStringProperty(BuenoKey.KEY_NAME) == null) return false;
-
-   return true;
-}
-
-
-
-private void parseFieldSignature(String txt) throws BuenoException
-{
-   StreamTokenizer tok = new StreamTokenizer(new StringReader(txt));
-
-   parseModifiers(tok);
-   parseFieldType(tok);
-   parseName(tok);
-   parseEnd(tok);
-}
 
 
 
 
-private void parseFieldType(StreamTokenizer tok) throws BuenoException
-{
-   String tnm = parseType(tok);
 
-   property_set.put(BuenoKey.KEY_RETURNS,tnm);
-}
+
+
+
+
+
 
 
 

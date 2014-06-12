@@ -89,7 +89,6 @@ private boolean 	is_float;
 private boolean 	is_docked;
 private boolean 	is_userpos;
 private BudaMovement	spacer_movement;
-private double		zoom_factor;
 private boolean 	has_focus;
 private BudaBubbleGroup original_group;
 private boolean 	is_transient;
@@ -97,8 +96,8 @@ private Boolean 	is_resizable;
 private Color		new_color;
 private String		unique_id;
 private long		creation_time;
-
 private BudaBorder	border_type;
+private double          scale_factor;
 
 private Stroke		border_stroke;
 private Stroke		focus_stroke;
@@ -191,6 +190,7 @@ protected BudaBubble(Component c,BudaBorder bdr)
    focus_pane = null;
    unique_id = null;
    creation_time = System.currentTimeMillis();
+   scale_factor = 1;
 
    setContentPane(c);
 
@@ -205,7 +205,6 @@ protected BudaBubble(Component c,BudaBorder bdr)
    is_fixed = false;
    is_userpos = false;
    spacer_movement = BudaMovement.ANY;
-   zoom_factor = 1.0;
    has_focus = false;
    bubble_group = null;
    original_group = null;
@@ -676,6 +675,67 @@ void setCreationTime(long t)
 
 
 /********************************************************************************/
+/*                                                                              */
+/*      Scaling methods                                                         */
+/*                                                                              */
+/********************************************************************************/
+
+protected void setScaleFactor(double sf) 
+{ 
+   Component c = getContentPane();
+   
+   if (c != null && c instanceof Scalable) {
+      Scalable sc = (Scalable) c;
+      sc.setScaleFactor(sf);
+      return;
+    }
+   else if (c != null && c instanceof JScrollPane) {
+      JScrollPane jsp = (JScrollPane) c;
+      JViewport vp = jsp.getViewport();
+      if (vp != null && vp.getView() != null && vp.getView() instanceof Scalable) {
+         Scalable sc = (Scalable) vp.getView();
+         sc.setScaleFactor(sf);
+         return;
+       }
+    }
+   
+   double delta = sf/scale_factor;
+   if (delta != 1) scaleFonts(c,delta);
+
+   scale_factor = sf;
+}
+
+
+private void scaleFonts(Component c,double sf)
+{
+   if (c instanceof Container) {
+      Container cc = (Container) c;
+      for (int i = 0; i < cc.getComponentCount(); ++i) {
+         Component c1 = cc.getComponent(i);
+         scaleFonts(c1,sf);
+       }
+    }
+  
+   if (c.isFontSet()) {
+      Font ft = c.getFont();
+      if (ft != null) {
+         float sz = ft.getSize2D();
+         sz *= sf;
+         Font ft1 = ft.deriveFont(sz);
+         c.setFont(ft1);
+       }
+    }
+}
+
+public double getScaleFactor()
+{
+   BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(this);
+   if (bba != null) return bba.getScaleFactor();
+   else return 1;
+}
+
+
+/********************************************************************************/
 /*										*/
 /*	Callback methods							*/
 /*										*/
@@ -966,8 +1026,15 @@ public boolean connectTo(BudaBubble bb,MouseEvent evt)
 {
    super.paint(g);
 
-   // Graphics2D gx = (Graphics2D) g;
-   // paintBubbleBorder(gx);
+//   if (scale_factor == 1 || scale_factor == 0 || this instanceof Scalable) {
+//      super.paint(g);
+//    }
+//   else {
+//      Graphics2D g1 = (Graphics2D) g.create();
+//      g1.scale(scale_factor,scale_factor);
+//      g1.setClip(0,0,getWidth(),getHeight());
+//      super.paint(g1);
+//    }
 
    if (new_color != null) {
       Graphics2D g2 = (Graphics2D) g.create();
@@ -1055,26 +1122,36 @@ protected void paintBubbleBorder(Graphics2D g2)
 
 
 
+Point scalePoint(Point p0)
+{
+   double sf = getScaleFactor();
+   if (sf == 1) return p0;
+   
+   return new Point((int)(p0.x * sf),(int)(p0.y * sf));
+}
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Output methods								*/
 /*										*/
 /********************************************************************************/
 
-final void outputBubbleXml(BudaXmlWriter xw)
+final void outputBubbleXml(BudaXmlWriter xw,BudaBubbleScaler bs)
 {
    xw.begin("BUBBLE");
    xw.field("ID",getId());
    xw.field("FIXED",isFixed());
    xw.field("FLOAT",isFloating());
    xw.field("DOCKED",isDocked());
-   if (zoom_factor != 1) xw.field("ZOOM",zoom_factor);
    xw.field("INTERIOR",bubble_color);
    xw.field("BORDER",border_color);
    xw.field("FOCUS",focus_color);
    xw.field("TRANSIENT",isTransient());
    xw.field("CTIME",creation_time);
    Rectangle r = getBounds();
+   if (bs != null) r = bs.getScaledBounds(this);
    xw.field("X",r.x);
    xw.field("Y",r.y);
    xw.field("W",r.width);

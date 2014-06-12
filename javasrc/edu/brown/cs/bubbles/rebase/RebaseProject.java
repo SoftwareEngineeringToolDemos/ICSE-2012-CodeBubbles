@@ -24,6 +24,8 @@
 
 package edu.brown.cs.bubbles.rebase;
 
+import edu.brown.cs.bubbles.rebase.word.*;
+
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import java.util.*;
@@ -88,6 +90,8 @@ RebaseProject(RebaseMain rm,RebaseRepo repo,String id,String name)
 RebaseFile findFile(String path)
 {
    if (path == null) return null;
+
+   path = RebaseMain.fixFileName(path);
 
    return project_files.get(path);
 }
@@ -328,6 +332,8 @@ synchronized void outputAllNames(Set<String> files,IvyXmlWriter xw)
 {
    RebaseProjectSemantics rs = getResolvedSemantics();
 
+   if (rs == null) return;
+
    rs.outputAllNames(files,xw);
 }
 
@@ -566,7 +572,7 @@ synchronized void delete(String what,String path)
 	    project_files.remove(rf1.getFileName());
 	    dels.add(rf1);
 	    donePending();
-	  }	
+	  }
 	 break;
       case "PACKAGE" :
 	 notePending();
@@ -590,9 +596,11 @@ private void reportDeletes(List<RebaseFile> dels)
 {
    if (dels == null || dels.size() == 0) return;
    RebaseEditManager em = rebase_main.getEditorManager();
+   RebaseWordFactory wf = RebaseWordFactory.getFactory();
 
    IvyXmlWriter xw = rebase_main.beginMessage("RESOURCE");
    for (RebaseFile rf : dels) {
+      wf.addReject(rf.getText());
       em.removeFile(rf);
       xw.begin("DELTA");
       xw.field("KIND","REMOVED");
@@ -618,10 +626,18 @@ private void reportDeletes(List<RebaseFile> dels)
 
 synchronized void noteAccept(String file,boolean fg)
 {
+   RebaseWordFactory wf = RebaseWordFactory.getFactory();
+
    RebaseFile rf = findFile(file);
    if (rf != null) {
-      if (fg) accepted_files.add(rf);
-      else accepted_files.remove(rf);
+      if (fg) {
+	 accepted_files.add(rf);
+	 wf.addAccept(rf.getText());
+       }
+      else {
+	 accepted_files.remove(rf);
+	 wf.removeAccept(rf.getText());
+       }
     }
 }
 

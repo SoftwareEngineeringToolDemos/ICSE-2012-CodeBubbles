@@ -59,7 +59,7 @@ private BdynEventTrace event_trace;
 private List<BdynEntryThread> active_threads;
 private RunHandler process_handler;
 
-private static final int MAX_TIME = 1000;
+private static final int MAX_SCROLL_TIME = 1000;
 
 
 /********************************************************************************/
@@ -72,7 +72,7 @@ BdynTaskWindow()
 {
    super(new BorderLayout());
    task_panel = new BdynTaskPanel(this);
-   time_bar = new SwingRangeScrollBar(SwingRangeScrollBar.HORIZONTAL,0,MAX_TIME,0,MAX_TIME);
+   time_bar = new SwingRangeScrollBar(SwingRangeScrollBar.HORIZONTAL,0,MAX_SCROLL_TIME,0,MAX_SCROLL_TIME);
    time_bar.addAdjustmentListener(this);
    min_time = -1;
    max_time = 0;
@@ -140,7 +140,7 @@ void setEventTrace(BdynEventTrace et)
 	 max_time = 0;
        }
       else {
-	 time_bar.setValues(0,MAX_TIME,0,MAX_TIME);
+	 time_bar.setValues(0,MAX_SCROLL_TIME,0,MAX_SCROLL_TIME);
        }
       if (et.getActiveThreadCount() != active_threads.size()) {
 	 active_threads = et.getActiveThreads();
@@ -187,16 +187,19 @@ BdynEventTrace getEventTrace()			{ return event_trace; }
        }
       long omax = max_time;
       max_time = mxt;
-      int lv = time_bar.getLeftValue();
-      int rv = time_bar.getRightValue();
-      double nmxv = (max_time - min_time);
-      double t0 = lv * omax / MAX_TIME + min_time;
-      double t1 = rv * omax / MAX_TIME + min_time;
-      if (rv == MAX_TIME) t1 = max_time;
-      int it0 = (int)Math.round((t0 - min_time)/nmxv * MAX_TIME);
-      int it1 = (int)Math.round((t1 - min_time)/nmxv * MAX_TIME);
-      time_bar.setValues(it0,it1);
-      task_panel.setTimes((long) t0,(long) t1);
+      
+      if (omax > 0) {
+	 int lv = time_bar.getLeftValue();
+	 int rv = time_bar.getRightValue();
+	 double nmxv = (max_time - min_time);
+	 double t0 = lv * omax / MAX_SCROLL_TIME + min_time;
+	 double t1 = rv * omax / MAX_SCROLL_TIME + min_time;
+	 if (rv == MAX_SCROLL_TIME) t1 = max_time;
+	 int it0 = (int)Math.round((t0 - min_time)/nmxv * MAX_SCROLL_TIME);
+	 int it1 = (int)Math.round((t1 - min_time)/nmxv * MAX_SCROLL_TIME);
+	 time_bar.setValues(it0,it1);
+	 task_panel.setTimes((long) t0,(long) t1);
+       }
     }
 }
 
@@ -210,8 +213,8 @@ BdynEventTrace getEventTrace()			{ return event_trace; }
 /********************************************************************************/
 
 @Override public void adjustmentValueChanged(AdjustmentEvent ev) {
-   long mint = (long)(min_time + time_bar.getLeftValue() * (max_time-min_time)/MAX_TIME + 0.5);
-   long maxt = (long)(min_time + time_bar.getRightValue() * (max_time-min_time)/MAX_TIME + 0.5);
+   long mint = (long)(min_time + time_bar.getLeftValue() * (max_time-min_time)/MAX_SCROLL_TIME + 0.5);
+   long maxt = (long)(min_time + time_bar.getRightValue() * (max_time-min_time)/MAX_SCROLL_TIME + 0.5);
    task_panel.setTimes(mint,maxt);
 }
 

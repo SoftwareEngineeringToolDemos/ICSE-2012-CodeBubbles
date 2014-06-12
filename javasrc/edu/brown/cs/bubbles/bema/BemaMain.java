@@ -77,7 +77,6 @@ public class BemaMain implements BemaConstants
 
 public static void main(String [] args)
 {
-
    BemaMain bm = new BemaMain(args);
 
    if (System.getProperty("os.name").startsWith("Mac")) {
@@ -111,7 +110,7 @@ private boolean 	use_lila;
 private boolean 	use_web;
 private String		use_workspace;
 private boolean 	new_workspace;
-private boolean         ask_workspace;
+private boolean 	ask_workspace;
 private Element 	load_config;
 private String []	java_args;
 private RunMode 	run_mode;
@@ -182,7 +181,7 @@ private void scanArgs(String [] args)
 	    // Don't use IvyFile here since it trys to use ivy without initializing it
 	    BoardProperties.setPropertyDirectory(fa.getPath());
 	  }
-	 else if (args[i].startsWith("-rebus")) {
+	 else if (args[i].startsWith("-rebus")) {               // -rebus
 	    for_language = BoardLanguage.REBUS;
 	    File fa = new File(System.getProperty("user.home"));
 	    File fb = new File(fa,".rebus");
@@ -193,8 +192,8 @@ private void scanArgs(String [] args)
 	    BoardProperties.setPropertyDirectory(fb.getPath());
 	    if (use_workspace == null) {
 	       use_workspace = fb.getPath();
-               new_workspace = true;
-               ask_workspace = false;
+	       new_workspace = true;
+	       ask_workspace = false;
 	     }
 	  }
 	 else if (args[i].startsWith("-course") && i+1 < ln) {  // -course <course>
@@ -494,6 +493,8 @@ private void start()
 
 private void setupPackage(String nm,String load)
 {
+   // BoardLog.logD("BEMA","Setup " + nm);
+
    if (load != null) {
       // setup class loader for load jar file
       // use this instead of Class.forName();
@@ -517,6 +518,8 @@ private void setupPackage(String nm,String load)
 
 private void initializePackage(String nm,BudaRoot br)
 {
+   // BoardLog.logD("BEMA","Initialize " + nm);
+
    try {
       Class<?> c = Class.forName(nm);
       Method m = c.getMethod("initialize",BudaRoot.class);

@@ -34,6 +34,8 @@ import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.xml.IvyXml;
 
+import org.w3c.dom.*;
+
 import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -56,7 +58,11 @@ class RebusSearchBubble extends BudaBubble implements RebusConstants
 private JTextField		key_field;
 private JList<SearchEngines>	search_engines;
 private JButton 		search_button;
+private JButton                 suggest_button;
 private JComboBox<SearchType>	search_type;
+
+private static boolean          have_search = false;
+
 
 private static final long serialVersionUID = 1;
 
@@ -88,6 +94,23 @@ RebusSearchBubble()
    setContentPane(pnl);
 }
 
+
+@Override protected void localDispose()
+{
+}
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Action update methods                                                   */
+/*                                                                              */
+/********************************************************************************/
+
+static void clearAll()
+{
+   have_search = false;
+}
 
 
 /********************************************************************************/
@@ -121,7 +144,9 @@ private JPanel setupPanel()
 
    search_type = pnl.addChoice("Search Type",SearchType.FILE,true,sl);
 
+   suggest_button = pnl.addBottomButton("SUGGEST","SUGGEST",sl);
    search_button = pnl.addBottomButton("SEARCH","SEARCH",sl);
+   
    pnl.addBottomButtons();
 
    checkStatus();
@@ -145,6 +170,8 @@ private void checkStatus()
    else {
       search_button.setEnabled(true);
     }
+   
+   suggest_button.setEnabled(have_search);
 }
 
 
@@ -212,9 +239,52 @@ private void doSearch()
 
    String rply = mdr.waitForString();
    System.err.println("REBUS SEARCH REPLY = " + rply);
+   
+   have_search = true;
+   checkStatus();
 }
 
 
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Get search suggestions                                                  */
+/*                                                                              */
+/********************************************************************************/
+
+private void doSuggest()
+{
+   BoardSetup bs = BoardSetup.getSetup();
+   MintControl mc = bs.getMintControl(); 
+   
+   String cmd = "<BUBBLES DO='REBUSSUGGEST' ";
+   cmd += " LANG='Rebase' />";
+   
+   BoardLog.logD("REBUS","Send Command: " + cmd);
+   
+   MintDefaultReply mdr = new MintDefaultReply();
+   mc.send(cmd,mdr,MintConstants.MINT_MSG_FIRST_NON_NULL);
+   
+   Element xml = mdr.waitForXml();
+   if (IvyXml.isElement(xml,"RESULT")) {
+      StringBuffer buf = new StringBuffer();
+      for (Element we : IvyXml.children(xml,"WORD")) {
+         String s = IvyXml.getText(we);
+         if (s == null || s.length() == 0) continue;
+         if (buf.length() > 0) buf.append(" ");
+         if (s.contains(" ")) {
+            buf.append("'" + s + "'");
+          }
+         else buf.append(s);
+       }
+      if (buf.length() > 0) {
+         key_field.setText(buf.toString());
+       }
+    }
+   
+   checkStatus();
+}
 
 
 /********************************************************************************/
@@ -227,16 +297,19 @@ private class SearchListener implements ActionListener, UndoableEditListener {
 
    @Override public void actionPerformed(ActionEvent e) {
      if (e.getSource() == search_button) {
-	 doSearch();
+         doSearch();
        }
+     else if (e.getSource() == suggest_button && have_search) {
+        doSuggest();
+      }
      else if (e.getSource() == key_field) {
-	checkStatus();
-	if (search_button != null && search_button.isEnabled() && e.getID() != 0) {
-	   doSearch();
-	 }
+        checkStatus();
+        if (search_button != null && search_button.isEnabled() && e.getID() != 0) {
+           doSearch();
+         }
       }
      else {
-	checkStatus();
+        checkStatus();
       }
     }
 

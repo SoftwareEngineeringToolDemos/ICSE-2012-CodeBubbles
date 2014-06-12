@@ -120,6 +120,7 @@ private class GithubFileSource extends BaseFileSource implements RebaseSource {
    private String project_name;
    private URL file_href;
    private String file_name;
+   private String s6_source;
    
    GithubFileSource(URL base,Element tag,RebaseRequest rqst,RebaseSource orig) {
       super(rqst,orig);
@@ -128,6 +129,7 @@ private class GithubFileSource extends BaseFileSource implements RebaseSource {
       project_id = null;
       project_name = null;
       file_name = null;
+      s6_source = null;
       
       String href = tag.attr("href");
       
@@ -142,10 +144,12 @@ private class GithubFileSource extends BaseFileSource implements RebaseSource {
             "/" + proj + "/" + rem;
          file_href = new URL(fref);
          
-         project_name = proj.replace("/","@");
+         project_name = proj.replace("/","@").replace("&","_");
          project_id = proj;
          
          file_name = "/REBUS/" + project_name + "/GITHUB/" + rem;
+         
+         s6_source = "GITHUB:/" + href;
        }
       catch (MalformedURLException e) {
          file_href = null;
@@ -162,6 +166,7 @@ private class GithubFileSource extends BaseFileSource implements RebaseSource {
    @Override public String getProjectId()		{ return project_id; }
    @Override public String getProjectName()		{ return project_name; }
    public String getPath()				{ return file_name; }
+   @Override public String getS6Source()                { return s6_source; }
    
    @Override public String getText() {
       try {

@@ -426,6 +426,7 @@ String [] BOARD_LIBRARY_EXTRAS = new String [] {
    "asm4.jar",
    "helpdemos.xml",
    "helpdoc.xml",
+   "rebusprops.xml",
    "org.eclipse.jdt.core.jar",
    "org.eclipse.osgi.jar",
    "org.eclipse.core.contenttype.jar",

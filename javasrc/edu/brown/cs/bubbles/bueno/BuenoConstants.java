@@ -112,6 +112,9 @@ enum BuenoKey {
 }
 
 
+int MODIFIER_OVERRIDES = 0x1000000;
+
+
 
 /********************************************************************************/
 /*										*/
@@ -172,7 +175,18 @@ interface BuenoMethodCreatorInstance {
 				     String label,
 				     BuenoBubbleCreator newer);
 
-}	// end of interface BuenoMethodCreationInstance
+
+}	// end of interface BuenoMethodCreatorInstance
+
+interface BuenoClassCreatorInstance {
+
+   boolean useSeparateTypeButtons();
+
+   boolean showClassDialogBubble(BudaBubble source,Point location,BuenoType typ,
+         BuenoProperties known,BuenoLocation insert,String lbl,
+         BuenoBubbleCreator newer);
+
+}	// end of interface BuenoClassCreatorInstance
 
 
 
@@ -224,6 +238,20 @@ interface BuenoProjectCreationControl {
    String getPackageName(File f);
 
 }	// end of innter interface BuenoProjectCreationControl
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle signature validation						*/
+/*										*/
+/********************************************************************************/
+
+interface BuenoValidatorCallback {
+
+   void validationDone(BuenoValidator val,boolean pass);
+
+}	// end of inner interface BuenoValidatorCallback
 
 
 }	// end of interface BuenoConstants

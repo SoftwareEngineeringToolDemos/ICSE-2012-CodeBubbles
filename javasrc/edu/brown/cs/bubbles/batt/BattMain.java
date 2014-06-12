@@ -80,6 +80,7 @@ private boolean 	find_new;
 private BattThread	server_thread;
 private Set<String>	error_classes;
 private IvyExec 	current_test;
+private long		last_report;
 
 
 
@@ -115,6 +116,7 @@ private BattMain(String [] args)
    find_new = false;
    error_classes = new HashSet<String>();
    current_test = null;
+   last_report = 0;
 
    junit_jar = null;
    String s = System.getProperty("java.class.path");
@@ -218,7 +220,7 @@ private void process()
       case SERVER :
 	 setupSocket();
 	 processRun(true,null); 	// find test cases
-	 reportTestStatus();
+	 reportTestStatus(true);
 	 setMode(start_mode);
 	 batt_monitor.server();
 	 break;
@@ -607,7 +609,7 @@ private void processRun(boolean listonly,Set<String> testclss)
 	  }
        }
 
-      reportTestStatus();
+      reportTestStatus(false);
 
       System.err.print("BATT: RUN" );
       for (String s : args) {
@@ -630,7 +632,7 @@ private void processRun(boolean listonly,Set<String> testclss)
        }
     }
 
-   reportTestStatus();
+   reportTestStatus(false);
 }
 
 
@@ -750,7 +752,7 @@ void updateTestsForClasses(Map<String,FileState> chng)
     }
 
    if (server_thread != null && !rslt.isEmpty()) addTestCases(rslt);
-   if (upd) reportTestStatus();
+   if (upd) reportTestStatus(false);
 }
 
 
@@ -762,22 +764,32 @@ void updateTestsForClasses(Map<String,FileState> chng)
 /*										*/
 /********************************************************************************/
 
-void reportTestStatus()
+void reportTestStatus(boolean force)
 {
    Collection<BattTestCase> rpt;
+   long now;
 
    synchronized (this) {
       rpt = new ArrayList<BattTestCase>(test_cases.values());
+      now = System.currentTimeMillis();
     }
 
+   int ctr = 0;
    IvyXmlWriter xw = new IvyXmlWriter();
    for (BattTestCase btc : rpt) {
-      // btc.shortReport(xw);
-      System.err.println("BATT: WORK ON TEST CASE " + btc.getName());
-      btc.longReport(xw);
+      if (force || btc.getUpdateTime() >= last_report) {
+	 // btc.shortReport(xw);
+	 // System.err.println("BATT: WORK ON TEST CASE " + btc.getName());
+	 btc.longReport(xw);
+	 ++ctr;
+       }
     }
 
-   batt_monitor.sendMessage("STATUS",xw.toString());
+   if (ctr > 0) {
+      batt_monitor.sendMessageAndWait("STATUS",xw.toString());
+    }
+
+   last_report = now;
 }
 
 
@@ -857,17 +869,17 @@ private class Client extends IvyXmlReaderThread {
    @Override protected void processXmlMessage(String msg) {
       System.err.println("BATT: CLIENT MSG: " + msg);
       Element e = IvyXml.convertStringToXml(msg);
-
+   
       if (IvyXml.isElement(e,"TESTCASE")) {
-	 String nm = IvyXml.getAttrString(e,"NAME");
-	 BattTestCase btc = findTestCase(nm);
-	 btc.handleTestState(e);
-	 reportTestStatus();
+         String nm = IvyXml.getAttrString(e,"NAME");
+         BattTestCase btc = findTestCase(nm);
+         btc.handleTestState(e);
+         reportTestStatus(false);
        }
       else if (IvyXml.isElement(e,"TESTCOUNTS")) {
-	 String nm = IvyXml.getAttrString(e,"NAME");
-	 BattTestCase btc = findTestCase(nm);
-	 btc.handleTestCounts(e);
+         String nm = IvyXml.getAttrString(e,"NAME");
+         BattTestCase btc = findTestCase(nm);
+         btc.handleTestCounts(e);
        }
    }
 

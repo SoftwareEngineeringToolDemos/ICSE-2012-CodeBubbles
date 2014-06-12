@@ -41,7 +41,7 @@ public class RebaseWordBag implements RebaseWordConstants
 
 private Map<String,Count>		word_table;
 private double				total_squared;
-private int                             total_documents;
+private int				total_documents;
 
 
 
@@ -64,16 +64,14 @@ public RebaseWordBag(String text)
    this();
 
    addWords(text);
-   total_documents = 1;
 }
 
 
 public RebaseWordBag(RebaseWordBag bag)
 {
    this();
-   
+
    addWords(bag);
-   total_documents = bag.total_documents;
 }
 
 
@@ -90,30 +88,41 @@ public void addWords(String text)
    if (text == null) return;
 
    RebaseWordStemmer stm = new RebaseWordStemmer();
+   Set<String> found = new HashSet<String>();
+
    int ln = text.length();
    for (int i = 0; i < ln; ++i) {
       char ch = text.charAt(i);
-      if (Character.isJavaIdentifierPart(ch)) {
-         boolean havealpha = Character.isAlphabetic(ch);
+      if (validCharacter(ch)) {
+	 boolean havealpha = Character.isAlphabetic(ch);
 	 int start = i;
-	 while (Character.isJavaIdentifierPart(ch)) {
-            havealpha |= Character.isAlphabetic(ch);
-            if (++i >= ln) break;
-            ch = text.charAt(i);
+	 while (validCharacter(ch)) {
+	    havealpha |= Character.isAlphabetic(ch);
+	    if (++i >= ln) break;
+	    ch = text.charAt(i);
 	  }
 	 if (havealpha) {
-            Collection<String> wds =  RebaseWordFactory.getCandidateWords(stm,text,start,i-start);
-            if (wds != null) {
-               for (String wd : wds) { 
-                  addWord(wd);
-                }
-             }
-            // addCandidates(stm,text,start,i-start);
-          }
+	    Collection<String> wds =  RebaseWordFactory.getCandidateWords(stm,text,start,i-start);
+	    if (wds != null) {
+	       for (String wd : wds) {
+		  boolean nw = found.add(wd);
+		  addWord(wd,nw);
+		}
+	     }
+	    // addCandidates(stm,text,start,i-start);
+	  }
        }
     }
-   
+
    ++total_documents;
+}
+
+
+private boolean validCharacter(char ch)
+{
+   if (!Character.isJavaIdentifierPart(ch)) return false;
+   if (Character.isIdentifierIgnorable(ch)) return false;
+   return true;
 }
 
 
@@ -129,36 +138,44 @@ public void addWords(String text)
 public void addWords(RebaseWordBag bag)
 {
    if (bag == null) return;
-   for (Map.Entry<String,Count> ent : bag.word_table.entrySet()) {
-      String s = ent.getKey();
-      addWord(s,ent.getValue());
+   synchronized (word_table) {
+      for (Map.Entry<String,Count> ent : bag.word_table.entrySet()) {
+	 String s = ent.getKey();
+	 addWord(s,ent.getValue());
+       }
     }
    total_documents += bag.total_documents;
 }
 
 
-private void addWord(String s)
+private void addWord(String s,boolean newwd)
 {
-   Count c = word_table.get(s);
-   if (c == null) {
-      c = new Count();
-      word_table.put(s,c);
+   synchronized (word_table) {
+      Count c = word_table.get(s);
+      if (c == null) {
+	 c = new Count();
+	 word_table.put(s,c);
+       }
+      int ct = c.add(1,(newwd ? 1 : 0));
+      // total_squared += ct*ct - (ct-1)*(ct-1);
+      total_squared += 2*ct - 1;
     }
-   int ct = c.incr();
-   total_squared += ct*ct - (ct-1)*(ct-1);
 }
+
 
 
 private void addWord(String s,Count ct)
 {
-   Count c = word_table.get(s);
-   if (c == null) {
-      c = new Count();
-      word_table.put(s,c);
+   synchronized (word_table) {
+      Count c = word_table.get(s);
+      if (c == null) {
+	 c = new Count();
+	 word_table.put(s,c);
+       }
+      int oct = c.getCount();
+      int nct = c.add(ct);
+      total_squared += nct*nct - oct*oct;
     }
-   int oct = c.getCount();
-   int nct = c.add(ct);
-   total_squared += nct*nct - oct*oct;
 }
 
 
@@ -171,25 +188,89 @@ private void addWord(String s,Count ct)
 
 public void removeWords(RebaseWordBag bag)
 {
-   for (Map.Entry<String,Count> ent : bag.word_table.entrySet()) {
-      String wd = ent.getKey();
-      Count ct = word_table.get(wd);
-      if (ct == null) continue;
-      int oct = ent.getValue().getCount();
-      int odct = ent.getValue().getDocCount();
-      
-      int nct = ct.getCount();
-      total_squared -= nct*nct;
-      
-      int xct = ct.decr(oct,odct);
-      if (xct == 0) word_table.remove(wd);
-      else {
-	 total_squared += xct*xct;
+   List<Map.Entry<String,Count>> ents = null;
+   synchronized (bag.word_table) {
+      ents = new ArrayList<Map.Entry<String,Count>>(bag.word_table.entrySet());
+    }
+
+   synchronized (word_table) {
+      for (Map.Entry<String,Count> ent : ents) {
+	 String wd = ent.getKey();
+	 Count ct = word_table.get(wd);
+	 if (ct == null) continue;
+	 int oct = ent.getValue().getCount();
+	 int odct = ent.getValue().getDocCount();
+
+	 int nct = ct.getCount();
+	 total_squared -= nct*nct;
+
+	 int xct = ct.decr(oct,odct);
+	 if (xct == 0) word_table.remove(wd);
+	 else {
+	    total_squared += xct*xct;
+	  }
        }
     }
+
    total_documents -= bag.total_documents;
 }
 
+
+/********************************************************************************/
+/*										*/
+/*	Operations on word bags 						*/
+/*										*/
+/********************************************************************************/
+
+Map<String,Double> computeIDF(double mindocf)
+{
+   Map<String,Double> rslt = new HashMap<String,Double>();
+   if (total_documents == 0) return rslt;
+   double mindoc = total_documents * mindocf;
+
+   synchronized (word_table) {
+      for (Map.Entry<String,Count> ent : word_table.entrySet()) {
+	 String wd = ent.getKey();
+	 double ndoc = ent.getValue().getDocCount();
+	 if (ndoc < mindoc) continue;
+	 double idf = Math.log(total_documents / ndoc);
+	 rslt.put(wd,idf);
+       }
+    }
+
+   return rslt;
+}
+
+Map<String,Double> computeTF(EnumSet<TermOptions> tf)
+{
+   Map<String,Double> rslt = new HashMap<String,Double>();
+
+   synchronized (word_table) {
+      double denom = 1.0;
+      if (tf.contains(TermOptions.TERM_AUGMENTED)) {
+	 for (Count c : word_table.values()) {
+	    if (c.getCount() > denom) denom = c.getCount();
+	  }
+       }
+
+      for (Map.Entry<String,Count> ent : word_table.entrySet()) {
+	 String wd = ent.getKey();
+	 double freq = ent.getValue().getCount();
+	 if (tf.contains(TermOptions.TERM_BOOLEAN)) {
+	    if (freq > 0) freq = 1;
+	  }
+	 else if (tf.contains(TermOptions.TERM_LOG)) {
+	    freq = Math.log(freq + 1);
+	  }
+	 else if (tf.contains(TermOptions.TERM_AUGMENTED)) {
+	    freq = 0.5*freq/denom;
+	  }
+	 if (freq != 0) rslt.put(wd,freq);
+       }
+    }
+
+   return rslt;
+}
 
 
 public double cosine(RebaseWordBag b2)
@@ -221,6 +302,22 @@ public double cosine(RebaseWordBag b2)
 
 
 
+int getDocumentCount(String wd)
+{
+   Count c = word_table.get(wd);
+   if (c == null) return 0;
+   return c.getDocCount();
+}
+
+
+int getCount(String wd)
+{
+   Count c = word_table.get(wd);
+   if (c == null) return 0;
+   return c.getCount();
+}
+
+
 
 /********************************************************************************/
 /*										*/
@@ -242,9 +339,12 @@ public void outputBag(File f) throws IOException
       pw = new PrintStream(new FileOutputStream(f));
     }
    pw.println(total_documents);
-   for (Map.Entry<String,Count> ent : word_table.entrySet()) {
-      Count c = ent.getValue();
-      pw.println(ent.getKey() + "," + c.getCount() + "," + c.getDocCount());
+
+   synchronized (word_table) {
+      for (Map.Entry<String,Count> ent : word_table.entrySet()) {
+	 Count c = ent.getValue();
+	 pw.println(ent.getKey() + "," + c.getCount() + "," + c.getDocCount());
+       }
     }
 
    pw.close();
@@ -256,7 +356,7 @@ public void inputBag(File f) throws IOException
 {
    BufferedReader br = null;
    ZipInputStream zin = null;
-   
+
    if (f.getPath().endsWith(".zip")) {
       zin = new ZipInputStream(new FileInputStream(f));
       zin.getNextEntry();
@@ -275,22 +375,24 @@ public void inputBag(File f) throws IOException
       int dct = 0;
       if (scn.hasNextInt()) wct = scn.nextInt();
       if (scn.hasNextInt()) {
-         int oct = 0;
-         dct = scn.nextInt();
-         Count c = word_table.get(wd);
-         if (c == null) {
-            word_table.put(wd,new Count(wct,dct));
-          }
-         else {
-            oct = c.getCount();
-            wct = c.add(wct,dct);
-          }
-         total_squared += wct*wct - oct*oct;
+	 int oct = 0;
+	 dct = scn.nextInt();
+	 synchronized (word_table) {
+	    Count c = word_table.get(wd);
+	    if (c == null) {
+	       word_table.put(wd,new Count(wct,dct));
+	     }
+	    else {
+	       oct = c.getCount();
+	       wct = c.add(wct,dct);
+	     }
+	  }
+	 total_squared += wct*wct - oct*oct;
        }
     }
 
    scn.close();
-   
+
 }
 
 
@@ -309,18 +411,16 @@ private static class Count {
    Count()				{ count_value = num_document = 0; }
    Count(int ct,int dct)		{ count_value = ct; num_document = dct; }
 
-   int incr() {
-      if (num_document == 0) num_document = 1;
-      return ++count_value;
-    }
-   int add(int ct,int dct) {
+   int add(int ct,int doc) {
       count_value += ct;
-      num_document += dct;
+      num_document += doc;
       return count_value;
     }
+
    int getCount()			{ return count_value; }
-   int getDocCount()                    { return num_document; }
-   int decr(int ct,int dct) { 
+   int getDocCount()			{ return num_document; }
+
+   int decr(int ct,int dct) {
       count_value -= ct;
       num_document -= dct;
       if (count_value < 0) count_value = 0;
@@ -330,9 +430,9 @@ private static class Count {
 
    int add(Count c) {
       if (c != null) {
-         count_value += c.count_value;
-         num_document += c.num_document;
-       }  
+	 count_value += c.count_value;
+	 num_document += c.num_document;
+       }
       return count_value;
     }
 

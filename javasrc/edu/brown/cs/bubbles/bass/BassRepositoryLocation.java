@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 
 
 class BassRepositoryLocation implements BassConstants.BassUpdatingRepository,
-                BassConstants,BumpConstants.BumpChangeHandler
+		BassConstants,BumpConstants.BumpChangeHandler
 {
 
 
@@ -195,7 +195,7 @@ File findActualFile(File f)
 /********************************************************************************/
 
 private void initialize()
-{				
+{			
    synchronized (this) {
       all_names.clear();
       is_ready = false;
@@ -347,7 +347,7 @@ private class Searcher implements Runnable {
 @Override public void handleFileChanged(String proj,String file)
 {
    addNamesForFile(proj,file,true);
-   
+
    handleUpdated();
 }
 
@@ -356,8 +356,8 @@ private class Searcher implements Runnable {
 @Override public void handleFileAdded(String proj,String file)
 {
    addNamesForFile(proj,file,false);
-   
-   handleUpdated(); 
+
+   handleUpdated();
 }
 
 
@@ -373,7 +373,7 @@ private class Searcher implements Runnable {
 @Override public void handleProjectOpened(String proj)
 {
    addNamesForFile(proj,null,true);
-   
+
    handleUpdated();
 }
 
@@ -424,7 +424,7 @@ private void addNamesForFile(String proj,String file,boolean rem)
 	  }
        }
     }
-   System.err.println("AFTER " + proj + " " + file + " " + all_names.size());
+   // BoardLog.logD("BASS","AFTER " + proj + " " + file + " " + all_names.size());
 }
 
 
@@ -433,8 +433,8 @@ private void handleUpdated()
    for (BassUpdatableRepository br : update_repos) {
       br.reloadRepository();
     }
-   
-   BassFactory.reloadRepository(this); 
+
+   BassFactory.reloadRepository(this);
 }
 
 

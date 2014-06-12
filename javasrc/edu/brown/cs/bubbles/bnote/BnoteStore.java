@@ -48,6 +48,7 @@ import org.w3c.dom.Element;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 public class BnoteStore implements BnoteConstants, MintConstants
@@ -62,6 +63,7 @@ public class BnoteStore implements BnoteConstants, MintConstants
 
 private BnoteDatabase	note_db;
 private RemoteClient	db_client;
+private ExecutorService task_queue;
 
 private static BnoteStore	the_store = null;
 
@@ -91,18 +93,20 @@ private BnoteStore()
    switch (bs.getRunMode()) {
       case NORMAL :
 	 note_db = new BnoteDatabase();
+         task_queue = Executors.newSingleThreadExecutor();
 	 break;
       case CLIENT :
 	 db_client = new RemoteClient(bs.getMintControl());
 	 note_db = new BnoteDatabase(true);
+         task_queue = null;
 	 break;
       case SERVER :
 	 note_db = new BnoteDatabase();
+         task_queue = null;
 	 MintControl mc2 = bs.getMintControl();
 	 mc2.register("<BNOTE CMD='_VAR_0'></BNOTE>",new NoteServer());
 	 break;
     }
-
 }
 
 
@@ -265,7 +269,26 @@ private BnoteTask enter(String project,BnoteTask task,BnoteEntryType type,Map<St
       return db_client.enter(project,task,type,values);
     }
 
-   return note_db.addEntry(project,task,type,values);
+   if (task_queue == null) {
+      return note_db.addEntry(project,task,type,values);
+    }
+   
+   TaskEntry te = new TaskEntry(project,task,type,values);
+   Future<BnoteTask> fe = task_queue.submit(te);
+   
+   switch (type) {
+      case NEW_TASK :
+         try {
+            return fe.get();
+          }
+         catch (ExecutionException e) { }
+         catch (InterruptedException e) { }
+         break;
+      default :
+	 break;
+    }
+   
+   return null;
 }
 
 
@@ -295,6 +318,37 @@ private long saveAttachment(File f)
 
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Entry representation                                                    */
+/*                                                                              */
+/********************************************************************************/
+
+private class TaskEntry implements Callable<BnoteTask> {
+   
+   private String project_name;
+   private BnoteTask for_task;
+   private BnoteEntryType entry_type;
+   private Map<String,Object> entry_values;
+   
+   TaskEntry(String proj,BnoteTask task,BnoteEntryType typ,Map<String,Object> vals) {
+      project_name = proj;
+      for_task = task;
+      entry_type = typ;
+      entry_values = new HashMap<String,Object>(vals);
+    }
+   
+   @Override public BnoteTask call() {
+      Thread.currentThread().setName("BnoteTaskThread");
+      return note_db.addEntry(project_name,for_task,entry_type,entry_values);
+    }
+   
+}       // end of inner class TaskEntry
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Server for handling remote requests					*/
@@ -306,89 +360,89 @@ private class NoteServer implements MintHandler {
    @Override public void receive(MintMessage msg,MintArguments args) {
       Element xml = msg.getXml();
       BoardLog.logD("BNOTE","Remove Message: " + msg.getText());
-
+   
       String proj = IvyXml.getAttrString(xml,"PROJECT");
       long tid = IvyXml.getAttrLong(xml,"TASKID");
       BnoteTask task = null;
       if (tid > 0) task = note_db.findTaskById(tid);
       String qid = IvyXml.getAttrString(xml,"QID");
-
+   
       IvyXmlWriter xw = new IvyXmlWriter();
       xw.begin("RESULT");
       String cmd = args.getArgument(0);
       if (cmd.equals("ISENABLED")) {
-	 xw.field("VALUE",isEnabled());
+         xw.field("VALUE",isEnabled());
        }
       else if (cmd.equals("TASKS")) {
-	 List<BnoteTask> lbt = getTasksForProject(proj);
-	 if (lbt != null) {
-	    for (BnoteTask bt : lbt) {
-	       bt.outputXml(xw);
-	     }
-	  }
+         List<BnoteTask> lbt = getTasksForProject(proj);
+         if (lbt != null) {
+            for (BnoteTask bt : lbt) {
+               bt.outputXml(xw);
+             }
+          }
        }
       else if (cmd.equals("TASKUSER")) {
-	 List<String> lst = getUsersForTask(proj,task);
-	 if (lst != null) {
-	    for (String s : lst) xw.textElement("USER",s);
-	  }
+         List<String> lst = getUsersForTask(proj,task);
+         if (lst != null) {
+            for (String s : lst) xw.textElement("USER",s);
+          }
        }
       else if (cmd.equals("TASKDATE")) {
-	 List<Date> lst = getDatesForTask(proj,task);
-	 if (lst != null) {
-	    for (Date s : lst) {
-	       xw.begin("DATE");
-	       xw.field("VALUE",s);
-	       xw.end("DATE");
-	     }
-	  }
+         List<Date> lst = getDatesForTask(proj,task);
+         if (lst != null) {
+            for (Date s : lst) {
+               xw.begin("DATE");
+               xw.field("VALUE",s);
+               xw.end("DATE");
+             }
+          }
        }
       else if (cmd.equals("TASKNAME")) {
-	 List<String> lst = getNamesForTask(proj,task);
-	 if (lst != null) {
-	    for (String s : lst) xw.textElement("NAME",s);
-	  }
+         List<String> lst = getNamesForTask(proj,task);
+         if (lst != null) {
+            for (String s : lst) xw.textElement("NAME",s);
+          }
        }
       else if (cmd.equals("TASKENTRY")) {
-	 List<BnoteEntry> lst = getEntriesForTask(proj,task);
-	 if (lst != null) {
-	    for (BnoteEntry be : lst) {
-	       be.outputXml(xw);
-	     }
-	  }
+         List<BnoteEntry> lst = getEntriesForTask(proj,task);
+         if (lst != null) {
+            for (BnoteEntry be : lst) {
+               be.outputXml(xw);
+             }
+          }
        }
       else if (cmd.equals("ATTACHFILE")) {
-	 File f = getAttachment(qid);
-	 if (f != null) xw.field("FILE",f.getPath());
+         File f = getAttachment(qid);
+         if (f != null) xw.field("FILE",f.getPath());
        }
       else if (cmd.equals("ATTACHSTR")) {
-	 String c = getAttachmentAsString(qid);
-	 if (c != null) xw.cdataElement("CONTENTS",c);
+         String c = getAttachmentAsString(qid);
+         if (c != null) xw.cdataElement("CONTENTS",c);
        }
       else if (cmd.equals("FINDTASK")) {
-	 long v = Long.parseLong(qid);
-	 BnoteTask bt = note_db.findTaskById(v);
-	 if (bt != null) bt.outputXml(xw);
+         long v = Long.parseLong(qid);
+         BnoteTask bt = note_db.findTaskById(v);
+         if (bt != null) bt.outputXml(xw);
        }
       else if (cmd.equals("ENTER")) {
-	 tid = IvyXml.getAttrLong(xml,"TASK");
-	 BnoteTask bt = (tid <= 0 ? null : note_db.findTaskById(tid));
-	 BnoteEntryType typ = IvyXml.getAttrEnum(xml,"TYPE",BnoteEntryType.NONE);
-	 Map<String,Object> vmap = new HashMap<String,Object>();
-	 for (Element de : IvyXml.children(xml,"DATA")) {
-	    String k = IvyXml.getAttrString(de,"KEY");
-	    // will have to special case some fields here (esp attachments)
-	    vmap.put(k,IvyXml.getText(de));
-	  }
-	 BnoteTask nt = enter(proj,bt,typ,vmap);
-	 if (nt != null) nt.outputXml(xw);
+         tid = IvyXml.getAttrLong(xml,"TASK");
+         BnoteTask bt = (tid <= 0 ? null : note_db.findTaskById(tid));
+         BnoteEntryType typ = IvyXml.getAttrEnum(xml,"TYPE",BnoteEntryType.NONE);
+         Map<String,Object> vmap = new HashMap<String,Object>();
+         for (Element de : IvyXml.children(xml,"DATA")) {
+            String k = IvyXml.getAttrString(de,"KEY");
+            // will have to special case some fields here (esp attachments)
+            vmap.put(k,IvyXml.getText(de));
+          }
+         BnoteTask nt = enter(proj,bt,typ,vmap);
+         if (nt != null) nt.outputXml(xw);
       }
       else if (cmd.equals("ATTACH")) {
-	 File f = new File("/tmp/garbagegoeshere");
-	 long v = saveAttachment(f);
-	 xw.field("VALUE",v);
+         File f = new File("/tmp/garbagegoeshere");
+         long v = saveAttachment(f);
+         xw.field("VALUE",v);
        }
-
+   
       xw.end("RESULT");
       BoardLog.logD("BNOTE","SERVER REPLT: " + xw.toString());
       msg.replyTo(xw.toString());
@@ -528,38 +582,38 @@ private class RemoteClient {
       if (!values.containsKey("USER")) values.put("USER",System.getProperty("user.name"));
       values.put("TIME",System.currentTimeMillis());
       if (task != null) values.put("TASK",task);
-
+   
       xw.begin("BNOTE");
       xw.field("CMD","ENTER");
-
+   
       for (Map.Entry<String,Object> ent : values.entrySet()) {
-	 String k = ent.getKey();
-	 if (!field_strings.contains(k)) continue;
-	 Object v = ent.getValue();
-	 if (v instanceof BnoteTask) xw.field(k,((BnoteTask)v).getTaskId());
-	 else xw.field(k,v.toString());
+         String k = ent.getKey();
+         if (!field_strings.contains(k)) continue;
+         Object v = ent.getValue();
+         if (v instanceof BnoteTask) xw.field(k,((BnoteTask)v).getTaskId());
+         else xw.field(k,v.toString());
        }
-
+   
       for (Map.Entry<String,Object> ent : values.entrySet()) {
-	 String k = ent.getKey();
-	 if (field_strings.contains(k)) continue;
-	 Object v = ent.getValue();
-	 xw.begin("DATA");
-	 xw.field("KEY",k);
-	 // hande to special case some fields here
-	 xw.cdata(v.toString());
-	 xw.end("DATA");
+         String k = ent.getKey();
+         if (field_strings.contains(k)) continue;
+         Object v = ent.getValue();
+         xw.begin("DATA");
+         xw.field("KEY",k);
+         // hande to special case some fields here
+         xw.cdata(v.toString());
+         xw.end("DATA");
        }
-
+   
       xw.end("BNOTE");
-
+   
       MintDefaultReply mdr = new MintDefaultReply();
       mint_control.send(xw.toString(),mdr,MINT_MSG_FIRST_NON_NULL);
       xw.close();
       Element xml = mdr.waitForXml();
       if (IvyXml.isElement(xml,"RESULT")) {
-	 Element txml = IvyXml.getChild(xml,"TASK");
-	 if (txml != null) return note_db.findTaskById(txml);
+         Element txml = IvyXml.getChild(xml,"TASK");
+         if (txml != null) return note_db.findTaskById(txml);
        }
       return null;
     }

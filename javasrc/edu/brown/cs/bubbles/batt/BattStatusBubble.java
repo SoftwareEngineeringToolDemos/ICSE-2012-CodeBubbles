@@ -186,6 +186,7 @@ private void setupPanel()
    if (btc != null) {
       menu.add(new SourceAction(btc));
       menu.add(new DebugAction(btc));
+      menu.add(new RunTestAction(btc));
     }
 
    if (current_mode == null) {
@@ -527,6 +528,21 @@ private class SourceAction extends AbstractAction {
     }
 
 }	// end of inner class SourceAction
+
+
+private class RunTestAction extends AbstractAction {
+   
+   private BattTestCase test_case;
+   
+   RunTestAction(BattTestCase btc) {
+      super("Run Test " + btc.getName());
+      test_case = btc;
+    }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      BattFactory.getFactory().runTest(test_case);
+    }
+}
 
 
 private class ModeAction extends JRadioButtonMenuItem implements ActionListener {

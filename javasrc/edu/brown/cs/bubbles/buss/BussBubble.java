@@ -142,7 +142,9 @@ public void setPreviewBubble(BudaBubble previewBubble)
 
 public void removeEditorBubble()
 {
-   default_dim.height -= selected_entry.getCompactComponent().getPreferredSize().height;
+   if (selected_entry != null) {
+      default_dim.height -= selected_entry.getCompactComponent().getPreferredSize().height;
+    }
 
    getLayeredPane().setPreferredSize(default_dim);
    setStackBoxSize(default_dim);

@@ -174,7 +174,8 @@ private int localNextTabPosition(int pos)
 /*										*/
 /********************************************************************************/
 
-private void setFont() {
+private void setFont()
+{
    StyleContext ctx = BaleFactory.getFactory().getStyleContext();
    Font fn = ctx.getFont(cur_element.getAttributes());
    if (fn != last_font) {

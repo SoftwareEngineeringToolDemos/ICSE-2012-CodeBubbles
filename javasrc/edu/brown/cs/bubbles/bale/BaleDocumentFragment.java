@@ -63,6 +63,7 @@ private StyleContext		style_context;
 private String			fragment_name;
 private BaleRegion		cursor_region;
 private boolean 		is_orphan;
+private double			scale_factor;
 
 private static final long serialVersionUID = 1;
 
@@ -85,6 +86,7 @@ BaleDocumentFragment(BaleDocumentIde base,BaleFragmentType typ,List<BaleRegion> 
    fragment_type = typ;
    fragment_name = null;
    is_orphan = false;
+   scale_factor = 1.0;
 
    style_context = BaleFactory.getFactory().getStyleContext();
 
@@ -140,7 +142,12 @@ BaleDocumentFragment(BaleDocumentIde base,BaleFragmentType typ,List<BaleRegion> 
    return base_document.getBaseEditDocument();
 }
 
+void setScaleFactor(double sf)		
+{
+   scale_factor = sf;
+}
 
+   
 
 /********************************************************************************/
 /*										*/
@@ -431,7 +438,15 @@ private void resetRegions()
 
 @Override public void removeStyle(String nm)		{ style_context.removeStyle(nm); }
 
-@Override public Font getFont(AttributeSet attr)	{ return style_context.getFont(attr); }
+@Override public Font getFont(AttributeSet attr)
+{
+   Font ft = style_context.getFont(attr);
+   if (scale_factor == 0 || scale_factor == 1) return ft;
+   float sz = ft.getSize2D();
+   sz *= scale_factor;
+   ft = ft.deriveFont(sz);
+   return ft;
+}
 
 @Override public Color getForeground(AttributeSet a)	{ return style_context.getForeground(a); }
 
@@ -731,7 +746,7 @@ private void handleEvent(DocumentEvent e,BaleElementEvent ee)
 {
    checkWriteLock();
 
-   if (fragment_name == null) checkForNameChange((BaleElement) getDefaultRootElement());
+   if (fragment_name == null && getDefaultRootElement() instanceof BaleElement) checkForNameChange((BaleElement) getDefaultRootElement());
 
    int doff = e.getOffset();
    int foff = getFragmentOffset(doff);
@@ -778,7 +793,8 @@ private void handleEvent(DocumentEvent e,BaleElementEvent ee)
 {
    baleReadLock();
    try {
-      checkForNameChange((BaleElement) getDefaultRootElement());
+      if (getDefaultRootElement() instanceof BaleElement) 
+	 checkForNameChange((BaleElement) getDefaultRootElement());
     }
    finally { baleReadUnlock(); }
 }

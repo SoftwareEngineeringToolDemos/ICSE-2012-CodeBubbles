@@ -297,6 +297,7 @@ protected void createMethod(BuenoType typ,BuenoLocation where,BuenoProperties pr
 
 
 
+
 protected void setupConstructor(StringBuffer buf,BuenoProperties props)
 {
    if (props.getStringProperty(BuenoKey.KEY_RETURNS) != null) {
@@ -423,7 +424,7 @@ protected void setupMarquisComment(StringBuffer buf,BuenoProperties props)
    pbuf.append("/*                                                                              */\n");
    pbuf.append("/*       ${COMMENT}                                                             */\n");
    pbuf.append("/*                                                                              */\n");
-   pbuf.append("/********************************************************************************/\n");
+   pbuf.append("/********************************************************************************/BG");
 
    StringReader sr = new StringReader(pbuf.toString());
    try {
@@ -591,6 +592,9 @@ protected void classText(StringBuffer buf,BuenoProperties props)
    outputList(props.getImplements()," implements ",", ",buf);
    buf.append(" {\n");
    buf.append("\n");
+  
+   String cnts = props.getStringProperty(BuenoKey.KEY_CONTENTS);
+   if (cnts != null) buf.append(cnts); // insert contents here
    buf.append("\n");
    buf.append("}\n");
 }
@@ -817,6 +821,7 @@ private static String getValue(String key,BuenoProperties props,String eol)
 
    if (key.equals("MODIFIERS")) {
       int mods = props.getModifiers();
+      ct = addModifier(buf,"@Override",(mods & MODIFIER_OVERRIDES) != 0,ct);
       ct = addModifier(buf,"private",Modifier.isPrivate(mods),ct);
       ct = addModifier(buf,"public",Modifier.isPublic(mods),ct);
       ct = addModifier(buf,"protected",Modifier.isProtected(mods),ct);

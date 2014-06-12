@@ -942,6 +942,31 @@ interface NoBubble { }
 interface NoFreeze { }
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Scaling definitions                                                     */
+/*                                                                              */
+/********************************************************************************/
+
+/**
+ *      Component can implement this to tell bubbles to call it directly to
+ *      handle scaling
+ **/
+interface Scalable {
+   
+   void setScaleFactor(double sf);
+   
+}
+
+
+interface BudaBubbleScaler {
+   
+   Rectangle getScaledBounds(BudaBubble bb);
+   
+}
+
+
+
 
 /********************************************************************************/
 /*										*/

@@ -109,10 +109,10 @@ public static void initialize(BudaRoot br)
    BudaRoot.addToolbarButton("DefaultMenu",new DeleteAllButton(),
 	 "Remove All Projects",BoardImage.getImage("deleteall"));
    BudaRoot.addToolbarButton("DefaultMenu",new ExportButton(),
-         "Export Accepted Files",BoardImage.getImage("fileexport"));
+	 "Export Accepted Files",BoardImage.getImage("fileexport"));
 
    BaleFactory.getFactory().addContextListener(new RebusContexter());
-   
+
    setupCache();
 }
 
@@ -135,7 +135,9 @@ private static class SearchButton implements ActionListener
    @Override public void actionPerformed(ActionEvent e)  {
       BudaBubble bb = createSearchBubble();
       BudaBubbleArea bba = buda_root.getCurrentBubbleArea();
-      bba.addBubble(bb,null,null,BudaConstants.PLACEMENT_LOGICAL);
+      if (bba != null && bb != null) {
+	 bba.addBubble(bb,null,null,BudaConstants.PLACEMENT_LOGICAL);
+       }
     }
 
 }	// end of inner class SearchButton
@@ -146,24 +148,24 @@ private static class SearchButton implements ActionListener
 private static class ExportButton implements ActionListener
 {
    private static File last_directory = null;
-   
+
    @Override public void actionPerformed(ActionEvent e)  {
        JFileChooser chooser = new JFileChooser(last_directory);
        chooser.setDialogTitle("Select Export Directory");
        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
        int rvl = chooser.showSaveDialog((Component) e.getSource());
        if (rvl == JFileChooser.APPROVE_OPTION) {
-          last_directory = chooser.getSelectedFile();
-          String cmd = "<BUBBLES DO='REBUSEXPORT'"; 
-          cmd += " DIR='" + last_directory.getAbsolutePath() + "'";
-          cmd += " ACCEPT='true'";
-          cmd += " LANG='Rebase' />";
-          BoardSetup bs = BoardSetup.getSetup();
-          MintControl mc = bs.getMintControl();
-          mc.send(cmd);
-        }
+	  last_directory = chooser.getSelectedFile();
+	  String cmd = "<BUBBLES DO='REBUSEXPORT'";
+	  cmd += " DIR='" + last_directory.getAbsolutePath() + "'";
+	  cmd += " ACCEPT='true'";
+	  cmd += " LANG='Rebase' />";
+	  BoardSetup bs = BoardSetup.getSetup();
+	  MintControl mc = bs.getMintControl();
+	  mc.send(cmd);
+	}
     }
-   
+
 }	// end of inner class SearchButton
 
 
@@ -181,10 +183,11 @@ private static class DeleteAllButton implements ActionListener, Runnable {
    @Override public void actionPerformed(ActionEvent e) {
       BoardThreadPool.start(this);
     }
-   
+
    @Override public void run() {
       BumpClient bc = BumpClient.getBump();
       bc.delete(null,"PROJECT",null,false);
+      RebusSearchBubble.clearAll();
     }
 
 }	// end of inner class DeleteAllButton
@@ -242,6 +245,10 @@ private static class SearchExtender implements BassConstants.BassPopupHandler {
 }	// end of inner class SearchExpander
 
 
+
+
+
+
 private static class ExtenderAction extends AbstractAction {
 
    private String command_name;
@@ -261,7 +268,7 @@ private static class ExtenderAction extends AbstractAction {
        BoardSetup bs = BoardSetup.getSetup();
        MintControl mc = bs.getMintControl();
        String cmd = "<BUBBLES DO='" + command_name + "' PROJECT='" + for_project +
-          "' FILE='" + for_file + "' LANG='Rebase' />";
+	  "' FILE='" + for_file + "' LANG='Rebase' />";
        mc.send(cmd);
     }
 
@@ -289,6 +296,9 @@ private static class BuildProjectAction extends AbstractAction {
 
 
 
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Contexter for identifier buttons					*/
@@ -309,26 +319,26 @@ private static class RebusContexter implements BaleContextListener {
 
    @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu menu) {
       if (cfg.getToken() == null) return;
-   
+
       switch (cfg.getTokenType()) {
-         case UNDEF_CALL_ID :
-         case UNDEF_ID :
-            break;
-         case TYPE_ID :
-         case FIELD_ID :
-         case STATIC_FIELD_ID :
-         case ANNOTATION_ID :
-            // check if undefined?
-            break;
-         case LOCAL_ID :
-         case CLASS_DECL_ID :
-         case METHOD_DECL_ID :
-         case LOCAL_DECL_ID :
-         case FIELD_DECL_ID :
-         case CONST_ID :
-         case NONE :
-         default :
-            return;
+	 case UNDEF_CALL_ID :
+	 case UNDEF_ID :
+	    break;
+	 case TYPE_ID :
+	 case FIELD_ID :
+	 case STATIC_FIELD_ID :
+	 case ANNOTATION_ID :
+	    // check if undefined?
+	    break;
+	 case LOCAL_ID :
+	 case CLASS_DECL_ID :
+	 case METHOD_DECL_ID :
+	 case LOCAL_DECL_ID :
+	 case FIELD_DECL_ID :
+	 case CONST_ID :
+	 case NONE :
+	 default :
+	    return;
        }
       menu.add(new RebusFindItem(cfg));
     }
@@ -356,7 +366,7 @@ private static class RebusFindItem extends AbstractAction {
       int foff = bfo.mapOffsetToEclipse(off);
 
       File f = bb.getContentFile();
-      StringTokenizer tok = new StringTokenizer(f.getPath(),"/");
+      StringTokenizer tok = new StringTokenizer(f.getPath(),"/\\");
       String repo = null;
       for (int i = 0; i < 3; ++i) {
 	 if (tok.hasMoreTokens()) repo = tok.nextToken();
@@ -417,13 +427,13 @@ private static class RebusFindItem extends AbstractAction {
 private static class Acceptor implements BassConstants.BassPopupHandler {
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,
-         String name,BassName forname) {
+	 String name,BassName forname) {
       int idx = name.indexOf(":");
       if (idx < 0 || idx >= name.length()-1) return;
       if (name.charAt(idx+1) != '.') {
-         name = name.substring(0,idx) + ":." + name.substring(idx+1);
+	 name = name.substring(0,idx) + ":." + name.substring(idx+1);
        }
-      
+
       AcceptanceFlagger af = getFactory().acceptance_flagger;
       boolean fg = af.getFlagForName(forname,name) != null;
       menu.add(new AcceptanceToggle(name,forname,fg));
@@ -437,7 +447,7 @@ private static class Acceptor implements BassConstants.BassPopupHandler {
 private static class AcceptanceToggle extends AbstractAction {
 
    private String	for_name;
-   private BassName     bass_name;
+   private BassName	bass_name;
 
    private static final long serialVersionUID = 1;
 
@@ -476,23 +486,23 @@ private static class AcceptanceFlagger implements BassFlagger {
    synchronized void toggleAcceptance(String name,BassName bnm) {
       if (accepted_map == null) computeAcceptedMap();
       // TODO: should notify back end
-   
+
       if (accepted_map.containsKey(name)) {
-         for (Iterator<String> it = accepted_items.iterator(); it.hasNext(); ) {
-            String itm = it.next();
-            if (itm.startsWith(name)) {
-               noteAccept(itm,false);
-               it.remove();
-               accepted_names.remove(itm);
-             }
-          }
+	 for (Iterator<String> it = accepted_items.iterator(); it.hasNext(); ) {
+	    String itm = it.next();
+	    if (itm.startsWith(name)) {
+	       noteAccept(itm,false);
+	       it.remove();
+	       accepted_names.remove(itm);
+	     }
+	  }
        }
       else {
-         accepted_items.add(name);
-         if (bnm != null) accepted_names.put(name,bnm);
-         noteAccept(name,true);
+	 accepted_items.add(name);
+	 if (bnm != null) accepted_names.put(name,bnm);
+	 noteAccept(name,true);
        }
-   
+
       accepted_map = null;
     }
 
@@ -514,32 +524,32 @@ private static class AcceptanceFlagger implements BassFlagger {
       BumpLocation loc = null;
       String proj = null;
       if (bnm != null) {
-         proj = bnm.getProject();
-         loc = bnm.getLocation();
+	 proj = bnm.getProject();
+	 loc = bnm.getLocation();
        }
       else {
-         int idx = nm.indexOf(":");
-         if (idx > 0) { 
-            proj = nm.substring(0,idx);
-            nm = nm.substring(idx+1);
-            if (nm.startsWith(".")) nm = nm.substring(1);
-            if (nm.length() > 0) {
-               List<BumpLocation> locs = BumpClient.getBump().findClassDefinition(proj,nm);
-               if (locs != null && locs.size() > 0) loc = locs.get(0);
-             }
-          }
+	 int idx = nm.indexOf(":");
+	 if (idx > 0) {
+	    proj = nm.substring(0,idx);
+	    nm = nm.substring(idx+1);
+	    if (nm.startsWith(".")) nm = nm.substring(1);
+	    if (nm.length() > 0) {
+	       List<BumpLocation> locs = BumpClient.getBump().findClassDefinition(proj,nm);
+	       if (locs != null && locs.size() > 0) loc = locs.get(0);
+	     }
+	  }
        }
-         
+	
       String cmd = "<BUBBLES DO='REBUSACCEPT'";
       cmd += " PROJECT='" + proj + "'";
       cmd += " FLAG='" + Boolean.toString(fg) + "'";
       if (loc != null) {
-         cmd += " FILE='" + loc.getFile().getAbsolutePath() + "'";
-         cmd += " SPOS='" + loc.getOffset() + "'";
-         cmd += " EPOS='" + loc.getEndOffset() + "'";
+	 cmd += " FILE='" + loc.getFile().getAbsolutePath() + "'";
+	 cmd += " SPOS='" + loc.getOffset() + "'";
+	 cmd += " EPOS='" + loc.getEndOffset() + "'";
        }
       cmd += " LANG='Rebase' />";
-      
+
       BoardSetup bs = BoardSetup.getSetup();
       MintControl mc = bs.getMintControl();
       mc.send(cmd);
@@ -566,9 +576,9 @@ private static class AcceptFlag implements BassFlag {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Caching setup                                                           */
-/*                                                                              */
+/*										*/
+/*	Caching setup								*/
+/*										*/
 /********************************************************************************/
 
 private static void setupCache()
@@ -578,10 +588,10 @@ private static void setupCache()
    String cachedir = bp.getProperty("Rebus.cache.directory");
    if (cachedir == null || cachedir.equals("")) use = false;
    else use = bp.getBoolean("Rebus.cache.use",true);
-   
+
    BoardSetup bs = BoardSetup.getSetup();
    MintControl mc = bs.getMintControl();
-   String cmd = "<BUBBLES DO='REBUSCACHE' DIR='" + cachedir + "'";    
+   String cmd = "<BUBBLES DO='REBUSCACHE' DIR='" + cachedir + "'";
    cmd += " USE='" + Boolean.toString(use) + "'";
    cmd += " LANG='Rebase' />";
    mc.send(cmd);

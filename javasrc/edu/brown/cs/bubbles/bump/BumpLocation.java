@@ -70,6 +70,7 @@ private String		symbol_handle;
 private int		symbol_flags;
 private String		symbol_project;
 private BumpSymbolType	source_type;
+private String          s6_source;
 
 private static Map<String,BumpSymbolType> symbol_map;
 
@@ -131,6 +132,7 @@ BumpLocation(String proj,String file,int off,int len,String srctyp,Element itm)
    symbol_handle = null;
    symbol_flags = -1;
    symbol_project = project_name;
+   s6_source = null;
 
    if (itm != null) {
       symbol_name = IvyXml.getAttrString(itm,"QNAME");
@@ -153,6 +155,7 @@ BumpLocation(String proj,String file,int off,int len,String srctyp,Element itm)
 	 if (file_offset == 0) file_offset = symbol_offset;
 	 if (file_length == 0) file_length = symbol_length;
        }
+      s6_source = IvyXml.getAttrString(itm,"S6");
     }
    else {
       symbol_offset = file_offset;
@@ -422,6 +425,8 @@ public void update()
     }
 }
 
+
+public String getS6Source()                     { return s6_source; }
 
 
 

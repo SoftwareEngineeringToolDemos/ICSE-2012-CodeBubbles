@@ -57,7 +57,7 @@ import java.util.*;
 
 
 class BeamNoteBubble extends BudaBubble implements BeamConstants,
-	BudaConstants.BudaBubbleOutputer
+	BudaConstants.BudaBubbleOutputer, BudaConstants.Scalable
 {
 
 
@@ -222,6 +222,22 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Scaling requests							*/
+/*										*/
+/********************************************************************************/
+
+@Override public void setScaleFactor(double sf)
+{
+   Font ft = beam_properties.getFont(NOTE_FONT_PROP,NOTE_FONT);
+   float sz = ft.getSize2D();
+   if (sf != 1.0) {
+      sz *= sf;
+      ft = ft.deriveFont(sz);
+    }
+   note_area.setFont(ft);
+}
 
 /********************************************************************************/
 /*										*/
@@ -256,6 +272,19 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
 @Override public void handleCheckpointRequest()
 {
    saveNote();
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Annotation interface							*/
+/*										*/
+/********************************************************************************/
+
+void clearAnnotation(BeamNoteAnnotation na)
+{
+   if (na != null && na == note_annot) note_annot = null;
 }
 
 

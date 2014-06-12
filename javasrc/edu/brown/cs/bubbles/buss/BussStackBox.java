@@ -105,7 +105,8 @@ BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussbubble)
 
    registerKeyAction(new ShowAllAction(),"SHOW_ALL",KeyStroke.getKeyStroke(KeyEvent.VK_F4,0));
    registerKeyAction(new ShowSelectedAction(),"SHOW_SELECTED",KeyStroke.getKeyStroke(KeyEvent.VK_F3,0));
-
+   registerKeyAction(new DeleteSelectedAction(),"DELETE_SELECTED",KeyStroke.getKeyStroke(KeyEvent.VK_DELETE,0));
+   
    BasicTreeUI tui = (BasicTreeUI) getUI();
    tui.setCollapsedIcon(null);
    tui.setExpandedIcon(null);
@@ -116,7 +117,6 @@ BussStackBox(BussTreeModel mdl, int contentWidth, BussBubble bussbubble)
 
    BudaRoot.addBubbleViewCallback(new BussBubbleCallback(buss_bubble));
 }
-
 
 
 
@@ -198,13 +198,13 @@ private class Transferer extends TransferHandler {
 
    @Override protected void exportDone(JComponent c,Transferable t,int action) {
       if (t instanceof TransferBubble) {
-	 TransferBubble tb = (TransferBubble) t;
-	 for (BussEntry be : tb.getEntries()) {
-	    if (be.getBubble() != null && be.getBubble().getParent() != buss_bubble.getLayeredPane()) {
-	       be.getBubble().setFixed(false);
-	       tree_model.removeEntry(be);
-	     }
-	  }
+         TransferBubble tb = (TransferBubble) t;
+         for (BussEntry be : tb.getEntries()) {
+            if (be.getBubble() != null && be.getBubble().getParent() != buss_bubble.getLayeredPane()) {
+               be.getBubble().setFixed(false);
+               tree_model.removeEntry(be);
+             }
+          }
        }
     }
 }	// end of inner class Transferer
@@ -218,9 +218,9 @@ private static class TransferBubble implements Transferable, BudaConstants.BudaD
    TransferBubble(TreePath [] pths) {
       tree_entries = new ArrayList<BussEntry>();
       for (int i = 0; i < pths.length; ++i) {
-	 BussTreeNode tn = (BussTreeNode) pths[i].getLastPathComponent();
-	 BussEntry be = tn.getEntry();
-	 if (be != null) tree_entries.add(be);
+         BussTreeNode tn = (BussTreeNode) pths[i].getLastPathComponent();
+         BussEntry be = tn.getEntry();
+         if (be != null) tree_entries.add(be);
        }
     }
 
@@ -271,7 +271,7 @@ private class Selector implements TreeSelectionListener
    @Override public void valueChanged(TreeSelectionEvent e) {
       TreePath tp = e.getNewLeadSelectionPath();
       if (tp == null){
-	 return;
+         return;
        }
       BussTreeNode tn = (BussTreeNode) tp.getLastPathComponent();
       tree_model.setSelection(tn);
@@ -322,6 +322,27 @@ private void createSelectedBubble()
    if (bbl != null) bbl.setVisible(false);
 
    createAllBubbles(tn,broot,loc);
+}
+
+
+private void deleteSelected()
+{
+   TreePath tp = getSelectionPath();
+   if (tp == null) return;
+   
+   tree_model.setSelection(null);
+   BudaBubble bbl = buss_bubble.getEditorBubble();
+   if (bbl != null) bbl.setVisible(false);
+   buss_bubble.removeEditorBubble();
+   buss_bubble.setPreviewBubble(null);
+   
+   TreeNode tn = (TreeNode) tp.getLastPathComponent();
+   if (tn == null) return;
+   
+   BussEntry be = ((BussTreeNode) tn).getEntry();
+   if (be != null) {
+      tree_model.removeEntry(be);
+    }
 }
 
 
@@ -381,7 +402,7 @@ private class ShowAllAction extends AbstractAction implements ActionListener {
       createAllBubbles();
     }
 
-}	// end of inner class EscapeHandler
+}	// end of inner class ShowAllAction
 
 
 
@@ -395,7 +416,21 @@ private class ShowSelectedAction extends AbstractAction implements ActionListene
       createSelectedBubble();
     }
 
-}	// end of inner class EscapeHandler
+}	// end of inner class ShowSelectedAction
+
+
+
+
+private class DeleteSelectedAction extends AbstractAction implements ActionListener {
+   
+   private static final long serialVersionUID = 1;
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BUSS","DeleteSelected");
+      deleteSelected();
+    }
+   
+}	// end of inner class DeleteSelectedAction
 
 
 
@@ -425,25 +460,25 @@ private static class BussBubbleCallback implements BubbleViewCallback {
 
    @Override public boolean bubbleActionDone(BudaBubble bb) {
       if (buss_bubble.getEditorBubble() != bb) return false;
-
+   
       Point editorloc = bb.getLocation();
       Point originallocation = buss_bubble.getEditorBubbleLocation();
-
+   
       if (editorloc == null || originallocation == null) return false;
-
+   
       double distance = Point.distance(editorloc.x, editorloc.y, originallocation.x, originallocation.y);
-
+   
       if (distance <= DISTANCE_LIMIT) {
-	 bb.setFixed(true);
-	 buss_bubble.updateEditorBubbleLocation();
-	 return true;
+         bb.setFixed(true);
+         buss_bubble.updateEditorBubbleLocation();
+         return true;
        }
       else {
-	 buss_bubble.setPreviewBubble(null);
-	 bb.setFixed(false);
-	 buss_bubble.removeEditorBubble();
+         buss_bubble.setPreviewBubble(null);
+         bb.setFixed(false);
+         buss_bubble.removeEditorBubble();
        }
-
+   
       return false;
    }
 

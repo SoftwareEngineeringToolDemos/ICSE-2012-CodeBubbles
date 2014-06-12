@@ -27,9 +27,9 @@
 package edu.brown.cs.bubbles.bwiz;
 
 import edu.brown.cs.bubbles.board.BoardThreadPool;
+import edu.brown.cs.bubbles.bowi.BowiFactory;
+import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoBubbleCreator;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoKey;
 import edu.brown.cs.bubbles.bueno.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
@@ -50,7 +50,6 @@ import javax.swing.text.Document;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.List;
@@ -58,7 +57,8 @@ import java.util.List;
 
 abstract class BwizNewWizard  extends SwingGridPanel implements BwizConstants,
 		BwizConstants.ISignatureUpdate,
-		BwizConstants.IAccessibilityUpdatable
+		BwizConstants.IAccessibilityUpdatable,
+		BuenoConstants
 {
 
 
@@ -69,7 +69,6 @@ abstract class BwizNewWizard  extends SwingGridPanel implements BwizConstants,
 /*										*/
 /********************************************************************************/
 
-protected InfoStruct  info_structure;
 private JTextField  main_name;	 //Class name, Method Name, Interface Name, or Enum Name
 private JTextField  second_name; //Superclass or Return type, in case of Classes or Methods
 private BwizAccessibilityPanel accessibility_panel;
@@ -78,7 +77,11 @@ private BwizHoverButton create_button;
 private BwizListEntryComponent list_panel; //Interfaces, or Parameters
 private SwingComboBox<String> package_dropdown;
 private JComboBox<String> project_dropdown;
+
+protected BuenoProperties property_set;
 protected BuenoLocation at_location;
+protected BuenoValidator new_validator;
+protected BuenoType create_type;
 protected BuenoBubbleCreator bubble_creator;
 
 private static final String DEFAULT_PACKAGE = "<default package>";
@@ -92,22 +95,18 @@ private static final String DEFAULT_PACKAGE = "<default package>";
 /*										*/
 /********************************************************************************/
 
-BwizNewWizard()
+BwizNewWizard(BuenoLocation loc,BuenoType type)
 {
-   this(null,null,null);
-}
+   at_location = loc;
+   create_type = type;
 
+   property_set = new BuenoProperties();
+   if (at_location != null) {
+      property_set.put(BuenoKey.KEY_PACKAGE,at_location.getPackage());
+      property_set.put(BuenoKey.KEY_PROJECT,at_location.getProject());
+    }
 
-// for creating methods
-BwizNewWizard(String projectname, String packagename,String classname) {
-   at_location = null;
-   bubble_creator = null;
-   //The data structure representing the structure
-   info_structure = getInfoStruct();
-
-   if (classname != null) info_structure.setClass(classname);
-   if (projectname != null) info_structure.setProject(projectname);
-   if (packagename != null) info_structure.setPackage(packagename);
+   new_validator = new BuenoValidator(new ValidCallback(),property_set,at_location,type);
 
    setup();
 }
@@ -123,25 +122,17 @@ BwizNewWizard(String projectname, String packagename,String classname) {
 
 Component getFocus()				{ return main_name; }
 
-
-void setInsertLocation(BuenoLocation ins)	{ at_location = ins; }
-
 void setBubbleCreator(BuenoBubbleCreator bbc)	{ bubble_creator = bbc; }
 
 
 
-
 /********************************************************************************/
 /*										*/
-/*	Setup methods								*/
+/*	Panel setup methods							*/
 /*										*/
 /********************************************************************************/
 
-protected abstract InfoStruct getInfoStruct();
-
-protected int getAccessibilityInfo()      { return 0; }
-
-protected IVerifier getVerifier()       { return new InterfaceVerifier(); }
+protected int getAccessibilityInfo()	  { return 0; }
 
 protected abstract Creator getCreator();
 
@@ -151,24 +142,53 @@ protected abstract String getSecondText();
 protected abstract String getSecondHoverText();
 protected abstract String getListText();
 protected abstract String getListHoverText();
+protected IVerifier getVerifier()
+{
+   return new InterfaceVerifier();
+}
+
+
+protected class InterfaceVerifier implements IVerifier {
+
+   @Override public boolean verify(String v) {
+      return new_validator.checkInterfaces(v) != null;
+    }
+
+   @Override public List<String> results(String v) {
+      return new_validator.checkInterfaces(v);
+    }
+
+}	// end of inner class InterfaceVerifier
+
+
+protected class ParameterVerifier implements IVerifier {
+
+   @Override public boolean verify(String v) {
+      return new_validator.checkParameters(v) != null;
+    }
+
+   @Override public List<String> results(String v) {
+      return new_validator.checkParameters(v);
+    }
+
+}	// end of inner class ParameterVerifier
+
 
 private void setup()
 {
    setBackground(Color.WHITE);
-
-   //The data structure representing the structure
-   if (info_structure == null) info_structure = getInfoStruct();
 
    //The panel that has the name of the class/method/interface/enum
    JPanel namespanel = new JPanel();
    namespanel.setLayout(new BoxLayout(namespanel, BoxLayout.LINE_AXIS));
    namespanel.setOpaque(false);
 
-   Accessibility default_access = Accessibility.DEFAULT;
-   if ((getAccessibilityInfo() & SHOW_PRIVATE) != 0) default_access = Accessibility.PRIVATE;
+   Accessibility defaultaccess = Accessibility.DEFAULT;
+   if ((getAccessibilityInfo() & SHOW_PRIVATE) != 0) defaultaccess = Accessibility.PRIVATE;
+   setAccess(defaultaccess);
 
    //second panel, used in Classes and Methods for either extends or return, respectively
-   JPanel secondpanel = new JPanel(); 
+   JPanel secondpanel = new JPanel();
    if (getSecondText() != null) {
       secondpanel.setLayout(new BoxLayout(secondpanel, BoxLayout.LINE_AXIS));
       secondpanel.setOpaque(false);
@@ -190,6 +210,7 @@ private void setup()
    accessibility_panel = new BwizAccessibilityPanel(getAccessibilityInfo());
    accessibility_panel.addAccessibilityActionListener(new AccessibilityChange());
    accessibility_panel.addModifierListener(new ModifierChange());
+   accessibility_panel.addAccessibilityActionListener(new AccessibilityChange());
 
    //A panel for the create button and class signature
    JPanel buttonpanel=new JPanel();
@@ -209,10 +230,10 @@ private void setup()
 
    //Requires list of available projects
    /* sets up the list of projects and packages */
-   if (info_structure.getProjectName() == null) {
+   if (property_set.getProjectName() == null) {
       setupProject();
     }
-   if (info_structure.getPackageName() == null) {
+   if (property_set.getPackageName() == null) {
       setupPackage();
     }
 
@@ -227,7 +248,14 @@ private void setup()
    addLabellessRawComponent("",buttonpanel);
 
    //Construct the main_name textfield
-   setupMainName();
+   //Creates a textfield with the default styling
+   main_name = BwizFocusTextField.getStyledField("Enter " + getNameText(), getNameHoverText());
+   //Sets the font size
+   main_name.setFont(getRelativeFont(-2));
+   main_name.setAlignmentX(Component.LEFT_ALIGNMENT);
+   main_name.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+   //Adds a handler for when the user is typing
+   main_name.getDocument().addDocumentListener(new TextPropertyListener(BuenoKey.KEY_NAME));
    namespanel.add(main_name);
 
    //This is used to make certain UI elements the same height and to make other elements not change height
@@ -248,27 +276,37 @@ private void setup()
     }
 
    //Adds handlers and sets heights
-   setupListName(enMax);
+   list_panel.setHeight(main_name.getPreferredSize().height);
+   list_panel.setHoverText(getListHoverText());
+   list_panel.addItemChangeEventListener(new ClassItemListener());
 
-   //Adds a handler for when a different radio button is selected
-   setupAccessibilityButtons();
+   //Creates a textfield that selects all text when it gets focus
+   signature_area = new BwizFocusTextField("signature");
 
-   //Creates the class signature area
-   setupSignatureArea();
+   //Styling
+   signature_area.setEditable(false);
+   signature_area.setFont(getRelativeFont(-6));
+   signature_area.setForeground(Color.GRAY);
+   signature_area.setOpaque(false);
+   signature_area.setBorder(BorderFactory.createEmptyBorder());
+   signature_area.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+   Dimension d=new Dimension(Integer.MAX_VALUE, signature_area.getPreferredSize().height);
+   signature_area.setMaximumSize(d);
 
-   //Creates a button for creating the class. Needs an action hooked up to the button.
-   setupCreateButton();
+   //Creates a button that changes cover when the mouse is over it
+   create_button = new BwizHoverButton("Create", Color.BLACK, Color.RED);
+   //Styling
+   create_button.setFont(getRelativeFont(4));
+   create_button.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+   create_button.setMaximumSize(create_button.getPreferredSize());
+   create_button.setEnabled(false);
+
+   create_button.addActionListener(getCreator());
 
    buttonpanel.add(signature_area);
    buttonpanel.add(Box.createRigidArea(new Dimension(5, 0)));
    buttonpanel.add(create_button);
-
-   info_structure.setAccess(default_access);
 }
-
-
-
-
 
 
 
@@ -312,8 +350,9 @@ private class ChooseProject implements ActionListener {
 
    void set() {
       if (project_dropdown != null) {
-         String proj = project_dropdown.getSelectedItem().toString();
-         info_structure.setProject(proj);
+	 String proj = project_dropdown.getSelectedItem().toString();
+	 property_set.put(BuenoKey.KEY_PROJECT,proj);
+	 updateSignature();
       }
     }
 
@@ -344,9 +383,9 @@ private void setupPackage() {
 
 private List<String> getPackages()
 {
-   String proj = info_structure.getProjectName();
+   String proj = property_set.getProjectName();
    Set<String> rslt = new TreeSet<String>();
-   
+
    BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
    for (BassName bn : br.getAllNames()) {
       if (proj != null && !proj.equals(bn.getProject())) continue;
@@ -371,33 +410,33 @@ private List<String> getPackages()
       if (key.contains("$")) continue;
       rslt.add(pkg);
    }
-      
+
    return new ArrayList<String>(rslt);
 }
 
 
 
 private class PackageFinder implements Runnable {
-   
+
    private List<String> all_packages;
    PackageFinder() {
       all_packages = null;
     }
-   
+
    @Override public void run() {
       if (all_packages == null) {
-         all_packages = getPackages();
-         SwingUtilities.invokeLater(this);
+	 all_packages = getPackages();
+	 SwingUtilities.invokeLater(this);
        }
       else if (package_dropdown != null) {
-         package_dropdown.setContents(all_packages);
-         if (all_packages.size() > 0) {
-            package_dropdown.setSelectedIndex(0);
-          }
+	 package_dropdown.setContents(all_packages);
+	 if (all_packages.size() > 0) {
+	    package_dropdown.setSelectedIndex(0);
+	  }
        }
     }
-   
-}       // end of inner class PackageFinder
+
+}	// end of inner class PackageFinder
 
 
 
@@ -412,7 +451,9 @@ private class ChoosePackage implements ActionListener {
    void set() {
       if (package_dropdown != null && package_dropdown.getSelectedItem() != null) {
 	 String pkg = package_dropdown.getSelectedItem().toString();
-	 info_structure.setPackage(pkg);
+	 if (pkg.equals(DEFAULT_PACKAGE)) pkg = null;
+	 property_set.put(BuenoKey.KEY_PACKAGE,pkg);
+	 updateSignature();
       }
    }
 
@@ -426,41 +467,6 @@ private class ChoosePackage implements ActionListener {
 /*										*/
 /********************************************************************************/
 
-private void setupMainName()
-{
-   //Creates a textfield with the default styling
-   main_name = BwizFocusTextField.getStyledField("Enter " + getNameText(), getNameHoverText());
-   //Sets the font size
-   main_name.setFont(getRelativeFont(-2));
-   main_name.setAlignmentX(Component.LEFT_ALIGNMENT);
-   main_name.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-   //Adds a handler for when the user is typing
-   main_name.getDocument().addDocumentListener(new TextListener(info_structure.getMainName()));
-   // main_name.setMaximumSize(main_name.getPreferredSize());
-}
-
-
-
-
-private void setupSignatureArea()
-{
-   //Creates a textfield that selects all text when it gets focus
-   signature_area = new BwizFocusTextField("signature");
-
-   //Styling
-   signature_area.setEditable(false);
-   signature_area.setFont(getRelativeFont(-6));
-   signature_area.setForeground(Color.GRAY);
-   signature_area.setOpaque(false);
-   signature_area.setBorder(BorderFactory.createEmptyBorder());
-   signature_area.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-   Dimension d=new Dimension(Integer.MAX_VALUE, signature_area.getPreferredSize().height);
-   signature_area.setMaximumSize(d);
-
-}
-
-
-
 private void setupSecondName()
 {
    //Creates a textfield with the default styling
@@ -469,48 +475,34 @@ private void setupSecondName()
    second_name.setAlignmentX(Component.LEFT_ALIGNMENT);
    second_name.setAlignmentY(Component.BOTTOM_ALIGNMENT);
    //Adds a handler for when the user is typing
-   second_name.getDocument().addDocumentListener(new TextListener(info_structure.getSecondInfo()));
-}
-
-
-
-private void setupListName(Dimension enMax)
-{
-   list_panel.setHeight(main_name.getPreferredSize().height);
-   list_panel.setHoverText(getListHoverText());
-   list_panel.addItemChangeEventListener(new ClassItemListener());
-}
-
-
-
-private void setupAccessibilityButtons()
-{
-   //Adds a handler to when the radiobutton selection changes
-   accessibility_panel.addAccessibilityActionListener(new AccessibilityChange());
-}
-
-
-
-private void setupCreateButton()
-{
-   //Creates a button that changes cover when the mouse is over it
-   create_button = new BwizHoverButton("Create", Color.BLACK, Color.RED);
-   //Styling
-   create_button.setFont(getRelativeFont(4));
-   create_button.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-   create_button.setMaximumSize(create_button.getPreferredSize());
-   create_button.setEnabled(false);
-
-   create_button.addActionListener(getCreator());
+   BuenoKey k = null;
+   switch (create_type) {
+      case NEW_CLASS :
+      case NEW_INNER_CLASS :
+	 k = BuenoKey.KEY_EXTENDS;
+	 break;
+      case NEW_METHOD :
+	 k = BuenoKey.KEY_RETURNS;
+	 break;
+      default :
+	 break;
+    }
+   if (k != null) {
+      second_name.getDocument().addDocumentListener(new TextPropertyListener(k));
+    }
 }
 
 
 
 public void updateSignature()
 {
-   //Changes the class signature
-   signature_area.setText(info_structure.getSignature());
-   signature_area.moveCaretPosition(0);
+   if (create_button != null) create_button.setEnabled(false);
+
+   if (signature_area != null) {
+      signature_area.setText(new_validator.getSignature());
+      signature_area.moveCaretPosition(0);
+      new_validator.updateParsing();
+    }
 }
 
 
@@ -521,9 +513,29 @@ public void updateAccessibility(ActionEvent e)
    String command = e.getActionCommand();
    Accessibility a = Accessibility.fromString(command);
 
-   info_structure.setAccess(a);
+   setAccess(a);
 }
 
+
+private void setAccess(Accessibility a)
+{
+   int mods = property_set.getModifiers();
+   mods &= ~(Modifier.PUBLIC|Modifier.PRIVATE|Modifier.PROTECTED);
+   switch (a) {
+      case PUBLIC :
+	 mods |= Modifier.PUBLIC;
+	 break;
+      case PRIVATE :
+	 mods |= Modifier.PRIVATE;
+	 break;
+      case PROTECTED :
+	 mods |= Modifier.PROTECTED;
+	 break;
+      case DEFAULT :
+	 break;
+    }
+   property_set.put(BuenoKey.KEY_MODIFIERS,mods);
+}
 
 
 private Font getRelativeFont(int x)
@@ -540,388 +552,21 @@ private Font getRelativeFont(int x)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Structure information holder						*/
-/*										*/
-/********************************************************************************/
+private class ValidCallback implements BuenoValidatorCallback {
 
-protected abstract class InfoStruct
-{
-   private StringBuffer m_name;
-   private Accessibility m_access;
-   private String m_package;
-   private String m_project;
-   private List<String> m_set;
-   private StringBuffer m_second_info;
-   private boolean is_abstract;
-   private boolean is_final;
-   private boolean is_valid;
-   private String m_class;		// what class this is located in
- 
-   InfoStruct() {
-      m_name = new StringBuffer();
-      m_access = Accessibility.PUBLIC;
-      m_package = null;
-      m_project = null;
-      m_set = new ArrayList<String>();
-      m_second_info = new StringBuffer();
-      is_abstract = false;
-      is_final = false;
-      is_valid = false;
-      m_class = null;
-    }
-
-   List<String> getSet()		{ return m_set; }
-   String getPackageName()		{ return m_package; }
-   String getProjectName()		{ return m_project; }
-   String getClassName()		{ return m_class; }
-
-   StringBuffer getMainName()		{ return m_name; }
-   StringBuffer getSecondInfo() 	{ return m_second_info; }
-
-   void setPackage(String p) {
-      if (p != null && p.equals(DEFAULT_PACKAGE)) p = null;
-      m_package = p;
-    }
-
-   void setProject(String p)		{ m_project = p; }
-   void setClass(String c)		{ m_class = c; }
-   void setAbstract(boolean fg) 	{ is_abstract = fg; }
-   void setFinal(boolean fg)		{ is_final = fg; }
-   void setAccess(Accessibility a)	{ m_access = a; }
-   void setSet(Collection<String> vals) { m_set = new ArrayList<String>(vals); }
-
-   int getModifiers() {
-      int rslt = 0;
-      switch (m_access) {
-	 case DEFAULT :
-	    break;
-	 case PUBLIC :
-	    rslt |= Modifier.PUBLIC;
-	    break;
-	 case PRIVATE :
-	    rslt |= Modifier.PRIVATE;
-	    break;
-	 case PROTECTED :
-	    rslt |= Modifier.PROTECTED;
-       }
-      if (is_abstract) rslt |= Modifier.ABSTRACT;
-      if (is_final) rslt |= Modifier.FINAL;
-      return rslt;
-   }
-
-   String getSignature() {
-      if (!acceptableName(m_name.toString())) {
-         updateCreateButton(false);
-         return null;
-       }
-      if (!initialCheck()) {
-         updateCreateButton(false);
-         return null;
-       }
-   
-      String prefix = "";
-      //Access
-      if (m_access.toString().compareTo("default")!=0) {
-         prefix = m_access.toString();
-       }
-   
-      //cannot be both abstract and final
-      if (is_abstract && is_final) return null;
-      if (is_abstract) prefix += " abstract";
-      if (is_final) prefix += " final";
-   
-      String items = null;
-      int setsize = m_set.size();
-      if (setsize > 0) {
-         for (int count=0; count < setsize; ++count) {
-            String itm = m_set.get(count).toString().trim();
-            if (count == 0) items = itm;
-            else items += getSetSeparator() + itm;
-          }
-       }
-      
-      String temp = getSignature(prefix,items);
-      temp = temp.trim();
-      
-      if (temp.equals("")) {
-         temp = null;
-         updateCreateButton(false);
-       }
-      else if (!validate()) {
-         updateCreateButton(false);
+   @Override public void validationDone(BuenoValidator v,boolean pass) {
+      if (create_button == null) return;
+      if (list_panel != null && list_panel.isActive()) pass = false;
+      if (pass) {
+	 create_button.setEnabled(true);
        }
       else {
-         updateCreateButton(true);
-       }
-   
-      return temp;
-    }
-   
-   protected boolean initialCheck() {
-      if (getSecondText() != null) {
-         String snm = m_second_info.toString();
-         if (!acceptableName(snm)) return false;
-       }
-      return true;
-    }
-   
-   protected String getSetSeparator()           { return ", "; }
-   
-   protected abstract String getSignature(String pfx,String itms);
-
-   boolean isValid() {
-      return is_valid;
-    }
-
-   boolean validate() {
-      BumpClient bc = BumpClient.getBump();
-      String fnm = m_name.toString();
-      if (m_package != null) fnm = m_package + "." + fnm;
-      List<BumpLocation> locs = bc.findClassDefinition(m_project,fnm);
-      if (locs != null && locs.size() > 0) return false;
-      
-      if (list_panel != null) {
-         if (list_panel.isActive()) return false;
-       }
-      
-      return true;
-    }
-
-   //in which the create button is set to be clickable or not
-   private void updateCreateButton(boolean valid) {
-      is_valid = valid;
-      if (valid) {
-         create_button.setEnabled(true);
-       }
-      else {
-         create_button.setEnabled(false);
+	 create_button.setEnabled(false);
        }
     }
 
-   //checks whether the String is an acceptable class,enum,or interface name
-   protected boolean acceptableName(String name) {
-      if (name.length() == 0) return false;
-      BwizParser parser = new BwizParser();
-      return parser.acceptableName(name);
-    }
+}	// end of inner class ValidCallback
 
-}	 // end of inner class InfoStruct
-
-
-
-
-/********************************************************************************/
-/*										*/
-/*	String Parser for Bwiz							*/
-/*										*/
-/********************************************************************************/
-
-private static class BwizParser {
-
-   protected int nextToken(StreamTokenizer stok) {
-      try {
-	 return stok.nextToken();
-       }
-      catch (IOException e) {
-	 return StreamTokenizer.TT_EOF;
-       }
-    }
-
-   protected boolean checkNextToken(StreamTokenizer stok,String tok) {
-      if (nextToken(stok) == StreamTokenizer.TT_WORD && stok.sval.equals(tok)) {
-	 return true;
-       }
-      stok.pushBack();
-      return false;
-    }
-
-   protected boolean checkNextToken(StreamTokenizer stok,char tok) {
-      if (nextToken(stok) == tok) return true;
-      stok.pushBack();
-      return false;
-    }
-
-   protected boolean acceptableName(String input) {
-      StreamTokenizer tok = new StreamTokenizer(new StringReader(input));
-
-      //check if a name even exists
-      if (nextToken(tok) != StreamTokenizer.TT_WORD)
-	 return false;
-
-      //check if generic type follows
-      try {
-	 parseGenerics(tok);
-	 parseEnd(tok);
-       }
-      catch (BwizException e) {
-	 // System.out.println(e);
-	 return false;
-       }
-
-      return true;
-    }
-
-   //generic type parsing
-   protected void parseGenerics(StreamTokenizer tok) throws BwizException {
-      if (!checkNextToken(tok,'<')) return;
-      parseType(tok);
-      while (true) {
-	 if (checkNextToken(tok,',')) {
-	    parseType(tok);
-	  }
-	 else if (checkNextToken(tok,'>')) {
-	    break;
-	  }
-	 else {
-	    throw new BwizException("Unclosed generic specification");
-	  }
-       }
-    }
-
-
-   protected String parseType(StreamTokenizer stok) throws BwizException {
-      String rslt = null;
-      if (checkNextToken(stok,"byte") || checkNextToken(stok,"short") ||
-	     checkNextToken(stok,"int") || checkNextToken(stok,"long") ||
-	     checkNextToken(stok,"char") || checkNextToken(stok,"float") ||
-	     checkNextToken(stok,"double") || checkNextToken(stok,"boolean") ||
-	     checkNextToken(stok,"void")) {
-	 rslt = stok.sval;
-       }
-      else if (checkNextToken(stok,'?')) {
-	 rslt = "?";
-	 if (nextToken(stok) != StreamTokenizer.TT_WORD) {
-	    stok.pushBack();
-	  }
-	 else if (checkNextToken(stok,"extends") || checkNextToken(stok,"super")) {
-	    String ext = stok.sval;
-	    String ntyp = null;
-	    try {
-	       ntyp = parseType(stok);
-	     }
-	    catch (BwizException e) {
-	       // System.out.println(e);
-	     }
-	    rslt = rslt + " " + ext + " " + ntyp;
-	  }
-	 else {
-	    stok.pushBack();
-	  }
-       }
-      else if (nextToken(stok) == StreamTokenizer.TT_WORD) {
-	 String tnam = stok.sval;
-	 for ( ; ; ) {
-	    if (!checkNextToken(stok,'.')) break;
-	    if (nextToken(stok) != StreamTokenizer.TT_WORD)
-	       throw new BwizException("Illegal qualified name");
-	    tnam += "." + stok.sval;
-	  }
-	 rslt = tnam;
-       }
-      else throw new BwizException("Type expected");
-
-      if (checkNextToken(stok,'<')) {
-	 String ptyp = null;
-	 for ( ; ; ) {
-	    String atyp = parseType(stok);
-	    if (ptyp == null) ptyp = atyp;
-	    else ptyp += "," + atyp;
-	    if (checkNextToken(stok,'>')) break;
-	    else if (!checkNextToken(stok,',')) throw new BwizException("Bad parameterized argument");
-	  }
-	 if (ptyp == null) throw new BwizException("Parameterized type list missing");
-	 rslt += "<" + ptyp + ">";
-       }
-
-      while (checkNextToken(stok,'[')) {
-	 if (!checkNextToken(stok,']')) throw new BwizException("Missing right bracket");
-	 rslt += "[]";
-       }
-
-      return rslt;
-    }
-
-   protected void parseEnd(StreamTokenizer stok) throws BwizException {
-      if (nextToken(stok) != StreamTokenizer.TT_EOF) throw new BwizException("Excess at end");
-    }
-
-}	// end of inner class BwizParser
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Interface verifier							*/
-/*										*/
-/********************************************************************************/
-
-private static class InterfaceVerifier implements BwizConstants.IVerifier
-{
-   //Checks if is a String of valid interface(s) (separated by commas if more than one)
-   @Override public boolean verify(String test) {
-      if (test == null || test.equals("")) return true;
-      List<String> rslt = results(test);
-      return rslt.size() > 0;
-    }
-
-    @Override public List<String> results(String test) {
-      List<String> rslt = new ArrayList<String>();
-      if (test == null || test.equals("")) return rslt;
-      try {
-	 StreamTokenizer tok = new StreamTokenizer(new StringReader(test));
-	 BwizParser parser = new BwizParser();
-	 for ( ; ; ) {
-	    String typ = parser.parseType(tok);
-	    rslt.add(typ);
-	    if (!parser.checkNextToken(tok,',')) break;
-	  }
-       }
-      catch (BwizException e) {
-	 System.out.println(e);
-       }
-      return rslt;
-     }
-
-}	// end of inner class InterfaceVerifier
-
-
-
-
-/********************************************************************************/
-/*										*/
-/*	Parameter verifier							*/
-/*										*/
-/********************************************************************************/
-
-protected static class ParameterVerifier implements BwizConstants.IVerifier
-{
-   //Checks if is a String of valid parameter(s) (separated by commas if more than one)
-   @Override public boolean verify(String test) {
-      List<String> rslts = results(test);
-      return rslts.size() > 0;
-    }
-
-   @Override public List<String> results(String test) {
-      List<String> rslt = new ArrayList<String>();
-      try {
-	 StreamTokenizer tok = new StreamTokenizer(new StringReader(test));
-	 BwizParser parser = new BwizParser();
-	 for ( ; ; ) {
-	    String typ = parser.parseType(tok);
-	    String typ_two = parser.parseType(tok);
-	    rslt.add(typ + " " + typ_two);
-	    if (!parser.checkNextToken(tok,',')) break;
-	 }
-      }
-      catch (BwizException e) {
-	 // System.out.println(e);
-       }
-      return rslt;
-    }
-
-}	// end of inner class ParameterVerifier
 
 
 
@@ -934,14 +579,40 @@ protected static class ParameterVerifier implements BwizConstants.IVerifier
 
 private class ClassItemListener implements ItemChangeListener {
 
+   private BuenoKey using_key;
+
+   ClassItemListener() {
+      switch (create_type) {
+	 case NEW_CLASS :
+	 case NEW_INNER_CLASS :
+	 case NEW_ENUM :
+	 case NEW_INNER_ENUM :
+	    using_key = BuenoKey.KEY_IMPLEMENTS;
+	    break;
+	 case NEW_INTERFACE :
+	 case NEW_INNER_INTERFACE :
+	    using_key = BuenoKey.KEY_EXTENDS;
+	    break;
+	 case NEW_METHOD :
+	 case NEW_CONSTRUCTOR :
+	    using_key = BuenoKey.KEY_PARAMETERS;
+	    break;
+	 default :
+	    using_key = null;
+       }
+    }
    @Override public void itemAdded(String item) {
-      info_structure.setSet(list_panel.getListElements());
-      updateSignature();
+      if (using_key != null) {
+	 property_set.put(using_key,list_panel.getListElements());
+	 updateSignature();
+       }
     }
 
    @Override public void itemRemoved(String item) {
-      info_structure.setSet(list_panel.getListElements());
-      updateSignature();
+      if (using_key != null) {
+	 property_set.put(using_key,list_panel.getListElements());
+	 updateSignature();
+       }
     }
 
 }	// end of inner class ClassItemListener
@@ -977,10 +648,10 @@ private class ModifierChange implements ItemListener {
       JCheckBox cbx = (JCheckBox) e.getItem();
       String cmd = cbx.getActionCommand();
       if (cmd.equals("abstract")) {
-	 info_structure.setAbstract(e.getStateChange() == ItemEvent.SELECTED);
+	 setModifier(Modifier.ABSTRACT,e.getStateChange() == ItemEvent.SELECTED);
        }
       else if (cmd.equals("final")) {
-	 info_structure.setFinal(e.getStateChange() == ItemEvent.SELECTED);
+	 setModifier(Modifier.FINAL,e.getStateChange() == ItemEvent.SELECTED);
        }
 
       updateSignature();
@@ -988,6 +659,15 @@ private class ModifierChange implements ItemListener {
 
 }	// end of inner class ModifierChange
 
+
+private void setModifier(int mod,boolean fg)
+{
+   int mods = property_set.getModifiers();
+   mods &= ~mod;
+   if (fg) mods |= mod;
+   property_set.put(BuenoKey.KEY_MODIFIERS,mods);
+   updateSignature();
+}
 
 
 
@@ -997,37 +677,52 @@ private class ModifierChange implements ItemListener {
 /*										*/
 /********************************************************************************/
 
-protected abstract class Creator implements ActionListener {
+protected abstract class Creator implements ActionListener, Runnable {
+
+   private Point bubble_point;
+   private BudaBubbleArea bubble_area;
+   
+   Creator() {
+      bubble_point = null;
+      bubble_area = null;
+   }
 
    @Override public void actionPerformed(ActionEvent e) {
-      if (!info_structure.isValid()) return;
-   
-      BuenoProperties bp = new BuenoProperties();
+      if (!new_validator.checkParsing()) return;
+
       BudaBubble bbl = BudaRoot.findBudaBubble(BwizNewWizard.this);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bbl);
+      if (bbl == null || bba == null) return;
+      
       Rectangle r = BudaRoot.findBudaLocation(bbl);
       Point pt = r.getLocation();
       bba.removeBubble(bbl);
-   
-      String pkg = info_structure.getPackageName();
-      String proj = info_structure.getProjectName();
-      String cls = info_structure.getMainName().toString();
-      String fcls = (pkg == null ? cls : pkg + "." + cls);
-   
-      if (pkg != null) bp.put(BuenoKey.KEY_PACKAGE, pkg);
-      bp.put(BuenoKey.KEY_PROJECT, proj);
-      bp.put(BuenoKey.KEY_NAME, cls);
-      bp.put(BuenoKey.KEY_MODIFIERS,info_structure.getModifiers());
-   
-      BudaBubble nbbl = doCreate(bba,pt,fcls,bp);
-   
-      if (nbbl != null) {
-         bba.add(nbbl,new BudaConstraint(pt));
-      }
-   }
-   
-   abstract protected BudaBubble doCreate(BudaBubbleArea bba,Point pt,String nm,BuenoProperties bp);
 
+      bubble_point = pt;
+      bubble_area = bba;
+      
+      BoardThreadPool.start(this);
+   }
+
+   abstract protected BudaBubble doCreate(BudaBubbleArea bba,Point pt,String nm,BuenoProperties bp);
+   
+   @Override public void run() {
+      BowiFactory.startTask(BowiTaskType.CREATE_BUBBLE);
+      try {
+	 String pkg = property_set.getPackageName();
+	 String cls = property_set.getStringProperty(BuenoKey.KEY_NAME);
+	 String fcls = (pkg == null ? cls : pkg + "." + cls);
+
+	 BudaBubble nbbl = doCreate(bubble_area,bubble_point,fcls,property_set);
+
+	 if (nbbl != null) {
+	    bubble_area.add(nbbl,new BudaConstraint(bubble_point));
+	  }
+       }
+      finally {
+	 BowiFactory.stopTask(BowiTaskType.CREATE_BUBBLE);
+       }
+   }
 }	// end of inner class Creator
 
 
@@ -1038,12 +733,12 @@ protected abstract class Creator implements ActionListener {
 /*										*/
 /********************************************************************************/
 
-private class TextListener implements DocumentListener {
+private class TextPropertyListener implements DocumentListener {
 
-   private StringBuffer text_to_update;
+   private BuenoKey property_key;
 
-   TextListener(StringBuffer buf) {
-      text_to_update = buf;
+   TextPropertyListener(BuenoKey key) {
+      property_key = key;
     }
 
    @Override public void insertUpdate(DocumentEvent e) {
@@ -1063,8 +758,7 @@ private class TextListener implements DocumentListener {
 	 String data = doc.getText(0, doc.getLength());
 
 	 if (data != "") {
-	    text_to_update.delete(0, text_to_update.length());
-	    text_to_update.append(data);
+	    property_set.put(property_key,data);
 	  }
 
 	 updateSignature();
@@ -1072,7 +766,7 @@ private class TextListener implements DocumentListener {
       catch (BadLocationException ex) { }
     }
 
-}	// end of inner class TextListener
+}	// end of inner class TextPropertyListener
 
 
 

@@ -145,15 +145,19 @@ void updateTestModel(Element sts)
    synchronized (this) {
       for (Element t : IvyXml.children(sts,"TEST")) {
 	 String nm = IvyXml.getAttrString(t,"NAME");
+	 boolean newfg = false;
 	 BattTestCase btc = test_cases.get(nm);
 	 if (btc == null) {
 	    btc = new BattTestCase(nm);
 	    test_cases.put(nm,btc);
+	    newfg = true;
+	  }
+	 boolean fg = btc.handleTestState(t);
+	 if (newfg) {
 	    modelNewTestCase(btc);
 	    modelUpdated();
 	  }
-	 boolean fg = btc.handleTestState(t);
-	 if (fg) {
+	 else if (fg) {
 	    modelChangeTestCase(btc);
 	    modelUpdated();
 	  }

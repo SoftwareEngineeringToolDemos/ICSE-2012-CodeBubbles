@@ -450,6 +450,10 @@ private int findLine(MouseEvent evt)
 }
 
 
+// @Override public Point getToolTipLocation(MouseEvent e)
+// {
+   // return BudaRoot.computeToolTipLocation(e);
+// }
 
 
 /********************************************************************************/

@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              RebaseCache.java                                                */
-/*                                                                              */
-/*      Handle caching of URL requests                                          */
-/*                                                                              */
+/*										*/
+/*		RebaseCache.java						*/
+/*										*/
+/*	Handle caching of URL requests						*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 /* SVN: $Id$ */
@@ -39,21 +39,21 @@ class RebaseCache implements RebaseConstants
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
-private File            base_directory;
-private boolean         use_cache;
-private Set<URL>        added_urls;
+private File		base_directory;
+private boolean 	use_cache;
+private Set<URL>	added_urls;
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Constructors								*/
+/*										*/
 /********************************************************************************/
 
 RebaseCache()
@@ -66,9 +66,9 @@ RebaseCache()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Setup caching                                                          */
-/*                                                                              */
+/*										*/
+/*	Setup caching							       */
+/*										*/
 /********************************************************************************/
 
 void setupCache(String dir,boolean use)
@@ -84,9 +84,9 @@ void setupCache(String dir,boolean use)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Main entry points                                                       */
-/*                                                                              */
+/*										*/
+/*	Main entry points							*/
+/*										*/
 /********************************************************************************/
 
 BufferedReader getReader(URL url,boolean cache) throws IOException
@@ -94,13 +94,13 @@ BufferedReader getReader(URL url,boolean cache) throws IOException
    if (!use_cache || !cache) {
       return getURLConnection(url);
     }
-   
+
    File dir = getDirectory(url);
    if (dir != null) {
       File df = new File(dir,CACHE_DATA_FILE);
       return new BufferedReader(new FileReader(df));
     }
-   
+
    return getURLConnection(url);
 }
 
@@ -108,6 +108,8 @@ BufferedReader getReader(URL url,boolean cache) throws IOException
 
 boolean wasAddedToCache(URL url)
 {
+   if (!use_cache) return true;
+
    return added_urls.contains(url);
 }
 
@@ -126,9 +128,9 @@ private BufferedReader getURLConnection(URL url) throws IOException
    uc.setAllowUserInteraction(false);
    uc.setDoOutput(false);
    uc.addRequestProperty("Connection","close");
-   
+
    // if returned a 420 status, then delay for 10 seconds and try again
-   
+
    return new BufferedReader(new InputStreamReader(uc.getInputStream(),"UTF-8"));
 }
 
@@ -143,7 +145,7 @@ private BufferedReader getURLConnection(URL url) throws IOException
 private File getDirectory(URL u) throws IOException
 {
    if (u == null) return null;
-   
+
    String un = u.toExternalForm().toLowerCase();
    if (un.length() == 0) return null;
    int hvl = 0;
@@ -163,11 +165,11 @@ private File getDirectory(URL u) throws IOException
    int h1 = hvl % 512;
    int h2 = (hvl/512) % 512;
    int h3 = (hvl/512/512) % 4096;
-   
+
    File dtop = new File(base_directory,"S6$" + h1);
    dtop = new File(dtop,"S6$" + h2);
    if (!dtop.exists() && !dtop.mkdirs()) return null;
-   
+
    String dir0 = "S6$" + h3;
    for (int i = 0; i < 26*27; ++i) {
       StringBuilder sb = new StringBuilder(dir0);
@@ -179,7 +181,7 @@ private File getDirectory(URL u) throws IOException
       File urlf = new File(dir,CACHE_URL_FILE);
       boolean fg = dir.mkdirs();
       if (!fg && !dir.exists()) return null;
-      
+
       if (fg) { 			// we own the directory
 	 BufferedReader br = getURLConnection(u);	// throw exception on bad url
 	 try {
@@ -196,7 +198,7 @@ private File getDirectory(URL u) throws IOException
 	    FileWriter fw = new FileWriter(urlf);
 	    fw.write(u.toExternalForm() + "\n");
 	    fw.close();
-            added_urls.add(u);
+	    added_urls.add(u);
 	    return dir;
 	  }
 	 catch (IOException e) {
@@ -205,31 +207,31 @@ private File getDirectory(URL u) throws IOException
 	  }
        }
       else {				// directory already exists
-         for (int k = 0; k < 20 && !urlf.exists(); ++k) {
-            try {
-               Thread.sleep(1);
-             }
-            catch (InterruptedException e) { }
-          }
-         if (!urlf.exists()) return null;
-         try {
-            System.err.println("S6: Use CACHE: " + dir);
-            BufferedReader br = new BufferedReader(new FileReader(urlf));
-            String ln = br.readLine();
-            br.close();
-            if (ln == null) continue;
-            ln = ln.trim();
-            if (ln.equalsIgnoreCase(u.toExternalForm())) {
-               added_urls.remove(u);
-               return dir;
-             }
-          }
-         catch (IOException e) {
-            System.err.println("REBASE: Problem reading URL cache file: " + e);
-          }
+	 for (int k = 0; k < 20 && !urlf.exists(); ++k) {
+	    try {
+	       Thread.sleep(1);
+	     }
+	    catch (InterruptedException e) { }
+	  }
+	 if (!urlf.exists()) return null;
+	 try {
+	    System.err.println("S6: Use CACHE: " + dir);
+	    BufferedReader br = new BufferedReader(new FileReader(urlf));
+	    String ln = br.readLine();
+	    br.close();
+	    if (ln == null) continue;
+	    ln = ln.trim();
+	    if (ln.equalsIgnoreCase(u.toExternalForm())) {
+	       added_urls.remove(u);
+	       return dir;
+	     }
+	  }
+	 catch (IOException e) {
+	    System.err.println("REBASE: Problem reading URL cache file: " + e);
+	  }
        }
     }
-   
+
    return null;
 }
 
@@ -237,7 +239,7 @@ private File getDirectory(URL u) throws IOException
 
 
 
-}       // end of class RebaseCache
+}	// end of class RebaseCache
 
 
 

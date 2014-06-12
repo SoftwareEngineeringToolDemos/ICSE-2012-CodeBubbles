@@ -230,7 +230,7 @@ private class NodeInserter implements Runnable {
 	       s.executeUpdate();
 	       s.close();
 	     }
-	    BoardLog.logD("BNOTE","OPERATION SUCCEEDED");
+	    // BoardLog.logD("BNOTE","OPERATION SUCCEEDED");
 	    break;
 	  }
 	 catch (SQLException e) {
@@ -443,7 +443,6 @@ private class TaskInserter implements Runnable {
 	 catch (SQLException e) {
 	    BoardLog.logE("BNOTE","Problem defining new task",e);
 	    resetDatabase();
-	    if (note_conn == null) break;
 	  }
        }
     }
@@ -458,22 +457,27 @@ private void loadTasks()
    all_tasks = new ArrayList<TaskImpl>();
 
    String q = "SELECT T.id,T.name,T.project,T.description FROM Task T";
-   try {
-      PreparedStatement s = note_conn.prepareStatement(q);
-      ResultSet rs = s.executeQuery();
-      while (rs.next()) {
-	 int id = rs.getInt(1);
-	 String nm = rs.getString(2);
-	 String pr = rs.getString(3);
-	 String d = rs.getString(4);
-	 TaskImpl ti = new TaskImpl(id,nm,pr,d);
-	 // if server, need to send new task message
-	 all_tasks.add(ti);
+
+   while (note_conn != null) {
+      try {
+	 PreparedStatement s = note_conn.prepareStatement(q);
+	 ResultSet rs = s.executeQuery();
+	 while (rs.next()) {
+	    int id = rs.getInt(1);
+	    String nm = rs.getString(2);
+	    String pr = rs.getString(3);
+	    String d = rs.getString(4);
+	    TaskImpl ti = new TaskImpl(id,nm,pr,d);
+	    // if server, need to send new task message
+	    all_tasks.add(ti);
+	  }
+	 s.close();
+	 break;
        }
-      s.close();
-    }
-   catch (SQLException e) {
-      BoardLog.logE("BNOTE","Problem loading tasks",e);
+      catch (SQLException e) {
+	 BoardLog.logE("BNOTE","Problem loading tasks",e);
+	 resetDatabase();
+       }
     }
 }
 

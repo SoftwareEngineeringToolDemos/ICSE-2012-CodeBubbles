@@ -24,6 +24,8 @@
 
 package edu.brown.cs.bubbles.rebase;
 
+import edu.brown.cs.bubbles.rebase.word.*;
+
 import edu.brown.cs.ivy.exec.IvyExec;
 
 import org.jsoup.Jsoup;
@@ -62,11 +64,18 @@ private int		current_index;
 RebaseRequest(RebaseMain rm,String rqst,String repos,String task,String proj,SourceType typ)
 {
    rebase_main = rm;
-   search_string = IvyExec.tokenize(rqst);
+   search_string = null;
    search_type = (typ == null ? SourceType.FILE : typ);
    search_task = task;
    current_index = 0;
    for_project = rebase_main.getProject(proj);
+   
+   if (rqst != null && !rqst.equals("*")) {
+      search_string = IvyExec.tokenize(rqst);
+    }
+   else {
+      search_string = RebaseWordFactory.getFactory().getQuery();
+    }
 
    List<RebaseRepo> repol = new ArrayList<RebaseRepo>();
    if (repos != null) repos = repos.toUpperCase();
@@ -108,6 +117,8 @@ String getSearchTask()			{ return search_task; }
 
 void startNextSearch()
 {
+   if (search_string == null) return;
+   
    NextSearch ns = new NextSearch();
    rebase_main.startTask(ns);
 }

@@ -26,6 +26,7 @@ package edu.brown.cs.bubbles.bucs;
 
 
 import java.util.List;
+import java.awt.image.BufferedImage;
 
 
 public interface BucsConstants
@@ -42,6 +43,7 @@ interface BucsSearchRequest {
    
    void handleSearchFailed();
    void handleSearchSucceeded(List<BucsSearchResult> result);
+   void handleSearchInputs(List<BucsSearchInput> result);
 
 }       // end of inner interface SearchRequest   
 
@@ -56,7 +58,17 @@ interface BucsSearchResult {
    int getCodeSize();
    String getLicenseUid();
    
-}       // end of inner interface SearchResult
+}       // end of inner interface BucsSearchResult
+
+
+
+interface BucsSearchInput {
+   
+   BufferedImage getImage();
+   
+}       // end of inner interface BucsSearchInput
+
+
 
 
 /********************************************************************************/

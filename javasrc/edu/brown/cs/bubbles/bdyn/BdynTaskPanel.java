@@ -25,12 +25,17 @@
 package edu.brown.cs.bubbles.bdyn;
 
 
+import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.board.*;
+
+import edu.brown.cs.ivy.swing.*;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
+import java.text.DecimalFormat;
 import java.util.*;
 
 
@@ -49,11 +54,14 @@ private BdynTaskWindow task_win;
 private long task_min_time;
 private long task_max_time;
 private Map<BdynCallback,Color> callback_set;
+private int color_counter;
 
 private double cur_width;
 private double cur_mouse;
 private double cur_delta;
 private double cur_tdelta;
+
+private Stroke	mark_stroke;
 
 private double min_step = 10000000;
 
@@ -74,6 +82,7 @@ BdynTaskPanel(BdynTaskWindow tw)
    task_min_time = 0;
    task_max_time = 0;
    callback_set = null;
+   color_counter = 0;
    cur_width = 0;
    cur_mouse = -1;
 
@@ -81,6 +90,11 @@ BdynTaskPanel(BdynTaskWindow tw)
    addMouseListener(mm);
    addMouseMotionListener(mm);
    addMouseWheelListener(mm);
+   setFocusable(true);
+   addMouseListener(new BudaConstants.FocusOnEntry());
+   addKeyListener(new Keyer());
+   
+   mark_stroke = new BasicStroke(1f,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_MITER,1f,new float [] { 4f,4f },0f);
 
    setToolTipText("Task Panel");
 
@@ -108,6 +122,7 @@ void setTimes(long min,long max)
 void clearCallbacks()
 {
    callback_set = null;
+   color_counter = 0;
    cur_mouse = -1;
    cur_delta = 0;
 }
@@ -131,6 +146,10 @@ void clearCallbacks()
 	  task_min_time == task_max_time || task_min_time < 0)
       return;
 
+   Long nextmark = null;
+   Iterator<Long> markiter = task_win.getEventTrace().getTimeMarkIterator();
+   if (markiter.hasNext()) nextmark = markiter.next();
+   
    BdynRangeSet rset = null;
    double y0 = 0;
    double yinc = dim.getHeight() / rows;
@@ -140,15 +159,29 @@ void clearCallbacks()
    for (int i = 0; i < dim.width; ++i) {
       double y1 = y0;
       long t1 = getTimeAtPosition(i+1);
-
+      
+      if (nextmark != null && nextmark >= t0 && nextmark < t1) {
+	 nextmark = null;
+	 while (markiter.hasNext()) {
+	    nextmark = markiter.next();
+	    if (nextmark >= y1) break;
+	    nextmark = null;
+	 }
+	 g.setColor(Color.BLACK);
+	 Stroke sg = g.getStroke();
+	 g.setStroke(mark_stroke);
+	 g.drawLine(i, 0, i, dim.height);
+	 g.setStroke(sg);
+      }
+	 
       if (i == 0) rset = task_win.getEventTrace().getRange(t0,t1);
       else rset = task_win.getEventTrace().updateRange(rset,t0,t1);
       if (rset == null) continue;
 
       for (BdynEntryThread td : task_win.getThreads()) {
 	 Set<BdynEntry> out = rset.get(td);
-	 Color outcol = getOutsideColor(out,t1-t0);
-	 Map<Color,Double> incol = getInsideColor(out,t1-t0);
+	 Color outcol = getOutsideColor(out,t1-t0,t1);
+	 Map<Color,Double> incol = getInsideColor(out,t1-t0,t1);
 	 double ya = y1 + yinc * 0.10;
 	 double yb = y1 + yinc * 0.25;
 	 double yc = y1 + yinc * 0.75;
@@ -204,8 +237,8 @@ void clearCallbacks()
    BdynEntryThread thr = task_win.getThreads().get(row);
    if (thr == null) return "Task Panel";
 
-   double t0 = task_min_time + (evt.getX() * (task_max_time - task_min_time) / dim.getWidth());
-   double t1 = task_min_time + ((evt.getX() + 1) * (task_max_time - task_min_time) / dim.getWidth());
+   double t0 = getTimeAtPosition(evt.getX());
+   double t1 = getTimeAtPosition(evt.getX()+1);
    BdynRangeSet alldata = task_win.getEventTrace().getRange((long) t0, (long) t1);
    Set<BdynEntry> data = null;
    if (alldata != null) data = alldata.get(thr);
@@ -213,7 +246,21 @@ void clearCallbacks()
    StringBuffer buf = new StringBuffer();
    buf.append("<html>");
    buf.append("<p>Thread: " + thr.getThreadName());
-
+   
+   buf.append("<p>Time: ");
+   double t2 = (t0+t1)/2 - task_min_time;
+   t2 = t2 / 1000000.0;         // convert to milliseconds
+   if (t2 > 1000) {
+      DecimalFormat df = new DecimalFormat("#,##0.000");
+      buf.append(df.format(t2/1000.0));
+      buf.append(" Seconds");
+    }
+   else {
+      DecimalFormat df = new DecimalFormat("0.000");
+      buf.append(df.format(t2));
+      buf.append(" Milliseconds");
+    }
+    
    if (data != null) {
       for (BdynEntry ent : data) {
 	 buf.append("<p>");
@@ -248,14 +295,16 @@ void handleContextMenu(JPopupMenu menu,Point p,MouseEvent evt)
    Set<BdynEntry> data = null;
    BdynEntryThread thr = null;
    Dimension dim = getSize();
+   double t0 = 0;
+   double t1 = 0;
    int rows = task_win.getThreads().size();
    double yinc = dim.getHeight()/rows;
    int row = (int)(p.getY()/yinc);
    if (row < task_win.getThreads().size()) {
       thr = task_win.getThreads().get(row);
       if (thr != null) {
-	 double t0 = task_min_time + (p.getX() * (task_max_time - task_min_time) / dim.getWidth());
-	 double t1 = task_min_time + ((p.getX() + 1) * (task_max_time - task_min_time) / dim.getWidth());
+	 t0 = getTimeAtPosition(p.getX());
+	 t1 = getTimeAtPosition(p.getX()+1);
 	 BdynRangeSet alldata = task_win.getEventTrace().getRange((long) t0, (long) t1);
 	 if (alldata != null) data = alldata.get(thr);
        }
@@ -268,14 +317,22 @@ void handleContextMenu(JPopupMenu menu,Point p,MouseEvent evt)
 	 if (cb1 != null && !done.contains(cb1)) {
 	    done.add(cb1);
 	    menu.add(new CallbackLabeler(cb1));
+            menu.add(new CallbackColorer(cb1,null));
 	  }
 	 BdynCallback cb2 = be.getEntryTask();
 	 if (cb2 != null && !done.contains(cb2)) {
 	    done.add(cb2);
 	    menu.add(new CallbackLabeler(cb2));
+            menu.add(new CallbackColorer(cb2,null));
 	  }
        }
     }
+   
+   if (t0 != t1 && t0 != 0) {
+      menu.add(new TimeMarker((long) t0));
+    }
+   
+   menu.add(new ShowOptions());
 }
 
 
@@ -285,7 +342,7 @@ private class CallbackLabeler extends AbstractAction {
    private BdynCallback for_callback;
 
    CallbackLabeler(BdynCallback cb) {
-      super("Label Entry " + cb.getMethodName());
+      super("Set Label for " + cb.getMethodName());
       for_callback = cb;
     }
 
@@ -304,6 +361,87 @@ private class CallbackLabeler extends AbstractAction {
     }
 
 }	// end of inner class CallbackLabeler
+
+
+private class CallbackColorer extends AbstractAction {
+   
+   private BdynCallback for_callback;
+   private Color        set_color;
+   private JColorChooser  color_chooser;
+   private JDialog	task_dialog;
+   
+   CallbackColorer(BdynCallback cb,Color c) {
+      super("Set Color for " + cb.getMethodName());
+      for_callback = cb;
+      set_color = c;
+      color_chooser = null;
+      task_dialog = null;
+    }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      String cmd = e.getActionCommand();
+      if (cmd != null && cmd.equalsIgnoreCase("OK")) {
+         set_color = color_chooser.getColor();
+         color_chooser = null;
+         if (task_dialog != null) task_dialog.setVisible(false);
+         task_dialog = null;
+         if (set_color == null) return;
+       }
+      else if (cmd != null && cmd.equalsIgnoreCase("Cancel")) {
+	 if (task_dialog != null) task_dialog.setVisible(false);
+         task_dialog = null;
+         color_chooser = null;
+         return;
+       }
+      if (set_color == null) {
+         String fnm = for_callback.getClassName() + "." + for_callback.getMethodName();
+         String lbl = for_callback.getDisplayName();
+         if (lbl.equals(fnm)) lbl = null;
+         String args = for_callback.getArgs();
+         String dnm = fnm;
+         if (args != null) dnm += args;
+         color_chooser = new JColorChooser(callback_set.get(for_callback));
+         task_dialog = JColorChooser.createDialog(BdynTaskPanel.this,"Pick color for " + dnm,
+               true,color_chooser,this,this);
+         task_dialog.setVisible(true);
+         return;
+       }
+      if (set_color != null) {
+         for_callback.setUserColor(set_color);
+         callback_set.put(for_callback,set_color);
+       }
+    }
+}
+
+
+private class TimeMarker extends AbstractAction {
+
+   private long at_time;
+
+   TimeMarker(long when) {
+      super("Add Time Mark");
+      at_time = when;
+   }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      task_win.getEventTrace().addTimeMark(at_time);
+   }
+
+}	// end of inner class TimeMarker
+
+
+private class ShowOptions extends AbstractAction {
+   
+   ShowOptions() {
+      super("Show Visualization Options");
+    }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      OptionPanel pnl = new OptionPanel();
+      JOptionPane.showMessageDialog(BdynTaskPanel.this,pnl,"Task Visualization Options",JOptionPane.PLAIN_MESSAGE);
+    }
+   
+}	// end of inner class ShowOptions
 
 
 
@@ -376,7 +514,7 @@ private double findPosition(double d,double m,double w,double t,double i)
       else a4 = (m-i)/m;
       a5 = a4*a2;
       x = d*Math.tan(a5);
-      double x1 = Math.tan(a2)*d;
+      // double x1 = Math.tan(a2)*d;
       // System.err.println("FIND " + i + " " + x1 + " " + x + " " + a4 + " " + a2 + " " + a5);
       x = v - x;
     }
@@ -403,14 +541,14 @@ private double findPosition(double d,double m,double w,double t,double i)
 /*										*/
 /********************************************************************************/
 
-private Color getOutsideColor(Set<BdynEntry> data,long delta)
+private Color getOutsideColor(Set<BdynEntry> data,long delta,long endt)
 {
    if (data == null || data.isEmpty()) return null;
 
    AccumMap accum = new AccumMap();
    for (BdynEntry be : data) {
       BdynCallback cb = be.getEntryTransaction();
-      long d0 = be.getEndTime() - be.getStartTime();
+      long d0 = be.getTotalTime(endt);
       accum.addEntry(cb,d0);
     }
 
@@ -421,14 +559,14 @@ private Color getOutsideColor(Set<BdynEntry> data,long delta)
 }
 
 
-private Map<Color,Double> getInsideColor(Set<BdynEntry> data,long delta)
+private Map<Color,Double> getInsideColor(Set<BdynEntry> data,long delta,long endt)
 {
    if (data == null || data.isEmpty()) return null;
 
    AccumMap accum = new AccumMap();
    for (BdynEntry be : data) {
       BdynCallback cb = be.getEntryTask();
-      long d0 = be.getEndTime() - be.getStartTime();
+      long d0 = be.getTotalTime(endt);
       accum.addEntry(cb,d0);
     }
    long d1 = accum.getTotalTime();
@@ -451,30 +589,48 @@ private Color getColor(BdynCallback cb)
    if (callback_set == null) {
       callback_set = new HashMap<BdynCallback,Color>();
     }
-
+ 
    Color c = callback_set.get(cb);
    if (c != null) return c;
+   
+   Set<Color> known = BdynFactory.getFactory().getKnownColors();
+   // known.addAll(callback_set.values());
 
    float h = 0;
-   int ct = callback_set.size();
-   if (ct == 0) h = 0;
-   else if (ct == 1) h = 0.5f;
-   else {
-      int n0 = 2;
-      float n = ct - 2;
-      float incr = 0.5f;
-      for ( ; ; ) {
-	 if (n < n0) {
-	    h = incr/2.0f + n*incr;
-	    break;
-	  }
-	 n -= n0;
-	 n0 *= 2;
-	 incr /= 2.0;
+   for ( ; ; ) { 
+      int ct = color_counter++;
+      if (ct == 0) h = 0;
+      else if (ct == 1) h = 0.5f;
+      else {
+         int n0 = 2;
+         float n = ct - 2;
+         float incr = 0.5f;
+         for ( ; ; ) {
+            if (n < n0) {
+               h = incr/2.0f + n*incr;
+               break;
+             }
+            n -= n0;
+            n0 *= 2;
+            incr /= 2.0;
+          }
        }
+      c = new Color(Color.HSBtoRGB(h,1f,1f));
+      boolean match = false;
+      for (Color kc : known) {
+         int delta = Math.abs(c.getRed() - kc.getRed()) + 
+                Math.abs(c.getGreen() - kc.getGreen()) +
+                Math.abs(c.getBlue() - kc.getBlue());
+         if (delta <= 48) {
+            match = true;
+            break;
+          }
+       }
+      if (!match) break;
     }
-   c = new Color(Color.HSBtoRGB(h,1f,1f));
+   
    callback_set.put(cb,c);
+   // System.err.println("ASSIGN COLOR " + c + " " + cb + " " + color_counter);
 
    return c;
 }
@@ -523,9 +679,9 @@ private static class AccumMap extends HashMap<BdynCallback,long []> {
    void addEntry(BdynCallback cb,long delta) {
       long [] v = get(cb);
       if (v == null) {
-	 v = new long[1];
-	 v[0] = 0;
-	 put(cb,v);
+         v = new long[1];
+         v[0] = 0;
+         put(cb,v);
        }
       v[0] += delta;
       total_time += delta;
@@ -558,23 +714,23 @@ private class Mouser extends MouseAdapter {
 
    @Override public void mouseClicked(MouseEvent e) {
       if (e.getButton() == MouseEvent.BUTTON1) {
-	 setPosition(-1);
+         setPosition(-1);
        }
     }
 
    @Override public void mouseDragged(MouseEvent e) {
       if (do_drag) {
-	 double x = e.getX();
-	 if (x < 0) x = 0;
-	 if (x >= cur_width) x = cur_width-1;
-	 setPosition(x);
+         double x = e.getX();
+         if (x < 0) x = 0;
+         if (x >= cur_width) x = cur_width-1;
+         setPosition(x);
        }
     }
 
    @Override public void mousePressed(MouseEvent e) {
       if (e.getButton() == MouseEvent.BUTTON1) {
-	 setPosition(e.getX());
-	 do_drag = true;
+         setPosition(e.getX());
+         do_drag = true;
        }
     }
 
@@ -587,18 +743,101 @@ private class Mouser extends MouseAdapter {
    private void setPosition(double v) {
       double opos = cur_mouse;
       if (v < 0 || v >= cur_width) {
-	 cur_mouse = -1;
-	 cur_delta = 0;
+         cur_mouse = -1;
+         cur_delta = 0;
        }
       else if (cur_mouse != v) {
-	 cur_mouse = v;
-	 cur_delta = -1;
+         cur_mouse = v;
+         cur_delta = -1;
        }
       if (cur_mouse != opos) for_panel.repaint();
     }
 
 }	// end of inner class Mouser
 
+
+private class Keyer extends KeyAdapter {
+  
+   Keyer() { }
+   
+   @Override public void keyPressed(KeyEvent e) {
+      PointerInfo pi = MouseInfo.getPointerInfo();
+      Point p1 = SwingUtilities.convertPoint(pi.getDevice().getFullScreenWindow(),pi.getLocation(),BdynTaskPanel.this);
+      
+      long time = 0;
+      
+      if (e.getKeyChar() == 't' || e.getKeyChar() == 'T') {
+	 time= task_win.getEventTrace().getEndTime();
+      }
+      else if (e.getKeyChar() == 'm' || e.getKeyChar() == 'M') {
+	 time = getTimeAtPosition(p1.x);
+      }
+      if (time > 0) task_win.getEventTrace().addTimeMark(time);
+    }
+   
+}       // end of inner class Keyer
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Option panel                                                            */
+/*                                                                              */
+/********************************************************************************/
+
+private class OptionPanel extends SwingGridPanel implements ActionListener {
+   
+   OptionPanel() {
+      setupPanel();
+    }
+   
+   private void setupPanel() {
+      BdynOptions opts = BdynFactory.getOptions();
+      beginLayout();
+      addBannerLabel("Task Visualization Options");
+      addBoolean("Show High-CPU Routines",opts.useKeyCallback(),this);
+      addBoolean("Show Main Routine",opts.useMainCallback(),this);
+      addBoolean("Allow Main as a Transaction",opts.useMainTask(),this);
+      addSeparator();
+      addBottomButton("Reset Callback Information","RESET",this);
+      addBottomButtons();
+      addSeparator();
+    }
+   
+   @Override public void actionPerformed(ActionEvent evt) {
+      String cmd = evt.getActionCommand();
+      boolean fg = true;
+      if (evt.getSource() instanceof JCheckBox) {
+         JCheckBox cbx = (JCheckBox) evt.getSource();
+         fg = cbx.isSelected();
+       }
+      BdynOptions opts = BdynFactory.getOptions();
+      
+      switch (cmd) {
+         case "Show High-CPU Routines" :
+            opts.setUseKeyCallback(fg);
+            break;
+         case "Show Main Routine" :
+            opts.setUseMainCallback(fg);
+            break;
+         case "Allow Main as a Transaction" :
+            opts.setUseMainTask(fg);
+            break;
+         case "RESET" :
+            int opt = JOptionPane.showConfirmDialog(this,"Do you really want to reset the callback database?");
+            if (opt != JOptionPane.YES_OPTION) break;
+            BdynFactory.getFactory().resetCallbacks();
+            break;
+         case "CLOSE" :
+            setVisible(false);
+            break;
+         default :
+            BoardLog.logE("BDYN","Unknown command: " + cmd);
+            break;
+       }
+    }
+   
+}       // end of inner class OptionPanel
 
 
 }	// end of class BdynTaskPanel

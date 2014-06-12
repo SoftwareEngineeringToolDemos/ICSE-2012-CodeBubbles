@@ -154,6 +154,7 @@ BeamNoteAnnotation(Element xml)
 @Override public void addPopupButtons(Component c,JPopupMenu m)
 {
    m.add(new NoteAction());
+   m.add(new RemoveNoteAction());
 }
 
 
@@ -229,7 +230,34 @@ private class NoteAction extends AbstractAction {
       BudaBubbleLink lnk = new BudaBubbleLink(eb,p1,nb,p2);
       bba.addLink(lnk);
     }
-}
+
+}	// end of inner class NoteAction
+
+
+
+
+private class RemoveNoteAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   RemoveNoteAction() {
+      super("Remove note annotation");
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea((Component) e.getSource());
+      if (bba == null) return;
+      for (BudaBubble bb : bba.getBubbles()) {
+	 if (bb instanceof BeamNoteBubble) {
+	    BeamNoteBubble bnb = (BeamNoteBubble) bb;
+	    bnb.clearAnnotation(BeamNoteAnnotation.this);
+	  }
+       }
+      BaleFactory.getFactory().removeAnnotation(BeamNoteAnnotation.this);
+    }
+
+}	// end of inner class RemoveNoteAction
+
 
 
 }	// end of class BeamNoteAnnotation

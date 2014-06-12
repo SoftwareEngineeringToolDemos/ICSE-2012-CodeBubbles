@@ -30,11 +30,14 @@ import edu.brown.cs.bubbles.batt.BattConstants;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.bass.*;
+import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
 
 import java.awt.event.ActionEvent;
+import java.awt.Point;
 import java.util.List;
 
 
@@ -92,7 +95,18 @@ private BucsFactory()
 
 private void setupCallbacks()
 {
-   BaleFactory.getFactory().addContextListener(new BucsContexter());
+   BoardLog.logD("BUCS","Setup for " + BoardSetup.getSetup().getLanguage());
+
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case JAVA :
+	 BaleFactory.getFactory().addContextListener(new BucsContexter());
+	 break;
+      case REBUS :
+	 BassFactory.getFactory().addPopupHandler(new BucsRebusContext());
+	 break;
+      case PYTHON :
+	 break;
+    }
 }
 
 
@@ -107,6 +121,7 @@ private void setupCallbacks()
 private boolean createTestCaseBubble(BaleContextConfig cfg,BattConstants.NewTestMode md)
 {
    String mnm = cfg.getMethodName();
+   if (mnm == null) return false;
 
    List<BumpLocation> locs = BumpClient.getBump().findMethod(null,mnm,false);
    if (locs == null || locs.size() == 0) return false;
@@ -120,7 +135,6 @@ private boolean createTestCaseBubble(BaleContextConfig cfg,BattConstants.NewTest
 
    return true;
 }
-
 
 
 
@@ -141,11 +155,11 @@ private class BucsContexter implements BaleConstants.BaleContextListener {
 
    @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu menu) {
       switch (cfg.getTokenType()) {
-         case METHOD_DECL_ID :
-            menu.add(new BucsAction(cfg));
-            break;
-         default :
-            break;
+	 case METHOD_DECL_ID :
+	    menu.add(new BucsAction(cfg));
+	    break;
+	 default :
+	    break;
        }
     }
 
@@ -154,6 +168,88 @@ private class BucsContexter implements BaleConstants.BaleContextListener {
     }
 
 }	// end of inner class BpareContexter
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle Rebus requests							*/
+/*										*/
+/********************************************************************************/
+
+private class BucsRebusContext implements BassConstants.BassPopupHandler {
+
+   @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,
+         String name,BassName forname) {
+      BumpLocation loc = null;
+      if (forname == null) {
+         String proj = null;
+         int idx = name.indexOf(":");
+         if (idx > 0) {
+            proj = name.substring(0,idx);
+            name = name.substring(idx+1);
+          }
+         List<BumpLocation> locs = null;
+         if (name.length() > 0)
+            locs = BumpClient.getBump().findClassDefinition(proj,name);
+         if (locs != null && locs.size() > 0) loc = locs.get(0);
+         else {
+            locs = BumpClient.getBump().findClassDefinition(proj,name + ".*");
+            if (locs != null && locs.size() > 0) loc = locs.get(0);
+          }
+       }
+      else {
+         switch (forname.getNameType()) {
+            case FILE :
+            case CLASS :
+               loc = forname.getLocation();
+               break;
+            default :
+               break;
+          }
+       }
+   
+      BoardLog.logD("BUCS","Rebus context attempt " + loc);
+   
+      if (loc != null && loc.getFile() != null && loc.getS6Source() != null) {
+         BaleConstants.BaleFileOverview fov =  BaleFactory.getFactory().getFileOverview(loc.getProject(),loc.getFile());
+         try {
+            String ftext = fov.getText(0,fov.getLength());
+            boolean swingfg = ftext.contains("javax.swing");
+            BoardLog.logD("BUCS","Rebus context check " + swingfg);
+   
+            if (swingfg) menu.add(new BucsUIAction(bb,loc));
+          }
+         catch (javax.swing.text.BadLocationException e) { }
+       }
+    }
+
+}	// end of inner class BucsRebusContext
+
+
+
+private static class BucsUIAction extends AbstractAction {
+
+   private BumpLocation for_location;
+   private BudaBubble source_bubble;
+
+   private static final long serialVersionUID = 1;
+
+   BucsUIAction(BudaBubble bb,BumpLocation loc) {
+      super("Show User Interfaces");
+      for_location = loc;
+      source_bubble = bb;
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BucsUserInterfaceBubble bbl = new BucsUserInterfaceBubble(for_location);
+      BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_bubble);
+      if (bba != null) {
+	 bba.addBubble(bbl,source_bubble,null,
+		  BudaConstants.PLACEMENT_LOGICAL|BudaConstants.PLACEMENT_MOVETO|BudaConstants.PLACEMENT_NEW);
+      }
+    }
+
+}	// end of inner class BucsUIAction
 
 
 

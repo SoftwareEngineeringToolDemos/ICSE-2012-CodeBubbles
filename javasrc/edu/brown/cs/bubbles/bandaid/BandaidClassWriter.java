@@ -33,15 +33,6 @@ public class BandaidClassWriter extends ClassWriter
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Private Storage 							*/
-/*										*/
-/********************************************************************************/
-
-private String		for_name;
-
-
 
 /********************************************************************************/
 /*										*/
@@ -52,8 +43,6 @@ private String		for_name;
 BandaidClassWriter(String nm)
 {
    super(COMPUTE_MAXS|COMPUTE_FRAMES);
-
-   for_name = nm;
 }
 
 
@@ -61,8 +50,6 @@ BandaidClassWriter(String nm)
 BandaidClassWriter(String nm,ClassReader r)
 {
    super(r,COMPUTE_MAXS|COMPUTE_FRAMES);
-
-   for_name = nm;
 }
 
 
@@ -81,7 +68,7 @@ protected String getCommonSuperClass(String type1,String type2)
     }
    catch (Throwable t) { }
 
-   System.err.println("BANDAID: COMMON CLASS " + for_name + " " + type1 + " " + type2);
+   // System.err.println("BANDAID: COMMON CLASS " + for_name + " " + type1 + " " + type2);
 
    return "java/lang/Object";
 }

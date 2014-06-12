@@ -18,6 +18,8 @@ $(MODIFIERS)$(TYPE) $(NAME)$(EXTENDS)$(IMPLEMENTS)
 {
 
 
+$(CONTENT)
+
 
 }	// end of $(TYPE) $(NAME)
 

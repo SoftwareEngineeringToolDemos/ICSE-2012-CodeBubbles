@@ -635,46 +635,46 @@ private class CommandHandler implements MintHandler {
       String cmd = args.getArgument(1);
       Element xml = msg.getXml();
       String proj = IvyXml.getAttrString(xml,"PROJECT");
-
+   
       String rslt = null;
-
+   
       try {
-	 rslt = handleCommand(cmd,proj,xml);
+         rslt = handleCommand(cmd,proj,xml);
        }
       catch (PybaseException e) {
-	 String xmsg = "PYBASE: error in command " + cmd + ": " + e;
-	 PybaseMain.logE(xmsg,e);
-	 rslt = "<ERROR><![CDATA[" + xmsg + "]]></ERROR>";
+         String xmsg = "PYBASE: error in command " + cmd + ": " + e;
+         PybaseMain.logE(xmsg,e);
+         rslt = "<ERROR><![CDATA[" + xmsg + "]]></ERROR>";
        }
       catch (Throwable t) {
-	 String xmsg = "PYBASE: Problem processing command " + cmd + ": " + t;
-	 PybaseMain.logE(xmsg);
-	 t.printStackTrace();
-	 StringWriter sw = new StringWriter();
-	 PrintWriter pw = new PrintWriter(sw);
-	 t.printStackTrace(pw);
-	 PybaseMain.logE("TRACE: " + sw.toString());
-	 for (Throwable xt = t.getCause(); xt != null; xt = xt.getCause()) {
-	    StringWriter xsw = new StringWriter();
-	    PrintWriter xpw = new PrintWriter(xsw);
-	    xt.printStackTrace(xpw);
-	    PybaseMain.logE("CAUSED BY: " + xsw.toString());
-	  }
-
-	 rslt = "<ERROR>";
-	 rslt += "<MESSAGE>" + xmsg + "</MESSAGE>";
-	 rslt += "<EXCEPTION><![CDATA[" + t.toString() + "]]></EXCEPTION>";
-	 rslt += "<STACK><![CDATA[" + sw.toString() + "]]></STACK>";
-	 rslt += "</ERROR>";
+         String xmsg = "PYBASE: Problem processing command " + cmd + ": " + t;
+         PybaseMain.logE(xmsg);
+         t.printStackTrace();
+         StringWriter sw = new StringWriter();
+         PrintWriter pw = new PrintWriter(sw);
+         t.printStackTrace(pw);
+         PybaseMain.logE("TRACE: " + sw.toString());
+         for (Throwable xt = t.getCause(); xt != null; xt = xt.getCause()) {
+            StringWriter xsw = new StringWriter();
+            PrintWriter xpw = new PrintWriter(xsw);
+            xt.printStackTrace(xpw);
+            PybaseMain.logE("CAUSED BY: " + xsw.toString());
+          }
+   
+         rslt = "<ERROR>";
+         rslt += "<MESSAGE>" + xmsg + "</MESSAGE>";
+         rslt += "<EXCEPTION><![CDATA[" + t.toString() + "]]></EXCEPTION>";
+         rslt += "<STACK><![CDATA[" + sw.toString() + "]]></STACK>";
+         rslt += "</ERROR>";
        }
-
+   
       msg.replyTo(rslt);
-
+   
       if (shutdown_mint) {
-	 mint_control.shutDown();
-	 synchronized (PybaseMain.this) {
-	    PybaseMain.this.notifyAll();
-	  }
+         mint_control.shutDown();
+         synchronized (PybaseMain.this) {
+            PybaseMain.this.notifyAll();
+          }
        }
     }
 

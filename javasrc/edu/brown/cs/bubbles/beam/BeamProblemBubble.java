@@ -68,7 +68,8 @@ private boolean 		for_tasks;
 private Color			top_color;
 private Color			bottom_color;
 private Color			overview_color;
-
+private Font                    base_font;
+private int			base_height;
 
 private static BoardProperties	beam_properties = BoardProperties.getProperties("Beam");
 
@@ -88,7 +89,7 @@ private static int [] col_sizes = new int [] {
 
 
 private static int [] col_max_size = new int [] {
-   20, 0, 0, 50
+   32, 0, 0, 50
 };
 
 private static int [] col_min_size = new int [] {
@@ -112,6 +113,7 @@ BeamProblemBubble(String typs,boolean task)
    bump_client = BumpClient.getBump();
    active_problems = new ArrayList<BumpProblem>();
    for_tasks = task;
+   base_font = beam_properties.getFont("Beam.problem.font");
 
    if (typs == null) {
       if (for_tasks) allow_types = EnumSet.of(BumpErrorType.NOTICE);
@@ -141,12 +143,13 @@ BeamProblemBubble(String typs,boolean task)
    bump_client.addProblemHandler(null,this);
 
    problem_table = new ProblemTable();
+   base_height = problem_table.getRowHeight();
 
    JScrollPane sp = new JScrollPane(problem_table);
    sp.setSize(new Dimension(beam_properties.getInt(PROBLEM_WIDTH),beam_properties.getInt(PROBLEM_HEIGHT)));
 
    setContentPane(sp,null);
-}
+} 
 
 
 
@@ -299,6 +302,20 @@ private String getToolTip(BumpProblem bp)
    return bp.getErrorType().toString() + ": " + bp.getMessage();
 }
 
+@Override protected void setScaleFactor(double sf)
+{
+   Font ft = base_font;
+   int ht = base_height;
+   if (sf != 1) {
+      float fsz = base_font.getSize();
+      fsz = ((float)(fsz * sf));
+      ft = base_font.deriveFont(fsz);
+      ht = (int)(base_height * sf + 0.5);
+    }
+   problem_table.setFont(ft);
+   problem_table.setRowHeight(ht);
+}
+
 
 
 
@@ -322,25 +339,25 @@ private class BubbleShower implements Runnable {
 
    @Override public void run() {
       if (bass_name == null) {
-         BaleFactory bf = BaleFactory.getFactory();
-         BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,for_file);
-         if (bfo == null) return;
-         int loff = bfo.findLineOffset(at_line);
-         int eoff = bfo.mapOffsetToEclipse(loff);
-   
-         BassFactory bsf = BassFactory.getFactory();
-         bass_name = bsf.findBubbleName(for_file,eoff);
-         if (bass_name == null) return;
-   
-         SwingUtilities.invokeLater(this);
+	 BaleFactory bf = BaleFactory.getFactory();
+	 BaleConstants.BaleFileOverview bfo = bf.getFileOverview(null,for_file);
+	 if (bfo == null) return;
+	 int loff = bfo.findLineOffset(at_line);
+	 int eoff = bfo.mapOffsetToEclipse(loff);
+
+	 BassFactory bsf = BassFactory.getFactory();
+	 bass_name = bsf.findBubbleName(for_file,eoff);
+	 if (bass_name == null) return;
+
+	 SwingUtilities.invokeLater(this);
        }
       else {		// in Swing thread
-         BudaBubble bb = bass_name.createBubble();
-         if (bb == null) return;
-         BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BeamProblemBubble.this);
-         if (bba != null) {
-            bba.addBubble(bb,BeamProblemBubble.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
-          }
+	 BudaBubble bb = bass_name.createBubble();
+	 if (bb == null) return;
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(BeamProblemBubble.this);
+	 if (bba != null) {
+	    bba.addBubble(bb,BeamProblemBubble.this,null,PLACEMENT_LOGICAL|PLACEMENT_MOVETO);
+	  }
        }
     }
 
@@ -373,8 +390,8 @@ private class ProblemTable extends JTable implements MouseListener,
       addMouseListener(this);
       setOpaque(false);
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-	 TableColumn tc = e.nextElement();
-	 tc.setHeaderRenderer(new HeaderRenderer(getTableHeader().getDefaultRenderer()));
+         TableColumn tc = e.nextElement();
+         tc.setHeaderRenderer(new HeaderRenderer(getTableHeader().getDefaultRenderer()));
        }
       error_renderer = new ErrorRenderer[col_names.length];
       warning_renderer = new WarningRenderer[col_names.length];
@@ -443,20 +460,28 @@ private class ProblemTable extends JTable implements MouseListener,
       return getToolTip(bp);
     }
 
+   // @Override public Point getToolTipLocation(MouseEvent e) {
+      // return BudaRoot.computeToolTipLocation(e);
+    // }
+   
+   // @Override public Point getLocationOnScreen() {
+      // return BudaRoot.computeLocationOnScreen(this);
+    // }
+   
    @Override protected void paintComponent(Graphics g) {
       synchronized (active_problems) {
-	 if (top_color.getRGB() != bottom_color.getRGB()) {
-	    Graphics2D g2 = (Graphics2D) g.create();
-	    Dimension sz = getSize();
-	    Paint p = new GradientPaint(0f,0f,top_color,0f,sz.height,bottom_color);
-	    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
-	    g2.setPaint(p);
-	    g2.fill(r);
-	 }
-	 super.paintComponent(g);
+         if (top_color.getRGB() != bottom_color.getRGB()) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            Dimension sz = getSize();
+            Paint p = new GradientPaint(0f,0f,top_color,0f,sz.height,bottom_color);
+            Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+            g2.setPaint(p);
+            g2.fill(r);
+         }
+         super.paintComponent(g);
        }
     }
-
+   
    @Override public String getConfigurator()			{ return "BEAM"; }
    @Override public void outputXml(BudaXmlWriter xw) {
       xw.field("TYPE","PROBLEMS");
@@ -550,18 +575,23 @@ private static class HeaderRenderer implements TableCellRenderer {
 
    private TableCellRenderer default_renderer;
    private Font bold_font;
+   private Font component_font;
 
    HeaderRenderer(TableCellRenderer dflt) {
       default_renderer = dflt;
       bold_font = null;
+      component_font = null;
     }
 
    @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
 							       boolean foc,int r,int c) {
       JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
+      
+      if (component_font != null && t.getFont() != component_font) bold_font = null;
+     
       if (bold_font == null) {
-	 bold_font = cmp.getFont();
-	 bold_font = bold_font.deriveFont(Font.BOLD);
+         component_font = t.getFont();
+	 bold_font = component_font.deriveFont(Font.BOLD);
        }
       cmp.setFont(bold_font);
       cmp.setOpaque(false);

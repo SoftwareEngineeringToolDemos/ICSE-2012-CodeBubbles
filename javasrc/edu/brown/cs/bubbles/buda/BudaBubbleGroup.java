@@ -66,6 +66,7 @@ private int			group_index;
 private GroupTitle		title_field;
 private BoardProperties 	buda_properties;
 private RoundRectangle2D.Double title_region;
+private double                  scale_factor;
 
 private static boolean		complex_shape = false;
 
@@ -97,6 +98,8 @@ BudaBubbleGroup()
    group_title = null;
    title_shape = null;
    title_field = new GroupTitle();
+   
+   scale_factor = 0;
 
    // do this on demand rather than immediately
    // setColor(BudaRoot.getGroupColor(1));
@@ -113,6 +116,9 @@ BudaBubbleGroup()
 
 void addBubble(BudaBubble bb)
 {
+   if (scale_factor == 0) {
+      scale_factor = bb.getScaleFactor();
+    }
    group_bubbles.add(bb);
    bb.addComponentListener(this);
    clearShape();
@@ -299,6 +305,27 @@ BudaRegion correlate(int x,int y)
    if (s != null && s.contains(x,y)) return BudaRegion.GROUP;
 
    return BudaRegion.NONE;
+}
+
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Scaling methods                                                         */
+/*                                                                              */
+/********************************************************************************/
+
+void setScaleFactor(double sf)
+{
+   scale_factor = sf;
+}
+
+
+double getAuraSize()
+{
+   if (scale_factor <= 1) return GROUP_AURA_BUFFER;
+   else return GROUP_AURA_BUFFER * scale_factor;
 }
 
 
@@ -550,11 +577,13 @@ Area getShape()
 private Rectangle getExpandedBounds(BudaBubble b)
 {
    Rectangle bnds = b.getBounds();
+   
+   double sz = getAuraSize();
 
-   bnds.x -= GROUP_AURA_BUFFER;
-   bnds.y -= GROUP_AURA_BUFFER;
-   bnds.width += 2*GROUP_AURA_BUFFER-1;
-   bnds.height += 2*GROUP_AURA_BUFFER-1;
+   bnds.x -= sz;
+   bnds.y -= sz;
+   bnds.width += 2*sz-1;
+   bnds.height += 2*sz-1;
 
    return bnds;
 }
@@ -566,10 +595,11 @@ private Area getBubbleDrawShape(BudaBubble b)
    if (complex_shape) return getBubbleShape(b);
 
    Rectangle br = b.getBounds();
-   double x0=br.getX() - GROUP_AURA_BUFFER;
-   double y0=br.getY() - GROUP_AURA_BUFFER;
-   double width=br.getWidth() + 2*GROUP_AURA_BUFFER-1;
-   double height=br.getHeight() + 2*GROUP_AURA_BUFFER-1;
+   double sz = getAuraSize();
+   double x0=br.getX() - sz;
+   double y0=br.getY() - sz;
+   double width=br.getWidth() + 2*sz-1;
+   double height=br.getHeight() + 2*sz-1;
 
    return new Area(new RoundRectangle2D.Double(x0, y0, width, height, GROUP_AURA_ARC, GROUP_AURA_ARC));
 }
@@ -579,10 +609,11 @@ private Area getBubbleShape(BudaBubble b)
 {
    if (!complex_shape) {
       Rectangle br = b.getBounds();
-      double x0=br.getX() - GROUP_AURA_BUFFER;
-      double y0=br.getY() - GROUP_AURA_BUFFER;
-      double width=br.getWidth() + 2*GROUP_AURA_BUFFER-1;
-      double height=br.getHeight() + 2*GROUP_AURA_BUFFER-1;
+      double sz = getAuraSize();
+      double x0 = br.getX() - sz;
+      double y0 = br.getY() - sz;
+      double width = br.getWidth() + 2*sz-1;
+      double height = br.getHeight() + 2*sz-1;
       return new Area(new Rectangle2D.Double(x0, y0, width, height));
     }
 
@@ -653,7 +684,7 @@ private Point2D getTopPoint()
 	  }
        }
 
-      double topy = bounds.getY() - GROUP_AURA_BUFFER;
+      double topy = bounds.getY() - getAuraSize();
       double topx = bounds.getCenterX();
       top_point=new Point2D.Double(topx, topy-5);
    }

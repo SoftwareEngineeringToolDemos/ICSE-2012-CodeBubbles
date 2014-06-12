@@ -188,6 +188,7 @@ private class Focuser extends FocusAdapter {
 	 showing_hint = true;
 	 setForeground(Color.GRAY);
        }
+      else showing_hint = false;
     }
 
 }	// end of inner class Focuser

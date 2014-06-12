@@ -597,6 +597,11 @@
 	 <TAB NAME="Popular Options"/>
 	 <TAB NAME="Search Options"/>
       </OPT>
+      <OPT NAME="Bwiz.use.class.dialog" DESCRIPTION="Use Detailed Class Dialog" TYPE="BOOLEAN">
+	 <TAB NAME="Text Editor Options"/>
+	 <TAB NAME="Popular Options"/>
+	 <TAB NAME="Search Options"/>
+      </OPT>
    </PACKAGE>
 
    <PACKAGE NAME="Bddt">

@@ -171,7 +171,10 @@ void simulateHover(MouseEvent e)
    BudaRoot root = BudaRoot.findBudaRoot(for_component);
    if (root == null) return;
    Container rootpanel = root.getLayeredPane();
-   Point pt = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),rootpanel);
+   // Point pt = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),rootpanel);
+   Point pt = root.convertPoint((Component) e.getSource(),e.getPoint(),rootpanel);
+   // System.err.println("COMPARE " + pt + " " + pt1);
+   
    pt.x -= dx;
    pt.y -= dy;
 

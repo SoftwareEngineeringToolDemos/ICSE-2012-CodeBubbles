@@ -35,7 +35,7 @@ class BowiTaskManager {
       buda_root = br;
       is_happening = new HashSet<BowiTaskType>();
       for(BowiTaskType btt : BowiTaskType.values()){
-	 is_happening.add(btt);
+         is_happening.add(btt);
       }
       wait_cursor = 0;
    }

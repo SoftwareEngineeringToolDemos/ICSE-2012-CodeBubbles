@@ -399,7 +399,8 @@ void rebuild()
 
       // see if this works - doesn't
       root_node.collapseSingletons();
-
+      root_node.removeEmptyNodes();
+      
       UpdateEvent evt = new UpdateEvent(adds,dels);
       for (BassTreeUpdateListener ul : listener_set) {
 	 ul.handleTreeUpdated(evt);
@@ -472,6 +473,7 @@ private static abstract class BassTreeImpl implements BassTreeBase, BassTreeNode
    BranchNodeType getBranchType()			{ return BranchNodeType.NONE; }
 
    void collapseSingletons()				{ }
+   boolean removeEmptyNodes()				{ return false; }
 
    @Override public String toString()			{ return getLocalName(); }
 
@@ -732,6 +734,26 @@ private static class Branch extends BassTreeImpl {
 	 ti.collapseSingletons();
        }
     }
+   
+   boolean removeEmptyNodes() {
+      boolean chng = true;
+      while (chng) {
+	 chng = false;
+	 for (BassTreeImpl ti : child_nodes) {
+	    if (ti.removeEmptyNodes()) {
+	       chng = true;
+	       break;
+	    }
+	 }
+      }
+      
+      if (!isLeaf() && parent_node != null && getChildCount() == 0) {
+	 parent_node.child_nodes.remove(this);
+	 return true;
+      }
+      
+      return false;
+   }
 
    private void setDisplayName() {
       if (local_name.length() < 32) {

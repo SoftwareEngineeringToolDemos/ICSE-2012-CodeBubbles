@@ -315,7 +315,7 @@
 	 <jvmarg value="-Xmx1024m" />
 	 <arg value="-rebus" />
 	 <arg value="-m" />
-	 <arg value="BUBBLES_DEBUG_spr" />
+	 <arg value="REBUS_DEBUG_spr" />
       </java>
    </target>
 

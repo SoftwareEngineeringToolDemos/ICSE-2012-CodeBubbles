@@ -41,8 +41,7 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.xml.IvyXml;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
+import javax.swing.event.*;
 import javax.swing.text.*;
 
 import java.awt.*;
@@ -55,7 +54,8 @@ import java.util.List;
 
 class BaleFragmentEditor extends SwingGridPanel implements CaretListener, BaleConstants,
 	BudaConstants.BudaBubbleOutputer, BumpConstants.BumpProblemHandler,
-	BumpConstants.BumpBreakpointHandler, BaleConstants.BaleAnnotationListener
+	BumpConstants.BumpBreakpointHandler, BaleConstants.BaleAnnotationListener,
+        BudaConstants.Scalable
 {
 
 
@@ -82,6 +82,7 @@ private Map<BumpProblem,ProblemAnnot> problem_annotations;
 private Map<BumpBreakpoint,BreakpointAnnot> breakpoint_annotations;
 private Set<BaleAnnotation> document_annotations;
 private boolean 	check_annotations;
+private double		scale_factor;
 
 
 private static final long serialVersionUID = 1;
@@ -105,6 +106,7 @@ BaleFragmentEditor(String proj,File file,String name,BaleDocumentIde fdoc,BaleFr
    fragment_regions = new ArrayList<BaleRegion>(regions);
    fragment_name = name;
    check_annotations = true;
+   scale_factor = 1;
 
    setInsets(0);
 
@@ -181,7 +183,6 @@ BaleFragmentType getFragmentType()	{ return fragment_type; }
 
 
 
-
 /********************************************************************************/
 /*										*/
 /*	Handle initial sizing							*/
@@ -215,6 +216,23 @@ void setInitialSize(Dimension d)
    bd.fixElisions();
 }
 
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle scaling								*/
+/*										*/
+/********************************************************************************/
+
+@Override public void setScaleFactor(double sf)
+{
+   if (scale_factor == sf) return;
+   scale_factor = sf;
+   //annot_area.setScaleFactor(sf);
+   //crumb_bar.setScaleFactor(sf);
+   //find_bar.setScaleFactor(sf);
+   editor_pane.setScaleFactor(sf);
+}
 
 
 
@@ -316,7 +334,17 @@ private class HelpMouser extends MouseAdapter {
 @Override public void paint(Graphics g)
 {
    if (check_annotations) checkInitialAnnotations();
-
+   
+//   if (scale_factor == 1 || scale_factor == 0) {
+//      super.paint(g);
+//   }
+//   else {
+//      Graphics2D g1 = (Graphics2D) g.create();
+//      g1.scale(scale_factor,scale_factor);
+//      g1.setClip(0,0,getWidth(),getHeight());
+//      super.paint(g1);
+//   }
+   
    super.paint(g);
 }
 
@@ -473,8 +501,23 @@ private class EditorPane extends BaleEditorPane implements BaleEditor {
       bba.add(finder, new BudaConstraint(BudaBubblePosition.FIXED, bounds.x, bounds.y+bounds.height));
       if (bb != null) bba.setLayer(bb, 1);
       finder.setVisible(true);
-   }
+    }
 
+   void setScaleFactor(double sf) {
+      BaleDocument bd = getBaleDocument();
+      if (bd instanceof BaleDocumentFragment) {
+	  BaleDocumentFragment bf = (BaleDocumentFragment) bd;
+	  bf.setScaleFactor(sf);
+       }
+      bd.baleWriteLock();
+      try {
+	 bd.reportEvent(bd, 0, bd.getLength(), DocumentEvent.EventType.CHANGE, null, null);
+      }
+      finally {
+	 bd.baleWriteUnlock(); 
+      }
+    }
+   
 }	// end of inner class EditorPane
 
 

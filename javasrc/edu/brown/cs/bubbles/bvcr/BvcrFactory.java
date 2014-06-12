@@ -248,7 +248,7 @@ void startBvcrServer()
 	 catch (InterruptedException e) { }
        }
       if (!server_running) {
-	 BoardLog.logE("BVCR","Unable to start bvcr server");
+	 BoardLog.logE("BVCR","Unable to start bvcr server: " + args);
 	 server_running = true; 	// don't try again
        }
     }
@@ -276,7 +276,7 @@ private class BvcrContexter implements BaleContextListener, BassConstants.BassPo
     }
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,String name,
-	    	BassName forname) {
+		BassName forname) {
       BumpLocation loc = null;
       if (forname == null) {
 	 String proj = null;
@@ -286,7 +286,7 @@ private class BvcrContexter implements BaleContextListener, BassConstants.BassPo
 	    name = name.substring(idx+1);
 	 }
 	 List<BumpLocation> locs = null;
-	 if (name.length() > 0) 
+	 if (name.length() > 0)
 	    locs = BumpClient.getBump().findClassDefinition(proj,name);
 	 if (locs != null && locs.size() > 0) {
 	    loc = locs.get(0);

@@ -27,6 +27,8 @@ package edu.brown.cs.bubbles.rebase.java;
 import edu.brown.cs.bubbles.rebase.RebaseConstants;
 import edu.brown.cs.bubbles.rebase.RebaseFile;
 
+import edu.brown.cs.ivy.xml.*;
+
 import org.eclipse.jdt.core.dom.*;
 
 import java.util.*;
@@ -44,10 +46,10 @@ class RebaseJavaSearch implements RebaseConstants.RebaseSearcher, RebaseJavaCons
 /*										*/
 /********************************************************************************/
 
-private RebaseJavaRoot          rebase_root;
-private Set<RebaseSymbol>       match_symbols;
-private List<SearchResult>      result_map;
-private RebaseJavaFile          current_file;
+private RebaseJavaRoot		rebase_root;
+private Set<RebaseSymbol>	match_symbols;
+private List<SearchResult>	result_map;
+private RebaseJavaFile		current_file;
 
 
 
@@ -69,15 +71,68 @@ RebaseJavaSearch(RebaseJavaRoot root)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-void setFile(RebaseJavaFile jf)                 { current_file = jf; }
+void setFile(RebaseJavaFile jf) 		{ current_file = jf; }
 
-List<SearchResult> getMatches()                 { return result_map; }
-Set<RebaseSymbol> getSymbols()                  { return match_symbols; }
+List<SearchResult> getMatches() 		{ return result_map; }
+Set<RebaseSymbol> getSymbols()			{ return match_symbols; }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Output methods								*/
+/*										*/
+/********************************************************************************/
+
+@Override public void outputSearchFor(IvyXmlWriter xw)
+{
+   String what = null;
+   String nm = null;
+   for (RebaseSymbol rs : match_symbols) {
+      RebaseJavaSymbol rjs = (RebaseJavaSymbol) rs;
+      String rwhat = null;
+      switch (rjs.getSymbolKind()) {
+         case ANNOTATION :
+         case NONE :
+         case PACKAGE :
+         default :
+            break;
+         case CLASS :
+         case ENUM :
+         case INTERFACE :
+            rwhat = "Class";
+            break;
+         case CONSTRUCTOR :
+         case METHOD :
+            rwhat = "Function";
+            break;
+         case FIELD :
+            rwhat = "Field";
+            break;
+         case LOCAL :
+            rwhat = "Local";
+            break;
+       }
+      if (rwhat == null) continue;
+      if (nm == null) nm = rjs.getName();
+      if (what == null) what = rwhat;
+      else if (what.equals(rwhat)) continue;
+      else return;
+    }
+   
+   if (what != null) {
+      xw.begin("SEARCHFOR");
+      xw.field("TYPE",what);
+      xw.text(nm);
+      xw.end("SEARCHFOR");
+    }
+}
+
 
 
 
@@ -239,45 +294,45 @@ private class FindSymbolVisitor extends ASTVisitor {
    private boolean match(RebaseJavaSymbol js) {
       if (!search_kind.contains(js.getSymbolKind())) return false;
       if (js.isTypeSymbol()) {
-         RebaseJavaType jt = js.getType();
-         String n1 = jt.getName();
-         int idx1 = n1.indexOf("<");
-         if (idx1 > 0) {
-            String n2 = n1.substring(idx1);
-            n1 = n1.substring(0,idx1);
-            if (!matchGenerics(n2)) return false;
-          }
-         if (!matchName(jt.getName()))return false;
+	 RebaseJavaType jt = js.getType();
+	 String n1 = jt.getName();
+	 int idx1 = n1.indexOf("<");
+	 if (idx1 > 0) {
+	    String n2 = n1.substring(idx1);
+	    n1 = n1.substring(0,idx1);
+	    if (!matchGenerics(n2)) return false;
+	  }
+	 if (!matchName(jt.getName()))return false;
        }
       else if (js.isConstructorSymbol() || js.isMethodSymbol()) {
-         String n1 = js.getFullName();
-         if (js.isConstructorSymbol()) {
-            n1 = js.getClassType().getName();
-          }
-         int idx1 = n1.indexOf("<");
-         if (idx1 > 0) {
-            String n2 = n1.substring(idx1);
-            n1 = n1.substring(0,idx1);
-            if (!matchGenerics(n2)) return false;
-          }
-         if (!matchName(n1)) return false;
-         RebaseJavaType jt = js.getType();
-         String n3 = jt.getName();
-         int idx3 = n3.lastIndexOf(")");
-         // int idx2 = n3.indexOf("(");
-         // String n4 = n3.substring(idx2+1,idx3);
-         if (!matchParameters(jt)) return false;
-         String n5 = n3.substring(idx3+1);
-         if (!js.isConstructorSymbol() && !matchType(n5)) return false;
+	 String n1 = js.getFullName();
+	 if (js.isConstructorSymbol()) {
+	    n1 = js.getClassType().getName();
+	  }
+	 int idx1 = n1.indexOf("<");
+	 if (idx1 > 0) {
+	    String n2 = n1.substring(idx1);
+	    n1 = n1.substring(0,idx1);
+	    if (!matchGenerics(n2)) return false;
+	  }
+	 if (!matchName(n1)) return false;
+	 RebaseJavaType jt = js.getType();
+	 String n3 = jt.getName();
+	 int idx3 = n3.lastIndexOf(")");
+	 // int idx2 = n3.indexOf("(");
+	 // String n4 = n3.substring(idx2+1,idx3);
+	 if (!matchParameters(jt)) return false;
+	 String n5 = n3.substring(idx3+1);
+	 if (!js.isConstructorSymbol() && !matchType(n5)) return false;
        }
       else if (js.isFieldSymbol()) {
-         String n1 = js.getFullName();
-         if (!matchName(n1)) return false;
-         String n2 = js.getType().getName();
-         if (!matchType(n2)) return false;
+	 String n1 = js.getFullName();
+	 if (!matchName(n1)) return false;
+	 String n2 = js.getType().getName();
+	 if (!matchType(n2)) return false;
        }
       else return false;
-   
+
       return true;
     }
 
@@ -324,56 +379,56 @@ private class FindSymbolVisitor extends ASTVisitor {
       int lvl = 0;
       int spos = -1;
       for (int i = 0; i < pat.length(); ++i) {
-         char c = pat.charAt(i);
-         if (c == '(') continue;
-         else if (c == ')') {
-            if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
-            spos = -1;
-            break;
-          }
-         else if (c == '*') {
-            if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
-            spos = -1;
-            extra_parameters = true;
-            break;
-          }
-         else if (c == ',') {
-            if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
-            spos = -1;
-          }
-         else if (c == '<') {
-            if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
-            ++lvl;
-            spos = -1;
-          }
-         else if (c == '>') {
-            if (lvl > 0) --lvl;
-            spos = -1;
-          }
-         else if (spos < 0 && lvl == 0) {
-            spos = i;
-          }
+	 char c = pat.charAt(i);
+	 if (c == '(') continue;
+	 else if (c == ')') {
+	    if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
+	    spos = -1;
+	    break;
+	  }
+	 else if (c == '*') {
+	    if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
+	    spos = -1;
+	    extra_parameters = true;
+	    break;
+	  }
+	 else if (c == ',') {
+	    if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
+	    spos = -1;
+	  }
+	 else if (c == '<') {
+	    if (spos >= 0) parameters_pattern.add(pat.substring(spos,i));
+	    ++lvl;
+	    spos = -1;
+	  }
+	 else if (c == '>') {
+	    if (lvl > 0) --lvl;
+	    spos = -1;
+	  }
+	 else if (spos < 0 && lvl == 0) {
+	    spos = i;
+	  }
        }
       if (spos > 0) parameters_pattern.add(pat.substring(spos));
     }
 
    private boolean matchParameters(RebaseJavaType jt) {
       if (parameters_pattern == null) return true;
-      
+
       List<RebaseJavaType>  ptyps = jt.getComponents();
       for (int i = 0; i < parameters_pattern.size(); ++i) {
-         if (i >= ptyps.size()) return false;
-         String patstr = parameters_pattern.get(i);
-         String actstr = ptyps.get(i).getName();
-         String act1 = actstr;
-         int idx1 = actstr.indexOf("<");
-         if (idx1 >= 0) act1 = actstr.substring(0,idx1);
-         if (!patstr.equals(actstr) && !patstr.equals(act1)) {
-            return false;
-          }
+	 if (i >= ptyps.size()) return false;
+	 String patstr = parameters_pattern.get(i);
+	 String actstr = ptyps.get(i).getName();
+	 String act1 = actstr;
+	 int idx1 = actstr.indexOf("<");
+	 if (idx1 >= 0) act1 = actstr.substring(0,idx1);
+	 if (!patstr.equals(actstr) && !patstr.equals(act1)) {
+	    return false;
+	  }
        }
       if (ptyps.size() == parameters_pattern.size() || extra_parameters) return true;
-      
+
       return false;
     }
 
@@ -464,20 +519,20 @@ ASTVisitor getFindByKeyVisitor(String key)
 
 
 private class FindByKeyVisitor extends ASTVisitor {
-   
+
    private String using_key;
-   
+
    FindByKeyVisitor(String key) {
       using_key = key;
     }
-   
+
    @Override public void postVisit(ASTNode n) {
       RebaseJavaSymbol js = RebaseJavaAst.getDefinition(n);
       if (js != null && current_file != null) {
-         String hdl = js.getHandle(current_file.getFile());
-         if (hdl != null && hdl.equals(using_key)) {
-            match_symbols.add(js);
-          }
+	 String hdl = js.getHandle(current_file.getFile());
+	 if (hdl != null && hdl.equals(using_key)) {
+	    match_symbols.add(js);
+	  }
        }
     }
 }
@@ -508,21 +563,21 @@ private void expandMatchesForImplementations()
    for (RebaseSymbol rs : match_symbols) {
       RebaseJavaSymbol js = (RebaseJavaSymbol) rs;
       if (js.isMethodSymbol() && !js.isConstructorSymbol()) {
-         RebaseJavaType jt = js.getType();
-         String nm = js.getName();
-         RebaseJavaType deft = js.getClassType();
-         Set<RebaseJavaType> chld = getChildTypes(deft);
-         for (RebaseJavaType ct : chld) {
-            RebaseJavaScope scp = ct.getScope();
-            if (scp != null) {
-               RebaseJavaSymbol xsym = scp.lookupMethod(nm,jt);
-               if (!match_symbols.contains(xsym)) add.add(xsym);
-            }
-          }
-         
+	 RebaseJavaType jt = js.getType();
+	 String nm = js.getName();
+	 RebaseJavaType deft = js.getClassType();
+	 Set<RebaseJavaType> chld = getChildTypes(deft);
+	 for (RebaseJavaType ct : chld) {
+	    RebaseJavaScope scp = ct.getScope();
+	    if (scp != null) {
+	       RebaseJavaSymbol xsym = scp.lookupMethod(nm,jt);
+	       if (!match_symbols.contains(xsym)) add.add(xsym);
+	    }
+	  }
+	
        }
     }
-   
+
    match_symbols.addAll(add);
 }
 
@@ -530,22 +585,22 @@ private void expandMatchesForImplementations()
 private Set<RebaseJavaType> getChildTypes(RebaseJavaType jt)
 {
    Set<RebaseJavaType> rslt = new HashSet<RebaseJavaType>();
-   
+
    List<RebaseJavaType> workq = new ArrayList<RebaseJavaType>();
    workq.add(jt);
    while (!workq.isEmpty()) {
       RebaseJavaType ct = workq.remove(0);
       for (RebaseJavaType xt : rebase_root.getAllTypes()) {
-         if (rslt.contains(xt) || xt == jt) continue;
-         if (xt.isClassType()) {
-            if (xt.isCompatibleWith(ct)) {
-               workq.add(xt);
-               rslt.add(xt);
-             }
-          }
+	 if (rslt.contains(xt) || xt == jt) continue;
+	 if (xt.isClassType()) {
+	    if (xt.isCompatibleWith(ct)) {
+	       workq.add(xt);
+	       rslt.add(xt);
+	     }
+	  }
        }
     }
-   
+
    return rslt;
 }
 
@@ -566,46 +621,48 @@ private class LocationVisitor extends ASTVisitor {
       write_only = w;
       cur_symbol = null;
     }
-   
-   @Override public void preVisit(ASTNode n) {
-      cur_symbol = getRelevantSymbol(n);
-    }
 
+   @Override public void preVisit(ASTNode n) {
+      RebaseJavaSymbol s = getRelevantSymbol(n);
+      if (s != null) cur_symbol = s;
+    }
+   
    @Override public void postVisit(ASTNode n) {
       if (cur_symbol != null && cur_symbol == getRelevantSymbol(n)) {
-         if (checkReadWrite(n)) {
-            result_map.add(new Match(current_file,n,cur_symbol,getContainerSymbol(n)));
-          }
+	 if (checkReadWrite(n)) {
+	    result_map.add(new Match(current_file,n,cur_symbol,getContainerSymbol(n)));
+	  }
          cur_symbol = null;
        }
+      
     }
 
    private RebaseJavaSymbol getRelevantSymbol(ASTNode n) {
       RebaseJavaSymbol js = null;
       if (use_defs) {
-	 js = RebaseJavaAst.getDefinition(n);
-	 if (js != null && match_symbols.contains(js)) 
-	    return js;
+         js = RebaseJavaAst.getDefinition(n);
+         if (js != null && match_symbols.contains(js))
+            return js;
        }
       if (use_refs) {
-	 js = RebaseJavaAst.getReference(n);
-	 if (js != null && match_symbols.contains(js)) return js;
+         js = RebaseJavaAst.getReference(n);
+         if (js != null && match_symbols.contains(js)) return js;
        }
       return null;
    }
-   
+
    private RebaseJavaSymbol getContainerSymbol(ASTNode n) {
       while (n != null) {
-	 if (n instanceof BodyDeclaration) {
-	    RebaseJavaSymbol js = RebaseJavaAst.getDefinition(n);
-	    if (js != null) return js;
-	    else System.err.println("BAD BODY DECL");
-	  }
-	 else if (n instanceof VariableDeclarationFragment && n.getParent() instanceof FieldDeclaration) {
-	    RebaseJavaSymbol js = RebaseJavaAst.getDefinition(n);
-	    if (js != null) return js;
-	  }
-	 n = n.getParent();
+         if (n instanceof BodyDeclaration) {
+            RebaseJavaSymbol js = RebaseJavaAst.getDefinition(n);
+            if (js != null) return js;
+            else System.err.println("BAD BODY DECL");
+          }
+         else if (n instanceof VariableDeclarationFragment && n.getParent() instanceof FieldDeclaration) {
+            RebaseJavaSymbol js = RebaseJavaAst.getDefinition(n);
+            if (js != null) return js;
+          }
+         n = n.getParent();
       }
       return null;
    }
@@ -613,19 +670,19 @@ private class LocationVisitor extends ASTVisitor {
 
    private boolean checkReadWrite(ASTNode n) {
       if (read_only == write_only) return true;
-      
+   
       boolean write = false;
       boolean read = true;
-      
+   
       StructuralPropertyDescriptor spd = null;
       for (ASTNode p = n; p != null; p = p.getParent()) {
          boolean done = true;
          switch (p.getNodeType()) {
             case ASTNode.ASSIGNMENT :
                if (spd == Assignment.LEFT_HAND_SIDE_PROPERTY) {
-                  read = false;
-                  write = true;
-                }
+        	  read = false;
+        	  write = true;
+        	}
                break;
             case ASTNode.POSTFIX_EXPRESSION :
                read = true;
@@ -635,9 +692,9 @@ private class LocationVisitor extends ASTVisitor {
                PrefixExpression pfx = (PrefixExpression) p;
                String op = pfx.getOperator().toString();
                if (op.equals("++") || op.equals("--")) {
-                  read = true;
-                  write = true;
-                }
+        	  read = true;
+        	  write = true;
+        	}
                break;
             case ASTNode.ARRAY_ACCESS :
                if (spd == ArrayAccess.ARRAY_PROPERTY) done = false;
@@ -660,32 +717,32 @@ private class LocationVisitor extends ASTVisitor {
          spd = p.getLocationInParent();
          if (done) break;
        }
-      
+   
       if (read && read_only) return true;
       if (write && write_only) return true;
-      
+   
       return false;
     }
-   
+
 }	// end of inner class LocationsVisitor
 
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Search Result                                                           */
-/*                                                                              */
+/*										*/
+/*	Search Result								*/
+/*										*/
 /********************************************************************************/
 
 private static class Match implements SearchResult {
-   
+
    private int match_start;
    private int match_length;
    private RebaseFile match_file;
    private RebaseJavaSymbol match_symbol;
    private RebaseJavaSymbol container_symbol;
-   
+
    Match(RebaseJavaFile jf,ASTNode n,RebaseJavaSymbol js,RebaseJavaSymbol cntr) {
       match_start = n.getStartPosition();
       match_length = n.getLength();
@@ -693,14 +750,14 @@ private static class Match implements SearchResult {
       match_symbol = js;
       container_symbol = cntr;
     }
-   
-   @Override public int getOffset()             	{ return match_start; }
-   @Override public int getLength()             	{ return match_length; }
-   @Override public RebaseJavaSymbol getSymbol() 	{ return match_symbol; }
-   @Override public RebaseJavaSymbol getContainer() 	{ return container_symbol; }
-   @Override public RebaseFile getFile()        	{ return match_file; }
-   
-}       // end of inner class Match
+
+   @Override public int getOffset()			{ return match_start; }
+   @Override public int getLength()			{ return match_length; }
+   @Override public RebaseJavaSymbol getSymbol()	{ return match_symbol; }
+   @Override public RebaseJavaSymbol getContainer()	{ return container_symbol; }
+   @Override public RebaseFile getFile()		{ return match_file; }
+
+}	// end of inner class Match
 
 
 }	// end of class RebaseJavaSearch

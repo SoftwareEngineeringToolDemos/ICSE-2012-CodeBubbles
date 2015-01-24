@@ -10,6 +10,7 @@
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bandaid" target='jar' />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/pybase" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/rebase" />
+      <ant antfile="build.xml" dir="edu/brown/cs/bubbles/nobase" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/board" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bqst" />
       <ant antfile="build.xml" dir="edu/brown/cs/bubbles/bnote" />

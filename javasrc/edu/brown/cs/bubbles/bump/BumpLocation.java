@@ -90,8 +90,11 @@ static {
    symbol_map.put("Package",BumpSymbolType.PACKAGE);
    symbol_map.put("Project",BumpSymbolType.PROJECT);
    symbol_map.put("Local",BumpSymbolType.LOCAL);
-   symbol_map.put("Variable",BumpSymbolType.FIELD);
+   symbol_map.put("Variable",BumpSymbolType.GLOBAL);
    symbol_map.put("Module",BumpSymbolType.MODULE);
+   symbol_map.put("Import",BumpSymbolType.IMPORT);
+   symbol_map.put("Export",BumpSymbolType.EXPORT);
+   symbol_map.put("JSCode",BumpSymbolType.PROGRAM);
 }
 
 

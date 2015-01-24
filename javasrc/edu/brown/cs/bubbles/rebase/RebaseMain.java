@@ -24,7 +24,8 @@
 
 package edu.brown.cs.bubbles.rebase;
 
-import edu.brown.cs.bubbles.rebase.java.RebaseJavaLanguage;
+// import edu.brown.cs.bubbles.rebase.java.RebaseJavaLanguage;
+import edu.brown.cs.bubbles.rebase.newjava.RebaseJavaLanguage;
 import edu.brown.cs.bubbles.rebase.word.RebaseWordFactory;
 
 import edu.brown.cs.ivy.exec.IvySetup;

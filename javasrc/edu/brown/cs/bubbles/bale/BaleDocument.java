@@ -599,6 +599,7 @@ BoardLanguage getLanguage()
    if (f == null) return BoardLanguage.JAVA;
    if (f.startsWith("/REBUS/")) return BoardLanguage.REBUS;
    if (f.endsWith(".py") || f.endsWith(".PY")) return BoardLanguage.PYTHON;
+   if (f.endsWith(".js") || f.endsWith(".JS")) return BoardLanguage.JS;
    if (f.endsWith(".java")) return BoardLanguage.JAVA;
    return BoardLanguage.JAVA;
 }
@@ -958,12 +959,15 @@ BaleIndenter getIndenter()
    if (our_indenter == null) {
       switch (getLanguage()) {
 	 case JAVA :
-         case REBUS :
+	 case REBUS :
 	 default :
 	    our_indenter = new BaleIndenterJava(this);
 	    break;
 	 case PYTHON :
 	    our_indenter = new BaleIndenterPython(this);
+	    break;
+	 case JS :
+	    our_indenter = new BaleIndenterJS(this);
 	    break;
        }
     }

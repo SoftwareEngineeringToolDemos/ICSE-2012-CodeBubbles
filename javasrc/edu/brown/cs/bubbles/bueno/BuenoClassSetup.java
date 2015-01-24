@@ -25,6 +25,7 @@
 package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bass.*;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -137,7 +138,12 @@ private void addTypeReference(String typ)
 
    if (!is_abstract) {
       String mpat = nm + ".*";
-      List<BumpLocation> mthds = bump_client.findMethods(bl.getProject(),mpat,false,true,false,true);
+      // TODO: TRY TO AVOID USING BUMP HERE -- use BASS instead
+      BassFactory bf = BassFactory.getFactory();
+      List<BumpLocation> mthds = bf.findClassMethods(nm);
+      if (mthds == null) {
+         mthds = bump_client.findMethods(bl.getProject(),mpat,false,true,false,true);
+       }
       if (mthds != null) {
 	 for (BumpLocation mbl : mthds) {
 	    int mods = mbl.getModifiers();
@@ -209,6 +215,10 @@ private String getMethodCode(BumpLocation mloc)
    props.put(BuenoKey.KEY_PROJECT,mloc.getProject());
    props.put(BuenoKey.KEY_PACKAGE,property_set.getStringProperty(BuenoKey.KEY_PACKAGE));
    props.put(BuenoKey.KEY_FILE,property_set.getStringProperty(BuenoKey.KEY_FILE));
+   String mname = mloc.getSymbolName();
+   int idx = mname.lastIndexOf(".");
+   if (idx > 0) mname = mname.substring(idx+1);
+   props.put(BuenoKey.KEY_NAME,mname);
    int mods = mloc.getModifiers();
    mods &= Modifier.PUBLIC|Modifier.PROTECTED;
    mods |= MODIFIER_OVERRIDES;

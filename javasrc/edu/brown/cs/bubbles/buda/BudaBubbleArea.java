@@ -1875,8 +1875,10 @@ public boolean setBubbleFloating(BudaBubble bb, boolean fg)
       floating_bubbles.put(bb, loc);
       bb.setFloating(true);
       setLayer(bb,MODAL_LAYER);
-      bbg.removeBubble(bb);
-      checkGroup(bbg);
+      if (bbg != null) {
+         bbg.removeBubble(bb);
+         checkGroup(bbg);
+       }
       synchronized (bubble_links) {
 	 for (Iterator<BudaBubbleLink> it = bubble_links.iterator(); it.hasNext(); ) {
 	    BudaBubbleLink bl = it.next();

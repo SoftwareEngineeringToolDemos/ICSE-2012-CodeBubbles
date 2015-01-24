@@ -435,6 +435,9 @@ void addNewConfigurationActions(JPopupMenu menu)
       case PYTHON :
 	 menu.add(new CreateConfigAction(BumpLaunchConfigType.PYTHON));
 	 break;
+      case JS :
+         menu.add(new CreateConfigAction(BumpLaunchConfigType.JS));
+         break;
       case REBUS :
 	 break;
     }

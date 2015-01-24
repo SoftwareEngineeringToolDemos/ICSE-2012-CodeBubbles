@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 
 
 class BassRepositoryLocation implements BassConstants.BassUpdatingRepository,
-		BassConstants,BumpConstants.BumpChangeHandler
+		BassConstants, BumpConstants.BumpChangeHandler
 {
 
 
@@ -92,7 +92,7 @@ BassRepositoryLocation()
    synchronized (this) {
       while (!is_ready) {
 	 try {
-	    wait();
+	    wait(2000);
 	  }
 	 catch (InterruptedException e) { }
        }
@@ -121,7 +121,7 @@ void waitForNames()
    synchronized (this) {
       while (!is_ready) {
 	 try {
-	    wait();
+	    wait(2000);
 	  }
 	 catch (InterruptedException e) { }
        }
@@ -171,6 +171,49 @@ BassName findBubbleName(File f,int eclipsepos)
 
 
 
+List<BumpLocation> findClassMethods(String cls)
+{
+   List<BumpLocation> rslt = new ArrayList<BumpLocation>();
+   boolean fndcls = false;
+
+   waitForNames();
+
+   int clsln = cls.length();
+
+   synchronized (this) {
+      for (BassName bn : all_names) {
+	 BassNameLocation bnl = (BassNameLocation) bn;
+	 String fnm = bnl.getFullName();
+	 if (fnm == null) continue;
+	 if (fnm.equals(cls) || (fnm.startsWith(cls) && fnm.charAt(clsln) == '.')) {
+	    switch (bnl.getNameType()) {
+	       case CLASS :
+	       case ENUM :
+	       case THROWABLE : 	
+		  fndcls = true;
+		  break;
+	       case INTERFACE :
+		  fndcls = true;
+		  break;
+	       case METHOD :	
+		  String cnm = bnl.getNameHead();
+		  if (cls.equals(cnm)) rslt.add(bnl.getLocation());
+		  break;
+	       default :
+		  break;
+	    }
+
+	  }
+       }
+    }
+
+   if (!fndcls) return null;
+
+   return rslt;
+}
+
+
+
 File findActualFile(File f)
 {
    waitForNames();
@@ -195,7 +238,7 @@ File findActualFile(File f)
 /********************************************************************************/
 
 private void initialize()
-{			
+{	
    synchronized (this) {
       all_names.clear();
       is_ready = false;
@@ -209,15 +252,13 @@ private void initialize()
 
 private synchronized void loadNames()
 {
-   Map<String,BassNameLocation> fieldmap = new HashMap<String,BassNameLocation>();
-   Map<String,BassNameLocation> staticmap = new HashMap<String,BassNameLocation>();
-   Map<String,BassNameLocation> mainmap = new HashMap<String,BassNameLocation>();
+   Map<String,BassNameLocation> usedmap = new HashMap<String,BassNameLocation>();
 
    BumpClient bc = BumpClient.getBump();
    Collection<BumpLocation> locs = bc.findAllNames(null);
    if (locs != null) {
       for (BumpLocation bl : locs) {
-	 addLocation(bl,fieldmap,staticmap,mainmap);
+	 addLocation(bl,usedmap);
        }
     }
 
@@ -227,37 +268,40 @@ private synchronized void loadNames()
 
 
 
-private void addLocation(BumpLocation bl,Map<String,BassNameLocation> fieldmap,
-			    Map<String,BassNameLocation> staticmap,
-			    Map<String,BassNameLocation> mainmap)
+private void addLocation(BumpLocation bl,Map<String,BassNameLocation> usedmap)
 {
    if (!isRelevant(bl)) return;
 
    BassNameLocation bn = new BassNameLocation(bl);
+   String key = null;
+
    switch (bn.getNameType()) {
       case FIELDS :
-	 BassNameLocation fbn = fieldmap.get(bn.getNameHead());
+	 key = "FIELD@@@" + bn.getNameHead();
+	 BassNameLocation fbn = usedmap.get(key);
 	 if (fbn != null) {
 	    fbn.addLocation(bl);
 	    bn = null;
 	  }
-	 else fieldmap.put(bn.getNameHead(),bn);
+	 else usedmap.put(key,bn);
 	 break;
       case MAIN_PROGRAM :
-	 BassNameLocation mbn = mainmap.get(bn.getNameHead());
+	 key = "MAIN@@@" + bn.getNameHead();
+	 BassNameLocation mbn = usedmap.get(key);
 	 if (mbn != null) {
 	    mbn.addLocation(bl);
 	    bn = null;
 	 }
-	 else mainmap.put(bn.getNameHead(),bn);
+	 else usedmap.put(key,bn);
 	 break;
       case STATICS :
-	 BassNameLocation sbn = staticmap.get(bn.getNameHead());
+	 key = "STATIC@@@" + bn.getNameHead();
+	 BassNameLocation sbn = usedmap.get(key);
 	 if (sbn != null) {
 	    sbn.addLocation(bl);
 	    bn = null;
 	  }
-	 else staticmap.put(bn.getNameHead(),bn);
+	 else usedmap.put(key,bn);
 	 break;
       case CLASS :
       case ENUM :
@@ -398,6 +442,18 @@ private boolean fileMatch(String file,File blf)
    if (file == null) return true;
    if (file.equals(blf.getPath())) return true;
    if (blf.getPath().endsWith(file)) return true;
+   if (blf.exists()) return false;
+   int idx = file.indexOf("/",1);
+   if (idx > 0) {
+      String f1 = file.substring(idx);
+      if (blf.getPath().endsWith(f1)) return true;
+   }
+   int idx1 = file.indexOf("/",idx+1);
+   if (idx1 > 0) {
+      String f2 = file.substring(idx1);
+      if (blf.getPath().endsWith(f2)) return true;
+   }
+
    return false;
 }
 
@@ -405,9 +461,7 @@ private boolean fileMatch(String file,File blf)
 
 private void addNamesForFile(String proj,String file,boolean rem)
 {
-   Map<String,BassNameLocation> fieldmap = new HashMap<String,BassNameLocation>();
-   Map<String,BassNameLocation> staticmap = new HashMap<String,BassNameLocation>();
-   Map<String,BassNameLocation> mainmap = new HashMap<String,BassNameLocation>();
+   Map<String,BassNameLocation> usedmap = new HashMap<String,BassNameLocation>();
    List<String> fls = null;
    if (file != null) {
       fls = new ArrayList<String>();
@@ -420,7 +474,7 @@ private void addNamesForFile(String proj,String file,boolean rem)
       if (rem) removeNamesForFile(proj,file);
       if (locs != null) {
 	 for (BumpLocation bl : locs) {
-	    addLocation(bl,fieldmap,staticmap,mainmap);
+	    addLocation(bl,usedmap);
 	  }
        }
     }

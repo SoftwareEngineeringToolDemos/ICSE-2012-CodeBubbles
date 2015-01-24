@@ -123,6 +123,9 @@ public synchronized static BumpClient getBump()
 	 case REBUS :
 	    default_client = new BumpClientRebus();
 	    break;
+         case JS :
+            default_client = new BumpClientJS();
+            break;
        }
       loadProperties();
     }
@@ -428,12 +431,21 @@ public void editFile(String pname,File file,int id,int start,int end,String txt)
    String flds = "FILE='" + file.getPath() + "'";
    if (id >= 0) flds += " ID='" + id + "'";
    flds += " NEWLINE='true'";
-   String edit = "<EDIT START='" + start + "' END='" + end + "'>";
-   if (txt != null) {
-      // TODO: if txt contains ]]> we have to split it
-      edit += "<![CDATA[" + txt + "]]>";
+
+   IvyXmlWriter xw = new IvyXmlWriter();
+   xw.begin("EDIT");
+   xw.field("START",start);
+   xw.field("END",end);
+   if (txt != null && txt.contains("@@@]@@@]@@@>")) {
+      xw.field("ENCODE",true);
+      xw.text(IvyXml.byteArrayToString(txt.getBytes()));
+    }	
+   else if (txt != null) {
+      xw.cdata(txt);
     }
-   edit += "</EDIT>";
+   xw.end("EDIT");
+   String edit = xw.toString();
+   xw.close();
 
    sendMessage("EDITFILE",pname,flds,edit);
 }
@@ -1787,7 +1799,7 @@ public String getFullyQualifiedName(String proj,File file,int start,int end)
    String sgn = IvyXml.getTextElement(cnt,"TYPE");
    if (sgn != null) {
       int idx0 = sgn.indexOf('(');
-      if (idx0 >= 0) {		
+      if (idx0 >= 0) {
 	 int idx1 = sgn.lastIndexOf(')');
 	 String ps = sgn.substring(idx0,idx1+1);
 	 try {
@@ -1872,6 +1884,41 @@ public Element rename(String proj,File file,int spos,int epos,String newname)
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Move methods								*/
+/*										*/
+/********************************************************************************/
+
+public Element moveClass(String proj,String cls,BumpLocation loc,String topkg)
+{
+   waitForIDE();
+
+   saveAll();
+
+   String rq = "WHAT='COMPUNIT'";
+   if (loc != null) {
+      rq += " FILE='" + loc.getFile().getPath() + "'";
+      rq += " START='" + loc.getDefinitionOffset() + "'";
+      rq += " END='" + loc.getDefinitionEndOffset() + "'";
+      rq += " HANDLE='" + loc.getKey() + "'";
+    }
+   rq += " NAME='" + cls + "'";
+   rq += " TARGET='" + topkg + "'";
+   rq += " EDIT='TRUE'";
+
+   Element xml = getXmlReply("MOVEELEMENT",proj,rq,null,0);
+
+   if (!IvyXml.isElement(xml,"RESULT")) return null;
+
+   Element edits = IvyXml.getChild(xml,"EDITS");
+   BoardLog.logD("BALE","RENAME EDITS: " + IvyXml.convertXmlToString(edits));
+
+   return edits;
+}
+
+
+
 public boolean renameResource(String proj,File file,String newname)
 {
    waitForIDE();
@@ -1893,7 +1940,10 @@ public boolean delete(String proj,String what,String path,boolean rebuild)
    if (path != null) rq += " PATH='" + path + "'";
    if (!rebuild) rq += " REBUILD='F'";
    Element xml = getXmlReply("DELETE",proj,rq,null,0);
-   if (!IvyXml.isElement(xml,"RESULT")) return false;
+   if (!IvyXml.isElement(xml,"RESULT")) {
+      BoardLog.logX("BUMP","Delete failed: " + IvyXml.convertXmlToString(xml));
+      return false;
+    }
 
    if (rebuild) compile(true,true,true);
 
@@ -2462,6 +2512,8 @@ public BumpProcess startDebug(BumpLaunchConfig cfg,String id)
 	 break;
       case UNKNOWN :
 	 break;
+      case JS :
+         break;
    }
 
    String ctr = cfg.getContractArgs();

@@ -335,6 +335,8 @@ public BudaBubble getCreateProjectBubble()
 	 return bpc.createProjectCreationBubble();
       case PYTHON :
 	 return BuenoPythonProject.createNewPythonProjectBubble();
+      case JS :
+         return BuenoJsProject.createNewJsProjectBubble();
       case REBUS :
 	 return null;
       default :
@@ -350,8 +352,8 @@ private static class CreateListener implements BudaConstants.ButtonListener {
       BudaBubble bb = bf.getCreateProjectBubble();
       if (bb == null) return;
       bba.addBubble(bb,null,pt,BudaConstants.PLACEMENT_LOGICAL|
-		       BudaConstants.PLACEMENT_MOVETO |
-		       BudaConstants.PLACEMENT_USER);
+        	       BudaConstants.PLACEMENT_MOVETO |
+        	       BudaConstants.PLACEMENT_USER);
     }
 
 }	// end of inner class CreateListener

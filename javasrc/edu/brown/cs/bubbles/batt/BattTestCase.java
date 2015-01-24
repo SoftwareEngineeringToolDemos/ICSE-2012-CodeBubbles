@@ -32,8 +32,8 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
 
 
 class BattTestCase implements BattConstants, BattConstants.BattTest, Comparable<BattTestCase>
@@ -56,8 +56,8 @@ private String		fail_message;
 private String		fail_trace;
 private CountData	count_data;
 private long		update_time;
-private String          test_class;
-
+private String		test_class;
+private Set<String>	annotation_types;
 
 
 
@@ -75,6 +75,7 @@ BattTestCase(String name)
    fail_message = null;
    fail_trace = null;
    update_time = System.currentTimeMillis();
+   annotation_types = new HashSet<String>();
 }
 
 
@@ -92,14 +93,14 @@ BattTestCase(String name)
 synchronized TestStatus getStatus()				{ return test_status; }
 synchronized TestState getState()				{ return test_state; }
 
-synchronized void setStatus(TestStatus sts)	
+synchronized void setStatus(TestStatus sts)
 {
    if (sts == test_status) return;
    update();
    test_status = sts;
 }
 
-synchronized void setState(TestState st)	
+synchronized void setState(TestState st)
 {
    if (st == test_state) return;
    update();
@@ -126,7 +127,16 @@ synchronized boolean handleTestState(Element e)
 
    TestStatus osts = test_status;
    TestState ost = test_state;
-
+   
+   boolean ignore = false;
+   annotation_types.clear();
+   for (Element ane : IvyXml.children(e,"ANNOT")) {
+      String ant = IvyXml.getText(ane);
+      annotation_types.add(ant);
+      if (ant.startsWith("@org.junit.Ignore")) ignore = true;
+    }
+   if (IvyXml.getAttrBool(e,"EMPTY")) ignore = true;
+   
    String sts = IvyXml.getAttrString(e,"STATUS");
    if (sts.equals("FAILURE")) {
       test_status = TestStatus.FAILURE;
@@ -139,11 +149,12 @@ synchronized boolean handleTestState(Element e)
 	 test_state = TestState.UP_TO_DATE;
     }
    else {
+      if (ignore) test_state = TestState.IGNORED;
       test_status = TestStatus.UNKNOWN;
       count_data = null;
     }
    if (osts != test_status) chng = true;
-
+   
    if (test_status == TestStatus.FAILURE) {
       String omsg = fail_message;
       fail_message = IvyXml.getTextElement(e,"EXCEPTION");
@@ -264,6 +275,10 @@ synchronized void longReport(IvyXmlWriter xw)
 
    if (count_data != null) count_data.report(xw);
 
+   for (String s : annotation_types) {
+      xw.textElement("ANNOT",s);
+    }
+
    xw.end("TEST");
 }
 
@@ -283,8 +298,8 @@ synchronized String getToolTip()
    buf.append("<c><b>TEST ");
    buf.append(test_name);
    buf.append("</b></c><hr>");
-   buf.append("<table>");
-   buf.append("<tr><td>STATUS</td><td>");
+   buf.append("<table cellpadding=0 cellspacing=1 align=left >");
+   buf.append("<tr><td>STATUS&nbsp;</td><td>");
    buf.append(test_status.toString());
    buf.append("</td></tr>");
    buf.append("<tr><td>STATE</td><td>");
@@ -296,9 +311,14 @@ synchronized String getToolTip()
       buf.append("</td></tr>");
     }
    if (fail_trace != null) {
-      buf.append("<tr><td>TRACE</td><td><pre>");
-      buf.append(fail_trace);
-      buf.append("</pre></td></tr");
+      StringTokenizer tok = new StringTokenizer(fail_trace,"\n\t");
+      String s1 = tok.nextToken();
+      buf.append("<tr><td>TRACE</td><td>" + s1 + "</td></tr>");
+      while (tok.hasMoreTokens()) {
+	 String s = tok.nextToken();
+	 buf.append("<tr><td></td><td>&nbsp;&nbsp;" + s + "</td></tr>");
+      }
+	 
     }
    buf.append("</table>");
 

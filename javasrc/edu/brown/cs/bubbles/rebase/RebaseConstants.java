@@ -184,7 +184,7 @@ interface RebaseProjectSemantics {
   
   RebaseSearcher findSymbols(String pattern,String kind);
   RebaseSearcher findSymbolAt(String file,int soff,int eoff);
-  RebaseSearcher findSymbolByKey(String file,String key);
+  RebaseSearcher findSymbolByKey(String proj,String file,String key);
   RebaseSearcher findTypes(RebaseSearcher rs);
   void outputLocations(RebaseSearcher rs,boolean def,boolean ref,
         boolean impl,boolean ronly,boolean wonly,IvyXmlWriter xw);
@@ -197,6 +197,7 @@ interface RebaseProjectSemantics {
 
 
 interface RebaseSearcher { 
+   void outputSearchFor(IvyXmlWriter xw);
 }
 
 

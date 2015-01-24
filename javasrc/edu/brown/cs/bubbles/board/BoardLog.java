@@ -110,6 +110,9 @@ private void setupLogger()
       case PYTHON :
 	 logname = "pybles";
 	 break;
+      case JS :
+         logname = "nobbles";
+         break;
       case REBUS :
 	 logname = "rebus";
 	 break;
@@ -156,8 +159,8 @@ private void setupLogger()
        }
     }
 
+   String lgnm = "bedrock";
    if (wsd != null) {
-      String lgnm = "bedrock";
       monitor_log = null;
       switch (BoardSetup.getSetup().getLanguage()) {
 	 case JAVA :
@@ -170,6 +173,9 @@ private void setupLogger()
 	 case REBUS :
 	    lgnm = "rebase";
 	    break;
+         case JS :
+            lgnm = "nobase";
+            break;
        }
       bedrock_log = new File(wsd,lgnm + "_log" + ".log");
     }
@@ -180,7 +186,7 @@ private void setupLogger()
       if (use_stderr) {
 	 // doing debugging: use a single file and keep it around
 	 debug_log = new File(wsd,bnm + id + ".log");
-	 File t1 = new File(wsd,"bedrock_log" + ".save");
+	 File t1 = new File(wsd,lgnm + "_log" + ".save");
 	 File t2 = new File(wsd,bnm + id + ".save");
 	 if (bedrock_log.exists()) bedrock_log.renameTo(t1);
 	 if (debug_log.exists()) debug_log.renameTo(t2);

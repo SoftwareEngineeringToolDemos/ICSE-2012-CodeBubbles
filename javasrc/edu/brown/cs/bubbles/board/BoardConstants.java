@@ -70,6 +70,7 @@ enum BoardHighlightStyle {
 enum BoardLanguage {
    JAVA,
    PYTHON,
+   JS,
    REBUS
 }
 
@@ -88,6 +89,7 @@ enum BoardLanguage {
 String BOARD_PROP_BASE = System.getProperty("user.home") + File.separator + ".bubbles";
 String BOARD_SUDS_PROP_BASE = System.getProperty("user.home") + File.separator + ".suds";
 String BOARD_PYTHON_PROP_BASE = System.getProperty("user.home") + File.separator + ".pybles";
+String BOARD_NODEJS_PROP_BASE = System.getProperty("user.home") + File.separator + ".nobbles";
 String BOARD_REBUS_PROP_BASE = System.getProperty("user.home") + File.separator + ".rebus";
 
 

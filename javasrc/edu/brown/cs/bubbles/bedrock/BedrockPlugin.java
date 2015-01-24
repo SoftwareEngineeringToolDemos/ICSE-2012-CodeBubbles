@@ -522,7 +522,8 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
        bedrock_java.handleOpenEditor(proj, IvyXml.getAttrString(xml,"FILE"), IvyXml.getAttrInt(xml,"LINENUMBER"));
     }
    else if (cmd.equals("PATTERNSEARCH")) {
-      bedrock_java.handleJavaSearch(proj,IvyXml.getAttrString(xml,"PATTERN"),
+      bedrock_java.handleJavaSearch(proj,IvyXml.getAttrString(xml,"BID","*"),
+				       IvyXml.getAttrString(xml,"PATTERN"),
 				       IvyXml.getAttrString(xml,"FOR"),
 				       IvyXml.getAttrBool(xml,"DEFS",true),
 				       IvyXml.getAttrBool(xml,"REFS",true),
@@ -734,6 +735,17 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 			       IvyXml.getAttrBool(xml,"DOEDIT",false),
 			       IvyXml.getAttrString(xml,"FILES"),xw);
     }
+   else if (cmd.equals("MOVEELEMENT")) {
+      bedrock_editor.moveElement(proj,IvyXml.getAttrString(xml,"BID","*"),
+	    IvyXml.getAttrString(xml,"WHAT"),
+	    IvyXml.getAttrString(xml,"FILE"),
+	    IvyXml.getAttrInt(xml,"START"),IvyXml.getAttrInt(xml,"END"),
+	    IvyXml.getAttrString(xml,"NAME"),IvyXml.getAttrString(xml,"HANDLE"),
+	    IvyXml.getAttrString(xml,"TARGET"),
+	    IvyXml.getAttrBool(xml,"UPDATEQUALIFIED",true),
+	    IvyXml.getAttrBool(xml,"UPDATEREFS",true),
+	    IvyXml.getAttrBool(xml,"EDIT",false),xw);
+    }
    else if (cmd.equals("RENAMERESOURCE")) {
       bedrock_editor.renameResource(proj,IvyXml.getAttrString(xml,"BID","*"),
 				       IvyXml.getAttrString(xml,"FILE"),
@@ -751,21 +763,21 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
    else if (cmd.equals("FORMATCODE")) {
       bedrock_editor.formatCode(proj,IvyXml.getAttrString(xml,"BID","*"),
 				   IvyXml.getAttrString(xml,"FILE"),
-                                   IvyXml.getAttrInt(xml,"START"),
-                                   IvyXml.getAttrInt(xml,"END"),xw);
+				   IvyXml.getAttrInt(xml,"START"),
+				   IvyXml.getAttrInt(xml,"END"),xw);
     }
    else if (cmd.equals("FINDREGIONS")) {
       bedrock_editor.getTextRegions(proj,IvyXml.getAttrString(xml,"BID","*"),
-            IvyXml.getAttrString(xml,"FILE"),
-            IvyXml.getAttrString(xml,"CLASS"),
-            IvyXml.getAttrBool(xml,"PREFIX",false),
-            IvyXml.getAttrBool(xml,"STATICS",false),
-            IvyXml.getAttrBool(xml,"COMPUNIT",false),
-            IvyXml.getAttrBool(xml,"IMPORTS",false),
-            IvyXml.getAttrBool(xml,"PACKAGE",false),
-            IvyXml.getAttrBool(xml,"TOPDECLS",false),
-            IvyXml.getAttrBool(xml,"FIELDS",false),
-            IvyXml.getAttrBool(xml,"ALL",false),xw);
+	    IvyXml.getAttrString(xml,"FILE"),
+	    IvyXml.getAttrString(xml,"CLASS"),
+	    IvyXml.getAttrBool(xml,"PREFIX",false),
+	    IvyXml.getAttrBool(xml,"STATICS",false),
+	    IvyXml.getAttrBool(xml,"COMPUNIT",false),
+	    IvyXml.getAttrBool(xml,"IMPORTS",false),
+	    IvyXml.getAttrBool(xml,"PACKAGE",false),
+	    IvyXml.getAttrBool(xml,"TOPDECLS",false),
+	    IvyXml.getAttrBool(xml,"FIELDS",false),
+	    IvyXml.getAttrBool(xml,"ALL",false),xw);
     }
    else if (cmd.equals("FINDBYKEY")) {
       bedrock_editor.findByKey(proj,
@@ -928,6 +940,10 @@ private static class EditDataImpl implements EditData {
       end_offset = IvyXml.getAttrInt(e,"END",start_offset);
       edit_text = IvyXml.getText(e);
       if (edit_text != null && edit_text.length() == 0) edit_text = null;
+      if (edit_text != null && IvyXml.getAttrBool(e,"ENCODE")) {
+	 byte [] bytes = IvyXml.stringToByteArray(edit_text);
+	 edit_text = new String(bytes);
+       }
     }
 
    public int getOffset()			{ return start_offset; }

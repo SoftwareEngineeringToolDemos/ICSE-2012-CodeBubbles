@@ -306,6 +306,9 @@ BaleEditorKit(BoardLanguage lang)
 	 case PYTHON :
 	    language_kit = new BaleEditorKitPython();
 	    break;
+	 case JS :
+	    language_kit = new BaleEditorKitJS();
+	    break;
        }
     }
 
@@ -386,6 +389,9 @@ static Action findAction(String name,BoardLanguage lang)
 	    break;
 	 case PYTHON :
 	    lkit = new BaleEditorKitPython();
+	    break;
+	 case JS :
+	    lkit = new BaleEditorKitJS();
 	    break;
        }
     }
@@ -1876,7 +1882,7 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       BaleEditorPane target = getBaleEditor(e);
       BaleDocument bd = target.getBaleDocument();
       if (!checkEditor(target)) return;
-
+   
       int spos = target.getSelectionStart();
       int epos = target.getSelectionEnd();
       int slno = bd.findLineNumber(spos);
@@ -1885,51 +1891,51 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       epos = bd.findLineOffset(elno+1)-1;
       String cnts;
       try {
-	 cnts = bd.getText(spos,epos-spos);
+         cnts = bd.getText(spos,epos-spos);
        }
       catch (BadLocationException ex) {
-	 BoardLog.logE("BALE","Problem getting extract text",ex);
-	 return;
+         BoardLog.logE("BALE","Problem getting extract text",ex);
+         return;
        }
-
+   
       BudaBubble bbl = BudaRoot.findBudaBubble(target);
       if (bbl == null) return;
-
+   
       String fnm = bd.getFragmentName();
       String aft = null;
       String cls = null;
       switch (bd.getFragmentType()) {
-	 case FILE :
-	 case NONE :
-	    return;
-	 case METHOD :
-	    aft = fnm;
-	    cls = fnm;
-	    int idx1 = cls.indexOf("(");
-	    if (idx1 >= 0) cls = cls.substring(0,idx1);
-	    idx1 = cls.lastIndexOf(".");
-	    if (idx1 >= 0) cls = cls.substring(0,idx1);
-	    break;
-	 case FIELDS :
-	 case STATICS :
-	 case MAIN :
-	 case HEADER :
-	    cls = fnm;
-	    int idx2 = cls.lastIndexOf(".");
-	    cls = cls.substring(0,idx2);
-	    break;
-	 default:
-	    break;
+         case FILE :
+         case NONE :
+            return;
+         case METHOD :
+            aft = fnm;
+            cls = fnm;
+            int idx1 = cls.indexOf("(");
+            if (idx1 >= 0) cls = cls.substring(0,idx1);
+            idx1 = cls.lastIndexOf(".");
+            if (idx1 >= 0) cls = cls.substring(0,idx1);
+            break;
+         case FIELDS :
+         case STATICS :
+         case MAIN :
+         case HEADER :
+            cls = fnm;
+            int idx2 = cls.lastIndexOf(".");
+            cls = cls.substring(0,idx2);
+            break;
+         default:
+            break;
        }
-
+   
       if (cls == null) return;
-
+   
       BuenoProperties props = new BuenoProperties();
       props.put(BuenoConstants.BuenoKey.KEY_CONTENTS,cnts);
       BuenoLocation loc = BuenoFactory.getFactory().createLocation(bd.getProjectName(),cls,aft,true);
-
+   
       BuenoFactory.getFactory().createMethodDialog(bbl,null,props,loc,
-						      "Enter Signature of Extracted Method",this);
+        					      "Enter Signature of Extracted Method",this);
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
@@ -2459,7 +2465,7 @@ private static boolean doClassSearchAction(Collection<BumpLocation> locs)
    int len = baseloc.getDefinitionEndOffset() - baseloc.getDefinitionOffset();
    if (baseloc.getDefinitionOffset() < 0) return true;
    File f = baseloc.getFile();
-   if (!f.exists()) return true;
+   if (!f.exists() && !f.getPath().startsWith("/REBUS/")) return true;
 
    switch (bst) {
       case CLASS :
@@ -2507,6 +2513,7 @@ private static void handleSearchAction(ActionEvent e,Collection<BumpLocation> lo
       case FIELD :
       case FUNCTION :
       case CONSTRUCTOR :
+      case GLOBAL :
 	 nm = nm.substring(0,idx);
 	 break;
       default :

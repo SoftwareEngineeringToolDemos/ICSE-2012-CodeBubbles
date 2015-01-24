@@ -288,7 +288,7 @@ private void findSymbols(RebaseJavaSearch search,String pattern,String kind)
 }
 
 
-@Override public RebaseSearcher findSymbolByKey(String file,String key)
+@Override public RebaseSearcher findSymbolByKey(String proj,String file,String key)
 {
    resolve();
 

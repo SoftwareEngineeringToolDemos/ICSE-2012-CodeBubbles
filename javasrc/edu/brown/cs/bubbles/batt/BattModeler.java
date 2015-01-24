@@ -140,8 +140,11 @@ void setDisplayMode(Set<DisplayMode> newmd)
 
 
 
-void updateTestModel(Element sts)
+void updateTestModel(Element sts,boolean full)
 {
+   Set<BattTestCase> del = new HashSet<BattTestCase>();
+   if (full) del.addAll(test_cases.values());
+   
    synchronized (this) {
       for (Element t : IvyXml.children(sts,"TEST")) {
 	 String nm = IvyXml.getAttrString(t,"NAME");
@@ -152,6 +155,7 @@ void updateTestModel(Element sts)
 	    test_cases.put(nm,btc);
 	    newfg = true;
 	  }
+         del.remove(btc);
 	 boolean fg = btc.handleTestState(t);
 	 if (newfg) {
 	    modelNewTestCase(btc);
@@ -161,6 +165,11 @@ void updateTestModel(Element sts)
 	    modelChangeTestCase(btc);
 	    modelUpdated();
 	  }
+       }
+      
+      for (BattTestCase btc : del) {
+         test_cases.remove(btc.getName());
+         modelRemoveTestCase(btc);
        }
     }
 
@@ -181,7 +190,7 @@ void updateTestModel(Element sts)
    Element e = msg.getXml();
 
    if (cmd.equals("STATUS")) {
-      updateTestModel(e);
+      updateTestModel(e,false);
     }
 
    msg.replyTo();
@@ -225,6 +234,16 @@ private synchronized void modelChangeTestCase(BattTestCase btc)
       if (!v.get(i).equals(table_model.getValueAt(idx,i)))
 	 table_model.setValueAt(v.get(i),idx,i);
     }
+}
+
+
+private synchronized void modelRemoveTestCase(BattTestCase btc)
+{
+   int idx = table_cases.indexOf(btc);
+   if (idx < 0) return;
+   
+   table_cases.remove(btc);
+   table_model.removeRow(idx);
 }
 
 
@@ -280,7 +299,10 @@ private boolean checkDisplay(BattTestCase btc)
       if (btc.getStatus() == TestStatus.SUCCESS) return true;
     }
 
-   if (display_mode.contains(DisplayMode.ALL)) return true;
+   if (display_mode.contains(DisplayMode.ALL)) {
+      if (btc.getState() == TestState.IGNORED) return false;
+      return true;
+    }
 
    return false;
 }

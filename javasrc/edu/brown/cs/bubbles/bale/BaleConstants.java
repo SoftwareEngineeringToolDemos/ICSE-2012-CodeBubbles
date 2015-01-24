@@ -77,6 +77,9 @@ enum BaleFragmentType {
    STATICS,				// static initializers (python evaluations)
    MAIN,				// python main program
    HEADER,				// class header
+   IMPORTS,                             // set of import statements
+   EXPORTS,                             // set of export statements
+   CODE,                                // set of evaluations
    ROFILE,				// Read-only file (not in IDE)
    ROMETHOD,				// read-only method (not in IDE)
 }
@@ -456,8 +459,8 @@ Color BALE_CARET_COLOR = Color.BLACK;
 /**
  *	The background color for the editor when there are errors in the code.
  **/
-//Color BALE_ERROR_BACKGROUND = new Color(0xffe0e0);
 String BALE_ERROR_BACKGROUND = "Bale.error.background";
+String BALE_ERROR_USE_BKG = "Bale.error.use.background";
 
 
 /**

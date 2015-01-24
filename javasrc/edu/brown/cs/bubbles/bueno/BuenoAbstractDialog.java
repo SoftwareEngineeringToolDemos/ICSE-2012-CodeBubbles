@@ -171,6 +171,8 @@ public void setLabel(String lbl)
 
 abstract void doCreate(BudaBubbleArea bba,Point p);
 
+protected BuenoType getCreationType()		{ return the_validator.getCreationType(); }
+
 private void update()
 {
    if (accept_button != null) {

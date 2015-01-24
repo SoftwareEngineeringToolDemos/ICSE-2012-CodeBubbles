@@ -57,6 +57,8 @@ private static Map<String,BaleTokenType> java_keyword_map;
 private static Set<String>	java_op_set;
 private static Map<String,BaleTokenType> python_keyword_map;
 private static Set<String>	python_op_set;
+private static Map<String,BaleTokenType> js_keyword_map;
+private static Set<String>	js_op_set;
 
 private static final String OP_CHARS = "=<!~?:>|&+-*/^%\\";
 
@@ -78,6 +80,8 @@ static BaleTokenizer create(String text,BaleTokenState start,BoardLanguage bl)
 	 return new JavaTokenizer(text,start);
       case PYTHON :
 	 return new PythonTokenizer(text,start);
+      case JS :
+	 return new JSTokenizer(text,start);
     }
 }
 
@@ -119,6 +123,8 @@ static Collection<String> getKeywords(BoardLanguage bl)
 	 return java_keyword_map.keySet();
       case PYTHON :
 	 return python_keyword_map.keySet();
+      case JS :
+	 return js_keyword_map.keySet();
     }
 }
 
@@ -309,21 +315,6 @@ private BaleToken getNextToken()
 	  }
        }
       return scanString();
-//	for ( ; ; ) {
-//	 ch = nextChar();
-//	 if (ch == '"') return buildToken(BaleTokenType.STRING);
-//	 else if (ch == '\n' || ch == '\r' || ch == 0xffff) {
-//	    backup();
-//	    return buildToken(BaleTokenType.BADSTRING);
-//	  }
-//	 else if (ch == '\\') {
-//	    ch = nextChar();
-//	    if (ch == '\n' || ch == '\r' || ch == 0xffff) {
-//	       backup();
-//	       return buildToken(BaleTokenType.BADSTRING);
-//	     }
-//	  }
-//	 }
     }
    else if (ch == '\'') {
       for ( ; ; ) {
@@ -863,6 +854,121 @@ static {
    python_op_set.add("**=");
    python_op_set.add("\\");
 }
+
+
+
+/********************************************************************************/
+/*										*/
+/*	JavaScript tokenizer							*/
+/*										*/
+/********************************************************************************/
+
+private static class JSTokenizer extends BaleTokenizer {
+
+   JSTokenizer(String text,BaleTokenState start) {
+      super(text,start);
+    }
+
+   protected BaleTokenType getKeyword(String s) { return js_keyword_map.get(s); }
+   protected boolean isOperator(String s)	{ return js_op_set.contains(s); }
+   protected boolean useSlashSlashComments()	{ return true; }
+   protected boolean useSlashStarComments()	{ return true; }
+   protected boolean useHashComments()		{ return false; }
+   protected boolean useMultiLineString()	{ return false; }
+
+}	// end of inner class JSTokenizer
+
+
+static {
+   js_keyword_map = new HashMap<String,BaleTokenType>();
+   js_keyword_map.put("break",BaleTokenType.BREAK);
+   js_keyword_map.put("case",BaleTokenType.CASE);
+   js_keyword_map.put("catch",BaleTokenType.CATCH);
+   js_keyword_map.put("class",BaleTokenType.CLASS);
+   js_keyword_map.put("const",BaleTokenType.KEYWORD);
+   js_keyword_map.put("continue",BaleTokenType.KEYWORD);
+   js_keyword_map.put("debugger",BaleTokenType.KEYWORD);
+   js_keyword_map.put("default",BaleTokenType.DEFAULT);
+   js_keyword_map.put("delete",BaleTokenType.KEYWORD);
+   js_keyword_map.put("do",BaleTokenType.DO);
+   js_keyword_map.put("else",BaleTokenType.ELSE);
+   js_keyword_map.put("enum",BaleTokenType.ENUM);
+   js_keyword_map.put("export",BaleTokenType.KEYWORD);
+   js_keyword_map.put("extends",BaleTokenType.KEYWORD);
+   js_keyword_map.put("false",BaleTokenType.KEYWORD);
+   js_keyword_map.put("finally",BaleTokenType.FINALLY);
+   js_keyword_map.put("for",BaleTokenType.FOR);
+   js_keyword_map.put("function",BaleTokenType.KEYWORD);
+   js_keyword_map.put("if",BaleTokenType.IF);
+   js_keyword_map.put("in",BaleTokenType.KEYWORD);
+   js_keyword_map.put("implements",BaleTokenType.KEYWORD);
+   js_keyword_map.put("import",BaleTokenType.KEYWORD);
+   js_keyword_map.put("instanceof",BaleTokenType.KEYWORD);
+   js_keyword_map.put("interface",BaleTokenType.INTERFACE);
+   js_keyword_map.put("let",BaleTokenType.KEYWORD);
+   js_keyword_map.put("new",BaleTokenType.NEW);
+   js_keyword_map.put("null",BaleTokenType.KEYWORD);
+   js_keyword_map.put("package",BaleTokenType.KEYWORD);
+   js_keyword_map.put("private",BaleTokenType.KEYWORD);
+   js_keyword_map.put("protected",BaleTokenType.KEYWORD);
+   js_keyword_map.put("public",BaleTokenType.KEYWORD);
+   js_keyword_map.put("return",BaleTokenType.RETURN);
+   js_keyword_map.put("static",BaleTokenType.STATIC);
+   js_keyword_map.put("super",BaleTokenType.KEYWORD);
+   js_keyword_map.put("switch",BaleTokenType.SWITCH);
+   js_keyword_map.put("this",BaleTokenType.KEYWORD);
+   js_keyword_map.put("throw",BaleTokenType.KEYWORD);
+   js_keyword_map.put("true",BaleTokenType.KEYWORD);
+   js_keyword_map.put("try",BaleTokenType.TRY);
+   js_keyword_map.put("typeof",BaleTokenType.KEYWORD);
+   js_keyword_map.put("var",BaleTokenType.KEYWORD);
+   js_keyword_map.put("void",BaleTokenType.TYPEKEY);
+   js_keyword_map.put("while",BaleTokenType.WHILE);
+   js_keyword_map.put("with",BaleTokenType.KEYWORD);
+   js_keyword_map.put("yield",BaleTokenType.KEYWORD);
+
+   js_op_set = new HashSet<String>();
+   js_op_set.add("=");
+   js_op_set.add("<");
+   js_op_set.add("!");
+   js_op_set.add("~");
+   js_op_set.add("?");
+   js_op_set.add(":");
+   js_op_set.add("==");
+   js_op_set.add("===");
+   js_op_set.add("<=");
+   js_op_set.add(">=");
+   js_op_set.add("!=");
+   js_op_set.add("!==");
+   js_op_set.add("||");
+   js_op_set.add("&&");
+   js_op_set.add("++");
+   js_op_set.add("--");
+   js_op_set.add("+");
+   js_op_set.add("-");
+   js_op_set.add("*");
+   js_op_set.add("/");
+   js_op_set.add("&");
+   js_op_set.add("|");
+   js_op_set.add("^");
+   js_op_set.add("%");
+   js_op_set.add("<<");
+   js_op_set.add("+=");
+   js_op_set.add("-=");
+   js_op_set.add("*=");
+   js_op_set.add("/=");
+   js_op_set.add("&=");
+   js_op_set.add("|=");
+   js_op_set.add("^=");
+   js_op_set.add("%=");
+   js_op_set.add("<<=");
+   js_op_set.add(">>=");
+   js_op_set.add(">>>=");
+   js_op_set.add(">>");
+   js_op_set.add(">>>");
+   js_op_set.add(">");
+}
+
 
 
 

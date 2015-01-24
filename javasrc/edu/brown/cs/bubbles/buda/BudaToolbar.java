@@ -263,8 +263,10 @@ private static class MenuListener extends AbstractAction implements ActionListen
       bba.add(pnl,bc,0);
       bba.setLayer(pnl, JLayeredPane.DRAG_LAYER+2);
       pnl.setVisible(true);
-      Dimension d = pnl.getContentPane().getPreferredSize();
-      pnl.setSize(new Dimension(d.width+3,d.height+8));
+      if (pnl.getContentPane() != null) {
+	 Dimension d = pnl.getContentPane().getPreferredSize();
+	 if (d != null) pnl.setSize(new Dimension(d.width+3,d.height+8));
+       }
       pnl.revalidate();
       pnl.repaint();
    }

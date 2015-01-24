@@ -722,6 +722,7 @@ private static class KeyAction extends BhelpAction {
    private boolean do_control;
    private boolean do_shift;
    private boolean do_alt;
+   private boolean do_meta;
    private int	   key_code;
    private boolean do_press;
    private boolean do_release;
@@ -731,6 +732,14 @@ private static class KeyAction extends BhelpAction {
       do_control = IvyXml.getAttrBool(xml,"CONTROL");
       do_shift = IvyXml.getAttrBool(xml,"SHIFT");
       do_alt = IvyXml.getAttrBool(xml,"ALT");
+      do_meta = IvyXml.getAttrBool(xml,"META");
+      boolean domenu = IvyXml.getAttrBool(xml,"MENU");
+      if (domenu) {
+	 int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+	 if (mask == Event.META_MASK) do_meta |= true;
+	 else do_control |= true;
+       }
+
       key_code = IvyXml.getAttrInt(xml,"CODE",0);
       do_press = IvyXml.getAttrBool(xml,"DOWN");
       do_release = IvyXml.getAttrBool(xml,"UP");
@@ -756,10 +765,12 @@ private static class KeyAction extends BhelpAction {
 	 if (do_control) ctx.keyPress(KeyEvent.VK_CONTROL);
 	 if (do_shift) ctx.keyPress(KeyEvent.VK_SHIFT);
 	 if (do_alt) ctx.keyPress(KeyEvent.VK_ALT);
+	 if (do_meta) ctx.keyPress(KeyEvent.VK_META);
 	 if (key_code != 0) ctx.keyPress(key_code);
        }
       if (do_release) {
 	 if (key_code != 0) ctx.keyRelease(key_code);
+	 if (do_meta) ctx.keyRelease(KeyEvent.VK_META);
 	 if (do_alt) ctx.keyRelease(KeyEvent.VK_ALT);
 	 if (do_shift) ctx.keyRelease(KeyEvent.VK_SHIFT);
 	 if (do_control) ctx.keyRelease(KeyEvent.VK_CONTROL);

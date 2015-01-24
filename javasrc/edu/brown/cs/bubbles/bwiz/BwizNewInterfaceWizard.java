@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              BwizNewInterfaceWizard.java                                     */
-/*                                                                              */
-/*      Wizard to create a new interface                                        */
-/*                                                                              */
+/*										*/
+/*		BwizNewInterfaceWizard.java					*/
+/*										*/
+/*	Wizard to create a new interface					*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 /* SVN: $Id$ */
@@ -37,17 +37,17 @@ class BwizNewInterfaceWizard extends BwizNewWizard
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Constructors								*/
+/*										*/
 /********************************************************************************/
 
 
@@ -63,24 +63,24 @@ BwizNewInterfaceWizard(BuenoLocation loc)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-@Override protected Creator getCreator()        { return new InterfaceCreator(); }
+@Override protected Creator getCreator()	{ return new InterfaceCreator(); }
 
-@Override protected String getNameText()        { return "Interface Name"; }
-@Override protected String getNameHoverText() 
+@Override protected String getNameText()	{ return "Interface Name"; }
+@Override protected String getNameHoverText()
 {
-   return "<html>Enter the new interface name." + 
+   return "<html>Enter the new interface name." +
    " Such names usually start with an uppercase letter";
 }
 
-@Override protected String getSecondText()      { return null; }
+@Override protected String getSecondText()	{ return null; }
 @Override protected String getSecondHoverText() { return null; }
 
-@Override protected String getListText()        { return "Extends: "; }
+@Override protected String getListText()	{ return "Extends: "; }
 @Override protected String getListHoverText()
 {
    return "Any interfaces extened by this interface. Press ENTER" +
@@ -90,33 +90,34 @@ BwizNewInterfaceWizard(BuenoLocation loc)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Interface Creator                                                       *//*                                                                              */
+/*										*/
+/*	Interface Creator							*/
+/*										*/
 /********************************************************************************/
 
 private class InterfaceCreator extends Creator {
-   
+
    protected BudaBubble doCreate(BudaBubbleArea bba,Point pt,String fullname,BuenoProperties bp) {
       BudaBubble nbbl = null;
       BuenoLocation bl = at_location;
       BuenoFactory bf = BuenoFactory.getFactory();
       String proj = property_set.getProjectName();
       String pkg = property_set.getPackageName();
-      
+
       if (bl == null) bl = bf.createLocation(proj,pkg,null,true);
       bf.createNew(BuenoType.NEW_INTERFACE,bl,bp);
       if (bubble_creator == null)
-         nbbl = BaleFactory.getFactory().createFileBubble(proj,null,fullname);
+	 nbbl = BaleFactory.getFactory().createFileBubble(proj,null,fullname);
       else
-         bubble_creator.createBubble(proj,fullname,bba,pt);
-      
+	 bubble_creator.createBubble(proj,fullname,bba,pt);
+
       return nbbl;
     }
-   
-}       // end of inner class EnumCreator 
+
+}	// end of inner class EnumCreator
 
 
-}       // end of class BwizNewInterfaceWizard
+}	// end of class BwizNewInterfaceWizard
 
 
 

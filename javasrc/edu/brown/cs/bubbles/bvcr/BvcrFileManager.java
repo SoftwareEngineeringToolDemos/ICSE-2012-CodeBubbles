@@ -274,6 +274,7 @@ private class BvcrAnnotation implements BaleAnnotation {
    private File for_file;
    private int line_number;
    private Position file_pos;
+   
 
    BvcrAnnotation(String proj,File f,int line) throws BadLocationException {
       for_project = proj;
@@ -296,7 +297,7 @@ private class BvcrAnnotation implements BaleAnnotation {
 
    @Override public Color getBackgroundColor() {
       // compute background color based on user
-      return Color.RED;
+      return new Color(0x40ff0000,true);
     }
 
    @Override public String getToolTip() {

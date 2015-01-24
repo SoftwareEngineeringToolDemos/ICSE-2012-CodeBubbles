@@ -183,7 +183,21 @@ private class MethodCreator implements BuenoMethodCreatorInstance,
       BoardProperties bp = BoardProperties.getProperties("Bwiz");
       if (!bp.getBoolean("Bwiz.use.class.dialog")) return false;
 
-      BwizNewWizard ccwiz = new BwizNewClassWizard(insert);
+      BwizNewWizard ccwiz = null;
+      switch (typ) {
+	 case NEW_CLASS :
+	    ccwiz = new BwizNewClassWizard(insert);
+	    break;
+	 case NEW_INTERFACE :
+	    ccwiz = new BwizNewInterfaceWizard(insert);
+	    break;
+	 case NEW_ENUM :
+	    ccwiz = new BwizNewEnumWizard(insert);
+	    break;
+	 default :
+	    return false;
+       }
+      
       ccwiz.setBubbleCreator(newer);
       WizardBubble bb = new WizardBubble(ccwiz,ccwiz.getFocus());
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(src);

@@ -504,11 +504,10 @@ private void setupElements()
 	 root = new BaleElement.DeclSet(this,null);
 	 break;
       case STATICS :
-	 root = new BaleElement.DeclSet(this,null);
-	 break;
       case MAIN :
-	 root = new BaleElement.DeclSet(this,null);
-	 break;
+      case IMPORTS :
+      case EXPORTS :
+      case CODE :
       case HEADER :
 	 root = new BaleElement.DeclSet(this,null);
 	 break;

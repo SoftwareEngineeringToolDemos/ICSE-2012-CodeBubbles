@@ -13,12 +13,14 @@
 <entry key="Bass.panel.top.color">96ffffff</entry>
 <entry key="Bass.panel.bottom.color">968080ff</entry>
 <entry key="Bass.panel.select.background">ffb8cfe5</entry>
+<entry key="Bass.delete.method">true</entry>
 <entry key="Bass.delete.project">false</entry>
 <entry key="Bass.delete.package">false</entry>
 <entry key="Bass.delete.class">true</entry>
 <entry key="Bass.delete.file">false</entry>
 <entry key="Bass.delete.confirm">true</entry>
 <entry key="Bass.delete.rebuild">true</entry>
+<entry key="Bass.move.class">true</entry>
 </properties>
 
 

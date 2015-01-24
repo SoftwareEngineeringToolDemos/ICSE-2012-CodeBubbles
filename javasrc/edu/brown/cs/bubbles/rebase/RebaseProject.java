@@ -371,6 +371,7 @@ synchronized void findAll(String file,int soff,int eoff,boolean defs,boolean ref
    RebaseProjectSemantics rs = getResolvedSemantics();
 
    RebaseSearcher search = rs.findSymbolAt(file,soff,eoff);
+   search.outputSearchFor(xw);
 
    rs.outputLocations(search,defs,refs,imps,ronly,wonly,xw);
 }
@@ -387,7 +388,7 @@ synchronized void findByKey(String file,String key,IvyXmlWriter xw)
 {
    RebaseProjectSemantics rs = getResolvedSemantics();
 
-   RebaseSearcher search = rs.findSymbolByKey(file,key);
+   RebaseSearcher search = rs.findSymbolByKey(project_name,file,key);
    rs.outputLocations(search,true,false,false,false,false,xw);
 }
 

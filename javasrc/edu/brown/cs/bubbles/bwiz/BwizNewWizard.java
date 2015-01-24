@@ -350,9 +350,12 @@ private class ChooseProject implements ActionListener {
 
    void set() {
       if (project_dropdown != null) {
-	 String proj = project_dropdown.getSelectedItem().toString();
-	 property_set.put(BuenoKey.KEY_PROJECT,proj);
-	 updateSignature();
+	 Object obj = project_dropdown.getSelectedItem();
+	 if (obj != null) {
+	    String proj = obj.toString();
+	    property_set.put(BuenoKey.KEY_PROJECT,proj);
+	    updateSignature();
+	  }
       }
     }
 
@@ -681,31 +684,34 @@ protected abstract class Creator implements ActionListener, Runnable {
 
    private Point bubble_point;
    private BudaBubbleArea bubble_area;
-   
+
    Creator() {
       bubble_point = null;
       bubble_area = null;
    }
 
    @Override public void actionPerformed(ActionEvent e) {
+      if (list_panel != null && list_panel.isActive()) {
+	 list_panel.addCurrentItem();
+       }
       if (!new_validator.checkParsing()) return;
 
       BudaBubble bbl = BudaRoot.findBudaBubble(BwizNewWizard.this);
       BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bbl);
       if (bbl == null || bba == null) return;
-      
+
       Rectangle r = BudaRoot.findBudaLocation(bbl);
       Point pt = r.getLocation();
       bba.removeBubble(bbl);
 
       bubble_point = pt;
       bubble_area = bba;
-      
+
       BoardThreadPool.start(this);
    }
 
    abstract protected BudaBubble doCreate(BudaBubbleArea bba,Point pt,String nm,BuenoProperties bp);
-   
+
    @Override public void run() {
       BowiFactory.startTask(BowiTaskType.CREATE_BUBBLE);
       try {

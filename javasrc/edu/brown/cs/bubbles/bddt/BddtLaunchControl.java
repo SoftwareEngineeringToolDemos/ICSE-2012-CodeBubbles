@@ -1384,6 +1384,12 @@ private class EditorContextListener implements BaleFactory.BaleContextListener {
 		     rv = rv1.getValue("this?" + id);
 		   }
 		  break;
+	       case STATIC_FIELD_ID :
+	          BumpRunValue rv2 = frm.getValue("this");
+	          String typ = rv2.getType();
+	          typ = typ.replace("$",".");
+	          // TODO: need to get static value here
+	          break;
 	       default :
 		  break;
 	     }

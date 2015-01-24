@@ -179,7 +179,8 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 
    BubbleData bd = findClosestBubble(bt,stk,frame,godown);
    if (bd != null && bd.match(bt,stk,frame)) {
-      if (bd.getBubbleType() == BubbleType.USER) createUserStackBubble(bd,godown);
+      if (bd.getBubbleType() == BubbleType.USER) 
+	 createUserStackBubble(bd,godown);
       bd.update(stk,frame);
       showBubble(bd.getBubble());
       return null;
@@ -279,7 +280,7 @@ private BudaBubble createSourceBubble(BumpThreadStack stk,int frm,BubbleType typ
 	 bb = BaleFactory.getFactory().createMethodBubble(proj,mid);
 	 if (bb == null) {
 	    bb = BaleFactory.getFactory().createMethodBubble(null,mid);
-	  }
+	  }      
        }
     }
    else {
@@ -999,6 +1000,10 @@ private static class BubbleData {
 	    lvl = i;
 	    break;
 	  }
+	 else if (frm != null && stk.getFrame(i) != null && frm.getId() == stk.getFrame(i).getId()) {
+	    lvl = i;
+	    break;
+	 }
        }
       if (lvl != frame_level || stk.getNumFrames() != stack_depth) return false;
       return matchFrameMethod(frm,for_frame);

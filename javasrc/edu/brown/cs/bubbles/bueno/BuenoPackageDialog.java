@@ -107,7 +107,9 @@ protected void setupPanel(SwingGridPanel pnl)
    bf.createNew(BuenoType.NEW_PACKAGE,insertion_point,property_set);
 
    // create the initial class
-   bf.createNew(create_type,insertion_point,property_set);
+   BuenoType ctyp = getCreationType();
+   if (ctyp == null) ctyp = BuenoType.NEW_TYPE;
+   bf.createNew(ctyp,insertion_point,property_set);
 
    String proj = insertion_point.getProject();
    File f = insertion_point.getInsertionFile();

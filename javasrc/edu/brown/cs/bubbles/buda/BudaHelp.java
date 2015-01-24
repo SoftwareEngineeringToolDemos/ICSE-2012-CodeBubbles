@@ -36,10 +36,6 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.parser.ParserDelegator;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -174,7 +170,7 @@ void simulateHover(MouseEvent e)
    // Point pt = SwingUtilities.convertPoint((Component) e.getSource(),e.getPoint(),rootpanel);
    Point pt = root.convertPoint((Component) e.getSource(),e.getPoint(),rootpanel);
    // System.err.println("COMPARE " + pt + " " + pt1);
-   
+
    pt.x -= dx;
    pt.y -= dy;
 
@@ -364,79 +360,6 @@ public static void main(String [] args)
 {
    Parser2 parser = new Parser2(BoardSetup.getSetup().getLibraryPath(HELP_RESOURCE),"helptext.html");
    parser.parse();
-}
-
-
-
-
-@SuppressWarnings("unused") 
-private static void oldParser()
-{
-   File helpfile = new File(BoardSetup.getSetup().getLibraryPath(HELP_RESOURCE));
-   Element xml = IvyXml.loadXmlFromFile(helpfile);
-   List<WhenInfo> whens = new ArrayList<WhenInfo>();
-   List<TodoInfo> todos = new ArrayList<TodoInfo>();
-   HTMLEditorKit.Parser par = new ParserDelegator();
-   for (Element he : IvyXml.children(xml,"HELP")) {
-      String key = IvyXml.getAttrString(he,"KEY");
-      String when = IvyXml.getAttrString(he,"WHEN");
-      String tag = "when_" + key;
-      WhenInfo wi = new WhenInfo(key,when,tag);
-      whens.add(wi);
-      String htmltext = IvyXml.getTextElement(he,"TEXT");
-      ParseHandler pp = new ParseHandler(wi);
-      try {
-	 par.parse(new StringReader(htmltext),pp,true);
-	 todos.addAll(pp.getTodoItems());
-       }
-      catch (IOException e) { }
-    }
-
-   PrintWriter pw = null;
-   try {
-      pw = new PrintWriter(new FileWriter("helptext.html"));
-      pw.println("<html><head>");
-      pw.println("<title>The Code Bubbles How-To Page</title>");
-      pw.println("<script type='text/javascript'>");
-      pw.println("function demo(x) {");
-      pw.println("var xmlhttp = new XMLHttpRequest();");
-      pw.println("xmlhttp.open('GET','http://localhost:19888/' + x,false);");
-      pw.println("xmlhttp.send(null); }");
-      pw.println("</script>");
-      pw.println("</head>");
-      pw.println("<body>");
-      pw.println("<h1 align='center'>The Code Bubbles How-To Page</h1>");
-      for (WhenInfo wi : whens) {
-	 pw.print("<p align='left'><a href='#" + wi.getTag() + "'>");
-	 pw.println(wi.getDescription() + "</a>");
-	 pw.println("<ul>");
-	 for (TodoInfo ti : todos) {
-	    if (ti.getWhen() == wi) {
-	       pw.print("<li>To <a href='#" + ti.getTag() + "'>");
-	       pw.println(ti.getName() + "</a></li>");
-	     }
-	  }
-	 pw.println("</ul></p>");
-       }
-      for (WhenInfo wi : whens) {
-	 pw.println("<hr />");
-	 pw.print("<a name='" + wi.getTag() + "'></a>");
-	 pw.println("<h2>" + wi.getDescription() + ":</h2>");
-	 for (TodoInfo ti : todos) {
-	    if (ti.getWhen() == wi) {
-	       pw.print("<a name='" + ti.getTag() + "'></a>");
-	       pw.println("<h3>To " + ti.getName() + "</h3>");
-	       pw.println("<blockquote><p>");
-	       pw.println(ti.getHtml());
-	       pw.println("</p></blockquote>");
-	     }
-	  }
-       }
-      pw.println("</body></html>");
-      pw.close();
-    }
-   catch (IOException e) {
-    }
 }
 
 
@@ -650,168 +573,10 @@ private static class Parser2 {
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Stored information about help tasks					*/
-/*										*/
-/********************************************************************************/
-
-private static class WhenInfo {
-
-   private String when_desc;
-   private String when_tag;
-
-   WhenInfo(String id,String desc,String tag) {
-      when_desc = desc;
-      when_tag = tag;
-    }
-
-   String getTag()		{ return when_tag; }
-   String getDescription()	{ return when_desc; }
-
-}	// end of inner class WhenInfo
 
 
-private static class TodoInfo {
-
-   private WhenInfo todo_when;
-   private String todo_name;
-   private String todo_html;
-   private String todo_tag;
-   private static int todo_counter = 0;
-
-   TodoInfo(WhenInfo wi,String name,String html) {
-      todo_when = wi;
-      todo_name = name;
-      todo_html = html;
-      todo_tag = "todo_"+ (++todo_counter);
-    }
-
-   WhenInfo getWhen()			{ return todo_when; }
-   String getTag()			{ return todo_tag; }
-   String getName()			{ return todo_name; }
-   String getHtml()			{ return todo_html; }
-
-}	// end of inner class TodoInfo
 
 
-private static class ParseHandler extends HTMLEditorKit.ParserCallback {
-
-   enum ParseState { START, KEY, PREKEY, POSTKEY, SHOWME, END };
-
-
-   private WhenInfo when_item;
-   private List<TodoInfo> todo_items;
-   private StringBuffer todo_buffer;
-   private StringBuffer html_buffer;
-   private ParseState parse_state;
-
-   ParseHandler(WhenInfo wi) {
-      when_item = wi;
-      todo_items = new ArrayList<TodoInfo>();
-      todo_buffer = new StringBuffer();
-      html_buffer = new StringBuffer();
-      parse_state = ParseState.START;
-    }
-
-   List<TodoInfo> getTodoItems()		{ return todo_items; }
-
-   @Override public void handleSimpleTag(HTML.Tag t,MutableAttributeSet a,int pos) {
-      handleStartTag(t,a,pos);
-    }
-
-   @Override public void handleStartTag(HTML.Tag t,MutableAttributeSet a,int pos) {
-      if (parse_state == ParseState.START) {
-	 if (t == HTML.Tag.BODY) parse_state = ParseState.PREKEY;
-	 return;
-       }
-      if (parse_state == ParseState.END || parse_state == ParseState.SHOWME) return;
-      if (t == HTML.Tag.P) {
-	 finishItem();
-	 return;
-       }
-      else if (t == HTML.Tag.A) {
-	 String v = a.getAttribute(HTML.Attribute.HREF).toString();
-	 if (v.startsWith("showme:")) {
-	    int idx = v.indexOf(":");
-	    String what = v.substring(idx+1);
-	    html_buffer.append("<form><input onclick='demo(\"" + what + "\");' type='button' value='Show Me' /></form>");
-	    parse_state = ParseState.SHOWME;
-	    return;
-	  }
-       }
-      StringBuffer buf = new StringBuffer();
-      buf.append("<" + t.toString());
-      for (Enumeration<?> e = a.getAttributeNames(); e.hasMoreElements(); ) {
-	 Object k = e.nextElement();
-	 Object v = a.getAttribute(k);
-	 buf.append(" " + k.toString() + "='" + v.toString() + "'");
-       }
-      buf.append(">");
-      if (parse_state == ParseState.KEY) todo_buffer.append(buf);
-      html_buffer.append(buf);
-      if (parse_state == ParseState.PREKEY && t == HTML.Tag.B) parse_state = ParseState.KEY;
-    }
-
-   @Override public void handleEndTag(HTML.Tag t,int pos) {
-      String v = "</" + t.toString() + ">";
-      switch (parse_state) {
-	 case START :
-	 case END :
-	    return;
-	 case PREKEY :
-	 case POSTKEY :
-	    if (t == HTML.Tag.P) {
-	       finishItem();
-	     }
-	    else {
-	       html_buffer.append(v);
-	     }
-	    if (t == HTML.Tag.BODY) parse_state = ParseState.END;
-	    break;
-	 case KEY :
-	    if (t == HTML.Tag.B) {
-	       parse_state = ParseState.POSTKEY;
-	     }
-	    else todo_buffer.append(v);
-	    html_buffer.append(v);
-	    break;
-	 case SHOWME :
-	    if (t == HTML.Tag.A) {
-	       parse_state = ParseState.POSTKEY;
-	     }
-	    break;
-       }
-    }
-
-   @Override public void handleText(char [] data,int pos) {
-      switch (parse_state) {
-	 case START :
-	 case END :
-	 case SHOWME :
-	    break;
-	 case PREKEY :
-	 case POSTKEY :
-	    html_buffer.append(data);
-	    break;
-	 case KEY :
-	    html_buffer.append(data);
-	    todo_buffer.append(data);
-	    break;
-       }
-    }
-
-   private void finishItem() {
-      if (todo_buffer.length() > 0) {
-	 TodoInfo ii = new TodoInfo(when_item,todo_buffer.toString(),html_buffer.toString());
-	 todo_items.add(ii);
-       }
-      todo_buffer = new StringBuffer();
-      html_buffer = new StringBuffer();
-      parse_state = ParseState.PREKEY;
-    }
-
-}	// end of inner class Parser
 
 
 

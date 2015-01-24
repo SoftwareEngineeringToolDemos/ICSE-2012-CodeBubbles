@@ -91,6 +91,7 @@ enum TestState {
    RUNNING,
    STOPPED,
    EDITED,
+   IGNORED,
    NEEDS_CHECK,
    CANT_RUN,
    UP_TO_DATE

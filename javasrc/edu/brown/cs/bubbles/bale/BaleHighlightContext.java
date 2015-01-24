@@ -294,13 +294,14 @@ private void startHighlight(CaretEvent start)
 	       styp = loc.getSourceType();
 	       if (styp == BumpSymbolType.UNKNOWN) styp = loc.getSymbolType();
 	     }
-	    if (locsr != null) removeDefs(locsr);
+	    if (locsr != null && styp != BumpSymbolType.FUNCTION) removeDefs(locsr);
 	    switch (styp) {
 	       case UNKNOWN :
 		  locsw = bump_client.findReferences(doc.getProjectName(),doc.getFile(),spos,epos,1000);
 		  break;
 	       case FIELD :
 	       case LOCAL :
+               case GLOBAL :
 		  locsw = bump_client.findRWReferences(doc.getProjectName(),
 							  doc.getFile(),spos,epos,true,500);
 		  locsd = bump_client.findDefinition(doc.getProjectName(),

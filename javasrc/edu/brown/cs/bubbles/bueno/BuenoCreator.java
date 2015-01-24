@@ -26,11 +26,11 @@
 package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.board.BoardProperties;
-import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.*;
 
 import java.io.*;
 import java.lang.reflect.Modifier;
-import java.util.Date;
+import java.util.*;
 
 
 abstract class BuenoCreator implements BuenoConstants
@@ -44,6 +44,8 @@ abstract class BuenoCreator implements BuenoConstants
 /********************************************************************************/
 
 private static int     tab_size;
+
+private static int	HIDDEN_ABSTRACT = 16384;
 
 static {
    BoardProperties bp = BoardProperties.getProperties("Bueno");
@@ -277,6 +279,16 @@ protected void createMethod(BuenoType typ,BuenoLocation where,BuenoProperties pr
 	 setupConstructor(buf,props);
 	 break;
       case NEW_METHOD :
+	 String c1 = where.getClassName();
+	 List<BumpLocation> bls = BumpClient.getBump().findClassDefinition(where.getProject(),c1);
+	 if (bls != null && bls.size() == 1) {
+	    BumpLocation bl = bls.get(0);
+	    if (bl.getSymbolType() == BumpConstants.BumpSymbolType.INTERFACE) {
+	       int mod = props.getModifiers();
+	       mod |= HIDDEN_ABSTRACT;
+	       props.put(BuenoKey.KEY_MODIFIERS,mod);
+	    }
+	 }
 	 setupMethod(buf,props);
 	 break;
       case NEW_GETTER :
@@ -319,7 +331,7 @@ protected void setupMethod(StringBuffer buf,BuenoProperties props)
    if (returns == null) {
       props.put(BuenoKey.KEY_RETURNS,"void");
     }
-
+   // CHECK IF NAME IS CORRECT HERE
    if (props.getStringProperty(BuenoKey.KEY_CONTENTS) == null) {
       props.put(BuenoKey.KEY_CONTENTS,"// method body goes here");
     }
@@ -516,7 +528,8 @@ protected void methodText(StringBuffer buf,BuenoProperties props)
    pbuf.append("$(ITAB)$(ATTRIBUTES)$(MODIFIERS)$(RETURNS) $(NAME)($(PARAMETERS))");
 
    int mods = props.getModifiers();
-   if (Modifier.isAbstract(mods) || Modifier.isNative(mods)) {
+   if (Modifier.isAbstract(mods) || Modifier.isNative(mods) ||
+	    (mods & HIDDEN_ABSTRACT) != 0) {
       pbuf.append(";\n");
     }
    else {

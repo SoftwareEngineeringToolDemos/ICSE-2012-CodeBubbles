@@ -692,19 +692,24 @@ static void outputDebugTarget(IJavaDebugTarget tgt,IvyXmlWriter xw)
 
 static void outputThread(IJavaThread trd,IvyXmlWriter xw)
 {
+   if (trd == null) return;
+
    xw.begin("THREAD");
+
    try {
       xw.field("NAME",trd.getName());
     }
    catch (DebugException e) {
       BedrockPlugin.logE("Problem outputing thread",e);
     }
+
    try {
       xw.field("GROUP",trd.getThreadGroupName());
     }
    catch (DebugException e) {
       BedrockPlugin.logE("Problem outputing thread",e);
     }
+
    try {
       boolean fg = trd.hasStackFrames();
       if (fg) {
@@ -716,12 +721,14 @@ static void outputThread(IJavaThread trd,IvyXmlWriter xw)
    catch (DebugException e) {
       BedrockPlugin.logE("Problem outputing thread",e);
     }
+
    try {
       xw.field("SYSTEM",trd.isSystemThread());
     }
    catch (DebugException e) {
       BedrockPlugin.logE("Problem outputing thread",e);
     }
+
    try {
       xw.field("DAEMON",trd.isDaemon());
     }
@@ -1161,7 +1168,10 @@ private static void outputSymbol(IJavaElement elt,String what,String nm,String k
 	 int fgs = mem.getFlags();
 	 if (mem.getParent() instanceof IType && !(elt instanceof IType)) {
 	    IType par = (IType) mem.getParent();
-	    if (par.isInterface()) fgs |= Flags.AccPublic;
+	    if (par.isInterface()) {
+	       if (elt instanceof IMethod) fgs |= Flags.AccAbstract;
+	       fgs |= Flags.AccPublic;
+	    }
 	    xw.field("QNAME",par.getFullyQualifiedName() + "." + nm);
 	  }
 	 xw.field("FLAGS",fgs);

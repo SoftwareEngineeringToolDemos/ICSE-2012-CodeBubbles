@@ -466,8 +466,9 @@ private void outputSingleTest(JunitTest jt)
 
 void outputTestCase(JunitTest btc,XMLStreamWriter xw) throws XMLStreamException
 {
-   xw.writeStartElement("TESTCASE");
    Description d = btc.getDescription();
+
+   xw.writeStartElement("TESTCASE");
    if (d.getClassName() != null) xw.writeAttribute("CLASS",d.getClassName());
    if (d.getMethodName() != null) xw.writeAttribute("METHOD",d.getMethodName());
    if (d.getTestClass() != null) {
@@ -482,6 +483,7 @@ void outputTestCase(JunitTest btc,XMLStreamWriter xw) throws XMLStreamException
    if (d.isSuite()) xw.writeAttribute("SUITE","TRUE");
    if (d.isTest()) xw.writeAttribute("TEST","TRUE");
    if (d.testCount() > 1) xw.writeAttribute("COUNT",Integer.toString(d.testCount()));
+
    xw.writeAttribute("STATUS",btc.getStatus().getType().toString());
    xw.writeAttribute("NAME",d.getDisplayName());
    xw.writeAttribute("HASH",Integer.toString(d.hashCode()));
@@ -551,7 +553,7 @@ private class ListFilter extends Filter {
 	 outputSingleTest(jt);
 	 return false;
        }
-      
+
       System.err.println("BATT: Unknown test: " + d.isTest() + " " + d.isEmpty() + " " +
 			    d.getClassName() + " " + d.isSuite() + " " + d.getChildren().size() + " " + d);
       setTestStatus(d,STATUS_UNKNOWN);
@@ -583,7 +585,7 @@ private class TestListener extends RunListener {
 	 case FAILURE :
 	 case SUCCESS :
 	 case LISTING :
-	    outputSingleTest(jt);
+	    if (d.isTest()) outputSingleTest(jt);
 	    break;
 	 default:
 	    break;

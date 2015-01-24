@@ -597,7 +597,13 @@ void generateReport(BandaidXmlWriter xw)
    if (num_checks > 0) xw.field("DELAYAVG",delay_total/num_checks);
 
    for (BandaidAgent agt : active_agents) {
-      agt.generateReport(xw,last_monitor);
+      try {
+	 agt.generateReport(xw,last_monitor);
+       }
+      catch (Throwable t) {
+	 // System.err.println("BANDAID: Problem generating report: " + t);
+	 // t.printStackTrace();
+       }
     }
 
    xw.end();

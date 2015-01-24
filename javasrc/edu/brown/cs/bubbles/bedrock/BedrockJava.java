@@ -387,7 +387,7 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 	       break;
 	    case IJavaElement.METHOD :
 	       if (impls) xlimit |= IJavaSearchConstants.IGNORE_DECLARING_TYPE;
-	       break;
+	       break;										
 	  }
 	 if (mrule < 0) sp = SearchPattern.createPattern(elts[i],xlimit);
 	 else sp = SearchPattern.createPattern(elts[i],xlimit,mrule);
@@ -648,7 +648,7 @@ private static class OpenEditorRunnable implements Runnable {
 /*										*/
 /********************************************************************************/
 
-void handleJavaSearch(String proj,String patstr,String foritems,
+void handleJavaSearch(String proj,String bid,String patstr,String foritems,
 			 boolean defs,boolean refs,boolean impls,
 			 boolean equiv,boolean exact,boolean system,
 			 IvyXmlWriter xw) throws BedrockException

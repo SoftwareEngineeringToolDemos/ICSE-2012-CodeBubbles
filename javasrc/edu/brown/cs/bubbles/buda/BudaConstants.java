@@ -542,6 +542,8 @@ int BUDA_BUTTON_RESIZE_HEIGHT = 4;
  */
 String TASK_SHELF_SORT_BY_DATE = "Buda.shelf.by.date";
 
+			
+
 
 /********************************************************************************/
 /*										*/
@@ -943,26 +945,26 @@ interface NoFreeze { }
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Scaling definitions                                                     */
-/*                                                                              */
+/*										*/
+/*	Scaling definitions							*/
+/*										*/
 /********************************************************************************/
 
 /**
- *      Component can implement this to tell bubbles to call it directly to
- *      handle scaling
+ *	Component can implement this to tell bubbles to call it directly to
+ *	handle scaling
  **/
 interface Scalable {
-   
+
    void setScaleFactor(double sf);
-   
+
 }
 
 
 interface BudaBubbleScaler {
-   
+
    Rectangle getScaledBounds(BudaBubble bb);
-   
+
 }
 
 

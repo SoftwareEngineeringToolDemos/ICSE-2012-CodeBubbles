@@ -35,7 +35,7 @@ import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
-import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.*;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
+import java.util.List;
 
 
 
@@ -359,6 +360,12 @@ public BassName findBubbleName(File f,int eclipsepos)
 }
 
 
+public List<BumpLocation> findClassMethods(String cls)
+{
+   return bass_repository.findClassMethods(cls);
+}
+
+
 public File findActualFile(File f)
 {
    return bass_repository.findActualFile(f);
@@ -545,6 +552,10 @@ private static class ProjectProps implements BassPopupHandler {
             menu.add(new PythonProjectAction(proj,bb,where));
             menu.add(new NewPythonProjectAction(bb,where));
             break;
+         case JS:
+            menu.add(new JSProjectAction(proj,bb,where));
+            menu.add(new NewJSProjectAction(bb,where));
+            break;
          case REBUS :
             break;
        }
@@ -634,6 +645,35 @@ private static class PythonProjectAction extends AbstractAction {
 }	// end of inner class PythonProjectAction
 
 
+private static class JSProjectAction extends AbstractAction {
+
+   private String for_project;
+   private BudaBubble rel_bubble;
+   private Point rel_point;
+
+   private static final long serialVersionUID = 1;
+
+   JSProjectAction(String proj,BudaBubble rel,Point pt) {
+      super("Edit Properties of Project " + proj);
+      for_project = proj;
+      rel_bubble = rel;
+      rel_point = pt;
+   }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BASS","EditJSProjectProperties");
+      BudaRoot.hideSearchBubble(e);
+      BudaBubble bb = null;
+      BuenoProjectDialog dlg = new BuenoProjectDialog(for_project);
+      bb = dlg.createProjectEditor();      
+      // bb = BuenoJSProject.createEditJSProjectBubble(for_project);
+      if (bb == null) return;
+      BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
+   }
+
+}       // end of inner class JSProjectAction
+
+
 
 private static class NewProjectAction extends AbstractAction {
 
@@ -688,6 +728,34 @@ private static class NewPythonProjectAction extends AbstractAction {
     }
 
 }	// end of inner class ProjectAction
+
+
+private static class NewJSProjectAction extends AbstractAction {
+
+   private BudaBubble rel_bubble;
+   private Point rel_point;
+
+   private static final long serialVersionUID = 1;
+
+   NewJSProjectAction(BudaBubble bb,Point pt) {
+      super("Create New Project");
+      rel_bubble = bb;
+      rel_point = pt;
+   }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BoardMetrics.noteCommand("BASS","CreateJSProject");
+      BudaRoot.hideSearchBubble(e);
+      BudaBubble bb = null;
+      BuenoProjectCreator bpc = new BuenoProjectCreator();
+      bb = bpc.createProjectCreationBubble();
+      // bb = BuenoJSProject.createNewJSProjectBubble();
+      if (bb != null) {
+         BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
+       }
+   }
+
+}       // end of inner class ProjectAction
 
 
 

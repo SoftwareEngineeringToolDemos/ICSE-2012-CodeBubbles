@@ -78,7 +78,7 @@ public class BemaMain implements BemaConstants
 public static void main(String [] args)
 {
    BemaMain bm = new BemaMain(args);
-
+   
    if (System.getProperty("os.name").startsWith("Mac")) {
       try {
 	 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
@@ -181,6 +181,12 @@ private void scanArgs(String [] args)
 	    // Don't use IvyFile here since it trys to use ivy without initializing it
 	    BoardProperties.setPropertyDirectory(fa.getPath());
 	  }
+         else if (args[i].startsWith("-js")) {                  // -js (javascript)
+            for_language = BoardLanguage.JS;
+            File fa = new File(System.getProperty("user.home"));
+            fa = new File(fa,".nobbles");
+            BoardProperties.setPropertyDirectory(fa.getPath());
+          }
 	 else if (args[i].startsWith("-rebus")) {               // -rebus
 	    for_language = BoardLanguage.REBUS;
 	    File fa = new File(System.getProperty("user.home"));

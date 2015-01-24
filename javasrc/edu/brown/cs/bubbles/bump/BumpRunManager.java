@@ -167,6 +167,7 @@ BumpRunManager()
       case JAVA :
 	 break;
       case PYTHON :
+      case JS :
 	 use_debug_server = false;
 	 break;
       case REBUS :
@@ -342,7 +343,7 @@ private void startDebugServer()
 
       List<String> args = new ArrayList<String>();
       args.add("java");
-      args.add("-Xmx256m");
+      args.add("-Xmx512m");
       args.add("-cp");
       args.add(System.getProperty("java.class.path"));
       args.add("edu.brown.cs.bubbles.bump.BumpDebugServer");

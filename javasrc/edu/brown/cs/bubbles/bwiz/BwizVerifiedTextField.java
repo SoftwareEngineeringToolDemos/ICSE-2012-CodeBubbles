@@ -130,12 +130,10 @@ BwizConstants.IVerifier getVerifier()
 
 void verify()
 {
-   if (verify(getText()))
-      {
+   if (verify(getText())) {
       verificationSuccess();
     }
-   else
-      {
+   else {
       verificationFailure();
     }
 }
@@ -161,8 +159,7 @@ private boolean verify(String input)
 private void verificationFailure()
 {
    //Currently colors the text red
-   if (!previousFailure)
-      {
+   if (!previousFailure) {
       normalColor=this.getForeground();
     }
 

@@ -68,7 +68,7 @@ private boolean 		for_tasks;
 private Color			top_color;
 private Color			bottom_color;
 private Color			overview_color;
-private Font                    base_font;
+private Font			base_font;
 private int			base_height;
 
 private static BoardProperties	beam_properties = BoardProperties.getProperties("Beam");
@@ -149,7 +149,7 @@ BeamProblemBubble(String typs,boolean task)
    sp.setSize(new Dimension(beam_properties.getInt(PROBLEM_WIDTH),beam_properties.getInt(PROBLEM_HEIGHT)));
 
    setContentPane(sp,null);
-} 
+}
 
 
 
@@ -390,8 +390,8 @@ private class ProblemTable extends JTable implements MouseListener,
       addMouseListener(this);
       setOpaque(false);
       for (Enumeration<TableColumn> e = getColumnModel().getColumns(); e.hasMoreElements(); ) {
-         TableColumn tc = e.nextElement();
-         tc.setHeaderRenderer(new HeaderRenderer(getTableHeader().getDefaultRenderer()));
+	 TableColumn tc = e.nextElement();
+	 tc.setHeaderRenderer(new HeaderRenderer(getTableHeader().getDefaultRenderer()));
        }
       error_renderer = new ErrorRenderer[col_names.length];
       warning_renderer = new WarningRenderer[col_names.length];
@@ -404,8 +404,9 @@ private class ProblemTable extends JTable implements MouseListener,
 
    @Override public TableCellRenderer getCellRenderer(int row,int col) {
       BumpProblem bp = getActualProblem(row);
-      if (bp == null) return notice_renderer[col];
-      switch (bp.getErrorType()) {
+      BumpErrorType et = BumpErrorType.NOTICE;
+      if (bp != null) et = bp.getErrorType();
+      switch (et) {
 	 case WARNING :
 	    if (warning_renderer[col] == null) {
 	       warning_renderer[col] = new WarningRenderer(super.getCellRenderer(row,col));
@@ -463,25 +464,28 @@ private class ProblemTable extends JTable implements MouseListener,
    // @Override public Point getToolTipLocation(MouseEvent e) {
       // return BudaRoot.computeToolTipLocation(e);
     // }
-   
+
    // @Override public Point getLocationOnScreen() {
       // return BudaRoot.computeLocationOnScreen(this);
     // }
-   
+
    @Override protected void paintComponent(Graphics g) {
       synchronized (active_problems) {
-         if (top_color.getRGB() != bottom_color.getRGB()) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            Dimension sz = getSize();
-            Paint p = new GradientPaint(0f,0f,top_color,0f,sz.height,bottom_color);
-            Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
-            g2.setPaint(p);
-            g2.fill(r);
-         }
-         super.paintComponent(g);
+	 if (top_color.getRGB() != bottom_color.getRGB()) {
+	    Graphics2D g2 = (Graphics2D) g.create();
+	    Dimension sz = getSize();
+	    Paint p = new GradientPaint(0f,0f,top_color,0f,sz.height,bottom_color);
+	    Shape r = new Rectangle2D.Float(0,0,sz.width,sz.height);
+	    g2.setPaint(p);
+	    g2.fill(r);
+	 }
+	 try {
+	    super.paintComponent(g);
+	  }
+	 catch (Throwable t) { }
        }
     }
-   
+
    @Override public String getConfigurator()			{ return "BEAM"; }
    @Override public void outputXml(BudaXmlWriter xw) {
       xw.field("TYPE","PROBLEMS");
@@ -586,11 +590,11 @@ private static class HeaderRenderer implements TableCellRenderer {
    @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
 							       boolean foc,int r,int c) {
       JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
-      
+
       if (component_font != null && t.getFont() != component_font) bold_font = null;
-     
+
       if (bold_font == null) {
-         component_font = t.getFont();
+	 component_font = t.getFont();
 	 bold_font = component_font.deriveFont(Font.BOLD);
        }
       cmp.setFont(bold_font);

@@ -366,6 +366,7 @@ private Font getFont(View v)
    
    // need to scale the font here
    BudaBubble bb = BudaRoot.findBudaBubble(getBaleEditorPane());
+   if (bb == null) return fn;
    double sf = bb.getScaleFactor();
    if (sf != 0 && sf != 1) {
       float sz = fn.getSize2D();

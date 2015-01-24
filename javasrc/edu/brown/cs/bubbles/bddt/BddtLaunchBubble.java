@@ -245,6 +245,12 @@ private List<String> getStartClasses()
 		  starts.add(cn);
 		}
 	       break;
+	    case JS :
+               if (bn.getNameType() == BassNameType.MODULE) {
+                  String cn = bn.getPackageName();
+                  starts.add(cn);
+                }
+               break;
 	  }
        }
     }

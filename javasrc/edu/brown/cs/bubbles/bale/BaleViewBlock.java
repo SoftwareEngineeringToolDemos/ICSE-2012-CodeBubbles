@@ -292,7 +292,7 @@ BaleViewBlock(BaleElement e)
 
    computeLayout();
 
-   if (have_errors) {
+   if (have_errors && BALE_PROPERTIES.getBoolean(BALE_ERROR_USE_BKG,true)) {
       Color c = g.getColor();
       g.setColor(BALE_PROPERTIES.getColor(BALE_ERROR_BACKGROUND));
       g.fillRect(alloc.x,alloc.y,alloc.width,alloc.height);

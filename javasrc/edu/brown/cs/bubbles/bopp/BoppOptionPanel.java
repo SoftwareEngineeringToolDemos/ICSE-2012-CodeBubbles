@@ -45,6 +45,7 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.event.*;
 import java.util.*;
 import java.util.List;
 
@@ -186,7 +187,13 @@ private void setupDisplay()
    display_panel.addGBComponent(bbx,0,2,0,1,10,0);
 
    display_panel.addComponentListener(new VisibleListener());
+   display_panel.addMouseListener(new Mouser());
 }
+
+
+private static class Mouser extends MouseInputAdapter { }
+
+
 
 
 /********************************************************************************/

@@ -83,7 +83,7 @@ enum BumpSymbolType {
    INTERFACE,
    ENUM,
    THROWABLE,
-   FIELD,
+   FIELD,                
    ENUM_CONSTANT,
    FUNCTION,
    CONSTRUCTOR,
@@ -92,7 +92,11 @@ enum BumpSymbolType {
    MODULE,
    PACKAGE,
    PROJECT,
-   LOCAL
+   LOCAL,               // function local variable
+   GLOBAL,              // global variable
+   EXPORT,              // js: exports.x = y
+   IMPORT,              // js: var x = require('x')
+   PROGRAM              // js: executable
 }
 
 
@@ -641,6 +645,7 @@ enum BumpLaunchConfigType {
    JAVA_APP("Java Application"),
    JUNIT_TEST("JUnit"),
    REMOTE_JAVA("Remote Java Application"),
+   JS("JavaScript"),
    PYTHON("PYTHON");
 
    private String eclipse_name;

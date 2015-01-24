@@ -89,6 +89,35 @@
 	 <pathelement location='${BUBBLES}/lib/freetts/mbrola.jar' />
 	 <pathelement location='${BUBBLES}/lib/freetts/en_us.jar' />
       </path>
+      <path id='nobbles.classpath'>
+	 <pathelement location='${BUBBLES}/java' />
+	 <pathelement location='${IVYBIN}' />
+	 <fileset dir='${BUBBLES}/lib/' includes='smack*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsyntaxpane.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='gnujpdf.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jmf/**/*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='javax.servlet.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='joscar*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='jsocks-klea.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='ColorPicker.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='derby*.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='postgresql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='mysql.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='caja.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='wikitext*.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.text.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.text.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.equinox.common.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.resources.jar' />
+	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.core.jobs.jar' />
+	 <pathelement location='${BUBBLES}/lib/bubblesasm.jar' />
+	 <pathelement location='${BUBBLES}/lib/freetts/jsapi.jar' />
+	 <pathelement location='${BUBBLES}/lib/freetts/freetts.jar' />
+	 <pathelement location='${BUBBLES}/lib/freetts/freetts-jsapi10.jar' />
+	 <pathelement location='${BUBBLES}/lib/freetts/mbrola.jar' />
+	 <pathelement location='${BUBBLES}/lib/freetts/en_us.jar' />
+      </path>
       <path id='pyblesorig.classpath'>
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
@@ -289,6 +318,16 @@
       </java>
    </target>
 
+   <target name='testfish' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='test.classpath' />
+	 <arg value='-w' />
+	 <arg value='/home/spr/Eclipse/fishbowl' />
+	 <arg value='-m' />
+	 <arg value='BUBBLES_DEBUG_spr2' />
+      </java>
+   </target>
+
    <target name='testjoin' depends='compile'>
       <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
 	 <classpath refid='test.classpath' />
@@ -306,6 +345,16 @@
 	 <arg value="-python" />
 	 <arg value="-m" />
 	 <arg value="BUBBLES_DEBUG_spr" />
+      </java>
+   </target>
+
+   <target name='nobbles' depends='compile'>
+      <java classname='edu.brown.cs.bubbles.bema.BemaMain' fork='true'>
+	 <classpath refid='nobbles.classpath' />
+	 <jvmarg value="-Xmx1024m" />
+	 <arg value="-js" />
+	 <arg value="-m" />
+	 <arg value="NOBBLES_DEBUG_spr" />
       </java>
    </target>
 

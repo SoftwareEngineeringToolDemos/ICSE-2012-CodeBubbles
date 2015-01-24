@@ -323,6 +323,11 @@
 	 <KEYWORD TEXT="editor"/>
 	 <KEYWORD TEXT="bubble"/>
       </OPT>
+      <OPT NAME="Bale.error.use.background" DESCRIPTION="Show error background color" TYPE="BOOLEAN">
+	 <TAB NAME="Code Editor Options"/>
+	 <KEYWORD TEXT="background"/>
+	 <KEYWORD TEXT="error"/>
+      </OPT>
    </PACKAGE>
 
    <PACKAGE NAME="Buda">

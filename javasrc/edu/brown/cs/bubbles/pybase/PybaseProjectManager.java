@@ -654,29 +654,29 @@ private class InterpreterSpec implements IInterpreterSpec {
       File f1 = pybase_main.getRootDirectory();
       File f2 = new File(f1,"PySrc");
       File f3 = new File(f2,"interpreterInfo.py");
-
+   
       List<String> args = new ArrayList<String>();
       args.add(exe.getPath());
       args.add(f3.getPath());
       PybaseMain.logD("Run: " + exe.getPath() + " " + f3.getPath());
-
+   
       try {
-	 IvyExec ex = new IvyExec(args,null,null,IvyExec.READ_OUTPUT);
-	 InputStream ins = ex.getInputStream();
-	 InputStreamReader isr = new InputStreamReader(ins);
-	 BufferedReader br = new BufferedReader(isr);
-	 List<String> lines = new ArrayList<String>();
-	 for ( ; ; ) {
-	    String ln = br.readLine();
-	    if (ln == null) break;
-	    PybaseMain.logD("OUTPUT: " + ln);
-	    lines.add(ln);
-	  }
-	 loadInterpreterData(lines);
-	 ex.waitFor();
+         IvyExec ex = new IvyExec(args,null,null,IvyExec.READ_OUTPUT);
+         InputStream ins = ex.getInputStream();
+         InputStreamReader isr = new InputStreamReader(ins);
+         BufferedReader br = new BufferedReader(isr);
+         List<String> lines = new ArrayList<String>();
+         for ( ; ; ) {
+            String ln = br.readLine();
+            if (ln == null) break;
+            PybaseMain.logD("OUTPUT: " + ln);
+            lines.add(ln);
+          }
+         loadInterpreterData(lines);
+         ex.waitFor();
        }
       catch (IOException e) {
-	 PybaseMain.logD("Problem finding interpreter " + exe);
+         PybaseMain.logD("Problem finding interpreter " + exe);
        }
     }
 

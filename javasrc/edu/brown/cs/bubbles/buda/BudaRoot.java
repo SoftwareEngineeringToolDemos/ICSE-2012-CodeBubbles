@@ -1043,34 +1043,6 @@ public void exportViewportAsPdf(File file) throws Exception
 
 
 
-/*********************
-void OLDexportAsPdf(File file,Rectangle bnds) throws Exception
-{
-   FileOutputStream fos = new FileOutputStream(file);
-
-   bnds.width += 100;
-   bnds.height += 100;
-
-   com.itextpdf.text.Rectangle rr = new com.itextpdf.text.Rectangle(bnds.width,bnds.height);
-
-   com.itextpdf.text.Document doc = new com.itextpdf.text.Document(rr,0,0,0,0);
-   PdfWriter pw = PdfWriter.getInstance(doc,fos);
-   doc.open();
-   PdfContentByte cb = pw.getDirectContent();
-   PdfTemplate tp = cb.createTemplate(bnds.width,bnds.height);
-   Graphics2D g2 = tp.createGraphics(bnds.width,bnds.height);
-   g2.translate(0,100);
-   bubble_view.print(g2);
-   g2.dispose();
-   cb.addTemplate(tp,100,100);
-   doc.close();
-
-   fos.close();
-}
-******************/
-
-
-
 void exportAsPdf2(File file,Rectangle bnds) throws Exception
 {
    FileOutputStream fos = new FileOutputStream(file);
@@ -1207,47 +1179,6 @@ double getScaleFactor() 	{ return getCurrentBubbleArea().getScaleFactor(); }
 
 
 
-// void setScaleFactor(double sf)
-// {
-   // Rectangle vr = bubble_view.getViewRect();
-   // int cx = (int) ((vr.x + vr.width / 2)/scale_factor);
-   // int cy = (int) ((vr.y + vr.height / 2)/scale_factor);
-   // setScaleFactor(sf,cx,cy);
-// }
-
-
-
-/**************
-
-void setScaleFactor(double sf,int cx,int cy)
-{
-   if (scale_factor == 1 && sf != 1) {
-      // Component c = getGlassPane();
-      // c.addMouseListener(mouse_scaler);
-      // c.addMouseMotionListener(mouse_scaler);
-      // c.setVisible(true);
-   }
-   else if (scale_factor != 1 && sf == 1) {
-      // Component c = getGlassPane();
-      // c.removeMouseListener(mouse_scaler);
-      // c.removeMouseMotionListener(mouse_scaler);
-      // c.setVisible(false);
-   }
-
-   scale_factor = sf;
-   bubble_area.setScaleFactor(sf);
-   // cx,cy are the center in the original coordinate system
-
-  // Rectangle vr = bubble_view.getViewRect();
-  // int x = (int) (cx*scale_factor - vr.width/2.0);
-   // x = (int)(cx - vr.width/2.0/scale_factor);
-  // int y = (int) (cy*scale_factor - vr.height/2.0);
- //  setViewport(x,y);
-}
-
-*************/
-
-
 private class ViewportHandler implements ChangeListener {
 
    @Override public void stateChanged(ChangeEvent e) {
@@ -1277,68 +1208,6 @@ private class ViewportCallback implements BubbleAreaCallback {
     }
 
 }	// end of inner class ViewportCallback
-
-
-
-/*********
- *private class MouseScaler extends MouseInputAdapter {
-
-   @Override public void mouseEntered(MouseEvent e) {
-      sendScaled(e);
-   }
-   @Override public void mouseClicked(MouseEvent e) {
-      sendScaled(e);
-   }
-   @Override public void mousePressed(MouseEvent e) {
-      sendScaled(e);
-   }
-   @Override public void mouseExited(MouseEvent e) {
-      sendScaled(e);
-   }
-   @Override public void mouseMoved(MouseEvent e) {
-      sendScaled(e);
-   }
-   @Override public void mouseDragged(MouseEvent e) {
-      sendScaled(e);
-   }
-   @Override public void mouseReleased(MouseEvent e) {
-      sendScaled(e);
-   }
-
-   private void sendScaled(MouseEvent e) {
-      Component c1 = e.getComponent();
-      JRootPane rp = (JRootPane) c1.getParent();
-      c1 = rp.getContentPane();
-      Component c = SwingUtilities.getDeepestComponentAt(c1,e.getX(),e.getY());
-      if (c == null) return;
-      Point pt = null;
-      BudaBubbleArea bba = null;
-      for (Component p = c; p != null; p = getParentComponent(p)) {
-	 if (p instanceof BudaBubbleArea) {
-	    bba = (BudaBubbleArea) p;
-	    break;
-	  }
-       }
-      if (bba != null && bba.getScaleFactor() != 1) {
-	 Point p1 = SwingUtilities.convertPoint(e.getComponent(),e.getPoint(),bba);
-	 double sf = bba.getScaleFactor();
-	 p1.x /= sf;
-	 p1.y /= sf;
-	 c = SwingUtilities.getDeepestComponentAt(bba,p1.x,p1.y);
-	 if (c == null) return;
-	 pt = SwingUtilities.convertPoint(bba,p1,c);
-       }
-      else {
-	 pt = SwingUtilities.convertPoint(e.getComponent(),e.getPoint(),c);
-       }
-      MouseEvent e1 = new MouseEvent(c,e.getID(),e.getWhen(),e.getModifiers(),pt.x,pt.y,e.getClickCount(),
-	       e.isPopupTrigger());
-      c.dispatchEvent(e1);
-   }
-
-}	// end of inner class MouseScaler
-****************************/
-
 
 
 
@@ -1390,65 +1259,6 @@ public Point convertPoint(Component src,Point pt,Component dst)
 
    return p2;
 }
-
-
-
-// public static Point computeToolTipLocation(MouseEvent evt)
-// {
-   // if (evt == null) return null;
-   // JComponent from = (JComponent) evt.getSource();
-//
-   // BudaRoot broot = null;
-   // BudaBubbleArea bba = null;
-   // for (Component p = from; p != null; p = getParentComponent(p)) {
-      // if (p instanceof BudaBubbleArea) {
-// bba = (BudaBubbleArea) p;
-   //	 }
-      // else if (p instanceof BudaRoot) {
-       // broot = (BudaRoot) p;
-       // }
-    // }
-   // if (broot == null || bba == null) return null;
-   // double sf = bba.getScaleFactor();
-   // if (sf == 1.0) return null;
-//
-   // Point p0 = from.getLocationOnScreen();
-   // Point p1 = broot.convertPoint(from,new Point(0,0),broot);
-   // int x = ((int)(evt.getX() * sf));
-   // int y = ((int)(evt.getY() * sf));
-   // int tx = p1.x + x;
-   // int ty = p1.y + y + 20;
-   // int dx = tx - p0.x;
-   // int dy = ty - p0.y;
-//
-   // return new Point(dx,dy);
-// }
-
-
-
-// public static Point computeLocationOnScreen(JComponent jc)
-// {
-   // if (jc == null) return new Point(0,0);
-//
-   // BudaRoot broot = null;
-   // BudaBubbleArea bba = null;
-   // for (Component p = jc; p != null; p = getParentComponent(p)) {
-      // if (p instanceof BudaBubbleArea) {
-	 // bba = (BudaBubbleArea) p;
-       // }
-      // else if (p instanceof BudaRoot) {
-	 // broot = (BudaRoot) p;
-       // }
-    // }
-   // Point p0 = new Point(0,0);
-   // if (broot == null || bba == null || bba.getScaleFactor() != 1.0) {
-      // SwingUtilities.convertPointToScreen(p0,jc);
-      // return p0;
-    // }
-   // Point p1 = broot.convertPoint(jc,new Point(0,0),broot);
-   // SwingUtilities.convertPointToScreen(p1,broot);
-   // return p1;
-// }
 
 
 
@@ -1615,7 +1425,12 @@ private class EscapeHandler extends AbstractAction {
       BudaBubbleArea bba = getCurrentBubbleArea();
       MouseEvent me = last_mouse;
       if (me != null) {
-	 Component c = (Component) e.getSource();
+	 Component c = (Component) me.getSource();
+	 if (c != null && c instanceof JDialog) {
+	    JDialog jd = (JDialog) c;
+	    jd.setVisible(false);
+	    return;
+	 }
 	 Point pt = SwingUtilities.convertPoint(c,me.getPoint(),bba);
 	 me = new MouseEvent(bba,me.getID(),me.getWhen(),me.getModifiers(),
 				pt.x,pt.y,me.getClickCount(),me.isPopupTrigger());

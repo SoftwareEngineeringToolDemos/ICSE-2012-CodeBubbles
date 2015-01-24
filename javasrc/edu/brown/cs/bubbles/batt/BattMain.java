@@ -355,9 +355,15 @@ void stopTests()
 }
 
 
-void setUpdateTests()
+void updateTests()
 {
-   find_new = true;
+   synchronized (run_tests) {
+      run_tests.clear();
+      test_cases.clear();
+      
+      find_new = true;
+    }
+   doTests();
 }
 
 

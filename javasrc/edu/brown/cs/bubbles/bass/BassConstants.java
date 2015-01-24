@@ -93,6 +93,9 @@ enum BassNameType {
    CHAT_BUDDY,
    CHAT_LOGIN,
    MODULE,
+   IMPORTS,
+   EXPORTS,
+   CODE,
    OTHER
 }
 

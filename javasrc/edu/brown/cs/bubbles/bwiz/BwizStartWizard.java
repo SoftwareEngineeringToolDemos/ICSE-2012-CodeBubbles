@@ -26,6 +26,7 @@ package edu.brown.cs.bubbles.bwiz;
 
 import edu.brown.cs.bubbles.bedu.BeduConstants.Assignment;
 import edu.brown.cs.bubbles.bedu.BeduFactory;
+import edu.brown.cs.bubbles.board.*;
 
 import javax.swing.*;
 
@@ -97,17 +98,37 @@ private void setup()
    
    GroupLayout.SequentialGroup sg = layout.createSequentialGroup();
    GroupLayout.ParallelGroup pg = layout.createParallelGroup();
-   pg.addComponent(classpanel);
-   pg.addComponent(interfacepanel);
-   pg.addComponent(enumpanel);
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case JAVA :
+         pg.addComponent(classpanel);
+         pg.addComponent(interfacepanel);
+         pg.addComponent(enumpanel);   
+         break;
+      case PYTHON :
+      case JS :
+         // possibly add a new file button
+         break;
+      default :
+         break;
+    }
    if (assignmentpanel != null) pg.addComponent(assignmentpanel);
    sg.addGroup(pg);
    layout.setHorizontalGroup(sg);
    
    sg = layout.createSequentialGroup();
-   sg.addGroup(layout.createParallelGroup().addComponent(classpanel));
-   sg.addGroup(layout.createParallelGroup().addComponent(interfacepanel));
-   sg.addGroup(layout.createParallelGroup().addComponent(enumpanel));
+   switch (BoardSetup.getSetup().getLanguage()) {
+      case JAVA :
+         sg.addGroup(layout.createParallelGroup().addComponent(classpanel));
+         sg.addGroup(layout.createParallelGroup().addComponent(interfacepanel));
+         sg.addGroup(layout.createParallelGroup().addComponent(enumpanel));
+         break;
+      case PYTHON :
+      case JS :
+         // possibly add a new file button
+         break;
+      default :
+         break;
+    }
    if (assignmentpanel != null) {
       sg.addGroup(layout.createParallelGroup().addComponent(assignmentpanel));
     }

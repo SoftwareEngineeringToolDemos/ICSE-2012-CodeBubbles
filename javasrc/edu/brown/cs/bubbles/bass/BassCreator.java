@@ -30,18 +30,22 @@
 
 package edu.brown.cs.bubbles.bass;
 
-import edu.brown.cs.bubbles.bale.BaleFactory;
+import edu.brown.cs.bubbles.bale.*;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
-import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.*;
+
+import edu.brown.cs.ivy.swing.*;
+
+import org.w3c.dom.*;
 
 import javax.swing.*;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 
@@ -109,6 +113,7 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
    List<BuenoLocation> memblocs = new ArrayList<BuenoLocation>();
    BuenoLocation clsloc = null;
    Action delact = null;
+   Action movact = null;
 
    // TODO: if forname == null and it represents an inner class, create alternatives for before/after the inner class
 
@@ -131,11 +136,12 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
 	 String cnm = loc.getClassName();
 	 String pnm = loc.getPackage();
 	 String outer;
+	 String inner = null;
 	 if (pnm == null) outer = "";
 	 else outer = cnm.substring(pnm.length() + 1);
 	 if (outer.contains(".") || outer.contains("$")) {
 	    int xidx = outer.indexOf(".");
-	    String inner = outer.replace(".", "$");
+	    inner = outer.replace(".", "$");
 	    outer = pnm + "." + outer.substring(0,xidx);
 	    memblocs.add(BuenoFactory.getFactory().createLocation(proj,outer,inner,false));
 	    memblocs.add(BuenoFactory.getFactory().createLocation(proj,outer,inner,true));
@@ -159,6 +165,11 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
 	       delact = new DeleteFileAction(proj,f,bb);
 	     }
 	  }
+	 if (bass_properties.getBoolean("Bass.move.class")) {
+	    if (pnm != null && inner == null) {
+	       movact = new MoveClassAction(proj,loc.getClassName(),pnm,bb);
+	     }
+	 }
        }
       else if (!fullname.contains("@")) {
 	 if (bass_properties.getBoolean("Bass.delete.package"))
@@ -172,6 +183,19 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
       memblocs.add(new BassNewLocation(forname,true,false));
       memblocs.add(loc);
       if (loc.getPackage() != null) clsloc = loc;
+      if (bass_properties.getBoolean("Bass.delete.method")) {
+	 switch (forname.getNameType()) {
+	    case METHOD :
+	    case CONSTRUCTOR :
+	       File f = forname.getLocation().getFile();
+	       if (f != null) {
+		  delact = new DeleteMethodAction(forname,bb);
+	       }
+	       break;
+	    default :
+	       break;
+	  }
+       }
     }
 
    if (memblocs.size() > 0) {
@@ -202,6 +226,9 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
 	 menu.add(new NewPackageAction(clsloc));
        }
     }
+   if (movact != null) {
+      menu.add(movact);
+   }
    if (delact != null) {
       menu.add(delact);
     }
@@ -352,12 +379,19 @@ private class NewFieldAction extends NewAction implements BuenoConstants.BuenoBu
 
 
 
-private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBubbleCreator {
+private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBubbleCreator, Runnable {
 
    private final static long serialVersionUID = 1;
+   
+   private BudaBubbleArea result_area;
+   private Point result_point;
+   private BudaBubble result_bubble;
 
    NewTypeAction(BuenoType typ,BuenoLocation loc) {
       super(typ,loc);
+      result_bubble = null;
+      result_area = null;
+      result_point = null;
     }
 
    NewTypeAction(BuenoLocation loc) {
@@ -371,9 +405,21 @@ private class NewTypeAction extends NewAction implements BuenoConstants.BuenoBub
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
-      BudaBubble bb = BaleFactory.getFactory().createFileBubble(proj,null,name);
-      if (bb != null) bba.add(bb,new BudaConstraint(p));
+      result_bubble = BaleFactory.getFactory().createFileBubble(proj,null,name);
+      result_area = bba;
+      result_point = p;
+      if (result_bubble != null) {
+	 if (SwingUtilities.isEventDispatchThread()) run();
+	 else SwingUtilities.invokeLater(this);
+      }
    }
+      
+   @Override public void run() {
+      if (result_bubble != null) {
+	 result_area.add(result_bubble,new BudaConstraint(result_point));
+      }
+   }
+      
 
 }	// end of inner class NewTypeAction
 
@@ -513,7 +559,7 @@ private static class BassNewLocation extends BuenoLocation {
 private static class DeleteProjectAction extends AbstractAction implements Runnable {
 
    private String project_name;
-   
+
    private static final long serialVersionUID = 1;
 
    DeleteProjectAction(String proj,BudaBubble bb) {
@@ -631,10 +677,151 @@ private static class DeleteClassAction extends AbstractAction implements Runnabl
 
    @Override public void run() {
       BumpClient bc = BumpClient.getBump();
-      bc.delete(project_name,"CLASS",class_name,bass_properties.getBoolean("Bass.delete.rebuild",true));
+      if (!bc.delete(project_name,"CLASS",class_name,bass_properties.getBoolean("Bass.delete.rebuild",true))) {
+	 JOptionPane.showMessageDialog(null, "Class Delete Failed");
+      }
     }
 
 }	// end of inner class DeleteClassAction
+
+
+
+private static class DeleteMethodAction extends AbstractAction {
+
+   private BassName method_location;
+
+   private static final long serialVersionUID = 1;
+
+   DeleteMethodAction(BassName mthd,BudaBubble bb) {
+      super("Delete Method " + mthd.getName());
+      method_location = mthd;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      BumpClient bc = BumpClient.getBump();
+      List<BumpLocation> bl = bc.findMethod(method_location.getProject(),
+	    method_location.getFullName(),false);
+      if (bl.size() != 1) return;
+      BumpLocation bloc = bl.get(0);
+      BaleConstants.BaleFileOverview bfo = BaleFactory.getFactory().getFileOverview(bloc.getProject(),bloc.getFile());
+      if (bfo == null) return;
+
+      if (bass_properties.getBoolean("Bass.delete.confirm",true)) {
+	 int sts = JOptionPane.showConfirmDialog(null,"Do you really want to delete the method " +
+	       method_location.getDisplayName(),
+	       "Confirm Delete Class",
+	       JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE);
+	 if (sts != JOptionPane.YES_OPTION) return;
+       }
+
+      int off = bfo.mapOffsetToJava(bloc.getDefinitionOffset());
+      int eoff = bfo.mapOffsetToJava(bloc.getDefinitionEndOffset());
+      int len = eoff - off;
+
+      try {
+	 bfo.remove(off,len);
+      }
+      catch (Exception ex) { }
+    }
+
+}
+
+
+
+private static class MoveClassAction extends AbstractAction implements Runnable {
+
+   private String project_name;
+   private String class_name;
+   private String from_package;
+   private String to_package;
+   private SwingComboBox<String> combo_box;
+   private BudaBubble base_bubble;
+   
+   private static final long serialVersionUID = 1;
+
+   MoveClassAction(String proj,String cls,String pkg,BudaBubble bb) {
+      super("Move Class " + cls);
+      project_name = proj;
+      class_name = cls;
+      to_package = null;
+      from_package = pkg;
+      combo_box = null;
+      base_bubble = bb;
+   }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      combo_box = new SwingComboBox<String>("Package",new String [] { "Generating list of available and relevant packages" });
+      SwingUtilities.invokeLater(this);
+      String cnm = class_name;
+      int idx = cnm.lastIndexOf(".");
+      if (idx >= 0) cnm = cnm.substring(idx+1);
+      int sts = JOptionPane.showOptionDialog(base_bubble,combo_box,
+	       "Select Target Package for " + cnm,
+	       JOptionPane.OK_CANCEL_OPTION,
+	       JOptionPane.QUESTION_MESSAGE,null,null,null);
+      if (sts != 0) return;
+      String rslt = (String) combo_box.getSelectedItem();
+      if (rslt.startsWith("Generating ")) return;
+      to_package = rslt;
+      BoardThreadPool.start(this);
+   }
+
+   @Override public void run() {
+      if (to_package == null && combo_box != null) {
+	 combo_box.setContents(getPackages());
+      }
+      else {
+         BumpClient bc = BumpClient.getBump();
+         List<BumpLocation> locs = bc.findClassDefinition(project_name,class_name);
+         if (locs == null || locs.size() == 0) return;
+         BumpLocation bloc = null;
+         for (BumpLocation bl1 : locs) {
+            if (bl1.getFile() != null && bl1.getFile().exists()) {
+               bloc = bl1;
+               break;
+             }
+          }
+        
+         Element edits = bc.moveClass(project_name,class_name,bloc,to_package);
+         BaleFactory.getFactory().applyEdits(edits);
+      }
+   }
+   
+   private List<String> getPackages()
+{
+      Set<String> rslt = new TreeSet<String>();
+      
+      BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
+      for (BassName bn : br.getAllNames()) {
+         if (project_name != null && !project_name.equals(bn.getProject())) continue;
+         switch (bn.getNameType()) {
+            case CLASS :
+            case INTERFACE :
+            case ENUM :
+            case THROWABLE :
+               break;
+            default :
+               continue;
+          }
+         String pkg = bn.getNameHead();
+         if (pkg == null) continue;
+         int idx = pkg.lastIndexOf(".");
+         if (idx < 0) continue;
+         else pkg = pkg.substring(0,idx);
+         if (rslt.contains(pkg)) continue;
+         BumpLocation bl = bn.getLocation();
+         if (bl == null) continue;
+         String key = bl.getKey();
+         if (key.contains("$")) continue;
+         if (pkg.equals(from_package)) continue;
+         
+         rslt.add(pkg);
+       }
+      
+      return new ArrayList<String>(rslt);
+    }
+   
+}	// end of inner class MoveClassAction
 
 
 

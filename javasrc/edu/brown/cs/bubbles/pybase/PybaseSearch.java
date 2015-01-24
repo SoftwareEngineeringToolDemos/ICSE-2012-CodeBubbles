@@ -417,6 +417,7 @@ void getTextRegions(String proj,String bid,String file,String cls,
 
    List<SimpleNode> rgns = null;
    SimpleNode root = sd.getRootNode();
+   if (root == null) return;
 
    if (compunit) {
       ModuleClassVisitor mcv = new ModuleClassVisitor(fnd,false);

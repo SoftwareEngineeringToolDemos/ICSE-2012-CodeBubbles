@@ -95,7 +95,7 @@ BwizListEntryComponent(IVerifier verifier, String title)
 /*										*/
 /********************************************************************************/
 
-List<String> getListElements()	        { return new ArrayList<String>(list_data); }
+List<String> getListElements()		{ return new ArrayList<String>(list_data); }
 
 void setHeight(int ht)
 {
@@ -110,7 +110,7 @@ void setHoverText(String s)
    input_choice.setToolTipText(s);
 }
 
-boolean isActive()                      
+boolean isActive()		
 {
    String txt = input_field.getText();
    if (txt == null || txt.length() == 0) return false;
@@ -164,7 +164,7 @@ private void setup()
    InputAction iact = new InputAction();
    input_field.addActionListener(iact);
    input_field.addVerificationListener(this);
-   
+
    input_choice = new SwingComboBox<String>(new ArrayList<String>(),true);
    input_choice.setVisible(false);
    input_choice.addActionListener(iact);
@@ -233,7 +233,7 @@ private void addItem(String text)
 	       list_data.add(s);
 	       ui_list.setListData(list_data);
 	       input_field.setText("");
-               input_choice.clear();
+	       input_choice.clear();
 	       fireItemAdded(text);
 	       disableAddition();
 	       disableRemoval();
@@ -252,7 +252,7 @@ private void addItem(String text)
 	 list_data.add(text);
 	 ui_list.setListData(list_data);
 	 input_field.setText("");
-         input_choice.clear();
+	 input_choice.clear();
 	 // Throw an event that an item was added
 	 fireItemAdded(text);
 	 disableAddition();
@@ -320,6 +320,17 @@ void addItemChangeEventListener(ItemChangeListener listener)
 	}
      }
 }
+
+
+boolean addCurrentItem()
+{
+   String txt = input_field.getText();
+   if (txt == null || txt.length() == 0) return false;
+   addItem(txt);
+   input_field.setText("");
+   return true;
+}
+
 
 
 

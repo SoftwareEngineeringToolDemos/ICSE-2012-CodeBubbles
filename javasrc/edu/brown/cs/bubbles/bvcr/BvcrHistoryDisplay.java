@@ -212,12 +212,16 @@ private void setupRegions()
 	    case THROWABLE :
 	       break;
 	    case FIELD :
-	    case ENUM_CONSTANT :
+	    case ENUM_CONSTANT : 
+            case GLOBAL :
+            case IMPORT :
+            case EXPORT :
 	       continue;
 	    case FUNCTION :
 	    case CONSTRUCTOR :
 	    case STATIC_INITIALIZER :
 	    case MAIN_PROGRAM :
+            case PROGRAM :
 	       break;
 	    default :
 	       continue;

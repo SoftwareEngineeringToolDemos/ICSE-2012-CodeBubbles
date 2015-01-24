@@ -194,8 +194,10 @@ void getNewRunConfiguration(String proj,String name,String clone,String typ,IvyX
 	     }
 	  }
 	 ILaunchConfigurationType lct = lm.getLaunchConfigurationType(ltid);
-	 IProject ip = our_plugin.getProjectManager().findProject(proj);
-	 config = lct.newInstance(ip,name);
+	 if (lct != null) {
+	    IProject ip = our_plugin.getProjectManager().findProject(proj);
+	    config = lct.newInstance(ip,name);
+	  }
        }
     }
    catch (CoreException e) {

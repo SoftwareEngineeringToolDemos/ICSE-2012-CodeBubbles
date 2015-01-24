@@ -74,6 +74,7 @@ BconRegionLocation(BaleConstants.BaleFileOverview fov,BumpLocation bl)
 	 break;
       case FIELD :
       case ENUM_CONSTANT :
+      case GLOBAL :
 	 region_type = RegionType.REGION_FIELD;
 	 break;
       case FUNCTION :
@@ -84,6 +85,9 @@ BconRegionLocation(BaleConstants.BaleFileOverview fov,BumpLocation bl)
 	 break;
       case STATIC_INITIALIZER :
       case MAIN_PROGRAM :
+      case IMPORT :
+      case EXPORT :
+      case PROGRAM :
 	 region_type = RegionType.REGION_INITIALIZER;
 	 break;
     }
@@ -232,14 +236,18 @@ BudaBubble makeBubble()
 	 bb = bf.createMethodBubble(base_location.getProject(),mnm);
 	 break;
       case STATIC_INITIALIZER :
+      case EXPORT :
+      case IMPORT :
 	 String inm = base_location.getSymbolName();
 	 bb = bf.createStaticsBubble(base_location.getProject(),inm,base_location.getFile());
 	 break;
       case MAIN_PROGRAM :
+      case PROGRAM :
          inm = base_location.getSymbolName();
 	 bb = bf.createMainProgramBubble(base_location.getProject(),inm,base_location.getFile());
 	 break;
       case FIELD :
+      case GLOBAL :
       case ENUM_CONSTANT :
 	 String fnm = base_location.getSymbolName();
 	 int idx = fnm.lastIndexOf(".");

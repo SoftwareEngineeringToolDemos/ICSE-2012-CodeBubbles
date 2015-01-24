@@ -371,6 +371,11 @@ private static class CellDrawer implements TableCellRenderer {
 
    @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean sel,
 							       boolean foc,int r,int c) {
+      Class<?> cc = column_class[c];
+      if (v != null && cc.isAssignableFrom(v.getClass())) {
+	 System.err.println("Handle bad object");
+       }
+
       JComponent cmp = (JComponent) default_renderer.getTableCellRendererComponent(t,v,sel,foc,r,c);
       cmp.setOpaque(false);
       return cmp;

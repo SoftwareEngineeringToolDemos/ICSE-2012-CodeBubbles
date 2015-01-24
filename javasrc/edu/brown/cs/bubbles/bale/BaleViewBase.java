@@ -372,23 +372,26 @@ protected static class ViewData {
 
    void setSizes(View v) {
       if (v == null) return;
-      min_x = v.getMinimumSpan(X_AXIS);
-      min_y = v.getMinimumSpan(Y_AXIS);
-      pref_x = v.getPreferredSpan(X_AXIS);
-      pref_y = v.getPreferredSpan(Y_AXIS);
-      max_x = v.getMaximumSpan(X_AXIS);
-      max_y = v.getMaximumSpan(Y_AXIS);
+      try {
+	 min_x = v.getMinimumSpan(X_AXIS);
+	 min_y = v.getMinimumSpan(Y_AXIS);
+	 pref_x = v.getPreferredSpan(X_AXIS);
+	 pref_y = v.getPreferredSpan(Y_AXIS);
+	 max_x = v.getMaximumSpan(X_AXIS);
+	 max_y = v.getMaximumSpan(Y_AXIS);
+       }
+      catch (Throwable t) { }
     }
 
    void setSizeAtPriority(View v,double p,float w) {
       if (v instanceof BaleView && w > 0) {
-         BaleView bv = (BaleView) v;
-         actual_height = bv.getHeightAtPriority(p,w);
-         actual_width = w;
+	 BaleView bv = (BaleView) v;
+	 actual_height = bv.getHeightAtPriority(p,w);
+	 actual_width = w;
        }
       else {
-         actual_height = pref_y;
-         actual_width = pref_x;
+	 actual_height = pref_y;
+	 actual_width = pref_x;
        }
     }
 

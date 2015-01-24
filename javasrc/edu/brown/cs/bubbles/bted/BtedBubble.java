@@ -39,8 +39,7 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.text.PlainDocument;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.io.*;
 
@@ -442,6 +441,18 @@ protected void onClose()
 /*	Listeners and actions							*/
 /*										*/
 /********************************************************************************/
+
+
+@Override public void handlePopupMenu(MouseEvent e)
+{
+   JPopupMenu popup = new JPopupMenu();
+
+   popup.add(getFloatBubbleAction());
+
+   popup.show(this,e.getX(),e.getY());
+}
+
+
 
 
 /**

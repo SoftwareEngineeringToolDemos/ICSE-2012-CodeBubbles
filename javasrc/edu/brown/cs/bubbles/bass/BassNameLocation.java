@@ -102,6 +102,7 @@ BassNameLocation(BumpLocation bl)
 	 break;
       case ENUM_CONSTANT :
       case FIELD :
+      case GLOBAL :
 	 name_type = BassNameType.FIELDS;
 	 break;
       case MAIN_PROGRAM :
@@ -112,6 +113,15 @@ BassNameLocation(BumpLocation bl)
 	 break;
       case MODULE :
 	 name_type = BassNameType.MODULE;
+	 break;
+      case IMPORT :
+	 name_type = BassNameType.IMPORTS;
+	 break;
+      case EXPORT :
+	 name_type = BassNameType.EXPORTS;
+	 break;
+      case PROGRAM :
+	 name_type = BassNameType.CODE;
 	 break;
       default :
 	 name_type = BassNameType.NONE;
@@ -206,6 +216,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
 	 return "< INITIALIZERS >";
       case MAIN_PROGRAM :
 	 return "< MAIN >";
+      case IMPORTS :
+      case EXPORTS :
       case HEADER :
 	 return "< PREFIX >";
       case FILE :
@@ -233,6 +245,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case INTERFACE :
       case THROWABLE :
       case HEADER :
+      case IMPORTS :
+      case EXPORTS :
       case FILE :
       case OTHER_CLASS :
       case MODULE :
@@ -259,6 +273,8 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       case ENUM :
       case INTERFACE :
       case HEADER :
+      case IMPORTS :
+      case EXPORTS :
       case OTHER_CLASS :
       case FILE :
       case MODULE :
@@ -382,7 +398,7 @@ BumpSymbolType getSymbolType()				{ return base_location.getSymbolType(); }
       default:
 	 break;
    }
-										
+									
    return null;
 }
 

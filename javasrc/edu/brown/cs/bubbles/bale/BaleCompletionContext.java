@@ -623,6 +623,7 @@ private class CompletionPanel extends JPanel implements MouseListener {
       setFocusable(false);
       item_list = new CompletionList();
       item_list.setFocusable(false);
+      item_list.setFocusable(true);
       item_list.setCellRenderer(new CompletionListCellRenderer());
       JScrollPane sp = new JScrollPane(item_list);
       sp.setFocusable(false);
@@ -681,7 +682,7 @@ private class CompletionPanel extends JPanel implements MouseListener {
    @Override public void mousePressed(MouseEvent e)		{ }
 
    @Override public void mouseReleased(MouseEvent e)		{ }
-
+   
 }	// end of inner class CompletionPanel
 
 

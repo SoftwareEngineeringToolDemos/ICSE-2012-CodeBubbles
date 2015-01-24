@@ -228,7 +228,7 @@ void updateTests()
    MintDefaultReply rply = new MintDefaultReply();
    mc.send("<BATT DO='SHOWALL' />",rply,MINT_MSG_FIRST_NON_NULL);
    Element e = rply.waitForXml();
-   if (e != null) batt_model.updateTestModel(e);
+   if (e != null) batt_model.updateTestModel(e,true);
 }
 
 
@@ -473,7 +473,7 @@ private static class BattContexter implements BaleContextListener {
         	if (cntrs.size() == 0) cok = true;
         	for (BumpLocation cloc : cntrs) {
         	   String prms = cloc.getParameters();
-        	   if (Modifier.isPublic(loc.getModifiers()) && prms.equals("()")) cok = true;
+        	   if (Modifier.isPublic(loc.getModifiers()) &&  prms != null && prms.equals("()")) cok = true;
         	 }
         	if (cok) classes.add(cnm);
               }

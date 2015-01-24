@@ -62,10 +62,14 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
    for (Iterator<BumpLocation> it = locs.iterator(); it.hasNext(); ) {
       BumpLocation bl = it.next();
       File f = bl.getFile();
-      if (f == null || !f.exists() || f.getName().endsWith(".jar")) {
+      if (f == null || f.getName().endsWith(".jar")) {
 	 it.remove();
 	 continue;
-      }
+       }
+      if (!f.exists() && !f.getPath().startsWith("/REBUS/")) {
+	 it.remove();
+	 continue;
+       }
       String key = null;
       switch (bl.getSymbolType()) {
 	 default :
@@ -76,6 +80,7 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 	    break;
 	 case FIELD :
 	 case ENUM_CONSTANT :
+         case GLOBAL :
 	    key = bl.getSymbolName();
 	    int idx = key.lastIndexOf(".");
 	    key = key.substring(0,idx+1) + ".<FIELDS>";
@@ -190,6 +195,7 @@ private void setupStack(BudaLinkStyle link)
 	    break;
 	 case FIELD :
 	 case ENUM_CONSTANT :
+         case GLOBAL :
 	    FieldStackEntry fe = new FieldStackEntry(locs);
 	    entries.add(fe);
 	    break;
@@ -421,6 +427,10 @@ private class MainProgramStackEntry extends GenericStackEntry {
     }
 
 }	// end of inner class MainProgramStackEntry
+
+
+
+
 
 
 

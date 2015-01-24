@@ -75,7 +75,7 @@ private BaleHighlightContext		global_highlights;
 private SwingEventListenerList<BaleAnnotationListener> annot_listeners;
 private Set<BaleAnnotation>		active_annotations;
 private SwingEventListenerList<BaleContextListener> context_listeners;
-private BudaRoot                        buda_root;
+private BudaRoot			buda_root;
 
 private static BaleFactory	the_factory;
 
@@ -366,6 +366,7 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 	 break;
       case FIELD :
       case ENUM_CONSTANT :
+      case GLOBAL :
 	 String fnm = bl.getSymbolName();
 	 int idx = fnm.lastIndexOf(".");
 	 if (idx > 0) {
@@ -390,6 +391,11 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
       case MODULE :
 	 // fed = createFileEditor(bl.getSymbolProject(),null,bl.getFile());
 	 break;
+      case EXPORT :
+      case IMPORT :
+      case PROGRAM :
+         // fed = create...
+         break;
       default:
 	 break;
     }
@@ -1010,7 +1016,7 @@ void addContextMenuItems(BaleContextConfig cfg,JPopupMenu menu)
     }
    for (BaleContextListener bcl : lstn) {
       bcl.addPopupMenuItems(cfg,menu);
-    } 
+    }
 }
 
 
@@ -1035,6 +1041,23 @@ String getContextToolTip(BaleContextConfig cfg)
    buf.append("\n<br>\n");
 
    return buf.toString();
+}
+
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Handle refactoring edit application					*/
+/*										*/
+/********************************************************************************/
+
+public void applyEdits(Element edits)
+{
+   if (edits == null) return;
+
+   BaleApplyEdits bae = new BaleApplyEdits();
+   bae.applyEdits(edits);
 }
 
 
@@ -1124,13 +1147,17 @@ private BaleFragmentEditor getEditorFromLocations(List<BumpLocation> locs)
 	 ftyp = BaleFragmentType.CLASS;
 	 break;
       case STATIC_INITIALIZER :
+      case IMPORT :
+      case EXPORT :
 	 ftyp = BaleFragmentType.STATICS;
 	 break;
       case MAIN_PROGRAM :
+      case PROGRAM :
 	 ftyp = BaleFragmentType.MAIN;
 	 break;
       case ENUM_CONSTANT :
       case FIELD :
+      case GLOBAL :
 	 ftyp = BaleFragmentType.FIELDS;
 	 int idx = fragname.lastIndexOf(".");
 	 fragname = fragname.substring(0,idx) + ".< FIELDS >";
@@ -1194,8 +1221,11 @@ private List<BaleRegion> getRegionsFromLocations(List<BumpLocation> locs)
 	     }
 	    else if (havecmmt) ;
 	    else if (Character.isWhitespace(s.charAt(eoffset))) ;
-	    // TAKE PYTHON COMMENTS INTO ACCOUT (i.e. #)
 	    else if (lang == BoardLanguage.JAVA &&
+		  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
+	       havecmmt = true;
+	     }
+	    else if (lang == BoardLanguage.JS &&
 		  s.charAt(eoffset) == '/' && s.charAt(eoffset+1) == '/') {
 	       havecmmt = true;
 	     }

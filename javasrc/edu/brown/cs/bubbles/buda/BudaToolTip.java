@@ -64,6 +64,7 @@ private static final long serialVersionUID = 1;
 
    if (txt == null || txt.length() == 0) return super.getPreferredSize();
    if (!txt.startsWith("<html>")) return super.getPreferredSize();
+   // txt = txt.replace("\t","");
 
    JLabel lbl = new JLabel();
    lbl.setFont(getFont());

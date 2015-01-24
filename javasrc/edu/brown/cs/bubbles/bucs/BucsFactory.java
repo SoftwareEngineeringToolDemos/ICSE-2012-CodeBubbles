@@ -106,6 +106,8 @@ private void setupCallbacks()
 	 break;
       case PYTHON :
 	 break;
+      case JS :
+         break;
     }
 }
 

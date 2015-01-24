@@ -73,6 +73,7 @@
 <entry key="Bale.error.color">ffff0080</entry>
 <entry key="Bale.warning.color">ff4040ff</entry>
 <entry key="Bale.error.background">ffffe0e0</entry>
+<entry key="Bale.error.use.background">true</entry>
 <entry key="Bale.editor.top.color">ffffffff</entry>
 <entry key="Bale.editor.bottom.color">ffcce0e0</entry>
 <entry key="Bale.crumb.font">LucindaSansRegular.ttf/0/11</entry>

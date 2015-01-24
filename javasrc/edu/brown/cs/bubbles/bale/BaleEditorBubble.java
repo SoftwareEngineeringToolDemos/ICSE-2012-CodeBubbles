@@ -99,6 +99,9 @@ BaleEditorBubble(BaleFragmentEditor bfe)
 	 maxht = bp.getIntOption("Bale.initial.height.fields",maxht);
 	 break;
       case STATICS :
+      case IMPORTS :
+      case EXPORTS :
+      case CODE :
 	 maxwd = bp.getIntOption("Bale.initial.width.statics",maxwd);
 	 maxht = bp.getIntOption("Bale.initial.height.statics",maxht);
 	 break;
@@ -243,6 +246,9 @@ BaleEditorBubble(BaleFragmentEditor bfe)
       case STATICS :
       case MAIN :
       case HEADER :
+      case IMPORTS :
+      case EXPORTS :
+      case CODE :
 	 nty = BudaContentNameType.CLASS_ITEM;
 	 break;
       case ROFILE:

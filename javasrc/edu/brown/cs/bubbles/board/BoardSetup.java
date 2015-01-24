@@ -278,6 +278,12 @@ private void scanArgs(String [] args)
 	 else if (args[i].startsWith("-py")) {                          // -python
 	    setLanguage(BoardLanguage.PYTHON);
 	  }
+	 else if (args[i].startsWith("-node")) {                        // -node
+	    setLanguage(BoardLanguage.JS);
+	  }
+	 else if (args[i].startsWith("-js")) {                          // -js
+	    setLanguage(BoardLanguage.JS);
+	  }
 	 else if (args[i].startsWith("-rebus")) {                       // -rebus
 	    setLanguage(BoardLanguage.REBUS);
 	  }
@@ -604,6 +610,9 @@ public static File getBubblesPluginDirectory()
       case PYTHON :
 	 pdir = new File(wsd,".metadata");
 	 break;
+      case JS :
+	 pdir = new File(wsd,".metadata");
+	 break;
       case REBUS :
 	 pdir = new File(wsd,".metadata");
 	 break;
@@ -809,6 +818,9 @@ public void setLanguage(BoardLanguage bl)
 	    if (course_name != null) BoardProperties.setPropertyDirectory(BOARD_SUDS_PROP_BASE);
 	    BoardProperties.setPropertyDirectory(BOARD_PROP_BASE);
 	    break;
+	 case JS :
+	    BoardProperties.setPropertyDirectory(BOARD_NODEJS_PROP_BASE);
+	    break;
 	 case REBUS :
 	    BoardProperties.setPropertyDirectory(BOARD_REBUS_PROP_BASE);
 	    break;
@@ -984,7 +996,7 @@ public boolean doSetup()
   if (course_name != null) auto_update = false;
 
    boolean firsttime = checkDefaultInstallation();
-   if (firsttime && eclipse_directory == null) {
+   if (firsttime && eclipse_directory == null && board_language == BoardLanguage.JAVA) {
       eclipse_directory = System.getProperty("edu.brown.cs.bubbles.eclipse");
       if (eclipse_directory == null) eclipse_directory = System.getenv("BUBBLES_ECLIPSE");
       if (!checkEclipse()) eclipse_directory = null;
@@ -1001,6 +1013,8 @@ public boolean doSetup()
 	 thru &= eclipse_directory != null;
 	 break;
       case PYTHON :
+	 break;
+      case JS :
 	 break;
       case REBUS :
 	 break;
@@ -1026,6 +1040,9 @@ public boolean doSetup()
 	 needsetup |= !checkInstall() && !install_jar;
 	 break;
       case PYTHON :
+	 needsetup |= !checkInstall() && !install_jar;
+	 break;
+      case JS :
 	 needsetup |= !checkInstall() && !install_jar;
 	 break;
       case REBUS :
@@ -1072,6 +1089,8 @@ public boolean doSetup()
 	  }
 	 break;
       case PYTHON :
+	 break;
+      case JS :
 	 break;
       case REBUS :
 	 break;
@@ -1552,6 +1571,7 @@ private void loadUrlLibraries()
    String urlbase = bp.getProperty("Board.library.url","http://www.cs.brown.edu/people/spr/bubbles/lib/");
    if (!urlbase.endsWith("/")) urlbase += "/";
 
+   int errct = 0;
    for (String s : BOARD_LIBRARY_URLS) {
       File f = getLibraryDirectory();
       for (StringTokenizer tok = new StringTokenizer(s,"/"); tok.hasMoreTokens(); ) {
@@ -1587,7 +1607,14 @@ private void loadUrlLibraries()
 	 c.disconnect();
        }
       catch (IOException e) {
-	 BoardLog.logE("BOARD","Problem loading url library " + s + " @ " + urlbase,e);
+	 if (dlm == 0) {
+	    if (errct++ == 0) {
+	       JOptionPane.showMessageDialog(null,"Bubbles requires Internet access to load its initial libraries",
+						"Bubbles Setup Problem",
+						JOptionPane.ERROR_MESSAGE);
+	     }
+	    BoardLog.logE("BOARD","Problem loading url library " + s + " @ " + urlbase,e);
+	  }
        }
     }
 }
@@ -2033,6 +2060,9 @@ private void restartBubbles()
 	 case REBUS :
 	    args.add(idx++,"-rebus");
 	    break;
+	 case JS :
+	    args.add(idx++,"-nodejs");
+	    break;
 	 case JAVA :
 	    break;
        }
@@ -2171,6 +2201,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	    break;
 	 case REBUS :
 	    break;
+	 case JS :
+	    break;
        }
 
       bubbles_warning = new JLabel("Warning!");
@@ -2202,6 +2234,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	    break;
 	 case REBUS :
 	    break;
+	 case JS :
+	    break;
        }
 
       pnl.addSeparator();
@@ -2213,6 +2247,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	 case PYTHON :
 	    break;
 	 case REBUS :
+	    break;
+	 case JS :
 	    break;
        }
 
@@ -2257,6 +2293,8 @@ private class SetupDialog implements ActionListener, CaretListener {
 	 case PYTHON :
 	    break;
 	 case REBUS :
+	    break;
+	 case JS :
 	    break;
        }
 
@@ -2386,6 +2424,12 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 		  new WorkspaceDirectoryFilter(),this,null);
 	    workspace_warning.setToolTipText("Not a vaid Python Workspace");
 	    break;
+	 case JS :
+	    textfield = pnl.addFileField("Node/JS Workspace",default_workspace,
+		  JFileChooser.DIRECTORIES_ONLY,
+		  new WorkspaceDirectoryFilter(),this,null);
+	    workspace_warning.setToolTipText("Not a vaid Node/JS Workspace");
+	    break;
 	 case REBUS :
 	    textfield = pnl.addFileField("Rebus Workspace",default_workspace,
 		  JFileChooser.DIRECTORIES_ONLY,
@@ -2436,7 +2480,8 @@ private class WorkspaceDialog implements ActionListener, KeyListener {
 
    public void actionPerformed(ActionEvent e) {
       String cmd = e.getActionCommand();
-      if (cmd.equals("Eclipse Workspace") || cmd.equals("Python Workspace") || cmd.equals("Rebus Workspace")) {
+      if (cmd.equals("Eclipse Workspace") || cmd.equals("Python Workspace") ||
+	    cmd.equals("Rebus Workspace") || cmd.equals("Node/JS Workspace")) {
 	 JTextField tf = (JTextField) e.getSource();
 	 File ef = new File(tf.getText());
 	 String np = ef.getPath();

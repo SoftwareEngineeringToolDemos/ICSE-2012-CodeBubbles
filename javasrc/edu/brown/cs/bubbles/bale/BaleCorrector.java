@@ -430,6 +430,7 @@ private class SpellFixer implements Runnable {
 	 if (for_identifier.equals("List") && sf.getText().equals("int")) it.remove();
 	 if (for_identifier.equals("is") && sf.getText().equals("if")) it.remove();
 	 if (for_identifier.equals("add") && sf.getText().equals("do")) it.remove();
+	 if (for_identifier.equals("min") && sf.getText().equals("sin")) it.remove();
        }
 
       if (totry.size() == 0) {

@@ -141,6 +141,7 @@ BudaTopBar(BudaRoot br,Element cfg,BudaBubbleArea bba,BudaOverviewBar bob)
    addButton(workingset_menu,"Save Working Set","Save the working set to a file");
    addButton(workingset_menu,"Save Working Set to Task Shelf","Save the working set to the task shelf");
    addButton(workingset_menu,"Clear Bubbles in Working Set","Remove all bubbles in the working set");
+   addButton(workingset_menu,"Set Working Set Color","Set the background color of the working set");
    workingset_menu.add(new JSeparator());
    addButton(workingset_menu,"Clear All Bubbles","Close all bubbles");
 
@@ -309,6 +310,10 @@ private JMenuItem addButton(JComponent menu,String id,String tt)
       remove(chevron_buttons.get(cur_workingset));
       chevron_buttons.remove(cur_workingset);
     }
+   else if (cmd.equals("Set Working Set Color")) {
+      ColorSetter cs = new ColorSetter(cur_workingset);
+      cs.start();
+    }
    else if (cmd.equals("Save Working Set")) {
       ws_chooser.setDialogTitle("Location to save working set");
       int sts = ws_chooser.showSaveDialog(this);
@@ -429,6 +434,38 @@ private BudaShare [] createShareArray()
    return shrs;
 }
 
+
+
+
+private class ColorSetter implements ActionListener {
+
+   private BudaWorkingSetImpl working_set;
+   private JColorChooser color_chooser;
+   private JDialog user_dialog;
+
+   ColorSetter(BudaWorkingSetImpl ws) {
+      working_set = ws;
+      color_chooser = new JColorChooser(cur_workingset.getBorderColor());
+      user_dialog = JColorChooser.createDialog(BudaTopBar.this,
+						  "Choose working set color",false,
+						  color_chooser,this,this);
+    }
+
+   void start() {
+      user_dialog.setVisible(true);
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      String cmd = evt.getActionCommand();
+      if (cmd.equals("OK")) {
+	 Color c = color_chooser.getColor();
+	 working_set.setColor(c);
+	 BudaRoot br = BudaRoot.findBudaRoot(BudaTopBar.this);
+	 if (br != null) br.repaint();
+       }
+    }
+
+}	// end of inner class ColorSetter
 
 
 

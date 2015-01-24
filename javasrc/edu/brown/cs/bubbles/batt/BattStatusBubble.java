@@ -312,7 +312,8 @@ enum BarType {
    CANT_RUN,
    STOPPED,
    NEED_FAILURE,
-   FAILURE
+   FAILURE,
+   IGNORED
 }
 
 private static final int NUM_BAR_TYPES = 8;
@@ -326,7 +327,8 @@ private static final Paint [] bar_colors = new Color [] {
    Color.BLACK,
    new Color(255,192,64),
    new Color(255,0,255),
-   Color.RED
+   Color.RED,
+   new Color(192,255,255),
 };
 
 
@@ -361,6 +363,8 @@ private BarType getTestType(BattTestCase btc)
 	    default :
 	       return BarType.PENDING;
 	  }
+      case IGNORED :
+	 return BarType.IGNORED;
     }
 }
 
@@ -467,6 +471,10 @@ private class DisplayTable extends JTable implements MouseListener {
       if (btc == null) return null;
       return btc.getToolTip();
     }
+   
+   @Override public JToolTip createToolTip() {
+      return new BudaToolTip();
+    }
 
    BattTestCase getActualTestCase(int row) {
       RowSorter<?> rs = getRowSorter();
@@ -531,14 +539,14 @@ private class SourceAction extends AbstractAction {
 
 
 private class RunTestAction extends AbstractAction {
-   
+
    private BattTestCase test_case;
-   
+
    RunTestAction(BattTestCase btc) {
       super("Run Test " + btc.getName());
       test_case = btc;
     }
-   
+
    @Override public void actionPerformed(ActionEvent e) {
       BattFactory.getFactory().runTest(test_case);
     }
@@ -564,15 +572,14 @@ private class ModeAction extends JRadioButtonMenuItem implements ActionListener 
 
 
 
-private class UpdateAction extends JRadioButtonMenuItem implements ActionListener {
-
+private class UpdateAction extends AbstractAction {
 
    UpdateAction() {
       super("Update Test Set");
-      addActionListener(this);
     }
 
    @Override public void actionPerformed(ActionEvent e) {
+      batt_model.updateTestModel(null,true);
       BattFactory.getFactory().findNewTests();
     }
 

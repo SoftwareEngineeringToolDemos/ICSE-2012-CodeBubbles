@@ -484,12 +484,18 @@ private void addEntry(int id,Object o1,Object o2)
 
    if (!trace_enabled) return;
 
-   long time = System.nanoTime() - start_time;
-   Thread th = Thread.currentThread();
-   int m1 = (o1 == null ? 0 : System.identityHashCode(o1));
-   int m2 = (o2 == null ? 0 : System.identityHashCode(o2));
+   try {
+      long time = System.nanoTime() - start_time;
+      Thread th = Thread.currentThread();
+      int m1 = (o1 == null ? 0 : System.identityHashCode(o1));
+      int m2 = (o2 == null ? 0 : System.identityHashCode(o2));
 
-   trace_sets[current_set].addEntry(th,id,m1,m2,time);
+      trace_sets[current_set].addEntry(th,id,m1,m2,time);
+    }
+   catch (Throwable t) {
+      // System.err.println("TRACE error " + t);
+      // t.printStackTrace();
+    }
 }
 
 

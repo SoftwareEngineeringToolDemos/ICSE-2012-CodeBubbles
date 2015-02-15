@@ -166,6 +166,9 @@ public static void initialize(BudaRoot br)
 						r.y);
       bba.add(peb,bc);
     }
+
+   BuenoFactory bueno = BuenoFactory.getFactory();
+   bueno.setClassMethodFinder(new MethodFinder());
 }
 
 
@@ -360,10 +363,14 @@ public BassName findBubbleName(File f,int eclipsepos)
 }
 
 
-public List<BumpLocation> findClassMethods(String cls)
-{
-   return bass_repository.findClassMethods(cls);
-}
+private static class MethodFinder implements BuenoConstants.BuenoClassMethodFinder {
+
+   public List<BumpLocation> findClassMethods(String cls) {
+      return bass_repository.findClassMethods(cls);
+    }
+
+}	// end of inner class MethodFinder
+
 
 
 public File findActualFile(File f)
@@ -533,31 +540,31 @@ static BassTreeModelBase getModelBase(BassRepository br)
 private static class ProjectProps implements BassPopupHandler {
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,
-        			       String fullname,BassName bn) {
+				       String fullname,BassName bn) {
       if (bn != null) return;
       if (fullname.startsWith("@")) return;
-   
+
       int idx = fullname.indexOf(":");
       if (idx <= 0) return;
       String proj = fullname.substring(0,idx);
-   
+
       switch (BoardSetup.getSetup().getLanguage()) {
-         case JAVA :
-            // menu.add(new EclipseProjectAction(proj));
-            menu.add(new ProjectAction(proj,bb,where));
-            menu.add(new NewProjectAction(bb,where));
-            menu.add(new BassImportProjectAction());
-            break;
-         case PYTHON :
-            menu.add(new PythonProjectAction(proj,bb,where));
-            menu.add(new NewPythonProjectAction(bb,where));
-            break;
-         case JS:
-            menu.add(new JSProjectAction(proj,bb,where));
-            menu.add(new NewJSProjectAction(bb,where));
-            break;
-         case REBUS :
-            break;
+	 case JAVA :
+	    // menu.add(new EclipseProjectAction(proj));
+	    menu.add(new ProjectAction(proj,bb,where));
+	    menu.add(new NewProjectAction(bb,where));
+	    menu.add(new BassImportProjectAction());
+	    break;
+	 case PYTHON :
+	    menu.add(new PythonProjectAction(proj,bb,where));
+	    menu.add(new NewPythonProjectAction(bb,where));
+	    break;
+	 case JS:
+	    menu.add(new JSProjectAction(proj,bb,where));
+	    menu.add(new NewJSProjectAction(bb,where));
+	    break;
+	 case REBUS :
+	    break;
        }
     }
 
@@ -665,13 +672,13 @@ private static class JSProjectAction extends AbstractAction {
       BudaRoot.hideSearchBubble(e);
       BudaBubble bb = null;
       BuenoProjectDialog dlg = new BuenoProjectDialog(for_project);
-      bb = dlg.createProjectEditor();      
+      bb = dlg.createProjectEditor();	
       // bb = BuenoJSProject.createEditJSProjectBubble(for_project);
       if (bb == null) return;
       BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
    }
 
-}       // end of inner class JSProjectAction
+}	// end of inner class JSProjectAction
 
 
 
@@ -751,11 +758,11 @@ private static class NewJSProjectAction extends AbstractAction {
       bb = bpc.createProjectCreationBubble();
       // bb = BuenoJSProject.createNewJSProjectBubble();
       if (bb != null) {
-         BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
+	 BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);
        }
    }
 
-}       // end of inner class ProjectAction
+}	// end of inner class ProjectAction
 
 
 

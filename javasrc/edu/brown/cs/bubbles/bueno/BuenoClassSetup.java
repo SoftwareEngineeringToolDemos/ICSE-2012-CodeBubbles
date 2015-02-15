@@ -25,7 +25,6 @@
 package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.bump.*;
-import edu.brown.cs.bubbles.bass.*;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -139,10 +138,10 @@ private void addTypeReference(String typ)
    if (!is_abstract) {
       String mpat = nm + ".*";
       // TODO: TRY TO AVOID USING BUMP HERE -- use BASS instead
-      BassFactory bf = BassFactory.getFactory();
+      BuenoFactory bf = BuenoFactory.getFactory();
       List<BumpLocation> mthds = bf.findClassMethods(nm);
       if (mthds == null) {
-         mthds = bump_client.findMethods(bl.getProject(),mpat,false,true,false,true);
+	 mthds = bump_client.findMethods(bl.getProject(),mpat,false,true,false,true);
        }
       if (mthds != null) {
 	 for (BumpLocation mbl : mthds) {

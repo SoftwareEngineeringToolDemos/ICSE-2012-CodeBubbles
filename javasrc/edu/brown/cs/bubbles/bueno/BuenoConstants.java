@@ -27,6 +27,7 @@ package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+import edu.brown.cs.bubbles.bump.*;
 
 import javax.swing.JPanel;
 
@@ -183,11 +184,15 @@ interface BuenoClassCreatorInstance {
    boolean useSeparateTypeButtons();
 
    boolean showClassDialogBubble(BudaBubble source,Point location,BuenoType typ,
-         BuenoProperties known,BuenoLocation insert,String lbl,
-         BuenoBubbleCreator newer);
+	 BuenoProperties known,BuenoLocation insert,String lbl,
+	 BuenoBubbleCreator newer);
 
 }	// end of interface BuenoClassCreatorInstance
 
+
+interface BuenoClassMethodFinder {
+    List<BumpLocation> findClassMethods(String name);
+}	// end of interface BuenoClassMethodFinder
 
 
 

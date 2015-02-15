@@ -35,6 +35,7 @@ import edu.brown.cs.ivy.swing.SwingEventListenerList;
 import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 
 
@@ -54,7 +55,7 @@ private Map<BuenoMethod,BuenoCreator> creation_map;
 private BuenoCreator		cur_creator;
 private BuenoMethodCreatorInstance method_creator;
 private BuenoClassCreatorInstance class_creator;
-
+private BuenoClassMethodFinder	method_finder;
 
 private static BuenoFactory	the_factory = null;
 
@@ -88,6 +89,7 @@ private BuenoFactory()
 
    method_creator = null;
    class_creator = null;
+   method_finder = null;
 
    BoardProperties bp = BoardProperties.getProperties("Bueno");
    BuenoMethod mthd = bp.getEnum(BUENO_CREATION_METHOD,"METHOD_",BuenoMethod.METHOD_TEMPLATE);
@@ -183,6 +185,12 @@ public void setClassDialog(BuenoClassCreatorInstance bcc)
 }
 
 
+public void setClassMethodFinder(BuenoClassMethodFinder fdr)
+{
+   method_finder = fdr;
+}
+
+
 
 public void createMethodDialog(BudaBubble src,Point loc,BuenoProperties known,
 				  BuenoLocation insert,String lbl,
@@ -223,6 +231,15 @@ public boolean useSeparateTypeButtons()
 
    return class_creator.useSeparateTypeButtons();
 }
+
+
+List<BumpLocation> findClassMethods(String name)
+{
+   if (method_finder == null) return  null;
+
+   return method_finder.findClassMethods(name);
+}
+
 
 
 
@@ -336,7 +353,7 @@ public BudaBubble getCreateProjectBubble()
       case PYTHON :
 	 return BuenoPythonProject.createNewPythonProjectBubble();
       case JS :
-         return BuenoJsProject.createNewJsProjectBubble();
+	 return BuenoJsProject.createNewJsProjectBubble();
       case REBUS :
 	 return null;
       default :
@@ -352,8 +369,8 @@ private static class CreateListener implements BudaConstants.ButtonListener {
       BudaBubble bb = bf.getCreateProjectBubble();
       if (bb == null) return;
       bba.addBubble(bb,null,pt,BudaConstants.PLACEMENT_LOGICAL|
-        	       BudaConstants.PLACEMENT_MOVETO |
-        	       BudaConstants.PLACEMENT_USER);
+		       BudaConstants.PLACEMENT_MOVETO |
+		       BudaConstants.PLACEMENT_USER);
     }
 
 }	// end of inner class CreateListener

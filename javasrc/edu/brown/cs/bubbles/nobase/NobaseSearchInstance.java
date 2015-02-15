@@ -131,9 +131,6 @@ NobaseAstVisitor getFindSymbolsVisitor(String pat,String kind)
    if (pat == null) pat = "*";
    
    String p1 = pat;
-   String p2 = null;
-   String p3 = null;
-   String p4 = null;
    EnumSet<NameType> kindset = EnumSet.noneOf(NameType.class);
    
    switch (kind) {
@@ -146,7 +143,6 @@ NobaseAstVisitor getFindSymbolsVisitor(String pat,String kind)
       case "METHOD" :
       case "CONSTRUCTOR" :
          kindset.add(NameType.FUNCTION);
-         int idx4 = pat.indexOf("(");
          break;
       case "FIELD" :
          kindset.add(NameType.VARIABLE);
@@ -284,11 +280,15 @@ private class FindLocationVisitor extends NobaseAstVisitor {
    @Override public boolean visit(Identifier n) {
       NobaseSymbol js = n.getDefinition();
       if (js == null) js = n.getReference();
+      if (js == null) {
+         js = n.getParent().getDefinition();
+         if (js == null) js = n.getParent().getDefinition();
+       }
       if (js != null) {
-	 match_symbols.add(js);
+         match_symbols.add(js);
        }
       return false;
-    }
+   }
    
 }	// end of inner class FindLocationVisitor
 

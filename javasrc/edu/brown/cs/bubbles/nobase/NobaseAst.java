@@ -56,6 +56,9 @@ interface NobaseAst extends NobaseConstants
       int getExtendedEndPosition();
    
       NobaseAstNode getParent();
+      int getNumChildren();
+      NobaseAstNode getChild(int i);
+      int getIndexInParent();
     }
 
    //	Group nodes
@@ -97,7 +100,7 @@ interface NobaseAst extends NobaseConstants
 
    interface ContinueStatement extends Statement { }
 
-   interface ConstructorCall extends Expression { }
+   interface ConstructorCall extends Operation { }
 
    interface ControlOperation extends Operation { }
 
@@ -124,7 +127,9 @@ interface NobaseAst extends NobaseConstants
       Expression getExpression();
    }
 
-   interface FileModule extends NobaseAstNode { }
+   interface FileModule extends NobaseAstNode { 
+      Block getBlock();
+   }
    
    interface FinallyStatement extends Statement { }
 

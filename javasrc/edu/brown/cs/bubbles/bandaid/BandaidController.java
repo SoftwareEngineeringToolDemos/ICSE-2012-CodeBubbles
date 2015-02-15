@@ -454,6 +454,8 @@ private void processRequest(String rqst)
 long sendReport(long now)
 {
    if (!socket_client.isValid()) return now;
+   
+   // System.err.println("BANDAID: report");
 
    BandaidXmlWriter xw = new BandaidXmlWriter();
 
@@ -775,7 +777,10 @@ private class SocketClient {
 	 output_stream.write(byte_buffer,0,slen+char_trailer.length);
 	 output_stream.flush();
        }
-      catch (IOException e) { }
+      catch (IOException e) {
+         System.err.println("BANDAID: problem writing output: " + e);
+	 output_stream = null;
+       }
     }
 
 }	// end of subclass SocketClient

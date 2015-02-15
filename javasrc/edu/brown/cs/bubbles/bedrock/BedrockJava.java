@@ -387,7 +387,7 @@ void handleFindAll(String proj,String file,int start,int end,boolean defs,boolea
 	       break;
 	    case IJavaElement.METHOD :
 	       if (impls) xlimit |= IJavaSearchConstants.IGNORE_DECLARING_TYPE;
-	       break;										
+	       break;									
 	  }
 	 if (mrule < 0) sp = SearchPattern.createPattern(elts[i],xlimit);
 	 else sp = SearchPattern.createPattern(elts[i],xlimit,mrule);
@@ -997,7 +997,10 @@ void getFullyQualifiedName(String proj,String file,int start,int end,IvyXmlWrite
       throw new BedrockException("Problem getting name",e);
     }
 
-   if (name == null) throw new BedrockException("No identifier at location");
+   if (name == null) {
+      return;
+      // throw new BedrockException("No identifier at location");
+    }
 
    xw.begin("FULLYQUALIFIEDNAME");
    xw.field("NAME",name);

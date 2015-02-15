@@ -157,7 +157,7 @@ private int [] readHeader(InputStream ins) throws IOException
 	 if (ch == '\n') break;
 	 buf.append(ch);
        }
-      System.err.println("READ HEADER: " + buf);
+      // System.err.println("BVCR: READ HEADER: " + buf);
       if (buf.length() > 0 && Character.isDigit(buf.charAt(0))) break;
       buf = new StringBuffer();
     }

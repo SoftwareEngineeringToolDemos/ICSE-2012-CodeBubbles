@@ -746,21 +746,21 @@ private abstract class ElideData {
       if (!overlaps(sp,ln)) return false;
       // check if any child overlaps, use child if so
       for (Iterator<?> it = n.structuralPropertiesForType().iterator(); it.hasNext(); ) {
-	 StructuralPropertyDescriptor spd = (StructuralPropertyDescriptor) it.next();
-	 if (spd.isSimpleProperty()) ;
-	 else if (spd.isChildProperty()) {
-	    ASTNode cn = (ASTNode) n.getStructuralProperty(spd);
-	    if (cn != null) {
-	       if (overlaps(cn.getStartPosition(),cn.getLength())) return false;
-	     }
-	  }
-	 else {
-	    List<?> lcn = (List<?>) n.getStructuralProperty(spd);
-	    for (Iterator<?> it1 = lcn.iterator(); it1.hasNext(); ) {
-	       ASTNode cn = (ASTNode) it1.next();
-	       if (overlaps(cn.getStartPosition(),cn.getLength())) return false;
-	     }
-	  }
+         StructuralPropertyDescriptor spd = (StructuralPropertyDescriptor) it.next();
+         if (spd.isSimpleProperty()) ;
+         else if (spd.isChildProperty()) {
+            ASTNode cn = (ASTNode) n.getStructuralProperty(spd);
+            if (cn != null) {
+               if (overlaps(cn.getStartPosition(),cn.getLength())) return false;
+             }
+          }
+         else {
+            List<?> lcn = (List<?>) n.getStructuralProperty(spd);
+            for (Iterator<?> it1 = lcn.iterator(); it1.hasNext(); ) {
+               ASTNode cn = (ASTNode) it1.next();
+               if (overlaps(cn.getStartPosition(),cn.getLength())) return false;
+             }
+          }
        }
       return true;
     }

@@ -390,7 +390,10 @@ void checkpoint()
 
 
 
-boolean canSave()			{ return is_dirty; }
+boolean canSave() {
+   if (is_dirty) return true;
+   return false;
+}
 
 
 
@@ -428,6 +431,13 @@ boolean canSave()			{ return is_dirty; }
       is_dirty = true;
     }
    finally { writeUnlock(); }
+}
+
+
+
+@Override public void markChanged()
+{
+   is_dirty = true;
 }
 
 

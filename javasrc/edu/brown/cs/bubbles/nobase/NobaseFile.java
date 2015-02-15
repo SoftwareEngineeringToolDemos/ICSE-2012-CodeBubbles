@@ -42,10 +42,12 @@ class NobaseFile implements NobaseConstants
 
 private String module_name;
 private File for_file;
+private NobaseProject for_project;
 private IDocument use_document;
 private Map<Object,int []> position_data;
 private boolean has_changed;
 private long last_modified;
+private boolean is_library;
 
 
 
@@ -59,6 +61,7 @@ private long last_modified;
 NobaseFile(File f,String nm,NobaseProject pp) 
 {
    for_file = f;
+   for_project = pp;
    use_document = new Document();
    module_name = nm;
    loadFile();
@@ -69,15 +72,7 @@ NobaseFile(File f,String nm,NobaseProject pp)
 
 
 
-NobaseFile(IDocument d,File f)
-{
-   for_file = f;
-   use_document = d;
-   module_name = null;
-   position_data = new HashMap<Object,int []>();
-   has_changed = false;
-   last_modified = 0;
-}
+
 
 
 
@@ -88,12 +83,15 @@ NobaseFile(IDocument d,File f)
 /********************************************************************************/
 
 File getFile()		        	{ return for_file; }
+NobaseProject getProject()              { return for_project; }
 IDocument getDocument()		{ return use_document; }
 String getModuleName()	        	{ return module_name; }
 boolean hasChanged()		        { return has_changed; }
 void markChanged()			{ has_changed = true; }
 long getLastDateLastModified()	        { return last_modified; }
 String getFileName()                    { return for_file.getPath(); }
+boolean isLibrary()                     { return is_library; }
+void setIsLibrary(boolean fg)           { is_library = fg; }
 
 
 
@@ -280,6 +278,11 @@ boolean commit(boolean refresh,boolean save)
 {
    return for_file.getPath();
 }
+
+
+
+
+
 
 
 }       // end of class NobaseFile

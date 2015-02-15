@@ -70,25 +70,27 @@ BconRepository()
 	 BassRepository br = BassFactory.getRepository(BudaConstants.SearchType.SEARCH_CODE);
 	 BassUpdatingRepository bur = (BassUpdatingRepository) br;
 	 bur.addUpdateRepository(this);
-	 
-	 for (BassName bn : br.getAllNames()) {
-	    switch (bn.getNameType()) {
-	       case CLASS :
-	       case INTERFACE :
-	       case ENUM :
-	       case THROWABLE :
-	       case MODULE :
-		  break;
-	       default :
-		  continue;
-	     }
+	
+	 synchronized (active_names) {
+	    for (BassName bn : br.getAllNames()) {
+	       switch (bn.getNameType()) {
+		  case CLASS :
+		  case INTERFACE :
+		  case ENUM :
+		  case THROWABLE :
+		  case MODULE :
+		     break;
+		  default :
+		     continue;
+		}
 
-	    BumpLocation bl = bn.getLocation();
-	    if (bl == null) continue;
-	    String ky = bl.getKey();
-	    if (active_names.containsKey(ky)) continue;
-	    BconName bcn = new BconName(bl);
-	    active_names.put(ky,bcn);
+	       BumpLocation bl = bn.getLocation();
+	       if (bl == null) continue;
+	       String ky = bl.getKey();
+	       if (active_names.containsKey(ky)) continue;
+	       BconName bcn = new BconName(bl);
+	       active_names.put(ky,bcn);
+	     }
 	  }
 	 break;
       default :
@@ -245,9 +247,9 @@ private static class PackageAction extends AbstractAction
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Reload management                                                       */
-/*                                                                              */
+/*										*/
+/*	Reload management							*/
+/*										*/
 /********************************************************************************/
 
 private void reload()

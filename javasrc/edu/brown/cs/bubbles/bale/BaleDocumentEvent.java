@@ -252,6 +252,7 @@ UndoableEdit getEdit()
    restorePosition();
    if (the_edit != null) {
       base_document.baleWriteLock();
+      base_document.markChanged();
       try {
 	 the_edit.undo();
        }

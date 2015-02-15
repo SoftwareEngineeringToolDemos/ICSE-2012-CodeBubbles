@@ -85,6 +85,7 @@ static {
    ast_types.put("COMPUNIT",BaleAstNodeType.FILE);
    ast_types.put("METHOD",BaleAstNodeType.METHOD);
    ast_types.put("FUNCTION",BaleAstNodeType.METHOD);
+   ast_types.put("MODULE", BaleAstNodeType.FILE);
 
    id_types = new HashMap<String,BaleAstIdType>();
    id_types.put("CALL",BaleAstIdType.CALL);
@@ -112,6 +113,7 @@ static {
    id_types.put("UNDEF",BaleAstIdType.UNDEF);
    id_types.put("ANNOT",BaleAstIdType.ANNOT);
    id_types.put("BUILTIN",BaleAstIdType.BUILTIN) ;
+   id_types.put("MODULE",BaleAstIdType.MODULE);
 
    // python-specific ids
    id_types.put("VARDECL",BaleAstIdType.FIELD_STATIC);

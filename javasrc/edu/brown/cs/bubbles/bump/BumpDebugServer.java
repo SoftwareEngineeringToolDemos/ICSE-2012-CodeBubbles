@@ -234,12 +234,20 @@ private class Connection extends Thread {
 
    Connection(Socket s) {
       super("BumpDebugConnection_" + s.getRemoteSocketAddress());
+      try {
+         s.setSoTimeout(60000);
+       }
+      catch (SocketException e) {
+         System.err.println("BUMPDEBUG: Problem with socket timeout: " + e);
+       }
       client_socket = s;
       output_writer = null;
       client_id = null;
     }
 
    @Override public void run() {
+      System.err.println("BUMP: start connect");
+
       try {
 	 InputStream ins = client_socket.getInputStream();
 	 BufferedReader lnr = new BufferedReader(new InputStreamReader(ins));
@@ -272,6 +280,22 @@ private class Connection extends Thread {
 		}
 	     }
 	  }
+       }
+      catch (IOException e) {
+	 System.err.println("BUMP: Problem with socket: " + e);
+	 e.printStackTrace();
+       }
+      catch (Throwable t) {
+	 System.err.println("BUMP: Problem with command: " + t);
+	 t.printStackTrace();
+       }
+
+      System.err.println("BUMP CONNECTION EXITED");
+
+
+      try {
+	 client_socket.close();
+	 output_writer.close();
        }
       catch (IOException e) { }
 

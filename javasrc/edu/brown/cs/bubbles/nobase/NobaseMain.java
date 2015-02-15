@@ -258,6 +258,8 @@ public NobaseFile getFileData(String fnm)
    return file_manager.getFileData(new File(fnm));
 }
 
+
+
 NobasePreferences getSystemPreferences()		{ return system_prefs; }
 
 

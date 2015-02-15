@@ -634,18 +634,6 @@ private void loadProject(String nm,File pf)
 /*										*/
 /********************************************************************************/
 
-private static File getAbsolutePath(File par,File chld)
-{
-   File p = chld.getParentFile();
-   if (p == null) return new File(par,chld.getName());
-   else {
-      File f1 = getAbsolutePath(par,p);
-      return new File(f1,chld.getName());
-    }
-}
-
-
-
 private void addSemanticData(NobaseProject pp,List<ISemanticData> rslt)
 {
    for (NobaseFile ifd : pp.getAllFiles()) {
@@ -653,16 +641,6 @@ private void addSemanticData(NobaseProject pp,List<ISemanticData> rslt)
       rslt.add(isd);
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

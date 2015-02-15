@@ -249,25 +249,14 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
 {
    boolean cnstr = false;
    name = name.replace('$','.');
-
+   name = removeGenerics(name);
+   
    String nm0 = name;
    int idx2 = name.indexOf("(");
    String args = "";
    if (idx2 >= 0) {
       nm0 = name.substring(0,idx2);
       args = name.substring(idx2);
-      if (args.contains("<")) {
-	 StringBuffer buf = new StringBuffer();
-	 int lvl = 0;
-	 for (int i = 0; i < args.length(); ++i) {
-	    char c = args.charAt(i);
-	    if (c == '<') ++lvl;
-	    else if (c == '>') --lvl;
-	    else if (lvl == 0) buf.append(c);
-	  }
-	 args = buf.toString();
-	 name = nm0 + args;
-       }
     }
 
    int idx0 = nm0.lastIndexOf(".");
@@ -316,6 +305,31 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
 {
    nm = nm.replace('$','.');
    return nm;
+}
+
+
+private String removeGenerics(String name)
+{
+   if (!name.contains("<")) return name;
+   
+   StringBuffer buf = new StringBuffer();
+   boolean insideargs = false;
+   boolean atdot = true;
+   int lvl = 0;
+   
+   for (int i = 0; i < name.length(); ++i) {
+      char c = name.charAt(i);
+      if ((insideargs || !atdot) && c == '<') ++lvl;
+      else if (lvl > 0 && c == '>') --lvl;
+      else if (lvl == 0) {
+         buf.append(c); 
+         if (c == '(') insideargs = true;
+         else if (c == '.') atdot = true;
+         else atdot = false;
+      }
+    }
+   
+   return buf.toString();
 }
 
 

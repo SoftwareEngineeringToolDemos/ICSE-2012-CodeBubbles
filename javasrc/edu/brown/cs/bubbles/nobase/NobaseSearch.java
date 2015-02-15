@@ -26,10 +26,6 @@ package edu.brown.cs.bubbles.nobase;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
-
 
 class NobaseSearch implements NobaseConstants, NobaseAst
 {
@@ -58,14 +54,6 @@ NobaseSearch(NobaseMain nm)
 
 
 
-
-
-
-
-
-
-
-
 /********************************************************************************/
 /*										*/
 /*	Text Search commands							*/
@@ -75,15 +63,7 @@ NobaseSearch(NobaseMain nm)
 void handleTextSearch(String proj,int fgs,String pat,int maxresult,IvyXmlWriter xw)
 throws NobaseException
 {
-   Pattern pp = null;
-   try {
-      pp = Pattern.compile(pat,fgs);
-    }
-   catch (PatternSyntaxException e) {
-      pp = Pattern.compile(pat,fgs|Pattern.LITERAL);
-    }
    
-   Pattern filepat = null;
    
 }
 

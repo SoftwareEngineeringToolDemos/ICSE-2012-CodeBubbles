@@ -334,9 +334,11 @@ void checkWriteLock()
 }
 
 
+public void markChanged()				{ }
+
+
 
 // for BaleFileOverview
-
 public boolean replace(int off,int len,String text,boolean fmt,boolean ind)
 {
    Position sp = null;

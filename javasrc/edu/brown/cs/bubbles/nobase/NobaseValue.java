@@ -176,6 +176,11 @@ protected NobaseValue(NobaseType typ)
 
 NobaseType getType()					{ return value_type; }
 
+long getHashValue()             
+{
+   return hashCode();
+}
+
 void setBaseValue(NobaseValue typ)			{ }
 
 boolean addProperty(Object prop,NobaseValue typ)		{ return false; }
@@ -184,6 +189,10 @@ NobaseValue getProperty(Object name)			{ return null; }
 void mergeProperties(NobaseValue nv)                    { }
 
 void addDefinition(NobaseAst.FunctionConstructor fc)	{ }
+void setEvaluator(Evaluator eval)                       { }
+NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args) {
+   return createUnknownValue();
+}
 
 void setConstructor()					{ }
 
@@ -388,6 +397,8 @@ private static class ObjectValue extends NobaseValue {
       NobaseValue otyp = null;
       if (name != null) otyp = known_properties.get(name);
       if (otyp != null) return otyp;
+      if (base_value != null) otyp = base_value.getProperty(name);
+      if (otyp != null) return otyp;
       if (has_other) return createAnyValue();
       return null;
     }
@@ -401,6 +412,11 @@ private static class ObjectValue extends NobaseValue {
           }
          if (ov.has_other) setHasOtherProperties();
        }
+    }
+   
+   @Override long getHashValue() {
+      // this should change if the known properties changes
+      return known_properties.hashCode();
     }
    
 }	// end of inner class ObjectValue
@@ -434,17 +450,36 @@ private static class ArrayValue extends NobaseValue {
 private static class FunctionValue extends ObjectValue {
 
    private Set<NobaseAst.FunctionConstructor> function_defs;
+   private Evaluator function_evaluator;
 
-   FunctionValue(NobaseAst.FunctionConstructor fc) {
+   FunctionValue() {
       super(NobaseType.createFunction());
-      function_defs = new HashSet<NobaseAst.FunctionConstructor>();
-      if (fc != null) function_defs.add(fc);
+      function_defs = null;
+      function_evaluator = null;
+    }
+   
+   FunctionValue(NobaseAst.FunctionConstructor fc) {
+      this();
+      if (fc != null) addDefinition(fc);
     }
 
    boolean isFunction()                         { return true; }
    
    @Override void addDefinition(NobaseAst.FunctionConstructor fc) {
+      if (function_defs == null) function_defs = new HashSet<NobaseAst.FunctionConstructor>();
       function_defs.add(fc);
+    }
+   
+   @Override void setEvaluator(Evaluator ev) {
+      function_evaluator = ev;
+    }
+   
+   @Override NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args) {
+      if (function_evaluator != null) {
+         NobaseValue v = function_evaluator.evaluate(forfile,args);
+         if (v != null) return v;
+       }
+      return super.evaluate(forfile,args);
     }
 
 }	// end of inner class CompletionValue

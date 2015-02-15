@@ -19,6 +19,7 @@
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${BUBBLES}/lib/' includes='caja.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='json.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar'>
 	    <include name='*.jar' />
 	 </fileset>
@@ -27,6 +28,7 @@
 	 <pathelement location='${BUBBLES}/java' />
 	 <pathelement location='${IVYBIN}' />
 	 <fileset dir='${BUBBLES}/lib/' includes='caja.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='json.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.text.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.equinox.common.jar' />

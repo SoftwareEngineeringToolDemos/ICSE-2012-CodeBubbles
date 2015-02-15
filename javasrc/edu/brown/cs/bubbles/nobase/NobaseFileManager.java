@@ -89,10 +89,7 @@ NobaseFile getNewFileData(File f,String nm,NobaseProject pp)
 }
 
 
-NobaseFile getFileData(IDocument d,File f)
-{
-   return new NobaseFile(d,f);
-}
+
 
 
 

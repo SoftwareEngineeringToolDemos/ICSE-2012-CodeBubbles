@@ -188,6 +188,24 @@ protected void removeAllProperties()
 
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Access methods                                                          */
+/*                                                                              */
+/********************************************************************************/
+
+@Override public int getIndexInParent() 
+{
+   NobaseAst.NobaseAstNode par = getParent();
+   if (par == null) return -1;
+   int nc = par.getNumChildren();
+   for (int i = 0; i < nc; ++i) {
+      if (par.getChild(i) == this) return i;
+    }
+   return -1;
+}
+
+
 }	// end of class NobaseAstNodeBase
 
 

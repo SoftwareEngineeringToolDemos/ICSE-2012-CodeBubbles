@@ -32,7 +32,6 @@ import com.google.caja.reporting.*;
 import org.eclipse.jface.text.*;
 
 import java.util.*;
-import java.io.*;
 
 
 class NobaseCaja implements NobaseConstants, NobaseConstants.IParser
@@ -47,7 +46,7 @@ class NobaseCaja implements NobaseConstants, NobaseConstants.IParser
 
 private static Map<ParseTreeNode,CajaAstNode> node_map;
 
-private static boolean do_debug = false;
+private static boolean do_debug = true;
 
 
 static {
@@ -74,7 +73,7 @@ NobaseCaja()
 /*										*/
 /********************************************************************************/
 
-@Override public ISemanticData parse(NobaseProject proj,NobaseFile fd)
+@Override public ISemanticData parse(NobaseProject proj,NobaseFile fd,boolean lib)
 {
    IDocument id = fd.getDocument();
    String s = id.get();
@@ -87,7 +86,7 @@ NobaseCaja()
    ParseData rslt = null;
    try {
       Block b = p.parse();
-      rslt = new ParseData(proj,fd,smq,b);
+      rslt = new ParseData(proj,fd,smq,b,lib);
       if (do_debug) {
          MessageContext mctx = new MessageContext();
          try {
@@ -119,10 +118,12 @@ private static class ParseData implements ISemanticData {
    private NobaseFile for_file;
    private List<NobaseMessage> message_list;
    private CajaAstNode	  root_node;
+   private boolean is_library;
 
-   ParseData(NobaseProject proj,NobaseFile file,SimpleMessageQueue smq,Block b) {
+   ParseData(NobaseProject proj,NobaseFile file,SimpleMessageQueue smq,Block b,boolean lib) {
       for_project = proj;
       for_file = file;
+      is_library = lib;
       message_list = new ArrayList<NobaseMessage>();
       for (Message m : smq.getMessages()) {
          ErrorSeverity es = ErrorSeverity.ERROR;
@@ -160,7 +161,7 @@ private static class ParseData implements ISemanticData {
           }
    
          NobaseMessage nm = new NobaseMessage(es,m.toString(),startln,startcol,endln,endcol);
-         message_list.add(nm);
+         if (!is_library) message_list.add(nm);
        }
       
       root_node = new CajaAstFileModule(b,null);
@@ -174,7 +175,7 @@ private static class ParseData implements ISemanticData {
     }
    
    @Override public void addMessages(List<NobaseMessage> msgs) {
-      if (msgs == null) return;
+      if (msgs == null || is_library) return;
       message_list.addAll(msgs);
     }
    
@@ -314,6 +315,14 @@ private abstract static class CajaAstNode extends NobaseAstNodeBase {
    protected abstract void accept1(NobaseAstVisitor v);
    
    @Override public NobaseAst.NobaseAstNode getParent() { return parent_node; }
+   @Override public int getNumChildren() {
+      return caja_node.children().size();
+    }
+   @Override public NobaseAst.NobaseAstNode getChild(int i) {
+      if (i < 0) return null;
+      if (i >= caja_node.children().size()) return null;
+      return createCajaAstNode(caja_node.children().get(i),this);
+    }
    
    @Override public int getStartLine() {
       return getCajaNode().getFilePosition().startLineNo();
@@ -337,23 +346,27 @@ private abstract static class CajaAstNode extends NobaseAstNodeBase {
    
    @Override public int getExtendedStartPosition() {
       int spos = getStartPosition();
-      for (Token<?> t : caja_node.getComments()) {
-         spos = Math.min(spos,t.pos.startCharInFile());
+      if (caja_node != null) {
+         for (Token<?> t : caja_node.getComments()) {
+            spos = Math.min(spos,t.pos.startCharInFile());
+          }
        }
       return spos;
     }
    
    @Override public int getExtendedEndPosition() {
       int epos = getEndPosition();
-      for (Token<?> t : caja_node.getComments()) {
-         epos = Math.max(epos,t.pos.endCharInFile());
+      if (caja_node != null) {
+         for (Token<?> t : caja_node.getComments()) {
+            epos = Math.max(epos,t.pos.endCharInFile());
+          }
        }
       return epos;
     }
    
    @Override public String toString() {
       StringBuffer buf = new StringBuffer();
-      buf.append(getCajaNode().toString());
+      buf.append(((AbstractParseTreeNode) getCajaNode()).toString());
       
       // MessageContext ctx = new MessageContext();
       // try {
@@ -379,6 +392,15 @@ private static class CajaAstFileModule extends CajaAstNode implements NobaseAst.
     }
    
    protected ParseTreeNode getCajaNode()		{ return block_node.getCajaNode(); }
+   
+   @Override public NobaseAst.Block getBlock() {
+      return block_node;
+    }
+   @Override public int getNumChildren()                 { return 1; }
+   @Override public NobaseAst.NobaseAstNode getChild(int i) {
+      if (i == 0) return block_node;
+      return null;
+    }
    
    public void accept(NobaseAstVisitor v) {
       if (v == null) return;
@@ -443,7 +465,10 @@ private static class CajaAstArrayConstructor extends CajaAstExpression implement
       super(pn,par);
     }
    
-   private ArrayConstructor getNode()           { return (ArrayConstructor) getCajaNode(); }
+   private ArrayConstructor getNode() { 
+      return (ArrayConstructor) getCajaNode(); 
+    }
+   
    @Override public int getNumElements() {
       return getNode().children().size();
     }
@@ -570,7 +595,7 @@ private static class CajaAstCommaOperation extends CajaAstOperation implements N
 
 
 
-private static class CajaAstConstructorCall extends CajaAstExpression implements NobaseAst.ConstructorCall {
+private static class CajaAstConstructorCall extends CajaAstOperation implements NobaseAst.ConstructorCall {
    
    CajaAstConstructorCall(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
@@ -671,7 +696,9 @@ private static class CajaAstDeclaration extends CajaAstNode implements NobaseAst
       super(pn,par);
     }
    
-   private Declaration getNode()        { return (Declaration) getCajaNode(); }
+   private com.google.caja.parser.js.Declaration getNode() { 
+      return (com.google.caja.parser.js.Declaration) getCajaNode();
+    }
    
    @Override public NobaseAst.Identifier getIdentifier() {
       return (NobaseAst.Identifier) createCajaAstNode(getNode().getIdentifier(),this);
@@ -1167,7 +1194,7 @@ private static class CajaAstStringLiteral extends CajaAstExpression implements N
     }
 
    @Override public String getValue() {
-      return ((StringLiteral) getCajaNode()).getValue();
+      return ((StringLiteral) getCajaNode()).getUnquotedValue();
     }
    
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }

@@ -787,7 +787,25 @@ static void outputCompletion(CompletionProposal cp,IvyXmlWriter xw)
    xw.field("TEXT",cp.getCompletion());
    xw.field("INDEX",cp.getCompletionLocation());
    xw.field("DECLKEY",cp.getDeclarationKey());
-   xw.field("DECLSIGN",cp.getDeclarationSignature());
+   switch (cp.getKind()) {
+      case CompletionProposal.ANNOTATION_ATTRIBUTE_REF :
+      case CompletionProposal.ANONYMOUS_CLASS_DECLARATION :
+      case CompletionProposal.FIELD_IMPORT :
+      case CompletionProposal.FIELD_REF :
+      case CompletionProposal.FIELD_REF_WITH_CASTED_RECEIVER :
+      case CompletionProposal.METHOD_IMPORT :
+      case CompletionProposal.METHOD_REF :
+      case CompletionProposal.METHOD_REF_WITH_CASTED_RECEIVER :
+      case CompletionProposal.METHOD_DECLARATION :
+      case CompletionProposal.POTENTIAL_METHOD_DECLARATION :
+	 xw.field("DECLSIGN",cp.getDeclarationSignature());
+	 break;
+      case CompletionProposal.PACKAGE_REF :
+      case CompletionProposal.TYPE_IMPORT :
+      case CompletionProposal.TYPE_REF :
+	 xw.field("DOTNAME",cp.getDeclarationSignature());
+	 break;
+    }
    fieldFlags(xw,"ACCESS",cp.getFlags(),access_flags);
    xw.field("FLAGS",cp.getFlags());
    xw.field("KEY",cp.getKey());

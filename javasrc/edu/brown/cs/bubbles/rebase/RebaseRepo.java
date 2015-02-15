@@ -70,8 +70,8 @@ protected RebaseRepo()
 /*										*/
 /********************************************************************************/
 
-List<RebaseSource> getSources(String keys,RebaseRequest rqst,RebaseSource orig,RebaseProject proj) 
-        throws RebaseException
+List<RebaseSource> getSources(String keys,RebaseRequest rqst,RebaseSource orig,RebaseProject proj)
+	throws RebaseException
 {
    List<String> toks = IvyExec.tokenize(keys);
    List<URI> uris = generateSearchURIs(toks,proj);
@@ -114,10 +114,10 @@ abstract protected boolean addSources(URL base,Element doc,RebaseRequest rqst,Re
 /*										*/
 /********************************************************************************/
 
-protected static String loadURL(URL url,boolean cache) throws RebaseException
+protected static synchronized String loadURL(URL url,boolean cache) throws RebaseException
 {
    RebaseMain.logD("LOAD URI " + url + " " + cache);
-   
+
    RebaseCache urlcache = RebaseMain.getRebase().getUrlCache();
 
    StringBuilder buf = new StringBuilder();
@@ -144,13 +144,13 @@ protected static String loadURL(URL url,boolean cache) throws RebaseException
 protected static String loadSourceURL(URL url,boolean cache) throws RebaseException
 {
    String text = loadURL(url,cache);
-   
+
    if (cache) {
       RebaseCache urlcache = RebaseMain.getRebase().getUrlCache();
       boolean fg = urlcache.wasAddedToCache(url);
       RebaseWordFactory.getFactory().loadSource(text,!fg);
     }
-   
+
    return text;
 }
 
@@ -217,32 +217,32 @@ static String findPackageName(String text)
 
 protected abstract class BaseFileSource implements RebaseSource {
 
-   private RebaseRequest        source_request;
-   private RebaseSource         base_source;
-   private SourceType           source_type;
-   
+   private RebaseRequest	source_request;
+   private RebaseSource 	base_source;
+   private SourceType		source_type;
+
    protected BaseFileSource(RebaseRequest rr,RebaseSource orig) {
       source_request = rr;
       base_source = orig;
       if (rr == null) source_type = SourceType.FILE;
       else source_type = rr.getSearchType();
     }
-   
-   @Override public SourceType getSourceType()          { return source_type; }
 
-   @Override public RebaseRequest getRequest()          { return source_request; }
+   @Override public SourceType getSourceType()		{ return source_type; }
+
+   @Override public RebaseRequest getRequest()		{ return source_request; }
    @Override public SourceLanguage getLanguage() {
       String nm = getPath();
       if (nm.endsWith(".java")) return SourceLanguage.JAVA;
       return null;
     }
-   
+
    @Override public RebaseSource getBaseSource() {
       if (base_source == null) return this;
       return base_source.getBaseSource();
     }
-   
-   @Override public void setSourceType(SourceType st)   { source_type = st; }
+
+   @Override public void setSourceType(SourceType st)	{ source_type = st; }
 
 }	// end of inner class BaseFileSource
 

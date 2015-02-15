@@ -117,13 +117,6 @@ void resolveSymbols(ISemanticData isd)
 
 
 
-
-
-
-
-
-
-
 /********************************************************************************/
 /*										*/
 /*	Value pass -- assign or update values					*/
@@ -157,19 +150,29 @@ private class ValuePass extends NobaseAstVisitor {
       change_flag = false;
       return rslt;
     }
-   
-   void forceDefine()                           { force_define = true; }
+
+   void forceDefine()				{ force_define = true; }
 
    @Override public boolean visit(FileModule b) {
       cur_scope = b.getScope();
       if (cur_scope == null) {
-	 cur_scope = new NobaseScope(ScopeType.FILE,global_scope);
-	 b.setScope(cur_scope);
+         cur_scope = new NobaseScope(ScopeType.FILE,global_scope);
+         for_project.setupModule(enclosing_file,cur_scope);
+         b.setScope(cur_scope);
        }
+      NobaseSymbol osym = b.getDefinition();
+      if (osym == null) {
+         NobaseSymbol nsym = new NobaseSymbol(for_project,enclosing_file,b,
+        					 enclosing_file.getModuleName(),false);
+         nsym.setBubblesName(enclosing_file.getModuleName());
+         b.setDefinition(nsym);
+       }
+   
       return true;
     }
 
    @Override public void endVisit(FileModule b) {
+      for_project.finishModule(enclosing_file);
       cur_scope = cur_scope.getParent();
     }
 
@@ -181,27 +184,27 @@ private class ValuePass extends NobaseAstVisitor {
        }
       setValue(n,NobaseValue.createArrayValue(vals));
     }
-   
+
    @Override public boolean visit(ArrayIndex n) {
       NobaseValue lvl = set_lvalue;
       set_lvalue = null;
       for (int i = 0; i < n.getNumOperands(); ++i) {
-         n.getOperand(i).accept(this);
+	 n.getOperand(i).accept(this);
        }
       NobaseValue nvl = n.getOperand(0).getNobaseValue();
       NobaseValue ivl = n.getOperand(1).getNobaseValue();      if (lvl == null) {
-         Object idxv = (ivl == null ? null : ivl.getKnownValue());
-         NobaseValue rvl = null;
-         if (nvl != null) rvl = nvl.getProperty(idxv);
-         if (rvl == null) rvl = NobaseValue.createUnknownValue();
-         setValue(n,rvl);
+	 Object idxv = (ivl == null ? null : ivl.getKnownValue());
+	 NobaseValue rvl = null;
+	 if (nvl != null) rvl = nvl.getProperty(idxv);
+	 if (rvl == null) rvl = NobaseValue.createUnknownValue();
+	 setValue(n,rvl);
        }
       else {
-         Object idxv = (ivl == null ? null : ivl.getKnownValue());
-         if (idxv != null && idxv instanceof String && nvl != null) {
-            if (nvl.addProperty(idxv,lvl)) change_flag = true;
-          }
-         setValue(n,lvl);
+	 Object idxv = (ivl == null ? null : ivl.getKnownValue());
+	 if (idxv != null && idxv instanceof String && nvl != null) {
+	    if (nvl.addProperty(idxv,lvl)) change_flag = true;
+	  }
+	 setValue(n,lvl);
        }
       return false;
     }
@@ -211,10 +214,10 @@ private class ValuePass extends NobaseAstVisitor {
       set_lvalue = null;
       if (n.getNumOperands() > 1) {
 	 n.getOperand(1).accept(this);
-         if (n.getOperator().equals("=")) {
-            set_lvalue = n.getOperand(1).getNobaseValue();
-          }
-       }    
+	 if (n.getOperator().equals("=")) {
+	    set_lvalue = n.getOperand(1).getNobaseValue();
+	  }
+       }
       n.getOperand(0).accept(this);
       set_lvalue = ovl;
       return false;
@@ -244,7 +247,10 @@ private class ValuePass extends NobaseAstVisitor {
     }
 
    @Override public void endVisit(ConstructorCall n) {
-      setValue(n,NobaseValue.createUnknownValue());
+      NobaseValue nv = NobaseValue.createObject();
+      NobaseValue fv = n.getOperand(0).getNobaseValue();
+      nv.setBaseValue(fv);
+      setValue(n,nv);
       // handle new X
     }
 
@@ -261,6 +267,7 @@ private class ValuePass extends NobaseAstVisitor {
             sym = cur_scope.define(nsym);
             if (nsym != sym) duplicateDef(vident.getName(),n);
             n.setDefinition(sym);
+            vident.setDefinition(sym);
             if (enclosing_function != null) {
                setName(sym,enclosing_function + "." + vident.getName());
              }
@@ -287,7 +294,7 @@ private class ValuePass extends NobaseAstVisitor {
       set_lvalue = null;
       return true;
     }
-   
+
    @Override public void endVisit(FormalParameter fp) {
       Identifier fident = fp.getIdentifier();
       if (fident != null) {
@@ -302,13 +309,22 @@ private class ValuePass extends NobaseAstVisitor {
              }
             setName(sym,newname);
             fp.setDefinition(osym);
+            fp.getIdentifier().setDefinition(osym);
           }
        }
     }
 
    @Override public void endVisit(FunctionCall n) {
-      setValue(n,NobaseValue.createUnknownValue());
-      // handle function calls
+      NobaseValue nv = NobaseValue.createUnknownValue();
+      NobaseValue fv = n.getOperand(0).getNobaseValue();
+      if (fv != null) {
+         List<NobaseValue> args = new ArrayList<NobaseValue>();
+         for (int i = 1; i < n.getNumOperands(); ++i) {
+            args.add(n.getOperand(i).getNobaseValue());
+          }
+         nv = fv.evaluate(enclosing_file,args);
+       }
+      setValue(n,nv);
     }
 
    @Override public boolean visit(FunctionConstructor n) {
@@ -316,46 +332,46 @@ private class ValuePass extends NobaseAstVisitor {
       NobaseValue nv = NobaseValue.createFunction(n);
       setValue(n,nv);
       if (ident != null && ident.getName() != null) {
-         NobaseSymbol osym = n.getDefinition();
-         if (osym == null) {
-            NobaseSymbol nsym = new NobaseSymbol(for_project,enclosing_file,n,ident.getName(),true);
-            osym = cur_scope.define(nsym);
-            n.setDefinition(osym);
-            if (osym != nsym) {
-               duplicateDef(ident.getName(),n);
-               nsym = osym;
-             }
-            nsym.setValue(nv);
-          }
+	 NobaseSymbol osym = n.getDefinition();
+	 if (osym == null) {
+	    NobaseSymbol nsym = new NobaseSymbol(for_project,enclosing_file,n,ident.getName(),true);
+	    osym = cur_scope.define(nsym);
+	    n.setDefinition(osym);
+	    if (osym != nsym) {
+	       duplicateDef(ident.getName(),n);
+	       nsym = osym;
+	     }
+	    nsym.setValue(nv);
+	  }
        }
-      
+
       NobaseScope nscp = n.getScope();
       if (nscp == null) {
-         nscp = new NobaseScope(ScopeType.FUNCTION,cur_scope);
-         n.setScope(nscp);
+	 nscp = new NobaseScope(ScopeType.FUNCTION,cur_scope);
+	 n.setScope(nscp);
        }
       cur_scope = nscp;
       cur_scope.setValue(nv);
-      
+
       name_stack.push(enclosing_function);
       NobaseAstNode defnd = getFunctionNode(n);
       String defnm = getFunctionName(n);
       if (defnm != null) {
-         NobaseSymbol nsym = defnd.getDefinition();
-         if (nsym == null) nsym = n.getDefinition();
-         if (nsym == null) {
-            String fnm = null;
-            if (ident != null && ident.getName() != null) fnm = ident.getName();
-            else fnm = "$" + cur_scope.getNextTemp();
-            nsym = new NobaseSymbol(for_project,enclosing_file,defnd,fnm,true);
-          }
-         defnd.setDefinition(nsym);
-         setName(nsym,defnm);
-         if (enclosing_function == null) enclosing_function = defnm;
-         else if (defnm.contains(".")) enclosing_function = defnm;
-         else enclosing_function += "." + defnm;
+	 NobaseSymbol nsym = defnd.getDefinition();
+	 if (nsym == null) nsym = n.getDefinition();
+	 if (nsym == null) {
+	    String fnm = null;
+	    if (ident != null && ident.getName() != null) fnm = ident.getName();
+	    else fnm = "$" + cur_scope.getNextTemp();
+	    nsym = new NobaseSymbol(for_project,enclosing_file,defnd,fnm,true);
+	  }
+	 defnd.setDefinition(nsym);
+	 setName(nsym,defnm);
+	 if (enclosing_function == null) enclosing_function = defnm;
+	 else if (defnm.contains(".")) enclosing_function = defnm;
+	 else enclosing_function += "." + defnm;
        }
-      
+
       return true;
     }
 
@@ -403,14 +419,14 @@ private class ValuePass extends NobaseAstVisitor {
    @Override public boolean visit(ObjectConstructor n) {
       NobaseScope scp = n.getScope();
       if (scp == null) {
-         scp = new NobaseScope(ScopeType.OBJECT,cur_scope);
-         scp.setValue(NobaseValue.createObject());
-         n.setScope(scp);
+	 scp = new NobaseScope(ScopeType.OBJECT,cur_scope);
+	 scp.setValue(NobaseValue.createObject());
+	 n.setScope(scp);
        }
       cur_scope = scp;
       for (int i = 0; i < n.getNumElements(); ++i) {
-         NobaseAstNode nn = n.getElement(i);
-         nn.accept(this);
+	 NobaseAstNode nn = n.getElement(i);
+	 nn.accept(this);
        }
       cur_scope = scp.getParent();
       return false;
@@ -439,6 +455,7 @@ private class ValuePass extends NobaseAstVisitor {
                error_list.add(msg);
                ref = new NobaseSymbol(for_project,enclosing_file,n,name,false);
                dscope.define(ref);
+               setName(ref,name);
              }
             else {
                dscope.setProperty(name,NobaseValue.createAnyValue());
@@ -457,11 +474,14 @@ private class ValuePass extends NobaseAstVisitor {
       }
      else {
         NobaseValue nv = cur_scope.lookupValue(name);
-        if (nv == null) System.err.println("NOBASE: no value found for " + name + " at " +
+        if (nv == null) {
+           System.err.println("NOBASE: no value found for " + name + " at " +
               n.getStartLine());
+           nv = NobaseValue.createUnknownValue();
+         }
         n.setNobaseValue(nv);
       }
-     
+   
      return false;
     }
 
@@ -512,13 +532,14 @@ private class ValuePass extends NobaseAstVisitor {
 
 
    private void setValue(NobaseAstNode n,NobaseValue v) {
+      if (v == null) v = NobaseValue.createUnknownValue();
       change_flag |= n.setNobaseValue(v);
     }
 
    private void duplicateDef(String nm,NobaseAstNode n) {
       NobaseMessage msg = new NobaseMessage(ErrorSeverity.WARNING,
-            "Duplicate defintion of " + nm,
-            n.getStartLine(),n.getStartChar(),n.getEndLine(),n.getEndChar());
+	    "Duplicate defintion of " + nm,
+	    n.getStartLine(),n.getStartChar(),n.getEndLine(),n.getEndChar());
       error_list.add(msg);
     }
 
@@ -527,38 +548,38 @@ private class ValuePass extends NobaseAstVisitor {
       String qnm = tnm + "." + name;
       if (sym != null) sym.setBubblesName(qnm);
     }
-   
+
    private String getFunctionName(FunctionConstructor fc) {
-      if (fc.getIdentifier() != null && fc.getIdentifier().getName() != null) 
-         return fc.getIdentifier().getName();
+      if (fc.getIdentifier() != null && fc.getIdentifier().getName() != null)
+	 return fc.getIdentifier().getName();
       if (fc.getParent() instanceof Declaration) {
-         Declaration d = (Declaration) fc.getParent();
-         return d.getIdentifier().getName();
+	 Declaration d = (Declaration) fc.getParent();
+	 return d.getIdentifier().getName();
        }
       if (fc.getParent() instanceof AssignOperation) {
-         AssignOperation ao = (AssignOperation) fc.getParent();
-         if (ao.getOperand(1) != fc) return null;
-         if (ao.getOperand(0) instanceof MemberAccess) {
-            MemberAccess ma = (MemberAccess) ao.getOperand(0);
-            String m1 = getIdentName(ma.getOperand(1));
-            if (m1 == null) return null;
-            String m0 = getIdentName(ma.getOperand(0));
-            if (m0 != null && m0.equals("this") && enclosing_function != null) {
-               return m1;
-             }
-            else if (m0 == null && ma.getOperand(0) instanceof MemberAccess) {
-               MemberAccess ma1 = (MemberAccess) ma.getOperand(0);
-               String k1 = getIdentName(ma1.getOperand(0));
-               String k2 = getIdentName(ma1.getOperand(1));
-               if (k2 != null && k2.equals("prototype") && k1 != null) {
-        	  return k1 + "." + m1;
-        	}
-             }
-          }
+	 AssignOperation ao = (AssignOperation) fc.getParent();
+	 if (ao.getOperand(1) != fc) return null;
+	 if (ao.getOperand(0) instanceof MemberAccess) {
+	    MemberAccess ma = (MemberAccess) ao.getOperand(0);
+	    String m1 = getIdentName(ma.getOperand(1));
+	    if (m1 == null) return null;
+	    String m0 = getIdentName(ma.getOperand(0));
+	    if (m0 != null && m0.equals("this") && enclosing_function != null) {
+	       return m1;
+	     }
+	    else if (m0 == null && ma.getOperand(0) instanceof MemberAccess) {
+	       MemberAccess ma1 = (MemberAccess) ma.getOperand(0);
+	       String k1 = getIdentName(ma1.getOperand(0));
+	       String k2 = getIdentName(ma1.getOperand(1));
+	       if (k2 != null && k2.equals("prototype") && k1 != null) {
+		  return k1 + "." + m1;
+		}
+	     }
+	  }
        }
       return null;
     }
-   
+
    private NobaseAstNode getFunctionNode(FunctionConstructor fc) {
       if (fc.getParent() instanceof FunctionDeclaration) return fc.getParent();
       if (fc.getIdentifier() != null && fc.getIdentifier().getName() != null) return fc;
@@ -566,7 +587,7 @@ private class ValuePass extends NobaseAstVisitor {
       if (fc.getParent() instanceof AssignOperation) return fc.getParent();
       return null;
     }
-   
+
    private String getIdentName(Expression e) {
       if (e instanceof Identifier) {
 	 return ((Identifier) e).getName();
@@ -576,7 +597,7 @@ private class ValuePass extends NobaseAstVisitor {
        }
       return null;
     }
-   
+
 }	// end of inner class ValuePass
 
 

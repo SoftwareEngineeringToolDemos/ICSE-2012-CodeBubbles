@@ -120,9 +120,21 @@ private void runTest()
    sendCommand("GETALLNAMES",null,"BACKGROUND='NAME_1234'",null);
    sendCommand("EDITPARAM",null,"NAME='AUTOELIDE' VALUE='TRUE'",null);
    sendCommand("EDITPARAM",null,"NAME='ELIDEDELAY' VALUE='250'",null);
-   sendCommand("PATTERNSEARCH",proj,"PATTERN='server.errorHandler()' DEFS='true' REFS='false' FOR='METHOD'",null);
    sendCommand("PATTERNSEARCH",proj,"PATTERN='search.getMaxZip()' DEFS='true' REFS='false' FOR='METHOD'",null);
-            
+   sendCommand("PATTERNSEARCH",proj,"PATTERN='server.errorHandler()' DEFS='true' REFS='false' FOR='METHOD'",null);
+   sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' ID='" + (edit_id++) + "'",null);
+   sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' COMPUTE='true'","<REGION START='2358' END='2515' />");
+   sendCommand("PATTERNSEARCH",proj,"PATTERN='server.start()' DEFS='true' REFS='false' FOR='METHOD'",null);
+   sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' COMPUTE='true'","<REGION START='2358' END='2515' /><REGION START='4060' END='4955' />");
+   sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='4088' END='4088' RONLY='T' EXACT='true' EQUIV='true'",null);
+   sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='4088' END='4088' EXACT='true' EQUIV='true'",null);
+   sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='4093' END='4093' EXACT='true' EQUIV='true'",null);
+   sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='2389' END='2389' EXACT='true' EQUIV='true'",null);
+   sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='2389' END='2389' RONLY='T' EXACT='true' EQUIV='true'",null);
+   sendCommand("GETFULLYQUALIFIEDNAME",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='4217' END='4217' EXACT='true' EQUIV='true'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='output' FIELDS='T' FILE='/gpfs/main/home/spr/home/twiex/output.js'",null);
+   sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' ID='" + (edit_id++) + "'",null);
+   sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' COMPUTE='true'","<REGION START='7359' END='8064' />");
 
    // sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' ID='" + (edit_id++) + "'",null);
    // sendCommand("PATTERNSEARCH",proj,"PATTERN='genkml.genkml()' DEFS='true' REFS='false' FOR='METHOD'",null);
@@ -224,11 +236,11 @@ private class Runner extends Thread {
    @Override public void run() {
       System.err.println("NOBASE: Start run");
       try {
-	 NobaseMain.main(new String [] { "-m", "NOBBLESTEST", "-ws", "/home/spr/Nobbles/test" });
+         NobaseMain.main(new String [] { "-m", "NOBBLESTEST", "-ws", "/home/spr/Nobbles/test" });
        }
       catch (Throwable t) {
-	 System.err.println("NOBASE: Error running: " + t);
-	 t.printStackTrace();
+         System.err.println("NOBASE: Error running: " + t);
+         t.printStackTrace();
        }
       System.err.println("NOBASE: Finish run");
     }

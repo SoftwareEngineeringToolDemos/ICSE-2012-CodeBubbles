@@ -24,16 +24,11 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.eclipse.jface.text.IDocument;
-
-import java.io.File;
 import java.util.*;
 
 public interface NobaseConstants
 {
-
 
 
 
@@ -144,49 +139,6 @@ interface IEditData {
 
 
 
-/********************************************************************************/
-/*										*/
-/*	File information							*/
-/*										*/
-/********************************************************************************/
-
-interface XXXIFileData {
-
-   File getFile();
-   IDocument getDocument();
-   String getModuleName();
-   void reload();
-   long getLastDateLastModified();
-
-   boolean hasChanged();
-   void markChanged();
-   boolean commit(boolean refresh,boolean save);
-
-   void clearPositions();
-   void setStart(Object o,int line,int col);
-   void setEnd(Object o,int line,int col);
-   void setEndFromStart(Object o,int line,int col);
-   void setEnd(Object o,int off);
-   int getStartOffset(Object o);
-   int getEndOffset(Object o);
-   int getLength(Object o);
-
-}	// end of inner interface IFileData
-
-
-enum FileType {
-   UNKNOWN
-}
-
-
-
-
-
-
-
-
-
-
 
 /********************************************************************************/
 /*										*/
@@ -195,7 +147,7 @@ enum FileType {
 /********************************************************************************/
 
 interface IParser {
-   ISemanticData parse(NobaseProject proj,NobaseFile fd);
+   ISemanticData parse(NobaseProject proj,NobaseFile fd,boolean lib);
 }
 
 
@@ -212,12 +164,6 @@ interface ISemanticData {
 }	// end of inner interface ISemanticData
 
 
-
-
-
-interface IAstScope {
-
-}
 
 
 enum ScopeType {
@@ -256,6 +202,14 @@ enum KnownValue {
    ANY,
    UNKNOWN
 }
+
+
+interface Evaluator {
+   
+   NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> arguments);
+   
+}       // end of interface FunctionEvaluator
+
 
 
 

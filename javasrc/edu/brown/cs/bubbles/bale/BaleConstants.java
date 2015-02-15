@@ -269,7 +269,8 @@ enum BaleAstIdType {
    LOCAL_DECL,
    UNDEF,
    ANNOT,
-   BUILTIN
+   BUILTIN,
+   MODULE
 }
 
 

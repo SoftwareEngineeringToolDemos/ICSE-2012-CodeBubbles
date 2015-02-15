@@ -557,9 +557,6 @@ private boolean validate(CallbackMethod cm)
 {
    boolean cnst = false;
    if (cm.getMethodName().contains("$")) return false;
-   if (cm.getMethodName().contains("<")) {
-      System.err.println("HANDLE " + cm.getMethodName());
-   }
    String pat = cm.getClassName().replace("$",".") + "." + cm.getMethodName();
    if (cm.getCallbackType() == CallbackType.CONSTRUCTOR) {
       cnst = true;

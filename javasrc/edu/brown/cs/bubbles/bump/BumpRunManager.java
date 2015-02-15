@@ -29,6 +29,7 @@ import edu.brown.cs.bubbles.bandaid.BandaidConstants;
 import edu.brown.cs.bubbles.board.*;
 
 import edu.brown.cs.ivy.file.IvyFormat;
+import edu.brown.cs.ivy.exec.*;
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -343,7 +344,7 @@ private void startDebugServer()
 
       List<String> args = new ArrayList<String>();
       args.add("java");
-      args.add("-Xmx512m");
+      // args.add("-Xmx512m");
       args.add("-cp");
       args.add(System.getProperty("java.class.path"));
       args.add("edu.brown.cs.bubbles.bump.BumpDebugServer");
@@ -352,23 +353,29 @@ private void startDebugServer()
 
       MintControl mc = BoardSetup.getSetup().getMintControl();
 
-      for (int i = 0; i < 10; ++i) {
+      for (int i = 0; i < 5; ++i) {
 	 MintDefaultReply rply = new MintDefaultReply();
 	 mc.send("<BDDT CMD='PORT' />",rply,MINT_MSG_FIRST_NON_NULL);
-	 Element rslt = rply.waitForXml();
+	 Element rslt = rply.waitForXml(10000);
 	 if (rslt != null && IvyXml.isElement(rslt,"SOCKET")) {
 	    server_host = fixHost(IvyXml.getAttrString(rslt,"HOST"));
 	    server_port = IvyXml.getAttrString(rslt,"PORT");
 	    break;
 	  }
 	 if (i == 0) {
-	    ProcessBuilder pb = new ProcessBuilder(args);
 	    try {
-	       pb.start();
+	       new IvyExec(args,null,0);
 	     }
-	    catch (IOException e) {
-	       break;
-	     }
+            catch (IOException e) {
+               break;
+             }
+//	    ProcessBuilder pb = new ProcessBuilder(args);
+//	    try {
+//	       pb.start();
+//	     }
+//	    catch (IOException e) {
+//	       break;
+//	     }
 	  }
 	 try {
 	    wait(1000);
@@ -1562,7 +1569,7 @@ private class ThreadData implements BumpThread {
     }
 
    synchronized void setThreadState(BumpThreadState ts,BumpThreadStateDetail dtl) {
-      System.err.println("SET STATE OF " + thread_name + " TO " + ts);
+      // System.err.println("SET STATE OF " + thread_name + " TO " + ts);
       thread_state = ts;
       stack_data = null;
       thread_detail = dtl;

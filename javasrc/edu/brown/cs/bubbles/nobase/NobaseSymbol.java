@@ -97,6 +97,9 @@ NameType getNameType()
    if (symbol_value != null && symbol_value.isFunction()) {
      return NameType.FUNCTION;
     }
+   else if (qnm == null) {
+      NobaseMain.logE("Name missing bubbles name: " + symbol_name + " " + def_node + " " + for_file);
+    }
    else {
       int idx = qnm.indexOf(".");
       if (idx < 0) return NameType.MODULE;
@@ -105,6 +108,7 @@ NameType getNameType()
     }
    return NameType.VARIABLE;
 }
+
 String getHandle() {
    if (symbol_value != null && symbol_value.isFunction())
       return bubbles_name + "()";

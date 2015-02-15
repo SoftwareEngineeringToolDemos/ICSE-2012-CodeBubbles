@@ -98,7 +98,8 @@ boolean match(File path)
          if (path.getName().equals(directory_file.getName())) return true;
        }
     }
-   else if (path == directory_file) return true;
+   else if (path == null) return false;
+   else if (path.equals(directory_file)) return true;
      
    return false;
 }
@@ -117,6 +118,7 @@ public void outputXml(IvyXmlWriter xw)
    xw.begin("PATH");
    xw.field("DIR",directory_file.getPath());
    xw.field("USER",is_user);
+   xw.field("EXCLUDE",is_exclude);
    xw.end("PATH");
 }
 

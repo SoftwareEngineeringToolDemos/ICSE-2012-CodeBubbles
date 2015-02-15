@@ -1829,11 +1829,14 @@ private class FileData implements IBufferChangedListener {
       else if (refresh) {
 	 comp_unit.restore();
        }
+      
+      default_buffer = null;
+      
       for (BufferData bd : buffer_map.values()) {
 	 if (!bd.isPrivate()) bd.commit(refresh,save);
        }
 
-      default_buffer = null;
+      // default_buffer = null;
       last_ast = null;
     }
 

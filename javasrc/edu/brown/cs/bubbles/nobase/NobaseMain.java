@@ -162,8 +162,9 @@ private NobaseMain(String [] args)
    nobase_timer = new Timer("NobaseTimer",true);
    nobase_pinger = null;
 
-   nobase_parser = new NobaseCaja();
-
+   // nobase_parser = new NobaseCaja();
+   nobase_parser = new NobaseNashorn();
+   
    NobaseMain.logI("STARTING");
 }
 

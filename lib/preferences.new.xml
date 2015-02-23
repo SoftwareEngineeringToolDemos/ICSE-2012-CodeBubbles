@@ -290,6 +290,18 @@
 	 <KEYWORD TEXT="preview"/>
 	 <KEYWORD TEXT="hover"/>
       </OPT>
+      <OPT NAME="Bale.correct.spelling" DESCRIPTION="Auto correct spelling" TYPE="BOOLEAN">
+	 <TAB NAME="Code Editor Options"/>
+	 <EXAMPLE TEXT="Automatically correct obvious spelling errors"></EXAMPLE>
+	 <KEYWORD TEXT="spell"/>
+	 <KEYWORD TEXT="correct"/>
+      </OPT>
+      <OPT NAME="Bale.correct.syntax" DESCRIPTION="Auto correct syntax errors" TYPE="BOOLEAN">
+	 <TAB NAME="Code Editor Options"/>
+	 <EXAMPLE TEXT="Automatically correct simple syntax errors"></EXAMPLE>
+	 <KEYWORD TEXT="syntax"/>
+	 <KEYWORD TEXT="correct"/>
+      </OPT>
       <OPT NAME="Bale.family" DESCRIPTION="Default font for code" TYPE="FONT">
 	 <PROPERTIES FAMILY='Bale.family' SIZE='Bale.size' />
 	 <TAB NAME="Font Options"/>

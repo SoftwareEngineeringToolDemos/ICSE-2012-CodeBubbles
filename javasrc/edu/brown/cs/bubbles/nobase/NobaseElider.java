@@ -653,11 +653,11 @@ private static class DefaultPrioritizer extends Prioritizer {
           }
        }
       else  if (item_scale != 1) {
-	 int ct = par.getNumChildren();
-	 for (int i = 0; i < ct; ++i) {
-	    if (par.getChild(i) == base) break;
-	    dv *= item_scale;
-	  }
+         int ct = par.getNumChildren();
+         for (int i = 0; i < ct; ++i) {
+            if (par.getChild(i) == base) break;
+            dv *= item_scale;
+          }
        }
       return ppar * dv;
     }

@@ -359,15 +359,15 @@ private class NewPathEntryBubble extends BudaBubble implements ActionListener {
       String cmd = evt.getActionCommand();
       last_directory = file_chooser.getCurrentDirectory();
       if (cmd.equals(JFileChooser.APPROVE_SELECTION)) {
-	 closeWindow(this);
-	 for (File f : file_chooser.getSelectedFiles()) {
-	    if (f.isDirectory() && !hasClassFiles(f)) continue;
-	    PathEntry pe = new PathEntry(f);
-	    library_paths.addElement(pe);
-	  }
+         closeWindow(this);
+         for (File f : file_chooser.getSelectedFiles()) {
+            if (f.isDirectory() && !hasClassFiles(f)) continue;
+            PathEntry pe = new PathEntry(f);
+            library_paths.addElement(pe);
+          }
        }
       else if (cmd.equals(JFileChooser.CANCEL_SELECTION)) {
-	 closeWindow(this);
+         closeWindow(this);
        }
     }
 }	// end of inner class NewPathEntryBubble
@@ -940,55 +940,55 @@ private class ProjectEditor implements ActionListener {
       Set<PathEntry> dels = new HashSet<PathEntry>(initial_paths);
       dels.removeAll(source_paths);
       boolean chng = false;
-
+   
       if (contract_panel.setupCofoja()) {
-	 setupContractsForJava();
+         setupContractsForJava();
        }
       if (contract_panel.setupJunit()) {
-	 setupJunit();
+         setupJunit();
        }
       option_elements.put(ASSERT_OPTION,Boolean.toString(contract_panel.enableAssertions()));
-
+   
       IvyXmlWriter xw = new IvyXmlWriter();
       xw.begin("PROJECT");
       xw.field("NAME",project_name);
       for (PathEntry pe : library_paths) {
-	 pe.outputXml(xw,false);
-	 dels.remove(pe);
+         pe.outputXml(xw,false);
+         dels.remove(pe);
        }
       for (PathEntry pe : dels) {
-	 pe.outputXml(xw,true);
+         pe.outputXml(xw,true);
        }
-
+   
       for (Map.Entry<String,String> ent : option_elements.entrySet()) {
-	 String k = ent.getKey();
-	 String v = ent.getValue();
-	 if (k == null || v == null) continue;
-	 if (start_options != null) {
-	    String ov = start_options.get(k);
-	    if (v.equals(ov)) continue;
-	  }
-	 chng = true;
-	 xw.begin("OPTION");
-	 xw.field("NAME",k);
-	 xw.field("VALUE",v);
-	 xw.end("OPTION");
+         String k = ent.getKey();
+         String v = ent.getValue();
+         if (k == null || v == null) continue;
+         if (start_options != null) {
+            String ov = start_options.get(k);
+            if (v.equals(ov)) continue;
+          }
+         chng = true;
+         xw.begin("OPTION");
+         xw.field("NAME",k);
+         xw.field("VALUE",v);
+         xw.end("OPTION");
        }
-
+   
       for (PrefEntry pe : pref_entries) {
-	  pe.outputXml(xw);
-	  chng = true;
+          pe.outputXml(xw);
+          chng = true;
        }
-
+   
       xw.end("PROJECT");
-
+   
       closeWindow(problem_panel);
-
+   
       BumpClient bc = BumpClient.getBump();
-
+   
       if (chng || anythingChanged())
-	 bc.editProject(project_name,xw.toString());
-
+         bc.editProject(project_name,xw.toString());
+   
       force_update = false;
     }
 

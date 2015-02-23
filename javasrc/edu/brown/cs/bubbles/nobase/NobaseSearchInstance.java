@@ -590,6 +590,12 @@ private class RegionVisitor extends NobaseAstVisitor {
                         doout |= do_exports;
                       }
                    }
+                  else if (m1 instanceof Identifier) {
+                     Identifier id = (Identifier) m1;
+                     if (id.getName().equals("exports")) {
+                        doout |= do_exports;
+                      }
+                   }
                 }
                Expression rhs = aop.getOperand(1);
                if (rhs instanceof FunctionCall) {
@@ -598,6 +604,12 @@ private class RegionVisitor extends NobaseAstVisitor {
                   if (farg instanceof Reference) {
                      Reference rarg = (Reference) farg;
                      if (rarg.getIdentifier().getName().equals("require")) {
+                        doout |= do_requires;
+                      }
+                   }
+                  else if (farg instanceof Identifier) {
+                     Identifier id = (Identifier) farg;
+                     if (id.getName().equals("require")) {
                         doout |= do_requires;
                       }
                    }

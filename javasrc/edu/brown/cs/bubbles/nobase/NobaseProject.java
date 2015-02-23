@@ -57,8 +57,8 @@ private NobasePreferences nobase_prefs;
 private File		js_runner;
 private NobaseScope	global_scope;
 private NobaseResolver	project_resolver;
-private File            base_path;
-private NobaseModule    module_manager;
+private File		base_path;
+private NobaseModule	module_manager;
 
 private Map<NobaseFile,ISemanticData> parse_data;
 private Set<NobaseFile> all_files;
@@ -106,8 +106,8 @@ NobaseProject(NobaseMain pm,String name,File base)
 	 project_paths.add(ps);
        }
       for (Element fe : IvyXml.children(xml,"FILE")) {
-         String nm = IvyXml.getTextElement(fe,"NAME");
-         File fs = new File(nm);
+	 String nm = IvyXml.getTextElement(fe,"NAME");
+	 File fs = new File(nm);
 	 project_files.add(fs);
        }
       nobase_prefs.loadXml(xml);
@@ -137,7 +137,7 @@ void setupDefaults()
       project_paths.add(ps2);
       File f3 = new File("*/html");
       NobasePathSpec ps3 = project_manager.createPathSpec(f3,false,true);
-      project_paths.add(ps3);            
+      project_paths.add(ps3);		
     }
    js_runner = findInterpreter(null);
 }
@@ -183,7 +183,7 @@ private File findInterpreter(String name)
 	 StringTokenizer tok = new StringTokenizer(ln);
 	 String nam = tok.nextToken();
 	 String typ = tok.nextToken();
-         NobaseValue nval = NobaseValue.createAnyValue();
+	 NobaseValue nval = NobaseValue.createAnyValue();
 	 if (typ.equalsIgnoreCase("function")) {
 	    nval = NobaseValue.createFunction();
 	  }
@@ -191,21 +191,21 @@ private File findInterpreter(String name)
 	    nval = NobaseValue.createObject();
 	  }
 	 else if (typ.equalsIgnoreCase("string")) {
-            if (tok.hasMoreTokens()) {
-               String cnts = tok.nextToken("\n");
-               if (cnts.length() > 1 && cnts.charAt(0) == ' ') cnts = cnts.substring(1);
-               nval = NobaseValue.createString(cnts);
-               if (nam.equals("process.execPath")) {
-                  findSourceBasePath(new File(cnts));
-                }
-             }
-            else nval = NobaseValue.createString();
+	    if (tok.hasMoreTokens()) {
+	       String cnts = tok.nextToken("\n");
+	       if (cnts.length() > 1 && cnts.charAt(0) == ' ') cnts = cnts.substring(1);
+	       nval = NobaseValue.createString(cnts);
+	       if (nam.equals("process.execPath")) {
+		  findSourceBasePath(new File(cnts));
+		}
+	     }
+	    else nval = NobaseValue.createString();
 	  }
-         else if (typ.equalsIgnoreCase("Array")) {
+	 else if (typ.equalsIgnoreCase("Array")) {
 	    nval = NobaseValue.createArrayValue();
 	  }
-         defineName(global_scope,null,nam,nval);
-         
+	 defineName(global_scope,null,nam,nval);
+	
        }
       // check versions, etc. here
       ex.waitFor();
@@ -225,36 +225,36 @@ private void findSourceBasePath(File exec)
    for (File par = exec.getParentFile(); par != null; par = par.getParentFile()) {
       File [] chld = par.listFiles();
       if (chld != null) {
-         for (File cdir : chld) {
-            if (cdir.isDirectory() && cdir.getName().endsWith("src")) {
-               File libdir = new File(cdir,"lib");
-               if (libdir.exists()) {
-                  File f1 = new File(libdir,"fs.js");
-                  File f2 = new File(libdir,"os.js");
-                  if (f1.exists() && f2.exists()) {
-                     base_path = libdir;
-                     break;
-                   }
-                }
-             }
-          }
+	 for (File cdir : chld) {
+	    if (cdir.isDirectory() && cdir.getName().endsWith("src")) {
+	       File libdir = new File(cdir,"lib");
+	       if (libdir.exists()) {
+		  File f1 = new File(libdir,"fs.js");
+		  File f2 = new File(libdir,"os.js");
+		  if (f1.exists() && f2.exists()) {
+		     base_path = libdir;
+		     break;
+		   }
+		}
+	     }
+	  }
        }
     }
 }
 
 
-private void defineName(NobaseScope scp,NobaseValue scpval,String nam,NobaseValue val) 
+private void defineName(NobaseScope scp,NobaseValue scpval,String nam,NobaseValue val)
 {
    int idx = nam.indexOf(".");
    if (idx < 0) {
       String bubblesnm = nam;
       NobaseSymbol sym = new NobaseSymbol(this,null,null,nam,true);
       sym.setValue(val);
-      if (val.isFunction()) bubblesnm += "()"; 
+      if (val.isFunction()) bubblesnm += "()";
       sym.setBubblesName(bubblesnm);
       if (scp != null) scp.define(sym);
       if (scpval != null) {
-         scpval.addProperty(nam,val);
+	 scpval.addProperty(nam,val);
        }
     }
    else {
@@ -262,13 +262,13 @@ private void defineName(NobaseScope scp,NobaseValue scpval,String nam,NobaseValu
       String sfx = nam.substring(idx+1);
       NobaseValue nval = null;
       if (scp != null) {
-         nval = scp.lookupValue(pfx);
+	 nval = scp.lookupValue(pfx);
        }
       if (nval == null && scpval != null) {
-         nval = scpval.getProperty(pfx);
+	 nval = scpval.getProperty(pfx);
        }
       if (nval != null) {
-         defineName(null,nval,sfx,val);
+	 defineName(null,nval,sfx,val);
        }
     }
 }
@@ -366,6 +366,7 @@ void editProject(Element pxml)
     }
 
    Set<NobasePathSpec> done = new HashSet<NobasePathSpec>();
+   Set<NobasePathSpec> dels = new HashSet<NobasePathSpec>();
    boolean havepath = false;
    for (Element pelt : IvyXml.children(pxml,"PATH")) {
       havepath = true;
@@ -376,33 +377,36 @@ void editProject(Element pxml)
       catch (IOException e) {
 	 f1 = f1.getAbsoluteFile();
        }
-      boolean fnd = false;
+      NobasePathSpec oldspec = null;
       for (NobasePathSpec ps : project_paths) {
 	 if (done.contains(ps)) continue;
 	 File p1 = ps.getFile();
 	 if (f1.equals(p1)) {
 	    done.add(ps);
-	    fnd = true;
-	    // handle changes to ps at this point
+	    oldspec = ps;
 	    break;
 	  }
        }
-      if (!fnd) {
+      if (IvyXml.getAttrBool(pelt,"DELETE")) {
+	 if (oldspec != null) dels.add(oldspec);
+       }
+      else {
 	 boolean usr = IvyXml.getAttrBool(pelt,"USER");
-         boolean exc = IvyXml.getAttrBool(pelt,"EXCLUDE");
-	 NobasePathSpec ps = project_manager.createPathSpec(f1,usr,exc);
-	 done.add(ps);
-	 project_paths.add(ps);
+	 boolean exc = IvyXml.getAttrBool(pelt,"EXCLUDE");
+	 if (oldspec != null) {
+	    oldspec.setProperties(usr,exc);
+	  }
+	 else {
+	    NobasePathSpec ps = project_manager.createPathSpec(f1,usr,exc);
+	    done.add(ps);
+	    project_paths.add(ps);
+	  }
        }
     }
 
-   if (havepath) {
-      for (Iterator<NobasePathSpec> it = project_paths.iterator(); it.hasNext(); ) {
-	 NobasePathSpec ps = it.next();
-	 if (!done.contains(ps)) it.remove();
-       }
+   if (!dels.isEmpty()) {
+      project_paths.removeAll(dels);
     }
-
    // project_nature.rebuildPath();
 
    saveProject();
@@ -639,7 +643,7 @@ void outputProject(boolean files,boolean paths,boolean clss,boolean opts,IvyXmlW
 
 
 
-private void outputFile(File fs,IvyXmlWriter xw) 
+private void outputFile(File fs,IvyXmlWriter xw)
 {
    xw.begin("FILE");
    xw.field("NAME",fs.getPath());
@@ -672,23 +676,23 @@ private void findFiles(String pfx,File f,boolean reload)
 {
    for (NobasePathSpec ps : project_paths) {
       if (!ps.isUser() || ps.isExclude()) {
-         if (ps.match(f)) return;
+	 if (ps.match(f)) return;
        }
     }
-   
+
    if (f.isDirectory()) {
       File [] fls = f.listFiles(new SourceFilter());
       String npfx = null;
       if (pfx != null) npfx = pfx + "." + f.getName();
       for (File f1 : fls) {
-         findFiles(npfx,f1,reload);
+	 findFiles(npfx,f1,reload);
        }
       return;
     }
-   
+
    String mnm = f.getName();
    if (!mnm.endsWith(".js") && !mnm.endsWith(".JS")) return;
-   
+
    int idx = mnm.lastIndexOf(".");
    if (idx >= 0) mnm = mnm.substring(0,idx);
    if (pfx != null) mnm = pfx + "." + mnm;
@@ -702,21 +706,21 @@ private void findFiles(String pfx,File f,boolean reload)
    if (isd == null) {
       ISemanticData sd = parseFile(fd);
       if (sd != null) {
-         IvyXmlWriter xw = NobaseMain.getNobaseMain().beginMessage("FILEERROR");
-         xw.field("PROJECT",sd.getProject().getName());
-         xw.field("FILE",fd.getFile().getPath());
-         xw.begin("MESSAGES");
-         for (NobaseMessage m : sd.getMessages()) {
-            try {
-               System.err.println("NOBASE: PARSE ERROR: " + m);
-               NobaseUtil.outputProblem(m,sd,xw);
-             }
-            catch (Throwable t) {
-               NobaseMain.logE("Nobase error message: ",t);
-             }
-          }
-         xw.end("MESSAGES");
-         NobaseMain.getNobaseMain().finishMessage(xw);
+	 IvyXmlWriter xw = NobaseMain.getNobaseMain().beginMessage("FILEERROR");
+	 xw.field("PROJECT",sd.getProject().getName());
+	 xw.field("FILE",fd.getFile().getPath());
+	 xw.begin("MESSAGES");
+	 for (NobaseMessage m : sd.getMessages()) {
+	    try {
+	       System.err.println("NOBASE: PARSE ERROR: " + m);
+	       NobaseUtil.outputProblem(m,sd,xw);
+	     }
+	    catch (Throwable t) {
+	       NobaseMain.logE("Nobase error message: ",t);
+	     }
+	  }
+	 xw.end("MESSAGES");
+	 NobaseMain.getNobaseMain().finishMessage(xw);
        }
     }
 }
@@ -915,6 +919,7 @@ void getFullyQualifiedName(String file,int spos,int epos,IvyXmlWriter xw)
       if (!ifd.getFile().getPath().equals(file)) continue;
       search.setFile(ifd);
       ISemanticData isd = getParseData(ifd);
+      if (isd == null) continue;
       isd.getRootNode().accept(av);
     }
 
@@ -999,9 +1004,9 @@ private static class SourceFilter implements FileFilter {
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Find library files by name                                              */
-/*                                                                              */
+/*										*/
+/*	Find library files by name						*/
+/*										*/
 /********************************************************************************/
 
 NobaseFile findRequiresFile(NobaseFile orig,String fnm)
@@ -1017,20 +1022,20 @@ NobaseFile findRequiresFile(NobaseFile orig,String fnm)
       tgt = new File(fnm.replace("/",File.separator));
       return getNobaseFile(tgt);
     }
-   
+
    // handle core modules
    tgt = new File(base_path,fnm);
    NobaseFile nf = getNobaseFile(tgt);
    if (nf != null) return nf;
-   
+
    for (File par = orig.getFile().getParentFile(); par != null; par = par.getParentFile()) {
       File nmod = new File(par,"node_modules");
       if (nmod.exists()) {
-         nf = getNodeModuleFile(nmod,fnm);
-         if (nf != null) return nf;
+	 nf = getNodeModuleFile(nmod,fnm);
+	 if (nf != null) return nf;
        }
     }
-   
+
    return null;
 }
 
@@ -1041,21 +1046,21 @@ private NobaseFile getNobaseFile(File tgt)
    if (!tgt.exists()) {
       String pth = tgt.getPath();
       for (String s : new String [] { ".js", ".json", "node" } ) {
-         File ntgt = new File(pth + s);
-         if (ntgt.exists()) {
-            tgt = ntgt;
-            break;
-          }
+	 File ntgt = new File(pth + s);
+	 if (ntgt.exists()) {
+	    tgt = ntgt;
+	    break;
+	  }
        }
       if (!tgt.exists()) return null;
     }
-   
+
    if (tgt.isDirectory()) {
       // might need to look for package.json, index.js, ...
       return null;
     }
    String mnm = getModuleFromPath(tgt);
-   
+
    return findFile(tgt,mnm);
 }
 
@@ -1067,39 +1072,39 @@ private NobaseFile getNodeModuleFile(File nmod,String fnm)
       String mod = getModuleFromPath(tgt);
       File json = new File(tgt,"package.json");
       if (json.exists()) {
-         try {
-            String pkgtxt = IvyFile.loadFile(json);
-            JSONObject jo = new JSONObject(pkgtxt);
-            String mnm = jo.getString("name");
-            if (jo.has("main")) {
-               String main = jo.getString("main");
-               if (mnm == null) mnm = mod;
-               File src = new File(tgt,main);
-               if (src.exists()) {
-                  try {
-                     src = src.getCanonicalFile();
-                   }
-                  catch (IOException e) { }
-                  if (src.isDirectory()) {
-                     src = new File(src,"index.js");
-                     if (!src.exists()) src = new File(src,"index.node");
-                     if (!src.exists()) return null;
-                   }
-                  return findFile(src,mnm);
-                }
-             }
-          }
-         catch (IOException e) {
-          }
+	 try {
+	    String pkgtxt = IvyFile.loadFile(json);
+	    JSONObject jo = new JSONObject(pkgtxt);
+	    String mnm = jo.getString("name");
+	    if (jo.has("main")) {
+	       String main = jo.getString("main");
+	       if (mnm == null) mnm = mod;
+	       File src = new File(tgt,main);
+	       if (src.exists()) {
+		  try {
+		     src = src.getCanonicalFile();
+		   }
+		  catch (IOException e) { }
+		  if (src.isDirectory()) {
+		     src = new File(src,"index.js");
+		     if (!src.exists()) src = new File(src,"index.node");
+		     if (!src.exists()) return null;
+		   }
+		  return findFile(src,mnm);
+		}
+	     }
+	  }
+	 catch (IOException e) {
+	  }
        }
       // try index.js if json fails
       File f1 = new File(tgt,"index.js");
       if (!f1.exists()) f1 = new File(tgt,"index.node");
       if (f1.exists()) {
-         return findFile(f1,mod);
+	 return findFile(f1,mod);
        }
     }
-   
+
    return getNobaseFile(tgt);
 }
 

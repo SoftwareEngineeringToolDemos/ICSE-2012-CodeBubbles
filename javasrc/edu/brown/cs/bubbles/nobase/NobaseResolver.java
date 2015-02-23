@@ -40,8 +40,13 @@ class NobaseResolver implements NobaseConstants, NobaseAst
 
 private NobaseScope		global_scope;
 private NobaseProject		for_project;
+private static Map<String,Evaluator>   operator_evaluator;
 
 
+static {
+   operator_evaluator = new HashMap<String,Evaluator>();
+   operator_evaluator.put("+",new EvalPlus());
+}
 
 
 
@@ -230,8 +235,8 @@ private class ValuePass extends NobaseAstVisitor {
    @Override public boolean visit(CatchStatement cstmt) {
       NobaseScope nscp = cstmt.getScope();
       if (nscp == null) {
-	 nscp = new NobaseScope(ScopeType.BLOCK,cur_scope);
-	 cstmt.setScope(nscp);
+         nscp = new NobaseScope(ScopeType.BLOCK,cur_scope);
+         cstmt.setScope(nscp);
        }
       cur_scope = nscp;
       return true;
@@ -255,7 +260,7 @@ private class ValuePass extends NobaseAstVisitor {
     }
 
    @Override public void endVisit(ControlOperation n) {
-      setValue(n,NobaseValue.createBoolean());
+      evaluateOperation(n,NobaseValue.createBoolean());
     }
 
    @Override public void endVisit(Declaration n) {
@@ -381,6 +386,53 @@ private class ValuePass extends NobaseAstVisitor {
       enclosing_function = name_stack.pop();
     }
 
+   @Override public boolean visit(Identifier id) {
+      String name = id.getName();
+      NobaseSymbol ref = id.getDefinition();
+      if (ref == null) ref = id.getReference();
+      if (ref == null) {
+         ref = cur_scope.lookup(name);
+         if (ref == null && force_define) {
+            // see if we should create implicit definition
+            NobaseScope dscope = cur_scope.getDefaultScope();
+            if (dscope.getScopeType() == ScopeType.FILE ||
+                  dscope.getScopeType() == ScopeType.GLOBAL) {
+               NobaseMessage msg = new NobaseMessage(ErrorSeverity.WARNING,
+                     "Implicit declaration of " + name,
+                     id.getStartLine(),id.getStartChar(),
+                     id.getEndLine(),id.getEndChar());
+               error_list.add(msg);
+               ref = new NobaseSymbol(for_project,enclosing_file,id,name,false);
+               dscope.define(ref);
+               setName(ref,name);
+             }
+            else {
+               dscope.setProperty(name,NobaseValue.createAnyValue());
+             }
+          }
+         id.setReference(ref);
+       }
+      if (ref != null) {
+         if (set_lvalue != null) {
+            NobaseValue nv = NobaseValue.mergeValues(set_lvalue,ref.getValue());
+            setValue(id,nv);
+          }
+         else {
+            id.setNobaseValue(ref.getValue());
+          }
+       }
+      else {
+         NobaseValue nv = cur_scope.lookupValue(name);
+         if (nv == null) {
+            System.err.println("NOBASE: no value found for " + name + " at " +
+                  id.getStartLine());
+            nv = NobaseValue.createUnknownValue();
+          }
+         id.setNobaseValue(nv);
+       }
+      
+      return false;
+    }
    @Override public void endVisit(InOperation n) {
       setValue(n,NobaseValue.createBoolean());
     }
@@ -436,54 +488,7 @@ private class ValuePass extends NobaseAstVisitor {
       setValue(n,NobaseValue.createNumber(n.getValue()));
     }
 
-   @Override public boolean visit(Reference n) {
-      Identifier id = n.getIdentifier();
-      String name = id.getName();
-      NobaseSymbol ref = id.getDefinition();
-      if (ref == null) ref = id.getReference();
-      if (ref == null) {
-         ref = cur_scope.lookup(name);
-         if (ref == null && force_define) {
-            // see if we should create implicit definition
-            NobaseScope dscope = cur_scope.getDefaultScope();
-            if (dscope.getScopeType() == ScopeType.FILE ||
-        	  dscope.getScopeType() == ScopeType.GLOBAL) {
-               NobaseMessage msg = new NobaseMessage(ErrorSeverity.WARNING,
-        	     "Implicit declaration of " + name,
-        	     n.getStartLine(),n.getStartChar(),
-        	     n.getEndLine(),n.getEndChar());
-               error_list.add(msg);
-               ref = new NobaseSymbol(for_project,enclosing_file,n,name,false);
-               dscope.define(ref);
-               setName(ref,name);
-             }
-            else {
-               dscope.setProperty(name,NobaseValue.createAnyValue());
-             }
-          }
-         id.setReference(ref);
-       }
-     if (ref != null) {
-        if (set_lvalue != null) {
-           NobaseValue nv = NobaseValue.mergeValues(set_lvalue,ref.getValue());
-           setValue(n,nv);
-         }
-        else {
-           n.setNobaseValue(ref.getValue());
-         }
-      }
-     else {
-        NobaseValue nv = cur_scope.lookupValue(name);
-        if (nv == null) {
-           System.err.println("NOBASE: no value found for " + name + " at " +
-              n.getStartLine());
-           nv = NobaseValue.createUnknownValue();
-         }
-        n.setNobaseValue(nv);
-      }
    
-     return false;
-    }
 
    @Override public void endVisit(RegexpLiteral n) {
       NobaseSymbol regex = global_scope.lookup("RegExp");
@@ -492,9 +497,13 @@ private class ValuePass extends NobaseAstVisitor {
       setValue(n,nv);
     }
 
+   @Override public void endVisit(Reference n) {
+      Identifier id = n.getIdentifier();
+      setValue(n,id.getNobaseValue());
+    }
+   
    @Override public void endVisit(SimpleOperation n) {
-      NobaseValue nv = NobaseValue.createAnyValue();
-      setValue(n,nv);
+      evaluateOperation(n,null);
     }
 
    @Override public void endVisit(StringLiteral n) {
@@ -538,8 +547,8 @@ private class ValuePass extends NobaseAstVisitor {
 
    private void duplicateDef(String nm,NobaseAstNode n) {
       NobaseMessage msg = new NobaseMessage(ErrorSeverity.WARNING,
-	    "Duplicate defintion of " + nm,
-	    n.getStartLine(),n.getStartChar(),n.getEndLine(),n.getEndChar());
+            "Duplicate defintion of " + nm,
+            n.getStartLine(),n.getStartChar(),n.getEndLine(),n.getEndChar());
       error_list.add(msg);
     }
 
@@ -590,12 +599,28 @@ private class ValuePass extends NobaseAstVisitor {
 
    private String getIdentName(Expression e) {
       if (e instanceof Identifier) {
-	 return ((Identifier) e).getName();
+         return ((Identifier) e).getName();
        }
       else if (e instanceof Reference) {
-	 return ((Reference) e).getIdentifier().getName();
+         return ((Reference) e).getIdentifier().getName();
        }
       return null;
+    }
+   
+   private NobaseValue evaluateOperation(Operation n,NobaseValue dflt) {
+      NobaseValue nv = dflt;
+      String op = n.getOperator();
+      Evaluator ev = operator_evaluator.get(op);
+      if (ev != null) {
+         List<NobaseValue> args = new ArrayList<NobaseValue>();
+         for (int i = 0; i < n.getNumOperands(); ++i) {
+            args.add(n.getOperand(i).getNobaseValue());
+          }    
+         nv = ev.evaluate(enclosing_file,args);
+       }
+      if (nv == null) nv = NobaseValue.createAnyValue();
+      setValue(n,nv);
+      return nv;
     }
 
 }	// end of inner class ValuePass
@@ -603,6 +628,51 @@ private class ValuePass extends NobaseAstVisitor {
 
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Operator implementations                                                */
+/*                                                                              */
+/********************************************************************************/
+
+private static class EvalPlus implements Evaluator {
+   
+   @Override public NobaseValue evaluate(NobaseFile file,List<NobaseValue> args) {
+      if (args.size() == 0) return null;
+      if (args.size() == 1) return args.get(0);
+      
+      List<Object> vals = new ArrayList<Object>();
+      boolean havestring = false;
+      boolean allnumber = true;
+      for (NobaseValue nv : args) {
+         if (nv == null) return null;
+         Object o = nv.getKnownValue();
+         if (o == null) return null;
+         if (o == KnownValue.UNKNOWN) return null;
+         if (o == KnownValue.ANY) return null;
+         if (o == KnownValue.UNDEFINED) return null;
+         if (o == KnownValue.NULL) o = null;
+         vals.add(o);
+         if (!(o instanceof Number)) allnumber = false;
+         if (o instanceof String) havestring = true;
+       }
+      if (havestring) {
+         StringBuffer buf = new StringBuffer();
+         for (Object o : vals) {
+            buf.append(o);
+          }
+         return NobaseValue.createString(buf.toString());
+       }
+      if (allnumber) {
+         double v = 0;
+         for (Object o : vals) {
+            v += ((Number) o).doubleValue();
+          }
+         return NobaseValue.createNumber(v);
+       }
+      return null;
+    }
+   
+}       // end of inner class EvalPlus
 
 
 }	// end of class NobaseResolver

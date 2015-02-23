@@ -83,6 +83,7 @@ NobaseCaja()
    JsTokenQueue tq = new JsTokenQueue(lexer,is);
    SimpleMessageQueue smq = new SimpleMessageQueue();
    Parser p = new Parser(tq,smq);
+   p.setRecoverFromFailure(true);
    ParseData rslt = null;
    try {
       Block b = p.parse();
@@ -97,6 +98,7 @@ NobaseCaja()
        }
     }
    catch (ParseException e) {
+      NobaseMain.logE("Parse exception",e);
       // add error for parse exception
     }
 
@@ -153,14 +155,21 @@ private static class ParseData implements ISemanticData {
          int startcol = 0;
          int endln = 0;
          int endcol = 0;
+         String msg = m.toString();
          if (fp != null) {
             startln = fp.startLineNo();
             startcol = fp.startCharInLine();
             endln = fp.endLineNo();
             endcol = fp.endCharInLine();
+            if (msg.startsWith("file:")) {
+               int idx = msg.indexOf(":");
+               idx = msg.indexOf(":",idx+1);
+               idx = msg.indexOf(":",idx+1);
+               msg = msg.substring(idx+1).trim();
+             }
           }
    
-         NobaseMessage nm = new NobaseMessage(es,m.toString(),startln,startcol,endln,endcol);
+         NobaseMessage nm = new NobaseMessage(es,msg,startln,startcol,endln,endcol);
          if (!is_library) message_list.add(nm);
        }
       

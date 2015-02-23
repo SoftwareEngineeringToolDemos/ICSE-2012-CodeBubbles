@@ -60,10 +60,12 @@ private long			start_time;
 private int			caret_position;
 private Set<BumpProblem>	active_problems;
 
+
 private static Contexter	context_handler = null;
 private static Map<BaleCorrector,Boolean> all_correctors;
 
 private static int	MAX_REGION_SIZE = 50;
+private static boolean          correct_syntax = BALE_PROPERTIES.getBoolean("Bale.correct.syntax");
 
 static {
    all_correctors = new WeakHashMap<BaleCorrector,Boolean>();
@@ -129,7 +131,8 @@ private void handleTyped(int off,int len)
    if (!checkFocus()) return;
 
    if (start_offset < 0) {
-      int lno = for_document.findLineNumber(off);
+      int lno = for_document.findLineNumber(off);        // create Nashorn nodes for all children (use visitor)
+
       start_offset = for_document.findLineOffset(lno);
       start_time = System.currentTimeMillis();
     }
@@ -190,6 +193,7 @@ private boolean checkFocus()
 }
 
 
+
 /********************************************************************************/
 /*										*/
 /*	Find something to fix							*/
@@ -215,7 +219,7 @@ private void checkForElementToFix()
    if (totry.isEmpty()) return;
 
    for (BumpProblem bp : totry) {
-      String txt = tryProblem(bp);
+      String txt = trySpellingProblem(bp);
       if (txt != null) {
 	 BoardLog.logD("BALE","SPELL: HANDLE PROBLEM " + bp.getMessage());
 	 int minsize = BALE_PROPERTIES.getInt("Bale.correct.spelling.edits",2);
@@ -223,12 +227,19 @@ private void checkForElementToFix()
 	 BoardThreadPool.start(sf);
 	 break;
        }
+      else if (trySyntaxProblem(bp)) {
+         BoardLog.logD("BALE","SPELL: HANDLE PROBLEM " + bp.getMessage());  
+         SyntaxFixer sf = new SyntaxFixer(bp);
+         BoardThreadPool.start(sf);
+         break;
+      }
     }
 }
 
 
 
-private String tryProblem(BumpProblem bp)
+
+private String trySpellingProblem(BumpProblem bp)
 {
    BoardLog.logD("BALE","SPELL: try problem " + bp.getMessage());
    int soff = for_document.mapOffsetToJava(bp.getStart());
@@ -251,6 +262,36 @@ private String tryProblem(BumpProblem bp)
 
    return txt;
 }
+
+
+private boolean trySyntaxProblem(BumpProblem bp)
+{
+   if (!correct_syntax) return false;
+   
+   String msg = bp.getMessage();
+   if (!msg.startsWith("Syntax error")) return false;
+            
+   int soff = for_document.mapOffsetToJava(bp.getStart());
+   int eoff = for_document.mapOffsetToJava(bp.getEnd());
+   int lnoerr = for_document.findLineNumber(soff);
+   int lnocur = for_document.findLineNumber(caret_position);
+   
+   BaleElement elt = for_document.getCharacterElement(soff);
+   int eloff = elt.getEndOffset();
+   if (eoff + 1 != eloff) return false;
+   if (end_offset > 0 && eloff + 1 >= end_offset) return false;
+   if (lnoerr == lnocur) return false;
+   
+   String txt = null;
+   try {
+      txt = for_document.getText(soff,eoff-soff+1);
+    }
+   catch (BadLocationException e) { }
+   if (txt == null) return false;
+
+   return true;
+}   
+   
 
 
 
@@ -492,9 +533,86 @@ private class SpellFixer implements Runnable {
 
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Class to find a good fix for syntax errors                              */
+/*                                                                              */
+/********************************************************************************/
+
+private class SyntaxFixer implements Runnable {
+   
+   private BumpProblem for_problem;
+   private long initial_time;
+   
+   SyntaxFixer(BumpProblem bp) {
+      for_problem = bp;
+      initial_time = start_time;
+    }
+   
+   @Override public void run() {
+      String msg = for_problem.getMessage();
+      int soff = for_problem.getStart();
+      int eoff = for_problem.getEnd()+1;
+      String ins = null;
+      if (msg.startsWith("Syntax error, insert ")) {
+         int i0 = msg.indexOf("\"");
+         int i1 = msg.lastIndexOf("\"");
+         ins = msg.substring(i0+1,i1);
+         soff = eoff;
+       }
+      else if (msg.startsWith("Syntax error on token") && msg.contains("delete this token")) {
+         ins = null;
+       }
+      else if (msg.startsWith("Syntax error on token") && msg.contains("expected")) {
+         int idx = msg.indexOf("\", ");
+         idx += 3;
+         ins = msg.substring(idx,idx+1);
+      }
+      else return;
+      
+      String proj = for_document.getProjectName();
+      File file = for_document.getFile();
+      String filename = file.getAbsolutePath();
+      BumpClient bc = BumpClient.getBump();  
+      String pid = bc.createPrivateBuffer(proj,filename,null);
+      if (pid == null) return;
+      BoardLog.logD("BALE","SPELL: using private buffer " + pid);
+      try {
+         Collection<BumpProblem> probs = bc.getPrivateProblems(filename,pid);
+         if (probs == null) {
+            BoardLog.logE("BALE","SPELL: Problem getting errors for " + pid);
+            return;
+          }
+         int probct = getErrorCount(probs);
+         if (!checkProblemPresent(for_problem,probs)) return;
+         
+         bc.beginPrivateEdit(filename,pid);
+         BoardLog.logD("BALE","SPELL: Try syntax edit " + soff + "," + eoff + "," + ins);
+         bc.editPrivateFile(proj,file,pid,soff,eoff,ins);
+         probs = bc.getPrivateProblems(filename,pid);
+         bc.beginPrivateEdit(filename,pid);		// undo and wait
+         if (probs == null || getErrorCount(probs) >= probct) return;
+         if (checkAnyProblemPresent(for_problem,probs)) return;
+       }
+      finally {
+         bc.removePrivateBuffer(proj,filename,pid);
+       }
+      if (start_time != initial_time) return;
+      BoardLog.logD("BALE","SPELL: DO syntax edit");
+      BoardMetrics.noteCommand("BALE","SYNTAXFIX");
+      SyntaxDoer sd = new SyntaxDoer(for_problem,soff,eoff,ins,initial_time);
+      SwingUtilities.invokeLater(sd); 
+    }
+   
+}       // end of inner class SyntaxFixer
+
+
+
+
 /********************************************************************************/
 /*										*/
-/*	Class to do a fix							*/
+/*	Classes to do a fix							*/
 /*										*/
 /********************************************************************************/
 
@@ -526,6 +644,39 @@ private class SpellDoer implements Runnable {
     }
 
 }	// end of inner class SpellDoer
+
+
+
+private class SyntaxDoer implements Runnable {
+   
+   private BumpProblem for_problem;
+   private int edit_start;
+   private int edit_end;
+   private String insert_text;
+   private long initial_time;
+   
+   SyntaxDoer(BumpProblem bp,int soff,int eoff,String txt,long t0) {
+      for_problem = bp;
+      edit_start = soff;
+      edit_end = eoff;
+      insert_text = txt;
+      initial_time = t0;
+    }
+   
+   @Override public void run() {
+      BumpClient bc = BumpClient.getBump();
+      List<BumpProblem> probs = bc.getProblems(for_document.getFile());
+      if (!checkProblemPresent(for_problem,probs)) return;
+      if (start_time != initial_time) return;
+      int soff = for_document.mapOffsetToJava(edit_start);
+      int eoff = for_document.mapOffsetToJava(edit_end);
+      try {
+         for_document.replace(soff,eoff-soff,insert_text,null);
+       }
+      catch (BadLocationException e) { }
+    }
+   
+}       // end of inner class SyntaxDoer
 
 
 
@@ -690,7 +841,7 @@ private void addPopupMenuItems(BaleContextConfig ctx,JPopupMenu menu)
    List<BumpProblem> probs = bd.getProblemsAtLocation(ctx.getOffset());
    if (probs == null) return;
    for (BumpProblem bp : probs) {
-      String txt = tryProblem(bp);
+      String txt = trySpellingProblem(bp);
       if (txt != null) {
 	 menu.add(new SpellTryer(bp,txt));
 	 break;

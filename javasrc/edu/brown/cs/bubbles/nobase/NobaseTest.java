@@ -136,6 +136,8 @@ private void runTest()
    sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' ID='" + (edit_id++) + "'",null);
    sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' COMPUTE='true'","<REGION START='7359' END='8064' />");
 
+   sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/home/twiex/bad.js' ID='" + (edit_id++) + "'",null);
+   
    // sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' ID='" + (edit_id++) + "'",null);
    // sendCommand("PATTERNSEARCH",proj,"PATTERN='genkml.genkml()' DEFS='true' REFS='false' FOR='METHOD'",null);
    // sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' COMPUTE='true'","<REGION START='505' END='1722' />");
@@ -236,11 +238,11 @@ private class Runner extends Thread {
    @Override public void run() {
       System.err.println("NOBASE: Start run");
       try {
-         NobaseMain.main(new String [] { "-m", "NOBBLESTEST", "-ws", "/home/spr/Nobbles/test" });
+	 NobaseMain.main(new String [] { "-m", "NOBBLESTEST", "-ws", "/home/spr/Nobbles/test" });
        }
       catch (Throwable t) {
-         System.err.println("NOBASE: Error running: " + t);
-         t.printStackTrace();
+	 System.err.println("NOBASE: Error running: " + t);
+	 t.printStackTrace();
        }
       System.err.println("NOBASE: Finish run");
     }

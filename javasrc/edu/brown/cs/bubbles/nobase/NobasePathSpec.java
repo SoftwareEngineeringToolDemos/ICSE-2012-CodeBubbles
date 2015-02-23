@@ -82,6 +82,12 @@ boolean isUser()		        { return is_user; }
 
 boolean isExclude()                     { return is_exclude; }
 
+void setProperties(boolean usr,boolean exc) 
+{
+   is_user = usr;
+   is_exclude = exc;
+}
+
 
 
 /********************************************************************************/

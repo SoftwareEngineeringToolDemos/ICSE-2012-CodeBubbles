@@ -24,7 +24,8 @@
 
 package edu.brown.cs.bubbles.rebase.newjava;
 
-import edu.brown.cs.bubbles.rebase.*;
+import edu.brown.cs.bubbles.rebase.RebaseFile;
+import edu.brown.cs.bubbles.rebase.RebaseMain;
 
 import edu.brown.cs.ivy.jcomp.JcompSource;
 

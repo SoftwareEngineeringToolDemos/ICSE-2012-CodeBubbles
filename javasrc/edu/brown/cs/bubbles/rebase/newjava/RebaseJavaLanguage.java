@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              RebaseJavaLanguage.java                                         */
-/*                                                                              */
-/*      Basic implementation of Java parsing using JCOMP                        */
-/*                                                                              */
+/*										*/
+/*		RebaseJavaLanguage.java 					*/
+/*										*/
+/*	Basic implementation of Java parsing using JCOMP			*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 /* SVN: $Id$ */
@@ -24,7 +24,8 @@
 
 package edu.brown.cs.bubbles.rebase.newjava;
 
-import edu.brown.cs.bubbles.rebase.*;
+import edu.brown.cs.bubbles.rebase.RebaseConstants;
+import edu.brown.cs.bubbles.rebase.RebaseFile;
 
 import edu.brown.cs.ivy.jcomp.*;
 
@@ -36,12 +37,12 @@ public class RebaseJavaLanguage implements RebaseConstants.RebaseLanguage, Rebas
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
-private JcompControl            jcomp_control;
+private JcompControl		jcomp_control;
 private Map<RebaseFile,RebaseJcompSource> source_map;
 private Map<JcompSemantics,RebaseJcompSemantics> semantic_map;
 
@@ -49,9 +50,9 @@ private Map<JcompSemantics,RebaseJcompSemantics> semantic_map;
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Constructors								*/
+/*										*/
 /********************************************************************************/
 
 public RebaseJavaLanguage()
@@ -66,12 +67,12 @@ public RebaseJavaLanguage()
 @Override public synchronized RebaseSemanticData getSemanticData(RebaseFile rf)
 {
    if (rf == null) return null;
-   
+
    RebaseJcompSource rjs = getFileSource(rf);
-   
+
    JcompSemantics js = jcomp_control.getSemanticData(rjs);
    if (js == null) return null;
-   
+
    RebaseJcompSemantics semout = semantic_map.get(js);
    if (semout == null) {
       semout = new RebaseJcompSemantics(js);
@@ -89,9 +90,9 @@ public synchronized RebaseProjectSemantics getSemanticData(Collection<RebaseFile
       RebaseJcompSource rjs = getFileSource(rf);
       inputs.add(rjs);
     }
-   
-   JcompProject jproj = jcomp_control.getSemanticData(inputs);
-   
+
+   JcompProject jproj = jcomp_control.getProject(inputs);
+
    return new RebaseJcompProject(jproj);
 }
 
@@ -118,7 +119,7 @@ private synchronized RebaseJcompSource getFileSource(RebaseFile rf)
 
 
 
-}       // end of class RebaseJavaLanguage
+}	// end of class RebaseJavaLanguage
 
 
 

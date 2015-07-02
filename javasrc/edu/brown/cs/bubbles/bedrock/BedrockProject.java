@@ -51,10 +51,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.NewProjectAction;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
+import org.osgi.framework.Bundle;
 import org.osgi.service.prefs.Preferences;
 import org.w3c.dom.Element;
 
 import java.io.*;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -76,6 +78,7 @@ private boolean projects_inited;
 private boolean projects_registered;
 private Set<IProject> open_projects;
 private boolean projects_setup;
+private boolean use_android;
 
 private static boolean		initial_build = false;
 private static boolean		initial_refresh = false;
@@ -210,11 +213,14 @@ void listProjects(IvyXmlWriter xw)
       xw.field("OPEN",projs[i].isOpen());
       xw.field("WORKSPACE",wr.getLocation().toOSString());
       boolean isjava = false;
+      boolean isandroid = false;
       try {
 	 isjava = projs[i].hasNature(JavaCore.NATURE_ID);
+	 isandroid = projs[i].hasNature("com.android.ide.eclipse.adt.AndroidNature");
        }
       catch (CoreException e) { }
       xw.field("ISJAVA",isjava);
+      xw.field("ISANDROID",isandroid);
       try {
 	 xw.cdataElement("DESCRIPTION",projs[i].getDescription().getComment());
        }
@@ -231,14 +237,22 @@ void listProjects(IvyXmlWriter xw)
       for (int j = 0; j < up.length; ++j) {
 	 xw.textElement("USEDBY",up[j].getName());
        }
-
+      try {
+	 for (IBuildConfiguration ibcfg : projs[i].getBuildConfigs()) {
+	    xw.begin("BUILDCONFIG");
+	    xw.field("NAME",ibcfg.getName());
+	    xw.field("CLASS",ibcfg.getClass().getName());
+	    xw.end("BUILDCONFIG");
+	  }
+       }
+      catch (CoreException e) { }
       xw.end("PROJECT");
     }
 }
 
 
 
-void openProject(String name,boolean fil,boolean pat,boolean cls,boolean opt,
+void openProject(String name,boolean fil,boolean pat,boolean cls,boolean opt,boolean imps,
 		    String bkg,IvyXmlWriter xw)
 	throws BedrockException
 {
@@ -249,10 +263,10 @@ void openProject(String name,boolean fil,boolean pat,boolean cls,boolean opt,
    if (bkg != null) {
       ProjectThread pt = new ProjectThread(bkg,p,fil,pat,cls,opt);
       pt.start();
-      if (xw != null) outputProject(p,false,false,false,false,xw);
+      if (xw != null) outputProject(p,false,false,false,false,false,xw);
     }
    else if (xw != null) {
-      outputProject(p,fil,pat,cls,opt,xw);
+      outputProject(p,fil,pat,cls,opt,imps,xw);
     }
 }
 
@@ -321,7 +335,7 @@ private class ProjectThread extends Thread {
    @Override public void run() {
       IvyXmlWriter xw = our_plugin.beginMessage("PROJECTDATA");
       xw.field("BACKGROUND",return_id);
-      outputProject(for_project,do_files,do_patterns,do_classes,do_options,xw);
+      outputProject(for_project,do_files,do_patterns,do_classes,do_options,false,xw);
       our_plugin.finishMessage(xw);
     }
 
@@ -901,6 +915,20 @@ void handlePreferences(String proj,IvyXmlWriter xw)
       xw.end("PREF");
     }
 
+   // handle special preferences
+   try {
+      Bundle b = Platform.getBundle("com.android.ide.eclipse.adt");
+      if (b != null) {
+	 xw.begin("PREF");
+	 xw.field("NAME","bedrock.useAndroid");
+	 xw.field("VALUE",true);
+	 xw.field("OPTS",true);
+	 xw.end("PREF");
+	 use_android = true;
+       }
+    }
+   catch (Throwable t) { }
+
    xw.end("PREFERENCES");
 }
 
@@ -967,7 +995,7 @@ private boolean setProjectPreferences(IProject ip,Element xml)
 /*										*/
 /********************************************************************************/
 
-private Collection<IFile> findSourceFiles(IResource ir,Collection<IFile> rslt)
+Collection<IFile> findSourceFiles(IResource ir,Collection<IFile> rslt)
 {
    if (rslt == null) rslt = new HashSet<IFile>();
 
@@ -1131,7 +1159,7 @@ private IFile findProjectFile(IResource ir,String name)
 /*										*/
 /********************************************************************************/
 
-private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolean opt,
+private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolean opt,boolean imps,
 			      IvyXmlWriter xw)
 {
    if (p.getLocation() == null) return;
@@ -1141,6 +1169,13 @@ private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolea
    xw.field("PATH",p.getLocation().toOSString());
    xw.field("WORKSPACE",p.getWorkspace().getRoot().getLocation().toOSString());
    xw.field("BEDROCKDIR",p.getWorkingLocation(BEDROCK_PLUGIN).toOSString());
+   try {
+      if (p.hasNature("org.eclipse.jdt.core.javanature"))
+	 xw.field("ISJAVA",true);
+      if (p.hasNature("com.android.ide.eclipse.adt.AndroidNature"))
+	 xw.field("ISANDROID",true);
+    }
+   catch (CoreException e) { }
 
    IJavaProject jp = JavaCore.create(p);
    if (jp != null && pat) {
@@ -1213,6 +1248,15 @@ private void outputProject(IProject p,boolean fil,boolean pat,boolean cls,boolea
 	  }
        }
       catch (CoreException e) { }
+    }
+
+   if (imps && jp != null) {
+      try {
+	 for (IPackageFragment ipf : jp.getPackageFragments()) {
+	    outputImports(xw,ipf);
+	  }
+       }
+      catch (JavaModelException e) {}
     }
 
    xw.end("PROJECT");
@@ -1433,6 +1477,23 @@ private void outputType(IType typ,IJavaProject jp,IvyXmlWriter xw) throws JavaMo
 
 
 
+private void outputImports(IvyXmlWriter xw,IPackageFragment ipf)
+{
+   try {
+      for (ICompilationUnit icu : ipf.getCompilationUnits()) {
+	 for (IImportDeclaration imp : icu.getImports()) {
+	    xw.begin("IMPORT");
+	    if (imp.isOnDemand()) xw.field("DEMAND",true);
+	    if (Modifier.isStatic(imp.getFlags())) xw.field("STATIC",true);
+	    xw.text(imp.getElementName());
+	    xw.end("IMPORT");
+	 }
+       }
+    }
+   catch (JavaModelException e) { }
+}
+
+
 
 private File findBinaryFor(IJavaProject jp,IType typ)
 {
@@ -1457,6 +1518,8 @@ private File findBinaryFor(IJavaProject jp,IType typ)
 
 private void handleBuild(IProject p,boolean clean,boolean full,boolean refresh) throws BedrockException
 {
+   if (use_android) BedrockApplication.getDisplay();
+
    try {
       if (refresh) {
 	 String desc = "Refreshing project " + p.getName();

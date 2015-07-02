@@ -106,12 +106,12 @@ BandaidAgentSwing(BandaidController bc)
       Correlator c = new Correlator();
       if (c.correlate(xw,x,y)) {
 	 xw.end();
-	 the_control.sendMessage(xw.toString());
+	 the_control.sendMessage(xw.getContents());
        }
       else {
 	 xw.field("FAIL",true);
 	 xw.end();
-	 the_control.sendMessage(xw.toString());
+	 the_control.sendMessage(xw.getContents());
        }
       scn.close();
     }
@@ -334,7 +334,7 @@ private static class Tracer extends MethodVisitor {
       List<?> tx = tmv.p.getText();
       System.err.println("TRACE METHOD " + method_name);
       for (Object o : tx) {
-	 System.err.print(o.toString());
+         System.err.print(o.toString());
        }
     }
 

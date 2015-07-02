@@ -25,7 +25,7 @@
 package edu.brown.cs.bubbles.rebase;
 
 
-import edu.brown.cs.bubbles.rebase.word.*;
+import edu.brown.cs.bubbles.rebase.word.RebaseWordFactory;
 
 import edu.brown.cs.ivy.exec.IvyExec;
 

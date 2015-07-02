@@ -443,7 +443,8 @@ private class TableUpdater implements Runnable {
 	    bt = run_event.getThread();
 	    if (bt != null) {
 	       if (!thread_set.add(bt)) {
-		  BoardLog.logD("BDDT","THREAD ALREADY IN THREADSET " + bt.getId());
+		  // BoardLog.logD("BDDT","THREAD ALREADY IN THREADSET " + bt.getId());
+		  return;
 	       }
 	       synchronized (bump_threads) {
 		  bump_threads.clear();
@@ -720,27 +721,25 @@ private class ThreadsTable extends JTable implements BudaConstants.BudaBubbleOut
       return buf.toString();
    }
 
+   void outputTime(long time,String id,StringBuffer buf) {
+      if (time <= 0) return;
+      buf.append("<tr><td>");
+      buf.append(id);
+      buf.append(":</td><td>");
+      double v = time / 1000000000.0;
+      buf.append(TIME_FORMAT.format(v));
+      buf.append("</td></tr>");
+    }
 
-void outputTime(long time,String id,StringBuffer buf)
-{
-    if (time <= 0) return;
-    buf.append("<tr><td>");
-    buf.append(id);
-    buf.append(":</td><td>");
-    double v = time / 1000000000.0;
-    buf.append(TIME_FORMAT.format(v));
-    buf.append("</td></tr>");
-}
+   void outputCount(int count,String id,StringBuffer buf) {
+      if (count <= 0) return;
+      buf.append("<tr><td>");
+      buf.append(id);
+      buf.append(":</td><td>");
+      buf.append(count);
+      buf.append("</td></tr>");
+    }
 
-void outputCount(int count,String id,StringBuffer buf)
-{
-   if (count <= 0) return;
-   buf.append("<tr><td>");
-   buf.append(id);
-   buf.append(":</td><td>");
-   buf.append(count);
-   buf.append("</td></tr>");
-}
 }	// end of inner class ThreadsTable
 
 

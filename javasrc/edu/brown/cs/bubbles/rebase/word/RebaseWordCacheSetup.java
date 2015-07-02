@@ -24,9 +24,10 @@
 
 package edu.brown.cs.bubbles.rebase.word;
 
-import edu.brown.cs.ivy.file.*;
+import edu.brown.cs.ivy.file.IvyFile;
 
-import org.xeustechnologies.jtar.*;
+import org.xeustechnologies.jtar.TarEntry;
+import org.xeustechnologies.jtar.TarInputStream;
 
 import java.io.*;
 

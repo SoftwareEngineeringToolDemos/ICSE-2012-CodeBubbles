@@ -54,6 +54,11 @@
       <OPT NAME='Beam.problem.click.count' DESCRIPTION='Clicks to select error' TYPE='INTEGER' MIN='1' MAX='2'>
 	 <TAB NAME='Note and Problem Bubbles' />
        </OPT>
+      <OPT NAME="Beam.problem.font" DESCRIPTION="Default font for problem bubbles" TYPE="FONT">
+	 <TAB NAME="Font Options"/>
+	 <TAB NAME='Note and Problem Bubbles'/>
+	 <KEYWORD TEXT="Font" />
+      </OPT>
 
    </PACKAGE>
 

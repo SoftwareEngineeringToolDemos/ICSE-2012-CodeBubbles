@@ -48,8 +48,8 @@ import org.w3c.dom.Element;
 
 import javax.swing.*;
 
-import java.awt.Rectangle;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -459,7 +459,7 @@ private void start()
     }
 
    BumpClient nbc = BumpClient.getBump();
-   Element xe = nbc.getAllProjects();
+   Element xe = nbc.getAllProjects(300000);
    if (IvyXml.getChild(xe,"PROJECT") == null) {
       BudaBubble bb = null;
       switch (BoardSetup.getSetup().getLanguage()) {

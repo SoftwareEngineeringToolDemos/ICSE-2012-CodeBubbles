@@ -24,10 +24,9 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.IDocument;
 
-
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 class NobaseMessage implements NobaseConstants

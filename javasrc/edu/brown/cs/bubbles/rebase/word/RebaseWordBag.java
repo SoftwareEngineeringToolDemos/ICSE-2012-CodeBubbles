@@ -24,9 +24,9 @@
 
 package edu.brown.cs.bubbles.rebase.word;
 
+import java.io.*;
 import java.util.*;
 import java.util.zip.*;
-import java.io.*;
 
 
 public class RebaseWordBag implements RebaseWordConstants

@@ -65,7 +65,7 @@ private static boolean	get_cpu_time = true;
 private static boolean	do_debug = false;
 
 private static final int	NUM_SETS = 3;
-private static final int	ENTRY_COUNT = 1024;
+private static final int	ENTRY_COUNT = 10240;
 private static final long	NULL_DELAY = 1000;
 
 private static final int	ASM_API = Opcodes.ASM5;
@@ -86,6 +86,9 @@ BandaidAgentTracer(BandaidController bc)
 
    trace_enabled = true;
    max_size = ENTRY_COUNT*32;
+   long mxmem = Runtime.getRuntime().maxMemory();
+   max_size = Math.min(max_size,(int)(mxmem/100));
+
    start_time = System.nanoTime();
    last_output = 0;
    sequence_number = 0;
@@ -620,11 +623,11 @@ private class ThreadSet {
    private StringBuilder output_data;
 
    ThreadSet() {
-      output_data = new StringBuilder();
-      output_data.ensureCapacity(max_size);
+      output_data = new StringBuilder(max_size);
     }
 
    void addEntry(CharSequence s) {
+      if (output_data.length() > max_size - 32) return;
       output_data.append(s);
       output_data.append('\n');
     }

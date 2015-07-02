@@ -27,11 +27,11 @@
 package edu.brown.cs.bubbles.bddt;
 
 import edu.brown.cs.bubbles.bass.*;
+import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.buda.BudaConstants.BudaBubbleOutputer;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
-import edu.brown.cs.bubbles.board.BoardLog;
 
 import edu.brown.cs.ivy.swing.*;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -190,6 +190,11 @@ private void setupPanel()
 	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
 	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
 	 break;
+      case JS :
+	 start_class = pnl.addChoice("Module to Run",starts,launch_config.getMainClass(),true,this);
+	 arg_area = pnl.addTextArea("Arguments",launch_config.getArguments(),2,24,this);
+	 vmarg_area = pnl.addTextArea("VM Arguments",launch_config.getVMArguments(),1,24,this);
+	 break;
       default:
 	 break;
     }
@@ -246,11 +251,11 @@ private List<String> getStartClasses()
 		}
 	       break;
 	    case JS :
-               if (bn.getNameType() == BassNameType.MODULE) {
-                  String cn = bn.getPackageName();
-                  starts.add(cn);
-                }
-               break;
+	       if (bn.getNameType() == BassNameType.MODULE) {
+		  String cn = bn.getPackageName();
+		  starts.add(cn);
+		}
+	       break;
 	  }
        }
     }

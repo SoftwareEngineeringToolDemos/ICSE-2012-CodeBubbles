@@ -35,7 +35,8 @@ import edu.brown.cs.bubbles.bowi.BowiConstants.BowiTaskType;
 import edu.brown.cs.bubbles.bowi.BowiFactory;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
@@ -156,15 +157,17 @@ public static void initialize(BudaRoot br)
 	  !BoardSetup.getConfigurationFile().exists()) {
       BudaBubbleArea bba = br.getCurrentBubbleArea();
       BassBubble peb = getFactory().createPackageExplorer(bba);
-      package_explorers.put(bba,peb);
-      Rectangle r = br.getCurrentViewport();
-      Dimension d = peb.getPreferredSize();
-      d.height = r.height;
-      peb.setSize(d);
-      BudaConstraint bc = new BudaConstraint(BudaBubblePosition.DOCKED,
-						r.x + r.width - d.width,
-						r.y);
-      bba.add(peb,bc);
+      if (peb != null) {
+         package_explorers.put(bba,peb);
+         Rectangle r = br.getCurrentViewport();
+         Dimension d = peb.getPreferredSize();
+         d.height = r.height;
+         peb.setSize(d);
+         BudaConstraint bc = new BudaConstraint(BudaBubblePosition.DOCKED,
+               r.x + r.width - d.width,
+               r.y);
+         bba.add(peb,bc);
+       }
     }
 
    BuenoFactory bueno = BuenoFactory.getFactory();
@@ -307,7 +310,7 @@ public BassBubble createPackageExplorer(BudaBubbleArea bba)
 {
    BassRepository brm = getRepository(SearchType.SEARCH_EXPLORER);
    BassBubble peb = new BassBubble(brm,null,null,false);
-   package_explorers.put(bba,peb);
+   if (peb != null) package_explorers.put(bba,peb);
    return peb;
 }
 
@@ -418,7 +421,9 @@ BassFlag getFlagForName(BassName bnm,String name)
 public void flagsUpdated()
 {
    for (BassBubble bb : package_explorers.values()) {
-      bb.getContentPane().repaint();
+      if (bb == null) continue;
+      Component c = bb.getContentPane();
+      if (c != null) c.repaint();
    }
 }
 
@@ -672,7 +677,7 @@ private static class JSProjectAction extends AbstractAction {
       BudaRoot.hideSearchBubble(e);
       BudaBubble bb = null;
       BuenoProjectDialog dlg = new BuenoProjectDialog(for_project);
-      bb = dlg.createProjectEditor();	
+      bb = dlg.createProjectEditor();
       // bb = BuenoJSProject.createEditJSProjectBubble(for_project);
       if (bb == null) return;
       BassFactory.getFactory().addNewBubble(rel_bubble,rel_point,bb);

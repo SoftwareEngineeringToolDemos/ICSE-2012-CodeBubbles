@@ -57,6 +57,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -169,8 +170,10 @@ public static void initialize(BudaRoot br)
 {
    buda_root = br;
 
-   BeamTracBugReport btr = new BeamTracBugReport(br);
-   btr.addPanel();
+   // BeamTracBugReport btr = new BeamTracBugReport(br);
+   // btr.addPanel();
+   BeamEmailBugReport ber = new BeamEmailBugReport(br);
+   ber.addPanel();
 
    BeamFeedbackReport bfr = new BeamFeedbackReport(br);
    bfr.addPanel();
@@ -234,7 +237,7 @@ static void showBrowser(URI uri)
     }
 }
 
-
+ 
 
 static void sendMail(String addr,String subj,String body)
 {
@@ -246,7 +249,12 @@ static void sendMail(String addr,String subj,String body)
       full += "subject=" + subj.replace(" ","%20");
     }
    if (body != null) {
-      full += "&body=" + body.replace(" ","%20");
+      try {
+         body = URLEncoder.encode(body,"UTF-8");
+       }
+      catch (UnsupportedEncodingException e) { }
+      body = body.replace("+","%20");
+      full += "&body=" + body;
     }
 
    try {
@@ -397,6 +405,7 @@ private static class NoteAction extends AbstractAction {
     }
 
    @Override public void actionPerformed(ActionEvent evt) {
+      if (context_config.getEditor() == null) return;
       File fil = context_config.getEditor().getContentFile();
       BaleFactory bf = BaleFactory.getFactory();
       BaleFileOverview bfo = bf.getFileOverview(null, fil);

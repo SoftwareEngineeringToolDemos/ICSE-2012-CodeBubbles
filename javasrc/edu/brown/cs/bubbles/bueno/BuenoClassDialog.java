@@ -27,7 +27,7 @@ package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants.BumpContractType;
 
 import edu.brown.cs.ivy.swing.SwingGridPanel;

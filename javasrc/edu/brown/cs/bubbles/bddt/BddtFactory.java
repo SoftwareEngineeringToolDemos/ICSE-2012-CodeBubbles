@@ -25,7 +25,8 @@
 
 package edu.brown.cs.bubbles.bddt;
 
-import edu.brown.cs.bubbles.bale.*;
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bass.BassFactory;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;

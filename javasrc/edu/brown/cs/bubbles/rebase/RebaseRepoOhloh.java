@@ -46,7 +46,7 @@ private static Map<String,String> project_id_map = new HashMap<String,String>();
 
 
 private final static String	OHLOH_SCHEME = "http";
-private final static String	OHLOH_AUTHORITY = "code.ohloh.net";
+private final static String	OHLOH_AUTHORITY = "code.openhub.net";
 private final static String	OHLOH_PATH = "/search";
 private final static String	OHLOH_QUERY = "s=";
 private final static String	OHLOH_QUERY_TAIL = "&fl=Java";
@@ -115,8 +115,8 @@ protected boolean addSources(URL base,Element doc,RebaseRequest rqst,RebaseSourc
        }
     }
    
-   Elements keys = doc.select("div.snippetResult div.projectNameLabel a");
-   Elements pths = doc.select("div.snippetResult div.filePath a");
+   Elements keys = doc.select("div.snippet_header div.projectNameLabel a");
+   Elements pths = doc.select("div.snippet_header div.fileNameLabel a");
    int ct = Math.min(keys.size(),pths.size());
    if (ct == 0) return false;
    for (int i = 0; i < ct; ++i) {

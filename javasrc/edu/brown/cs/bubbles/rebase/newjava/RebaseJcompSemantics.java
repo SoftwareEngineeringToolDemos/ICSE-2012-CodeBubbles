@@ -27,13 +27,13 @@ package edu.brown.cs.bubbles.rebase.newjava;
 import edu.brown.cs.bubbles.rebase.*;
 import edu.brown.cs.bubbles.rebase.RebaseConstants.RebaseSemanticData;
 
+import edu.brown.cs.ivy.jcomp.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
+
 import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.text.edits.TextEdit;
-import edu.brown.cs.ivy.jcomp.*;
-
-import edu.brown.cs.ivy.xml.*;
 
 import java.util.*;
 
@@ -346,7 +346,7 @@ private void outputRange(CompilationUnit cu,ASTNode an,IvyXmlWriter xw)
 
 CompilationUnit getAstNode()
 {
-   return base_semantics.getAstNode();
+   return base_semantics.getRootNode();
 }
 
 

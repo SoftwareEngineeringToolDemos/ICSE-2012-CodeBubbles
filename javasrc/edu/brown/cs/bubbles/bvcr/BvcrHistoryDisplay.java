@@ -26,29 +26,70 @@ package edu.brown.cs.bubbles.bvcr;
 
 import edu.brown.cs.bubbles.bale.BaleConstants;
 import edu.brown.cs.bubbles.bale.BaleFactory;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.board.BoardProperties;
+import edu.brown.cs.bubbles.board.BoardThreadPool;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaBubbleArea;
+import edu.brown.cs.bubbles.buda.BudaConstants;
+import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
-
-import edu.brown.cs.ivy.petal.*;
+import edu.brown.cs.ivy.petal.PetalArcDefault;
+import edu.brown.cs.ivy.petal.PetalEditor;
+import edu.brown.cs.ivy.petal.PetalLayoutMethod;
+import edu.brown.cs.ivy.petal.PetalLevelLayout;
+import edu.brown.cs.ivy.petal.PetalModelDefault;
+import edu.brown.cs.ivy.petal.PetalNode;
+import edu.brown.cs.ivy.petal.PetalNodeDefault;
+import edu.brown.cs.ivy.petal.PetalUndoSupport;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.xml.IvyXml;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.geom.Rectangle2D;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.Scrollable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Segment;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.Rectangle2D;
-import java.io.*;
-import java.util.*;
-import java.util.List;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 
 
@@ -520,13 +561,13 @@ private class HistoryGather implements Runnable {
       BvcrFileVersion cur = loadVersionData();
       setupRegions();
       if (version_set == null || version_set.isEmpty()) return;
-
+   
       HistoryMap hmap = loadVersionDifferences(cur);
       HistoryNode root = buildHistory(hmap);
       List<LineData> lines = getLineHistory(root);
-
+   
       for (HistoryCallback cb : history_callbacks) {
-	 cb.handleFileHistory(root,lines);
+         cb.handleFileHistory(root,lines);
        }
     }
 

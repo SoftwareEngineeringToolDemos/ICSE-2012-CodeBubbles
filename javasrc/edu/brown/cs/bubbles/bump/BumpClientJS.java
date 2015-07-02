@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              BumpClientJS.java                                               */
-/*                                                                              */
-/*      BUbbles Mint Partnership main class for using Node/JS                   */
-/*                                                                              */
+/*										*/
+/*		BumpClientJS.java						*/
+/*										*/
+/*	BUbbles Mint Partnership main class for using Node/JS			*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 /* SVN: $Id$ */
@@ -32,8 +32,7 @@ import javax.swing.JOptionPane;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 class BumpClientJS extends BumpClient
@@ -41,28 +40,28 @@ class BumpClientJS extends BumpClient
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
 private boolean 	nobase_starting;
-   
+
 private static String [] nobase_libs = new String [] {
    "caja.jar",
 };
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Constructors                                                            */
-/*                                                                              */
+/*										*/
+/*	Constructors								*/
+/*										*/
 /********************************************************************************/
 
 BumpClientJS()
 {
    nobase_starting = false;
-   
+
    mint_control.register("<NOBASE SOURCE='NOBASE' TYPE='_VAR_0' />",new IDEHandler());
 }
 
@@ -95,7 +94,7 @@ BumpClientJS()
       if (nobase_starting) return;
       nobase_starting = true;
     }
-   
+
    ensureRunning();
 }
 
@@ -108,20 +107,19 @@ private void ensureRunning()
    if (BoardSetup.getSetup().getRunMode() == BoardConstants.RunMode.CLIENT) {
       BoardLog.logE("BUMP","Client mode with no Node/JS Back End found");
       JOptionPane.showMessageDialog(null,
-            "Server must be running and accessible before client can be run",
-            "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
+	    "Server must be running and accessible before client can be run",
+	    "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
       System.exit(1);
     }
-   
+
    String ws = board_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
-   
+
    String cls = "edu.brown.cs.bubbles.nobase.NobaseMain";
-   
+
    List<String> argl = new ArrayList<String>();
    argl.add("java");
-   // argl.add("-Xmx1024m");
    argl.add("-Dedu.brown.cs.bubbles.MINT=" + mint_name);
-   
+
    String cp = System.getProperty("java.class.path");
    for (String s : nobase_libs) {
       String lib = BoardSetup.getSetup().getLibraryPath(s);
@@ -131,23 +129,29 @@ private void ensureRunning()
     }
    argl.add("-cp");
    argl.add(cp);
-   
+
    File f1 = BoardSetup.getSetup().getRootDirectory();
    argl.add("-Dedu.brown.cs.bubbles.nobase.ROOT=" + f1.getAbsolutePath());
-   
+
+   String eopt = board_properties.getProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS);
+   if (eopt != null) {
+      StringTokenizer tok = new StringTokenizer(eopt," ");
+      while (tok.hasMoreTokens()) argl.add(tok.nextToken());
+   }
+
    argl.add(cls);
    if (ws != null) {
       argl.add("-ws");
       argl.add(ws);
     }
-   
+
    String run = null;
    for (String s : argl) {
       if (run == null) run = s;
       else run += " " + s;
     }
    BoardLog.logE("BUMP","RUN: " + run);
-   
+
    try {
       IvyExec ex = new IvyExec(argl,null,IvyExec.ERROR_OUTPUT);
       boolean eok = false;
@@ -166,8 +170,8 @@ private void ensureRunning()
 	 if (!ex.isRunning()) {
 	    BoardLog.logE("BUMP","Problem starting javascript back end");
 	    JOptionPane.showMessageDialog(null,
-                  "Node/JS (Nobase) could not be started.",
-                  "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
+		  "Node/JS (Nobase) could not be started.",
+		  "Bubbles Setup Problem",JOptionPane.ERROR_MESSAGE);
 	    System.exit(1);
 	  }
        }
@@ -184,7 +188,7 @@ private void ensureRunning()
 
 
 
-}       // end of class BumpClientJS
+}	// end of class BumpClientJS
 
 
 

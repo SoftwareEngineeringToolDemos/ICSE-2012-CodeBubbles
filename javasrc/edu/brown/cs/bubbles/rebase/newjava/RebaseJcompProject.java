@@ -28,12 +28,12 @@ import edu.brown.cs.bubbles.rebase.*;
 import edu.brown.cs.bubbles.rebase.RebaseConstants.RebaseProjectSemantics;
 
 import edu.brown.cs.ivy.jcomp.*;
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.jdt.core.dom.*;
 
+import java.io.File;
 import java.util.*;
-import java.io.*;
 
 
 

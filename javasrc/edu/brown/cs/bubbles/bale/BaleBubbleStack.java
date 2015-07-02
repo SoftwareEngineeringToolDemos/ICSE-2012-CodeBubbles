@@ -37,9 +37,9 @@ import edu.brown.cs.bubbles.buss.*;
 import javax.swing.text.Position;
 
 import java.awt.*;
+import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.io.File;
 
 
 class BaleBubbleStack implements BaleConstants, BudaConstants, BussConstants
@@ -80,7 +80,7 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 	    break;
 	 case FIELD :
 	 case ENUM_CONSTANT :
-         case GLOBAL :
+	 case GLOBAL :
 	    key = bl.getSymbolName();
 	    int idx = key.lastIndexOf(".");
 	    key = key.substring(0,idx+1) + ".<FIELDS>";
@@ -102,6 +102,9 @@ static void createBubbles(Component src,Position p,Point pt,boolean near,
 	 case MODULE :
 	    key = bl.getSymbolName();
 	    key = key + ".<PREFIX>";
+	    break;
+	 case UNKNOWN :
+	    key = f.getPath() + ".<FILE>";
 	    break;
        }
       if (key != null) {
@@ -141,6 +144,7 @@ private boolean 			place_near;
 private int				title_width;
 private Map<String,List<BumpLocation>>	location_set;
 private BudaLinkStyle			link_style;
+private BudaBubbleArea                  bubble_area;
 
 private static final int DEFAULT_TITLE_WIDTH = 150;
 private static final int DEFAULT_CONTENT_WIDTH = 300;
@@ -164,6 +168,7 @@ private BaleBubbleStack(Component src,Position p,Point pt,boolean near,BudaLinkS
    title_width = 0;
    place_near = near;
    link_style = link;
+   bubble_area = BudaRoot.findBudaBubbleArea(src);
 }
 
 
@@ -195,7 +200,7 @@ private void setupStack(BudaLinkStyle link)
 	    break;
 	 case FIELD :
 	 case ENUM_CONSTANT :
-         case GLOBAL :
+	 case GLOBAL :
 	    FieldStackEntry fe = new FieldStackEntry(locs);
 	    entries.add(fe);
 	    break;
@@ -214,6 +219,10 @@ private void setupStack(BudaLinkStyle link)
 	 case MODULE :
 	    TypeStackEntry te = new TypeStackEntry(locs);
 	    entries.add(te);
+	    break;
+	 case UNKNOWN :
+	    FileStackEntry fileent = new FileStackEntry(locs);
+	    entries.add(fileent);
 	    break;
 	 default :
 	    createBubble(source_bubble,source_position,source_point,false,loc0,true,link);
@@ -298,7 +307,6 @@ private abstract class GenericStackEntry implements BussEntry {
 
    @Override public Component getCompactComponent()	{ return compact_fragment; }
 
-
    @Override public Component getExpandComponent() {
       if (full_fragment == null) full_fragment = createFullFragment();
       return full_fragment;
@@ -308,7 +316,10 @@ private abstract class GenericStackEntry implements BussEntry {
    @Override public BudaBubble getBubble() {
       if (item_bubble == null) {
 	 def_location.update();
-	 item_bubble = createBubble(source_bubble,source_position,source_point,false,def_location,false,BudaLinkStyle.NONE);
+	 Component c = source_bubble;
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(source_bubble);
+	 if (bba == null) c = bubble_area;
+	 item_bubble = createBubble(c,source_position,source_point,false,def_location,false,BudaLinkStyle.NONE);
        }
       if (item_bubble != null && item_bubble.getContentPane() != null) {
 	 item_bubble.getContentPane().repaint();
@@ -404,6 +415,33 @@ private class InitializerStackEntry extends GenericStackEntry {
 
 
 
+private class FileStackEntry extends GenericStackEntry {
+
+   private String file_name;
+
+   FileStackEntry(List<BumpLocation> locs) {
+      super(locs);
+      file_name = def_location.getFile().getPath();
+      int idx = file_name.lastIndexOf(".");
+      if (idx > 0) file_name = file_name.substring(0,idx);
+    }
+
+   @Override public String getEntryName() {
+      return file_name + ".<FILE>";
+    }
+
+   @Override protected BaleFragmentEditor createFullFragment() {
+      BaleFragmentEditor ed = BaleFactory.getFactory().createFileEditor(
+	 def_location.getProject(),def_location.getFile(),null);
+      ed.setInitialSize(new Dimension(BALE_STACK_INITIAL_WIDTH,BALE_STACK_INITIAL_HEIGHT));
+      return ed;
+    }
+
+}	// end of inner class FileStackEntry
+
+
+
+
 private class MainProgramStackEntry extends GenericStackEntry {
 
    private String class_name;
@@ -427,9 +465,6 @@ private class MainProgramStackEntry extends GenericStackEntry {
     }
 
 }	// end of inner class MainProgramStackEntry
-
-
-
 
 
 

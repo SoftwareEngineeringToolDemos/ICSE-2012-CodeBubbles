@@ -120,7 +120,6 @@ private static class OpenEclipseEditorAction extends TextAction {
 
 
 
-
 }	// end of class BaleEditorKitJava
 
 

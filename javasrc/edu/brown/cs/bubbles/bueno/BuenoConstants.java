@@ -27,7 +27,7 @@ package edu.brown.cs.bubbles.bueno;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaBubbleArea;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import javax.swing.JPanel;
 
@@ -208,6 +208,8 @@ String PROJ_PROP_DIRECTORY = "ProjectDirectory";
 String PROJ_PROP_SOURCE = "ProjectSource";
 String PROJ_PROP_LIBS = "ProjectLibraries";
 String PROJ_PROP_LINKS = "ProjectLinks";
+String PROJ_PROP_ANDROID = "ProjectAndroid";
+String PROJ_PROP_ANDROID_PKG = "ProjectAndroidPackage";
 
 interface BuenoProjectProps {
 
@@ -240,6 +242,7 @@ interface BuenoProjectCreationControl {
 
    boolean generateClassPathFile();
    boolean generateProjectFile();
+   boolean generateOtherFiles();
    String getPackageName(File f);
 
 }	// end of innter interface BuenoProjectCreationControl

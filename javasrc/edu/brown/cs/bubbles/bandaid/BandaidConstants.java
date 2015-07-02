@@ -57,7 +57,7 @@ String		BANDAID_THREAD = "BandaidMonitorThread";
 
 long		BANDAID_CHECK_TIME = 33;
 long		BANDAID_DISABLE_TIME = 1000;
-long		BANDAID_REPORT_TIME = 1000;
+long		BANDAID_REPORT_TIME = 100;
 
 long		BANDAID_MAX_DELAY = 10000;
 
@@ -103,9 +103,9 @@ int BANDAID_MAX_DEPTH = 128;
 
 String TRACE_DATA_FILE = "tracedata.bandaid";
 
-int     TRACE_ENTER = 0x1;
-int     TRACE_EXIT = 0x2;
-int     TRACE_CONSTRUCTOR = 0x4;
+int	TRACE_ENTER = 0x1;
+int	TRACE_EXIT = 0x2;
+int	TRACE_CONSTRUCTOR = 0x4;
 
 
 

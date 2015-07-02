@@ -24,7 +24,7 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 
 class NobaseSymbol implements NobaseConstants, NobaseAst
@@ -39,14 +39,13 @@ class NobaseSymbol implements NobaseConstants, NobaseAst
 
 private String		symbol_name;
 private NobaseValue	symbol_value;
-private NobaseScope	symbol_scope;
 private int		num_assignment;
-private boolean 	is_explicit;
 private String		bubbles_name;
 private NobaseProject	for_project;
 private NobaseFile	for_file;
 private NobaseAst.NobaseAstNode   def_node;
-
+private NobaseScope     def_scope;      // scope of definition, not where defined 
+                                        // might be LOCAL scope for example
 
 
 
@@ -61,13 +60,12 @@ NobaseSymbol(NobaseProject proj,NobaseFile file,NobaseAst.NobaseAstNode def,
 {
    symbol_name = name;
    symbol_value = NobaseValue.createUndefined();
-   symbol_scope = null;
    num_assignment = 0;
-   is_explicit = exp;
    bubbles_name = null;
    for_project = proj;
    for_file = file;
    def_node = def;
+   def_scope = null;
 }
 
 
@@ -90,6 +88,7 @@ String getBubblesName() 		{ return bubbles_name; }
 NobaseProject getProject()		{ return for_project; }
 NobaseFile getFileData()		{ return for_file; }
 NobaseAst.NobaseAstNode getDefNode()	{ return def_node; }
+boolean isAssigned()			{ return num_assignment > 0; }
 
 NameType getNameType()
 {
@@ -98,7 +97,10 @@ NameType getNameType()
      return NameType.FUNCTION;
     }
    else if (qnm == null) {
-      NobaseMain.logE("Name missing bubbles name: " + symbol_name + " " + def_node + " " + for_file);
+      if (!symbol_name.equals("this") && !symbol_name.equals("undefined")) {
+         NobaseMain.logE("Name missing bubbles name: " + symbol_name + " " + def_node + " " + for_file);
+       }
+      return NameType.VARIABLE;
     }
    else {
       int idx = qnm.indexOf(".");
@@ -116,9 +118,14 @@ String getHandle() {
 }
 
 void setValue(NobaseValue typ)		{ symbol_value = typ; }
-void setExplicit()			{ is_explicit = true; }
 void addAssignment()			{ ++num_assignment; }
-void setBubblesName(String nm)		{ bubbles_name = nm; }
+void setBubblesName(String nm)		
+{
+   bubbles_name = nm;
+}
+
+NobaseScope getDefScope()               { return def_scope; }
+void setDefScope(NobaseScope scp)       { def_scope = scp; }
 
 
 
@@ -137,10 +144,12 @@ void outputNameData(NobaseFile rf,IvyXmlWriter xw)
    xw.field("PROJECT",for_project.getName());
    xw.field("PATH",rf.getFile().getPath());
    xw.field("QNAME",getBubblesName());
-   xw.field("JSTYPE",symbol_value.getType().getName());
+   if (symbol_value.getType() != null) {
+      xw.field("JSTYPE",symbol_value.getType().getName());
+    }
    xw.field("TYPE",getExternalTypeName());
-   int spos = an.getStartPosition();
-   int epos = an.getEndPosition();
+   int spos = an.getStartPosition(rf);
+   int epos = an.getEndPosition(rf);
    xw.field("STARTOFFSET",spos);
    xw.field("LENGTH",epos-spos);
    xw.field("ENDOFFSET",epos);
@@ -154,7 +163,7 @@ void outputFullName(IvyXmlWriter xw)
 {
    xw.begin("FULLYQUALIFIEDNAME");
    xw.field("NAME",getBubblesName());
-   xw.field("JSTYPE",symbol_value.getType().getName());
+   if (symbol_value != null) xw.field("JSTYPE",symbol_value.getType().getName());
    xw.field("TYPE",getExternalTypeName());
    xw.end("FULLYQUALIFIEDNAME");
 }
@@ -166,6 +175,16 @@ private String getExternalTypeName()
    if (symbol_value != null) {
       String tnm = symbol_value.getType().getName();
       if (tnm.equalsIgnoreCase("function")) rslt = "Function";
+    }
+   if (rslt.equals("Variable")) {
+      if (bubbles_name == null) rslt = "Local";
+      else {
+	 int idx = bubbles_name.indexOf(".");
+	 if (idx >= 0) {
+	    idx = bubbles_name.indexOf(".",idx+1);
+	    if (idx > 0) rslt = "Local";
+	  }
+       }
     }
    return rslt;
 }

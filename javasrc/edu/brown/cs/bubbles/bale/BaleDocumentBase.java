@@ -42,7 +42,10 @@ import java.util.*;
 
 
 
-abstract class BaleDocumentBase extends BaleDocument implements Document, BaleConstants {
+// abstract class BaleDocumentBase extends BaleDocument implements Document, BaleConstants {
+abstract class BaleDocumentBase extends BaleHistory.BaleAbstractDocument
+	 implements Document, BaleConstants
+{
 
 
 
@@ -67,14 +70,6 @@ private static final long serialVersionUID = 1;
 
 BaleDocumentBase()
 {
-   this(new GapContent(1024));
-}
-
-
-protected BaleDocumentBase(AbstractDocument.Content cnt)
-{
-   super(cnt);
-
    // known_positions might be used and hence set in super call
    if (known_positions == null) known_positions = new WeakHashMap<BalePosition,Object>();
 }

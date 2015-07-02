@@ -24,23 +24,24 @@
 
 package edu.brown.cs.bubbles.rebus;
 
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bass.*;
-import edu.brown.cs.bubbles.bale.*;
+import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import edu.brown.cs.ivy.mint.*;
 
-import java.awt.event.*;
-import java.awt.Point;
-import java.awt.Component;
-
 import javax.swing.*;
-import javax.swing.AbstractAction;
 
-import java.util.*;
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.*;
 
 
 

@@ -24,11 +24,12 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
-import java.io.*;
+import java.io.File;
 
 class NobasePathSpec implements NobaseConstants
 {

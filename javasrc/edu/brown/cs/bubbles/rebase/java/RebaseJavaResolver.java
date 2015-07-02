@@ -709,51 +709,51 @@ private class RefPass extends ASTVisitor {
    private void lookupMethod(RebaseJavaType bt,List<RebaseJavaType> atyp,ASTNode n,SimpleName nm,String id) {
       RebaseJavaType mtyp = null;
       try {
-	 mtyp = RebaseJavaType.createMethodType(null,atyp,false);
+         mtyp = RebaseJavaType.createMethodType(null,atyp,false);
        }
       catch (Throwable t) {
-	 System.err.println("PROBLEM CREATING METHOD TYPE: " + t);
-	 System.err.println("CASE: " + bt + " " + nm + " " + n);
-	 t.printStackTrace();
-	 mtyp = findType(TYPE_ERROR);
+         System.err.println("PROBLEM CREATING METHOD TYPE: " + t);
+         System.err.println("CASE: " + bt + " " + nm + " " + n);
+         t.printStackTrace();
+         mtyp = findType(TYPE_ERROR);
        }
-
+   
       if (id == null && nm != null) id = nm.getIdentifier();
-
+   
       RebaseJavaSymbol js = null;
       if (bt != null) js = callLookupMethod(bt,id,mtyp);
       if (js != null) {
-	 if (nm != null) RebaseJavaAst.setReference(nm,js);
-	 RebaseJavaAst.setReference(n,js);
-	 RebaseJavaType rt = js.getType().getBaseType();
-	 if (rt == null) rt = findType(TYPE_ERROR);
-	 if (rt.isParameterizedType()) {
-	    boolean usesvar = false;
-	    for (RebaseJavaType prt : rt.getComponents()) {
-	       if (prt.isTypeVariable()) usesvar = true;
-	     }
-	    if (usesvar) {
-	       rt = rt.getBaseType();
-	     }
-	  }
-	 if (n instanceof ClassInstanceCreation) {
-	    ClassInstanceCreation cic = (ClassInstanceCreation) n;
-	    RebaseJavaAst.setExprType(n,RebaseJavaAst.getJavaType(cic.getType()));
-	  }
-	 else RebaseJavaAst.setExprType(n,rt);
+         if (nm != null) RebaseJavaAst.setReference(nm,js);
+         RebaseJavaAst.setReference(n,js);
+         RebaseJavaType rt = js.getType().getBaseType();
+         if (rt == null) rt = findType(TYPE_ERROR);
+         if (rt.isParameterizedType()) {
+            boolean usesvar = false;
+            for (RebaseJavaType prt : rt.getComponents()) {
+               if (prt.isTypeVariable()) usesvar = true;
+             }
+            if (usesvar) {
+               rt = rt.getBaseType();
+             }
+          }
+         if (n instanceof ClassInstanceCreation) {
+            ClassInstanceCreation cic = (ClassInstanceCreation) n;
+            RebaseJavaAst.setExprType(n,RebaseJavaAst.getJavaType(cic.getType()));
+          }
+         else RebaseJavaAst.setExprType(n,rt);
        }
       else {
-	 RebaseJavaAst.setExprType(n,findType(TYPE_ERROR));
+         RebaseJavaAst.setExprType(n,findType(TYPE_ERROR));
        }
     }
 
    private RebaseJavaSymbol callLookupMethod(RebaseJavaType bt,String id,RebaseJavaType mtyp) {
       try {
-	 return bt.lookupMethod(type_data,id,mtyp);
+         return bt.lookupMethod(type_data,id,mtyp);
        }
       catch (Throwable t) {
-	 System.err.println("S6: PROBLEM LOOKING UP " + bt + " " + id + " " + mtyp);
-	 return null;
+         System.err.println("S6: PROBLEM LOOKING UP " + bt + " " + id + " " + mtyp);
+         return null;
        }
     }
 

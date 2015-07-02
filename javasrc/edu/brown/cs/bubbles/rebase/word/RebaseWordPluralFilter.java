@@ -25,7 +25,7 @@
 package edu.brown.cs.bubbles.rebase.word;
 
 
-import java.util.*;
+import java.util.HashMap;
 
 class RebaseWordPluralFilter implements RebaseWordConstants
 {

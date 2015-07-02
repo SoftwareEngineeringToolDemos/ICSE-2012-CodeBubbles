@@ -24,13 +24,16 @@
 
 package edu.brown.cs.bubbles.bueno;
 
-import edu.brown.cs.bubbles.bump.*;
 import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.regex.*;
 import java.io.*;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class BuenoValidator implements BuenoConstants

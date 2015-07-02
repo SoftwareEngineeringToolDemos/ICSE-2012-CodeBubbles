@@ -24,17 +24,18 @@
 
 package edu.brown.cs.bubbles.bucs;
 
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingText;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.*;
 
-import java.util.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 

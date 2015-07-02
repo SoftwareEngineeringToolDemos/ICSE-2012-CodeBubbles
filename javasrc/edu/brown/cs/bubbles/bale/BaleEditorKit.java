@@ -69,6 +69,8 @@ private Action []	bale_actions;
 
 private static final Action undo_action = BurpHistory.getUndoAction();
 private static final Action redo_action = BurpHistory.getRedoAction();
+private static final Action undo_selection_action = BurpHistory.getUndoSelectionAction();
+private static final Action redo_selection_action = BurpHistory.getRedoSelectionAction();
 private static final Action tab_action = new TabAction();
 private static final Action newline_action = new NewlineAction();
 private static final Action default_key_action = new DefaultKeyAction();
@@ -122,6 +124,7 @@ private static final Action quick_fix_action = new QuickFixAction();
 private static final Action marquis_comment_action = new CommentAction("MarquisComment",BuenoType.NEW_MARQUIS_COMMENT);
 private static final Action block_comment_action = new CommentAction("BlockComment",BuenoType.NEW_BLOCK_COMMENT);
 private static final Action javadoc_comment_action = new CommentAction("JavadocComment",BuenoType.NEW_JAVADOC_COMMENT);
+private static final Action fix_errors_action = new FixErrorsAction();
 
 
 
@@ -136,6 +139,8 @@ static {
 private static final Action [] local_actions = {
    undo_action,
    redo_action,
+   undo_selection_action,
+   redo_selection_action,
    tab_action,
    newline_action,
    default_key_action,
@@ -189,7 +194,8 @@ private static final Action [] local_actions = {
    quick_fix_action,
    marquis_comment_action,
    block_comment_action,
-   javadoc_comment_action
+   javadoc_comment_action,
+   fix_errors_action
 };
 
 
@@ -207,8 +213,14 @@ static {
 
 
 private static final KeyItem [] key_defs = new KeyItem[] {
-   new KeyItem("menu Z",undo_action),
+   new KeyItem("menu C",DefaultEditorKit.copyAction),
+      new KeyItem("menu V",DefaultEditorKit.pasteAction),
+      new KeyItem("menu X",DefaultEditorKit.cutAction),
+
+      new KeyItem("menu Z",undo_action),
       new KeyItem("menu Y",redo_action),
+      new KeyItem("menu shift Z",undo_selection_action),
+      new KeyItem("menu shift Y",redo_selection_action),
       new KeyItem("BACK_SPACE",backspace_action),
       new KeyItem("TAB",tab_action),
       new KeyItem("shift TAB",tab_action),      // should be separate action
@@ -247,6 +259,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("menu B",select_paragraph_action),
       new KeyItem("menu shift F",format_action),
       new KeyItem("alt B",expand_action),
+      new KeyItem("menu shift P",fix_errors_action),
 
       // new KeyItem("menu SPACE",autocomplete_action),
       new KeyItem("ctrl SPACE",autocomplete_action),
@@ -258,9 +271,11 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("F4",goto_reference_action),
       new KeyItem("menu F4",goto_search_action),
       new KeyItem("shift F4",goto_search_action),
-      new KeyItem("menu shift C",goto_type_action),
+      new KeyItem("menu shift H",goto_type_action),
       new KeyItem("menu shift G",goto_reference_action),
       new KeyItem("menu shift T",class_search_action),
+      new KeyItem("menu shift X",bud_action),
+      new KeyItem("menu shift C",fragment_action),
       new KeyItem("alt X",bud_action),
       new KeyItem("alt C",fragment_action),
 
@@ -268,7 +283,7 @@ private static final KeyItem [] key_defs = new KeyItem[] {
       new KeyItem("shift alt Q",marquis_comment_action),
       new KeyItem("shift alt J",javadoc_comment_action),
 
-      new KeyItem("menu 1",quick_fix_action)
+      new KeyItem("menu 1",quick_fix_action),
 };
 
 
@@ -277,7 +292,9 @@ private static Keymap	bale_keymap;
 
 static {
    Keymap dflt = JTextComponent.getKeymap(JTextComponent.DEFAULT_KEYMAP);
+   // this no longer works.  The input bindings are in an input map
    SwingText.fixKeyBindings(dflt);
+
    bale_keymap = JTextComponent.addKeymap("BALE",dflt);
    for (KeyItem ka : key_defs) {
       ka.addToKeyMap(bale_keymap);
@@ -1298,46 +1315,46 @@ private static class CommentLinesAction extends TextAction {
       BaleEditorPane be = getBaleEditor(e);
       if (!checkEditor(be)) return;
       BaleDocument bd = be.getBaleDocument();
-
+   
       bd.baleWriteLock();
       try {
-	 int soff = be.getSelectionStart();
-	 int eoff = be.getSelectionEnd();
-
-	 int slno = bd.findLineNumber(soff);
-	 int elno = slno;
-	 if (eoff != soff) elno = bd.findLineNumber(eoff);
-	 if (elno < slno) {
-	    int x = elno;
-	    elno = slno;
-	    slno = x;
-	  }
-
-	 LinkedList<Integer> fixups = new LinkedList<Integer>();
-	 for (int i = elno; i >= slno; --i) {
-	    int loff = bd.findLineOffset(i);
-	    BaleElement ce = bd.getCharacterElement(loff);
-	    while (ce.isEmpty() && !ce.isComment() && !ce.isEndOfLine()) {
-	       ce = ce.getNextCharacterElement();
-	     }
-	    int noff = ce.getStartOffset();
-
-	    try {
-	       if (ce.getName().equals("LineComment")) {
-		  bd.remove(noff,2);
-		  fixups.addFirst(i);
-		}
-	       else {
-		  bd.insertString(noff,"// ",null);
-		}
-	     }
-	    catch (BadLocationException ex) {
-	       return;
-	     }
-	  }
-	 for (Integer iv : fixups) {
-	    bd.fixLineIndent(iv);
-	 }
+         int soff = be.getSelectionStart();
+         int eoff = be.getSelectionEnd();
+   
+         int slno = bd.findLineNumber(soff);
+         int elno = slno;
+         if (eoff != soff) elno = bd.findLineNumber(eoff);
+         if (elno < slno) {
+            int x = elno;
+            elno = slno;
+            slno = x;
+          }
+   
+         LinkedList<Integer> fixups = new LinkedList<Integer>();
+         for (int i = elno; i >= slno; --i) {
+            int loff = bd.findLineOffset(i);
+            BaleElement ce = bd.getCharacterElement(loff);
+            while (ce.isEmpty() && !ce.isComment() && !ce.isEndOfLine()) {
+               ce = ce.getNextCharacterElement();
+             }
+            int noff = ce.getStartOffset();
+   
+            try {
+               if (ce.getName().equals("LineComment")) {
+        	  bd.remove(noff,2);
+        	  fixups.addFirst(i);
+        	}
+               else {
+        	  bd.insertString(noff,"// ",null);
+        	}
+             }
+            catch (BadLocationException ex) {
+               return;
+             }
+          }
+         for (Integer iv : fixups) {
+            bd.fixLineIndent(iv);
+         }
        }
       finally { bd.baleWriteUnlock(); }
     }
@@ -1882,7 +1899,7 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       BaleEditorPane target = getBaleEditor(e);
       BaleDocument bd = target.getBaleDocument();
       if (!checkEditor(target)) return;
-   
+
       int spos = target.getSelectionStart();
       int epos = target.getSelectionEnd();
       int slno = bd.findLineNumber(spos);
@@ -1891,51 +1908,51 @@ private static class ExtractMethodAction extends TextAction implements BuenoCons
       epos = bd.findLineOffset(elno+1)-1;
       String cnts;
       try {
-         cnts = bd.getText(spos,epos-spos);
+	 cnts = bd.getText(spos,epos-spos);
        }
       catch (BadLocationException ex) {
-         BoardLog.logE("BALE","Problem getting extract text",ex);
-         return;
+	 BoardLog.logE("BALE","Problem getting extract text",ex);
+	 return;
        }
-   
+
       BudaBubble bbl = BudaRoot.findBudaBubble(target);
       if (bbl == null) return;
-   
+
       String fnm = bd.getFragmentName();
       String aft = null;
       String cls = null;
       switch (bd.getFragmentType()) {
-         case FILE :
-         case NONE :
-            return;
-         case METHOD :
-            aft = fnm;
-            cls = fnm;
-            int idx1 = cls.indexOf("(");
-            if (idx1 >= 0) cls = cls.substring(0,idx1);
-            idx1 = cls.lastIndexOf(".");
-            if (idx1 >= 0) cls = cls.substring(0,idx1);
-            break;
-         case FIELDS :
-         case STATICS :
-         case MAIN :
-         case HEADER :
-            cls = fnm;
-            int idx2 = cls.lastIndexOf(".");
-            cls = cls.substring(0,idx2);
-            break;
-         default:
-            break;
+	 case FILE :
+	 case NONE :
+	    return;
+	 case METHOD :
+	    aft = fnm;
+	    cls = fnm;
+	    int idx1 = cls.indexOf("(");
+	    if (idx1 >= 0) cls = cls.substring(0,idx1);
+	    idx1 = cls.lastIndexOf(".");
+	    if (idx1 >= 0) cls = cls.substring(0,idx1);
+	    break;
+	 case FIELDS :
+	 case STATICS :
+	 case MAIN :
+	 case HEADER :
+	    cls = fnm;
+	    int idx2 = cls.lastIndexOf(".");
+	    cls = cls.substring(0,idx2);
+	    break;
+	 default:
+	    break;
        }
-   
+
       if (cls == null) return;
-   
+
       BuenoProperties props = new BuenoProperties();
       props.put(BuenoConstants.BuenoKey.KEY_CONTENTS,cnts);
       BuenoLocation loc = BuenoFactory.getFactory().createLocation(bd.getProjectName(),cls,aft,true);
-   
+
       BuenoFactory.getFactory().createMethodDialog(bbl,null,props,loc,
-        					      "Enter Signature of Extracted Method",this);
+						      "Enter Signature of Extracted Method",this);
     }
 
    @Override public void createBubble(String proj,String name,BudaBubbleArea bba,Point p) {
@@ -2651,6 +2668,32 @@ private static class CommentLocation extends BuenoLocation {
 }	// end of inner class CommentLocation
 
 
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Error fix actions         						*/
+/*										*/
+/********************************************************************************/
+
+private static class FixErrorsAction extends TextAction {
+   
+   private static final long serialVersionUID = 1;
+   
+   FixErrorsAction() {
+      super("Fix Errors in Region");
+    }
+   
+   @Override public void actionPerformed(ActionEvent e) {
+      BaleEditorPane be = getBaleEditor(e);
+      if (!checkEditor(be)) return;
+      int soff = be.getSelectionStart();
+      int eoff = be.getSelectionEnd();
+      BaleCorrector.fixErrorsInRegions(be.getBaleDocument(),soff,eoff);
+    }
+   
+}	// end of inner class CommentAction
 
 
 /********************************************************************************/

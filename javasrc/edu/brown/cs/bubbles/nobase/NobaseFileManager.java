@@ -24,10 +24,12 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 
 class NobaseFileManager implements NobaseConstants

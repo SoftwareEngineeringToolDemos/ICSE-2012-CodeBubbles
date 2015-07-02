@@ -42,10 +42,10 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.event.*;
 import java.util.*;
 import java.util.List;
 

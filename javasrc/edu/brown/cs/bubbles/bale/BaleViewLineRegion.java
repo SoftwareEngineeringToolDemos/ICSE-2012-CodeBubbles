@@ -25,7 +25,8 @@
 
 package edu.brown.cs.bubbles.bale;
 
-import edu.brown.cs.bubbles.buda.*;
+import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaRoot;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;

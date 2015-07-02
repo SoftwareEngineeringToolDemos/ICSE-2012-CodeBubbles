@@ -28,7 +28,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 class RebaseRepoGithub extends RebaseRepo
@@ -149,7 +150,7 @@ private class GithubFileSource extends BaseFileSource implements RebaseSource {
          
          file_name = "/REBUS/" + project_name + "/GITHUB/" + rem;
          
-         s6_source = "GITHUB:/" + href;
+         s6_source = "GITHUB:" + href;
        }
       catch (MalformedURLException e) {
          file_href = null;

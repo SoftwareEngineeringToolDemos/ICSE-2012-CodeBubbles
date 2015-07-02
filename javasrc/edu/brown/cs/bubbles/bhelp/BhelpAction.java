@@ -411,11 +411,27 @@ private static class FindBackgroundAction extends BhelpAction {
        }
 
       Point pts = new Point(pt);
+      boolean fnd = false;
+      
+      for (int i = 0; i < 200; ++i) {
+         pt.x = pts.x+i;
+         pt.y = pts.y;
+         if (checkPoint(ctx,pt)) { fnd = true; break; } 
+         pt.x = pts.x-i;
+         pt.y = pts.y;
+         if (checkPoint(ctx,pt)) { fnd = true; break; } 
+         pt.x = pts.x;
+         pt.y = pts.y+i;
+         if (checkPoint(ctx,pt)) { fnd = true; break; }
+         pt.x = pts.x;
+         pt.y = pts.y-i;
+         if (checkPoint(ctx,pt)) { fnd = true; break; }
+       }
+      
       int delta = 1;		// pixel delta for search
       int incr = 1;		// current increment
-      for (int i = 0; i < 40000; ++i) {
+      for (int i = 0; !fnd && i < 40000; ++i) {
 	 if (checkPoint(ctx,pt)) break;
-	 boolean fnd = false;
 	 for (int j = 0; j < Math.abs(incr); ++j) {
 	    pt.x += (incr > 0 ? delta : -delta);
 	    if (checkPoint(ctx,pt)) { fnd = true; break; }

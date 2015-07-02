@@ -21,6 +21,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='caja.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='json.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='nashorn.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='asm4.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar'>
 	    <include name='*.jar' />
 	 </fileset>
@@ -31,6 +32,7 @@
 	 <fileset dir='${BUBBLES}/lib/' includes='caja.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='json.jar' />
 	 <fileset dir='${BUBBLES}/lib/' includes='nashorn.jar' />
+	 <fileset dir='${BUBBLES}/lib/' includes='asm4.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.text.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.jface.jar' />
 	 <fileset dir='${BUBBLES}/eclipsejar/' includes='org.eclipse.equinox.common.jar' />
@@ -66,7 +68,7 @@
    </target>
 
    <target name='test' depends='compile'>
-      <java classname='edu.brown.cs.bubbles.nobase.NobaseTest' fork='true'>
+      <java classname='edu.brown.cs.bubbles.nobase.NobaseTest' fork='true' output='test.out' >
 	 <classpath refid='test.classpath' />
       </java>
    </target>

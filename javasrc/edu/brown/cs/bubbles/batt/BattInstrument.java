@@ -101,13 +101,14 @@ void setClasses(String [] clsset)
       s = s.replace('.','/');
       if (isBattClass(s) || isSystemClass(s)) continue;
       user_classes.add(s);
+      // System.err.println("BATTAGENT: ADD CLASS " + s);
     }
 
    for (String s : user_classes) {
       String s1 = s.replace("/",".");
       String s2 = s1.replace("$",".");
       try {
-	 // System.err.println("TRY " + s2);
+	 // System.err.println("BATTAGENT: TRY " + s2);
 	 Class.forName(s2);
        }
       catch (Throwable t) { }
@@ -125,8 +126,9 @@ void setClasses(String [] clsset)
 public byte [] transform(ClassLoader ldr,String name,Class<?> cls,
 			    ProtectionDomain dom,byte [] buf)
 {
-   // System.err.println("BATTAGENT: CHECK " + name + " " + Thread.currentThread().getName());
-   if (Modifier.isAbstract(cls.getModifiers())) return null;
+   // System.err.println("BATTAGENT: CHECK " + name + " " + Thread.currentThread().getName() + " " + cls);
+
+   if (cls != null && Modifier.isAbstract(cls.getModifiers())) return null;
 
    if (user_classes == null) {
       if (isBattClass(name) || isSystemClass(name)) return null;
@@ -206,16 +208,22 @@ private boolean isSystemClass(String name)
 private class BattTransformer extends ClassAdapter {
 
    private String super_name;
+   private boolean is_abstract;
 
    BattTransformer(String name,ClassVisitor v) {
       super(v);
       class_name = name;
+      is_abstract = false;
     }
 
    @Override public void visit(int v,int a,String nm,String sgn,String sup,String [] ifc) {
       super.visit(v,a,nm,sgn,sup,ifc);
       super_name = sup;
+      is_abstract = (a & Opcodes.ACC_ABSTRACT) != 0;
     }
+
+   @SuppressWarnings("unused")
+   boolean isAbstract() 		{ return is_abstract; }
 
    @Override public MethodVisitor visitMethod(int acc,String name,String desc,String sgn,
 						 String [] exc) {

@@ -261,6 +261,10 @@ public String getNameHead()
       buf.append(p);
       buf.append(":.");
     }
+   if (p != null && getLocation() != null && getLocation().getFile() != null) {
+      // want to get project-relative path for file at this point and insert any 
+      // needed prefix (e.g. /gen)
+   }
    String nh = getNameHead();
    if (nh != null) {
       buf.append(nh);

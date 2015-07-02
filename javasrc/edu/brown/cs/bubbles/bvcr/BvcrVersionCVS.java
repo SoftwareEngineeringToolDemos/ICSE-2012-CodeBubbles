@@ -111,12 +111,12 @@ String getRepositoryName()
 
 void getDifferences(BvcrDifferenceSet ds)
 {
-   String cmd = cvs_command  + " diff";
+   String cmd = cvs_command  + " diff -R -b";
 
    String v0 = ds.getStartVersion();
+   String v1 = ds.getEndVersion();
    if (v0 != null) {
       cmd += " -r " + v0;
-      String v1 = ds.getEndVersion();
       if (v1 != null) cmd += " -r " + v1;
     }
 

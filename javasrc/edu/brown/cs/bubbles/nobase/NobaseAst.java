@@ -25,7 +25,7 @@
 package edu.brown.cs.bubbles.nobase;
 
 
-import java.util.*;
+import java.util.List;
 
 
 interface NobaseAst extends NobaseConstants
@@ -46,19 +46,21 @@ interface NobaseAst extends NobaseConstants
       void clearResolve();
       void accept(NobaseAstVisitor visitor);
    
-      int getStartLine();
-      int getStartChar();
-      int getEndLine();
-      int getEndChar();
-      int getStartPosition();
-      int getEndPosition();
-      int getExtendedStartPosition();
-      int getExtendedEndPosition();
+      int getStartLine(NobaseFile nf);
+      int getStartChar(NobaseFile nf);
+      int getEndLine(NobaseFile nf);
+      int getEndChar(NobaseFile nf);
+      int getStartPosition(NobaseFile nf);
+      int getEndPosition(NobaseFile nf);
+      int getExtendedStartPosition(NobaseFile nf);
+      int getExtendedEndPosition(NobaseFile nf);
    
       NobaseAstNode getParent();
       int getNumChildren();
       NobaseAstNode getChild(int i);
       int getIndexInParent();
+      
+      String dumpTree(NobaseFile nf);
     }
 
    //	Group nodes
@@ -195,7 +197,9 @@ interface NobaseAst extends NobaseConstants
 
    interface RegexpLiteral extends Expression { }
 
-   interface ReturnStatement extends Statement { }
+   interface ReturnStatement extends Statement {
+      Expression getExpression();
+   }
 
    interface SetterProperty extends NobaseAstNode { }
 

@@ -167,7 +167,14 @@ BassSearchBox(BassTreeModel mdl,boolean common)
    active_options.addTreeExpansionListener(this);
 
    SearchBoxCellRenderer renderer = new SearchBoxCellRenderer();
-   active_options.setCellRenderer(renderer);
+   try {
+      active_options.setCellRenderer(renderer);
+    }
+   catch (Exception e) {
+      // can fail due to timing issues
+      active_options.setCellRenderer(renderer);
+    }
+
    active_options.setBorder(null);
 
    if (is_common && search_text != null) {
@@ -587,13 +594,13 @@ private BudaBubble createPreviewBubble(BassName bn, int xpos, int ypos)
 /*										*/
 /********************************************************************************/
 
-void handlePopupMenu(MouseEvent e)
+boolean handlePopupMenu(MouseEvent e)
 {
    Point pt = new Point(e.getXOnScreen(), e.getYOnScreen());
    SwingUtilities.convertPointFromScreen(pt, active_options);
    TreePath tp = active_options.getPathForLocation(pt.x, pt.y);
 
-   if (tp == null) return;
+   if (tp == null) return false;
 
    Rectangle rowrect = active_options.getPathBounds(tp);
 
@@ -617,7 +624,7 @@ void handlePopupMenu(MouseEvent e)
 
    Point where = new Point(rowrect.x,rowrect.y+rowrect.height);
    BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(active_options);
-   if (bba == null) return;
+   if (bba == null) return false;
 
    Point bbawhere = SwingUtilities.convertPoint(active_options,where,bba);
    JPopupMenu menu = new JPopupMenu();
@@ -628,9 +635,11 @@ void handlePopupMenu(MouseEvent e)
    BassFactory bf = BassFactory.getFactory();
    bf.addButtons(this,bbawhere,menu,fnm,forname);
 
-   if (menu.getComponentCount() == 0) return;
+   if (menu.getComponentCount() == 0) return false;
 
    menu.show(active_options,where.x,where.y);
+
+   return true;
 }
 
 
@@ -726,7 +735,11 @@ private static class AbortAction extends AbstractAction {
    @Override public void actionPerformed(ActionEvent e) {
       BoardMetrics.noteCommand("BASS","AbortSearch");
       BudaBubble bb = BudaRoot.findBudaBubble((Component) e.getSource());
-      if (bb != null) bb.setVisible(false);
+      if (bb != null) {
+	 BudaBubbleArea bba = BudaRoot.findBudaBubbleArea(bb);
+	 bba.userRemoveBubble(bb);
+	 // bb.setVisible(false);
+      }
     }
 
 }	// end of inner class AbortAction
@@ -1138,7 +1151,10 @@ private static class SearchBoxCellRenderer extends DefaultTreeCellRenderer imple
       BassTreeBase btb = (BassTreeBase) value;
 
       // System.err.println("BASS RENDER " + value);
-      label.setText(value.toString());
+      String txt = value.toString();
+      int validx = txt.indexOf("#@");
+      if (validx > 0) txt = txt.substring(validx+1);
+      label.setText(txt);
       label.setFont(tree.getFont());
       label.setOpaque(false);
       String vnm = value.toString();

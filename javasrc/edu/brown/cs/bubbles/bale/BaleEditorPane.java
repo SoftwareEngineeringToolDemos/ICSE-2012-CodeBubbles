@@ -682,7 +682,7 @@ private static class BaleTextUI extends TextUI {
    @Override public void paint(Graphics g,JComponent c) {
       readLock(c);
       try {
-	 base_ui.paint(g,c);
+         base_ui.paint(g,c);
        }
       finally { readUnlock(c); }
     }

@@ -39,6 +39,7 @@ class NobaseScope implements NobaseConstants
 /********************************************************************************/
 
 private Map<String,NobaseSymbol>	defined_names;
+private Map<String,Set<NobaseSymbol>>  all_names;
 private ScopeType			scope_type;
 private NobaseScope			parent_scope;
 private NobaseValue                     object_value;
@@ -59,6 +60,8 @@ NobaseScope(ScopeType typ,NobaseScope par)
    parent_scope = par;
    object_value = null;
    temp_counter = 0;
+   all_names = null;
+   if (typ == ScopeType.FILE) all_names = new HashMap<String,Set<NobaseSymbol>>();
 }
 
 
@@ -84,7 +87,7 @@ void setValue(NobaseValue nv)
 { 
    if (nv == null || object_value == nv) return;
    if (object_value != null) {
-      nv.mergeProperties(object_value);
+      object_value.mergeProperties(nv);
     }
    object_value = nv;
 }
@@ -92,11 +95,64 @@ void setValue(NobaseValue nv)
 NobaseSymbol define(NobaseSymbol sym) 
 {
    if (sym == null) return null;
+   
+   if (scope_type == ScopeType.LOCAL) {
+      return parent_scope.define(sym);
+    }
+   
    NobaseSymbol osym = defined_names.get(sym.getName());
    if (osym != null) return osym;
    defined_names.put(sym.getName(),sym);
+   defineAll(sym);
    return sym;
 }
+
+
+Collection<NobaseSymbol> findAll(String name)
+{
+   if (all_names == null) {
+      if (parent_scope == null) return null;
+      return parent_scope.findAll(name);
+    }
+   return all_names.get(name);
+}
+
+
+
+void defineAll(NobaseSymbol sym)
+{
+  defineAll(sym,sym.getName());
+}
+
+
+
+void defineAll(NobaseSymbol sym,String nm)
+{
+   if (all_names == null) {
+      if (parent_scope != null) parent_scope.defineAll(sym,nm);
+    }
+   else {
+      switch (sym.getNameType()) {
+         case FUNCTION :
+         case VARIABLE :
+            break;
+         case MODULE :
+         case LOCAL :
+            return;
+       }
+      if (nm == null) return;
+      int idx = nm.lastIndexOf(".");
+      if (idx > 0) nm = nm.substring(idx+1);
+      if (NobaseResolver.isGeneratedName(nm)) return;
+      Set<NobaseSymbol> syms = all_names.get(nm);
+      if (syms == null) {
+         syms = new HashSet<NobaseSymbol>(2);
+         all_names.put(nm,syms);
+       }
+      syms.add(sym);
+    }
+}
+
 
 
 void setProperty(String name,NobaseValue nv) 
@@ -112,13 +168,19 @@ NobaseSymbol lookup(String name)
    NobaseSymbol sym = defined_names.get(name);
    if (sym != null) return sym;
    if (parent_scope == null) return null;
+   if (scope_type == ScopeType.MEMBER) return null;
    return parent_scope.lookup(name);
 }
 
 
 NobaseValue lookupValue(String name) 
 {
-   if (name.equals("this") && object_value != null) return getThisValue();
+   NobaseSymbol ns = lookup(name);
+   
+   if (name.equals("this") && object_value != null) { 
+      if (ns == null) return getThisValue();
+      return getThisValue();
+    }
    
    switch (scope_type) {
       case MEMBER :
@@ -132,7 +194,6 @@ NobaseValue lookupValue(String name)
          break;
     }
    
-   NobaseSymbol ns = lookup(name);
    if (ns == null) return null;
    return ns.getValue();
 }
@@ -149,7 +210,8 @@ NobaseScope getDefaultScope()
       case BLOCK :
       case FUNCTION :
       case OBJECT :
-         return parent_scope.getDefaultScope();
+      case LOCAL :
+        return parent_scope.getDefaultScope();
       case FILE :
       case GLOBAL :
          break;

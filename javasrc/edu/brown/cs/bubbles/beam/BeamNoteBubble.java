@@ -173,6 +173,7 @@ BeamNoteBubble(String name,String cnts,BeamNoteAnnotation annot)
    else {
       note_area = new NoteArea(cnts);
       loadNote(false);
+      file_documents.put(note_name,note_area.getDocument());
     }
 
    if (annot != null && annot.getDocumentOffset() < 0) annot = null;

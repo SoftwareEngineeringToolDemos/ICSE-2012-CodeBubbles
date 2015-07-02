@@ -213,23 +213,23 @@ private class Updater implements Runnable {
 
    @Override public void run() {
       if (!annots_ready) {
-	 Element e = BvcrFactory.getFactory().getChangesForFile(for_project,for_file.getPath());
-	 if (e == null) return;
-	 int ctr = 0;
-	 Element cs = IvyXml.getChild(e,"CHANGESET");
-	 for (Element uc : IvyXml.children(cs,"USERCHANGE")) {
-	    String unm = IvyXml.getAttrString(uc,"USER");
-	    BvcrDifferenceFile bdf = new BvcrDifferenceFile(uc);
-	    difference_map.add(for_file,unm,bdf);
-	    ++ctr;
-	  }
-	 if (ctr > 0) {
-	    annots_ready = true;
-	    SwingUtilities.invokeLater(this);
-	  }
+         Element e = BvcrFactory.getFactory().getChangesForFile(for_project,for_file.getPath());
+         if (e == null) return;
+         int ctr = 0;
+         Element cs = IvyXml.getChild(e,"CHANGESET");
+         for (Element uc : IvyXml.children(cs,"USERCHANGE")) {
+            String unm = IvyXml.getAttrString(uc,"USER");
+            BvcrDifferenceFile bdf = new BvcrDifferenceFile(uc);
+            difference_map.add(for_file,unm,bdf);
+            ++ctr;
+          }
+         if (ctr > 0) {
+            annots_ready = true;
+            SwingUtilities.invokeLater(this);
+          }
        }
       else {
-	 setupAnnotations(for_project,for_file);
+         setupAnnotations(for_project,for_file);
        }
     }
 

@@ -33,8 +33,7 @@ import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.swing.SwingSetup;
 
 import javax.swing.*;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
+import javax.swing.event.*;
 import javax.swing.filechooser.FileFilter;
 
 import java.awt.event.*;
@@ -1281,7 +1280,16 @@ private void saveProperties()
 
    String vmargs = system_properties.getProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS);
    if (vmargs == null) {
-      system_properties.setProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS,"-Xmx512m");
+      switch (board_language) {
+	 case JAVA :
+	 case PYTHON :
+	 case REBUS :
+	    system_properties.setProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS,"-Xmx512m");
+	    break;
+	 case JS :
+	    system_properties.setProperty(BOARD_PROP_ECLIPSE_VM_OPTIONS,"-Xmx1536m");
+	    break;
+      }
     }
 
    try {
@@ -1350,11 +1358,12 @@ private static boolean checkEclipseDirectory(File ed)
    if (!execfnd) return false;
 
    File pdf = new File(ed,BOARD_ECLIPSE_PLUGINS);
-   if (!pdf.exists() || !pdf.isDirectory()) {
+   if (!pdf.exists() || !pdf.isDirectory() || !pdf.canWrite()) {
       pdf = new File(ed,BOARD_ECLIPSE_DROPINS);
-      if (!pdf.exists() || !pdf.isDirectory()) return false;
+      if (!pdf.exists() || !pdf.isDirectory() || !pdf.canWrite()) return false;
     }
 
+   boolean havejava = false;
    for (String fnm : pdf.list()) {
       if (fnm.startsWith("org.eclipse.platform_")) {
 	 Pattern p = Pattern.compile("(\\d+\\.\\d+)\\.\\d\\.");
@@ -1368,9 +1377,10 @@ private static boolean checkEclipseDirectory(File ed)
 		}
 	     }
 	  }
-	 break;
       }
+      if (fnm.startsWith("org.eclipse.jdt.core")) havejava = true;
     }
+   if (!havejava) return false;
 
    // check for proper architecture as well
 
@@ -1421,15 +1431,15 @@ private boolean checkInstall()
        }
     }
    catch (IOException e) {
+      BoardLog.logE("BOARD","Problem with jar setup",e);
       install_jar = false;
     }
 
-   // otherwise check for a valid installation
-   if (install_path == null) return false;
-   File ind = new File(install_path);
-   if (!checkInstallDirectory(ind)) return false;
-
    if (!install_jar) {
+      // otherwise check for a valid installation
+      if (install_path == null) return false;
+      File ind = new File(install_path);
+      if (!checkInstallDirectory(ind)) return false;
       checkLibResources();
     }
 
@@ -2068,6 +2078,7 @@ private void restartBubbles()
        }
 
       ProcessBuilder pb = new ProcessBuilder(args);
+      // pb.inheritIO();		// requires Java 1.7 or beyond
       pb.start();
     }
    catch (IOException e) {
@@ -2169,7 +2180,7 @@ private boolean checkDefaultInstallation()
 /*										*/
 /********************************************************************************/
 
-private class SetupDialog implements ActionListener, CaretListener {
+private class SetupDialog implements ActionListener, CaretListener, UndoableEditListener {
 
    private JButton accept_button;
    private JButton install_button;
@@ -2177,8 +2188,12 @@ private class SetupDialog implements ActionListener, CaretListener {
    private boolean result_status;
    private JLabel eclipse_warning;
    private JLabel bubbles_warning;
+   private JTextField eclipse_field;
+   private JTextField bubbles_field;
 
    SetupDialog() {
+      eclipse_field = null;
+      bubbles_field = null;
       SwingGridPanel pnl = new SwingGridPanel();
 
       pnl.beginLayout();
@@ -2188,12 +2203,12 @@ private class SetupDialog implements ActionListener, CaretListener {
 
       switch (board_language) {
 	 case JAVA :
-	    pnl.addFileField("Eclipse Installation Directory",eclipse_directory,
-		  JFileChooser.DIRECTORIES_ONLY,
-		  new EclipseDirectoryFilter(),this,this,null);
+	    eclipse_field = pnl.addFileField("Eclipse Installation Directory",eclipse_directory,
+		     JFileChooser.DIRECTORIES_ONLY,
+		     new EclipseDirectoryFilter(),this,this,null);
 
 	    eclipse_warning = new JLabel("Warning!");  //edited by amc6
-	    eclipse_warning.setToolTipText("Not a valid Eclipse installation directory");
+	    eclipse_warning.setToolTipText("<html>Not a valid <b>Eclipse for Java Developers</b> installation directory.<br>(This should be the directory containing the eclipse binary and the plugins directory.)");
 	    eclipse_warning.setForeground(WARNING_COLOR);
 	    pnl.add(eclipse_warning);
 	    break;
@@ -2212,7 +2227,7 @@ private class SetupDialog implements ActionListener, CaretListener {
       pnl.addSeparator();
 
       if (!install_jar) {
-	 pnl.addFileField("Bubbles Installation Directory",install_path,
+	 bubbles_field = pnl.addFileField("Bubbles Installation Directory",install_path,
 		  JFileChooser.DIRECTORIES_ONLY,
 		  new InstallDirectoryFilter(),this,null);
 	 pnl.add(bubbles_warning);
@@ -2268,7 +2283,28 @@ private class SetupDialog implements ActionListener, CaretListener {
       return result_status;
     }
 
-   private void checkStatus() { 				//edited by amc6
+   private void checkStatus() {
+      if (eclipse_field != null) {
+	 String txt = eclipse_field.getText().trim();
+	 if (txt.length() > 0) {
+	    File ef = new File(txt);
+	    if (!ef.getAbsolutePath().equals(eclipse_directory)) {
+	       eclipse_directory = ef.getAbsolutePath();
+	       has_changed = true;
+	    }
+	 }
+      }
+      if (bubbles_field != null) {
+	 String txt = bubbles_field.getText().trim();
+	 if (txt.length() > 0) {
+	    File inf = new File(txt);
+	    if (!inf.getAbsolutePath().equals(install_path)) {
+	       install_path = inf.getAbsolutePath();
+	       has_changed = true;
+	    }
+	 }
+      }
+
       switch (board_language) {
 	 case JAVA :
 	    if (checkEclipse() && checkPlugin() && (install_jar || checkInstall())) {
@@ -2309,16 +2345,10 @@ private class SetupDialog implements ActionListener, CaretListener {
    @Override public void actionPerformed(ActionEvent e) {
       String cmd = e.getActionCommand();
       if (cmd.equals("Eclipse Installation Directory")) {
-	 JTextField tf = (JTextField) e.getSource();
-	 File ef = new File(tf.getText());
-	 eclipse_directory = ef.getAbsolutePath();
-	 has_changed = true;
+	 // will update in checkStatus()
        }
       else if (cmd.equals("Bubbles Installation Directory")) {
-	 JTextField tf = (JTextField) e.getSource();
-	 File inf = new File(tf.getText());
-	 install_path = inf.getPath();
-	 has_changed = true;
+	 // will update in checkStatus()
        }
       else if (cmd.equals("Automatically Update Bubbles")) {
 	 JCheckBox cbx = (JCheckBox) e.getSource();
@@ -2349,6 +2379,10 @@ private class SetupDialog implements ActionListener, CaretListener {
     }
 
    @Override public void caretUpdate(CaretEvent e) {
+      checkStatus();
+    }
+
+   @Override public void undoableEditHappened(UndoableEditEvent e) {
       checkStatus();
     }
 

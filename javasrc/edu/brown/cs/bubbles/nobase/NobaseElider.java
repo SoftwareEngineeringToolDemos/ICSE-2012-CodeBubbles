@@ -27,7 +27,6 @@ package edu.brown.cs.bubbles.nobase;
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import java.util.*;
-import java.util.List;
 
 class NobaseElider implements NobaseConstants, NobaseAst
 {
@@ -131,12 +130,13 @@ void noteEdit(int soff,int len,int rlen)
 boolean computeElision(ISemanticData isd,IvyXmlWriter xw)
 {
    NobaseAstNode root = isd.getRootNode();
+   NobaseFile file = isd.getFileData();
 
    if (root == null || elide_rdata.isEmpty()) return false;
 
    ElidePass1 ep1 = null;
    if (!elide_pdata.isEmpty()) {
-      ep1 = new ElidePass1();
+      ep1 = new ElidePass1(file);
       try {
 	 root.accept(ep1);
       }
@@ -145,7 +145,7 @@ boolean computeElision(ISemanticData isd,IvyXmlWriter xw)
        }
     }
 
-   ElidePass2 ep2 = new ElidePass2(ep1,xw);
+   ElidePass2 ep2 = new ElidePass2(ep1,file,xw);
    try {
       root.accept(ep2);
    }
@@ -164,10 +164,10 @@ boolean computeElision(ISemanticData isd,IvyXmlWriter xw)
 /*										*/
 /********************************************************************************/
 
-private double getElidePriority(NobaseAstNode n)
+private double getElidePriority(NobaseFile nf,NobaseAstNode n)
 {
    for (ElidePriority ep : elide_pdata) {
-      if (ep.useForPriority(n)) return ep.getPriority();
+      if (ep.useForPriority(nf,n)) return ep.getPriority();
     }
 
    return 0;
@@ -301,10 +301,12 @@ private class ElidePass1 extends NobaseAstVisitor {
    
    private Map<NobaseAstNode,Double> result_value;
    private int inside_count;
+   private NobaseFile for_file;
    
-   ElidePass1() {
+   ElidePass1(NobaseFile nf) {
       result_value = new HashMap<NobaseAstNode,Double>();
       inside_count = 0;
+      for_file = nf;
     }
    
    @Override public void preVisit(NobaseAstNode n) {
@@ -312,7 +314,7 @@ private class ElidePass1 extends NobaseAstVisitor {
          ++inside_count;
        }
       else { 
-         double p = getElidePriority(n);
+         double p = getElidePriority(for_file,n);
          if (p != 0) {
             result_value.put(n,p);
             ++inside_count;
@@ -337,15 +339,15 @@ private class ElidePass1 extends NobaseAstVisitor {
     }
    
    public boolean visit(FunctionDeclaration n) {
-      return isActiveRegion(n.getStartPosition(),n.getEndPosition());
+      return isActiveRegion(n.getStartPosition(for_file),n.getEndPosition(for_file));
     }
    
    public boolean visit(Block n) {
-      return isActiveRegion(n.getStartPosition(),n.getEndPosition());
+      return isActiveRegion(n.getStartPosition(for_file),n.getEndPosition(for_file));
     }
    
    public boolean visit(Declaration n) {
-      return isActiveRegion(n.getStartPosition(),n.getEndPosition());
+      return isActiveRegion(n.getStartPosition(for_file),n.getEndPosition(for_file));
     }
    
    double getPriority(NobaseAstNode n) {
@@ -380,10 +382,12 @@ private class ElidePass2 extends NobaseAstVisitor {
    private IvyXmlWriter xml_writer;
    private boolean last_case;
    private Stack<NobaseAstNode> switch_stack;
+   private NobaseFile for_file;
    
-   ElidePass2(ElidePass1 pass1,IvyXmlWriter xw) {
+   ElidePass2(ElidePass1 pass1,NobaseFile nf,IvyXmlWriter xw) {
       up_values = pass1;
       xml_writer = xw;
+      for_file = nf;
       result_value = new HashMap<NobaseAstNode,Double>();
       active_node = null;
       last_case = false;
@@ -392,13 +396,13 @@ private class ElidePass2 extends NobaseAstVisitor {
    
    @Override public void preVisit(NobaseAstNode n) {
       if (active_node == null) {
-	 if (isRootRegion(n.getStartPosition(),n.getEndPosition())) {
-	    active_node = n;
-	    result_value.put(n,1.0);
-	    // BedrockPlugin.logD("PRIORITY TOP " + n.getStartPosition() + " " + getNodeType(n) + " : " + n);
-	    outputXmlStart(n);
-	  }
-	 return;
+         if (isRootRegion(n.getStartPosition(for_file),n.getEndPosition(for_file))) {
+            active_node = n;
+            result_value.put(n,1.0);
+            // BedrockPlugin.logD("PRIORITY TOP " + n.getStartPosition() + " " + getNodeType(n) + " : " + n);
+            outputXmlStart(n);
+          }
+         return;
        }
       double v = getPriority(n.getParent());
       double v0 = 0;
@@ -406,9 +410,9 @@ private class ElidePass2 extends NobaseAstVisitor {
       double p = computePriority(v,n,v0);
       // BedrockPlugin.logD("PRIORITY " + p + " " + n.getStartPosition() + " " + getNodeType(n) + " : " + n);
       if (p != 0) {
-	 result_value.put(n,p);
-	 checkSwitchBlock(n);
-	 outputXmlStart(n);
+         result_value.put(n,p);
+         checkSwitchBlock(n);
+         outputXmlStart(n);
        }
     }
    
@@ -421,10 +425,11 @@ private class ElidePass2 extends NobaseAstVisitor {
     }
    
    @Override public boolean visit(FunctionDeclaration n) {
-      return isActiveRegion(n.getStartPosition(),n.getEndPosition());
+      return isActiveRegion(n.getStartPosition(for_file),n.getEndPosition(for_file));
     }
+   
    @Override public boolean visit(Declaration n) {
-      return isActiveRegion(n.getStartPosition(),n.getEndPosition());
+      return isActiveRegion(n.getStartPosition(for_file),n.getEndPosition(for_file));
     }
    
    double getPriority(NobaseAstNode n) {
@@ -436,10 +441,10 @@ private class ElidePass2 extends NobaseAstVisitor {
    private void outputXmlStart(NobaseAstNode n) {
       if (xml_writer != null) {
          xml_writer.begin("ELIDE");
-         int sp = n.getStartPosition();
-         int ep = n.getEndPosition();
-         int esp = n.getExtendedStartPosition();
-         int eep = n.getExtendedEndPosition();
+         int sp = n.getStartPosition(for_file);
+         int ep = n.getEndPosition(for_file);
+         int esp = n.getExtendedStartPosition(for_file);
+         int eep = n.getExtendedEndPosition(for_file);
          xml_writer.field("START",sp);
          if (esp != sp) xml_writer.field("ESTART",esp);
          xml_writer.field("LENGTH",ep-sp);
@@ -502,10 +507,10 @@ private class ElidePass2 extends NobaseAstVisitor {
        }
       if (last == null) return;
       xml_writer.begin("ELIDE");
-      int sp = n.getStartPosition();
-      int esp = n.getExtendedStartPosition();
-      int ep = last.getEndPosition();
-      int eep = n.getExtendedEndPosition();
+      int sp = n.getStartPosition(for_file);
+      int esp = n.getExtendedStartPosition(for_file);
+      int ep = last.getEndPosition(for_file);
+      int eep = n.getExtendedEndPosition(for_file);
       int ln = ep - sp;
       int eln = eep - esp;
       xml_writer.field("START",sp);
@@ -551,15 +556,15 @@ private abstract class ElideData {
       return (start_offset <= soff && end_offset >= eoff);
     }
 
-   boolean useForPriority(NobaseAstNode n) {
-      int sp = n.getStartPosition();
-      int ep = n.getEndPosition();
+   boolean useForPriority(NobaseFile nf,NobaseAstNode n) {
+      int sp = n.getStartPosition(nf);
+      int ep = n.getEndPosition(nf);
       if (start_offset != end_offset) return contains(sp,ep);
       if (!overlaps(sp,ep)) return false;
       // check if any child overlaps, use child if so
       for (int i = 0; i < n.getNumChildren(); ++i) {
          NobaseAstNode cn = n.getChild(i);
-         if (overlaps(cn.getStartPosition(),cn.getEndPosition())) return false;
+         if (overlaps(cn.getStartPosition(nf),cn.getEndPosition(nf))) return false;
        }
       return true;
     }

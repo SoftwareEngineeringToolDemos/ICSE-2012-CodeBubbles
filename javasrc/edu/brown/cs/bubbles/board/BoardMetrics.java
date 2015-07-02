@@ -241,6 +241,26 @@ public static void provideFeedback()
    // TODO: implement user feedback request
 }
 
+public static void getLastCommands(String pfx,Appendable buf)
+{
+   if (the_metrics.command_data == null) return;
+   synchronized (the_metrics.command_data) {
+      int ln = the_metrics.command_data.size();
+      int start = Math.max(0,ln-10);
+      for (int i = start; i < ln; ++i) {
+         try {
+            if (pfx != null) buf.append(pfx);
+            buf.append(the_metrics.command_data.get(i));
+            buf.append("\n");
+          }
+         catch (IOException e) { }
+       }
+    }
+   try {
+      buf.append("\n");
+    }
+   catch (IOException e) { }
+}
 
 
 /**

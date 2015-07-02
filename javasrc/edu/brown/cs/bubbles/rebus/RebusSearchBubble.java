@@ -24,17 +24,17 @@
 
 package edu.brown.cs.bubbles.rebus;
 
-import edu.brown.cs.bubbles.board.*;
-import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.bbook.BbookFactory;
 import edu.brown.cs.bubbles.bnote.BnoteConstants.BnoteTask;
+import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.buda.BudaBubble;
 
 import edu.brown.cs.ivy.exec.IvyExec;
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.swing.SwingGridPanel;
 import edu.brown.cs.ivy.xml.IvyXml;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;

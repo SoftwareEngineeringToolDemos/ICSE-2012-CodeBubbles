@@ -93,11 +93,18 @@ private BattAgent(String args,Instrumentation inst)
    result_stream = null;
    thread_stack = new HashMap<Thread,ThreadData>();
 
+   // System.err.println("BATTAGENT: START " + args + " " + inst);
+
    scanArgs(args);
 
    if (class_inst != null) {
-      our_instrumenter = new BattInstrument(this);
-      class_inst.addTransformer(our_instrumenter,true);
+      try {
+	 our_instrumenter = new BattInstrument(this);
+	 class_inst.addTransformer(our_instrumenter,true);
+       }
+      catch (Throwable t) {
+	 System.err.println("BATTAGENT: Problem adding instrumenter: " + t);
+       }
     }
 }
 

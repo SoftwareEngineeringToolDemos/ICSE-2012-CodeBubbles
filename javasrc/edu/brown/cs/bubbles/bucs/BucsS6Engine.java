@@ -40,6 +40,7 @@ import org.w3c.dom.Element;
 import javax.imageio.ImageIO;
 import javax.xml.bind.DatatypeConverter;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
@@ -48,7 +49,6 @@ import java.util.*;
 import java.util.jar.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import java.awt.image.*;
 
 
 class BucsS6Engine implements BucsConstants
@@ -120,7 +120,7 @@ void createSearchContext()
 {
    BoardLog.logD("BUCS","Creating context");
 
-   Element e = BumpClient.getBump().getProjectData(bump_location.getProject(),false,true,false,false);
+   Element e = BumpClient.getBump().getProjectData(bump_location.getProject(),false,true,false,false,false);
    if (e == null) {
       BoardLog.logD("BUCS","No project data available for context for " + bump_location.getProject());
       return;

@@ -24,7 +24,8 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 
 abstract class NobaseAstNodeBase implements NobaseConstants, NobaseAst.NobaseAstNode
@@ -62,7 +63,21 @@ protected NobaseAstNodeBase()
 
 protected void setProperty(AstProperty p,Object v)
 {
-   if (prop_a == null) {
+   if (v == null) {
+      if (prop_a == null) ;
+      else if (prop_a instanceof AstProperty) {
+         if (prop_a.equals(p)) prop_a = prop_b = null;
+       }
+      else {
+         @SuppressWarnings("unchecked")
+         Map<AstProperty,Object> val = (Map<AstProperty,Object>) prop_a; 
+         val.remove(p);
+         if (val.size() == 0) {
+            prop_a = prop_b = null;
+          }
+       }
+    }
+   else if (prop_a == null) {
       prop_a = p;
       prop_b = v;
     }
@@ -98,16 +113,16 @@ protected void removeProperty(AstProperty p)
    else if (prop_a instanceof AstProperty) ;
    else {
       @SuppressWarnings("unchecked")
-      Map<AstProperty,Object> val = (Map<AstProperty,Object>) prop_a; 
+      Map<AstProperty,Object> val = (Map<AstProperty,Object>) prop_a;
       if (val.containsKey(p)) {
-         val.remove(p);
-         if (val.size() == 0) removeAllProperties();
-         else if (val.size() == 1) {
-            for (Map.Entry<AstProperty,Object> ent : val.entrySet()) {
-               prop_a = ent.getKey();
-               prop_b = ent.getValue();
-             }
-          }
+	 val.remove(p);
+	 if (val.size() == 0) removeAllProperties();
+	 else if (val.size() == 1) {
+	    for (Map.Entry<AstProperty,Object> ent : val.entrySet()) {
+	       prop_a = ent.getKey();
+	       prop_b = ent.getValue();
+	     }
+	  }
        }
     }
 }
@@ -189,12 +204,12 @@ protected void removeAllProperties()
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Access methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Access methods								*/
+/*										*/
 /********************************************************************************/
 
-@Override public int getIndexInParent() 
+@Override public int getIndexInParent()
 {
    NobaseAst.NobaseAstNode par = getParent();
    if (par == null) return -1;
@@ -204,6 +219,46 @@ protected void removeAllProperties()
     }
    return -1;
 }
+
+@Override public String dumpTree(NobaseFile nf) {
+   StringBuffer buf = new StringBuffer();
+   dumpTree(nf,0,buf);
+   return buf.toString();
+}
+
+protected void dumpTree(NobaseFile nf,int indent,StringBuffer buf) {
+   for (int i = 0; i < indent; ++i) buf.append("  ");
+   String nm = getClass().getName();
+   int idx = nm.lastIndexOf(".");
+   nm = nm.substring(idx+1);
+   idx = nm.lastIndexOf("$");
+   nm = nm.substring(idx+1);
+   buf.append(nm);
+   buf.append(" ");
+   buf.append(getStartPosition(nf));
+   buf.append("-");
+   buf.append(getEndPosition(nf));
+   dumpLocal(buf);
+   buf.append("\n");
+   for (int i = 0; i < getNumChildren(); ++i) {
+      NobaseAstNodeBase nbase = (NobaseAstNodeBase) getChild(i);
+      if (nbase == null) {
+	 for (int j = 0; j <= indent; ++j) buf.append("  ");
+	 buf.append("NULL\n");
+       }
+      else nbase.dumpTree(nf,indent+1,buf);
+    }
+}
+
+
+protected void dumpLocal(StringBuffer buf)		{ }
+
+
+
+
+
+
+
 
 
 }	// end of class NobaseAstNodeBase

@@ -561,6 +561,8 @@ private List<BaleElement> scanText(String text,int baseoffset,
 	 case CONTINUE :
 	 case PASS :
 	 case RAISE :
+         case IMPORT :
+         case PACKAGE :
 	    nelt = new BaleElement.Keyword(doc,cur,soff,eoff,bt.getType());
 	    break;
 	 case RETURN :
@@ -667,8 +669,7 @@ private void fixupElisions(List<BaleElement> lelts)
 	       if (!celt.isComment() && !celt.isEndOfLine() && !celt.isEmpty()) issimple = false;
 	    }
 	    // TODO: This code is a bit mysterious
-	    BoardLog.logD("BALE","Elision extra line " + lelt.getStartOffset() + " " +
-			     lelt.getEndOffset());
+	    // BoardLog.logD("BALE","Elision extra line " + lelt.getStartOffset() + " " + lelt.getEndOffset());
 	    BaleElement xelt = lelts.remove(i+1);
 	    BaleElement.Branch beb = (BaleElement.Branch) eelt;
 	    issimple = false;

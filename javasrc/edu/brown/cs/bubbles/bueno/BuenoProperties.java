@@ -28,8 +28,8 @@ package edu.brown.cs.bubbles.bueno;
 import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.bump.BumpClient;
 
-import java.util.*;
 import java.lang.reflect.Modifier;
+import java.util.*;
 
 public class BuenoProperties extends HashMap<BuenoConstants.BuenoKey,Object> implements BuenoConstants
 {

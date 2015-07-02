@@ -1,21 +1,21 @@
 /********************************************************************************/
-/*                                                                              */
-/*              NobaseEditor.java                                               */
-/*                                                                              */
-/*      description of class                                                    */
-/*                                                                              */
+/*										*/
+/*		NobaseEditor.java						*/
+/*										*/
+/*	description of class							*/
+/*										*/
 /********************************************************************************/
-/*      Copyright 2011 Brown University -- Steven P. Reiss                    */
+/*	Copyright 2011 Brown University -- Steven P. Reiss		      */
 /*********************************************************************************
- *  Copyright 2011, Brown University, Providence, RI.                            *
- *                                                                               *
- *                        All Rights Reserved                                    *
- *                                                                               *
- * This program and the accompanying materials are made available under the      *
+ *  Copyright 2011, Brown University, Providence, RI.				 *
+ *										 *
+ *			  All Rights Reserved					 *
+ *										 *
+ * This program and the accompanying materials are made available under the	 *
  * terms of the Eclipse Public License v1.0 which accompanies this distribution, *
- * and is available at                                                           *
- *      http://www.eclipse.org/legal/epl-v10.html                                *
- *                                                                               *
+ * and is available at								 *
+ *	http://www.eclipse.org/legal/epl-v10.html				 *
+ *										 *
  ********************************************************************************/
 
 /* SVN: $Id$ */
@@ -39,12 +39,12 @@ class NobaseEditor implements NobaseConstants
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Private Storage                                                         */
-/*                                                                              */
+/*										*/
+/*	Private Storage 							*/
+/*										*/
 /********************************************************************************/
 
-private NobaseMain              nobase_main;
+private NobaseMain		nobase_main;
 private Map<NobaseFile,List<FileEditData>>   monitor_map;
 private Map<NobaseFile,String>		owner_map;
 private Map<NobaseFile,EditHandler>	handler_map;
@@ -92,9 +92,9 @@ void handleStartFile(String proj,String bid,String file,String id,boolean cnts,I
 throws NobaseException
 {
    File f = new File(file);
-   NobaseFile fd = nobase_main.getFileManager().getFileData(f); 
+   NobaseFile fd = nobase_main.getFileManager().getFileData(f);
    if (fd == null) throw new NobaseException("File " + file + " not found");
-   
+
    addMonitor(fd,bid,id);
 }
 
@@ -115,11 +115,11 @@ void elisionSetup(String proj,String bid,String file,boolean compute,
    if (fd == null) {
       throw new NobaseException("File " + file + " not available for elision");
     }
-   
+
    if (monitor_map.get(fd) == null) {
       throw new NobaseException("File " + file + " not open");
     }
-   
+
    FileEditData fed = null;
    for (FileEditData fed1 : monitor_map.get(fd)) {
       if (fed1.getBaseId().equals(bid)) {
@@ -127,14 +127,14 @@ void elisionSetup(String proj,String bid,String file,boolean compute,
 	 break;
        }
     }
-   
+
    ISemanticData isd = pp.getParseData(fd);
    if (isd == null) throw new NobaseException("Unable to get AST for file " + file);
-   
+
    NobaseElider be = null;
    if (fed != null) be = fed.getElider();
    else be = new NobaseElider();
-   
+
    if (rgns != null) {
       be.clearElideData();
       for (Element r : rgns) {
@@ -150,7 +150,7 @@ void elisionSetup(String proj,String bid,String file,boolean compute,
       if (fed != null) fed.checkElider();
     }
    else if (fed != null) fed.clearElider();
-   
+
    if (compute) {
       xw.begin("ELISION");
       if (be != null) be.computeElision(isd,xw);
@@ -168,16 +168,16 @@ void elisionSetup(String proj,String bid,String file,boolean compute,
 /********************************************************************************/
 
 void handleEdit(String proj,String bid,String file,String id,List<IEditData> edits,IvyXmlWriter xw)
-        throws NobaseException
+	throws NobaseException
 {
    NobaseProject pp = nobase_main.getProjectManager().findProject(proj);
    NobaseFile fd = nobase_main.getFileManager().getFileData(file);
    if (fd == null) throw new NobaseException("File " + file + " not found");
-   
+
    if (bid == null) bid = "*";
-   
+
    boolean chngd = fd.hasChanged();
-   
+
    FileEditData fed = lockFile(fd,bid,id);
    try {
       IDocument d = fd.getDocument();
@@ -195,13 +195,13 @@ void handleEdit(String proj,String bid,String file,String id,List<IEditData> edi
    finally {
       unlockFile(fd);
     }
-   
+
    if (!chngd && fd.hasChanged()) {
       IvyXmlWriter mxw = nobase_main.beginMessage("FILECHANGE");
       mxw.field("FILE",file);
       nobase_main.finishMessage(mxw);
     }
-   
+
    if (fed != null) {
       AutoCompile ac = new AutoCompile(pp,fd,id,fed);
       NobaseMain.getNobaseMain().startTask(ac);
@@ -222,7 +222,7 @@ private FileEditData lockFile(NobaseFile fd,String bid,String eid)
        }
       owner_map.put(fd,bid);
     }
-   
+
    FileEditData fed = null;
    for (FileEditData fed1 : monitor_map.get(fd)) {
       if (fed1.getBaseId().equals(bid)) {
@@ -231,7 +231,7 @@ private FileEditData lockFile(NobaseFile fd,String bid,String eid)
        }
     }
    if (fed != null && eid != null) fed.setEditId(eid);
-   
+
    return fed;
 }
 
@@ -256,7 +256,7 @@ void handleCommit(String proj,String bid,boolean refresh,boolean save,
       Collection<Element> files,IvyXmlWriter xw) throws NobaseException
 {
    NobaseProject pp = nobase_main.getProjectManager().findProject(proj);
-   
+
    xw.begin("COMMIT");
    if (files == null || files.size() == 0) {
       for (NobaseFile ifd : handler_map.keySet()) {
@@ -269,7 +269,7 @@ void handleCommit(String proj,String bid,boolean refresh,boolean save,
       for (Element e : files) {
 	 String fnm = IvyXml.getAttrString(e,"NAME");
 	 if (fnm == null) fnm = IvyXml.getText(e);
-	 NobaseFile ifd	= nobase_main.getFileManager().getFileData(fnm);
+	 NobaseFile ifd = nobase_main.getFileManager().getFileData(fnm);
 	 if (ifd != null) {
 	    boolean r = IvyXml.getAttrBool(e,"REFRESH",refresh);
 	    boolean s = IvyXml.getAttrBool(e,"SAVE",save);
@@ -277,7 +277,7 @@ void handleCommit(String proj,String bid,boolean refresh,boolean save,
 	  }
        }
     }
-   
+
    xw.end("COMMIT");
 }
 
@@ -300,7 +300,7 @@ private void commitFile(NobaseProject pp,NobaseFile ifd,String bid,boolean refre
    finally {
       unlockFile(ifd);
     }
-   
+
    if (upd && fed != null) {
       AutoCompile ac = new AutoCompile(pp,ifd,null,fed);
       NobaseMain pm = NobaseMain.getNobaseMain();
@@ -372,13 +372,13 @@ private void removeMonitor(NobaseFile fd,String bid,String id)
 
 
 private class EditHandler implements IDocumentListener {
-   
+
    private NobaseFile for_file;
-   
+
    EditHandler(NobaseFile fd) {
       for_file = fd;
     }
-   
+
    @Override public void documentAboutToBeChanged(DocumentEvent evt) { }
    @Override public void documentChanged(DocumentEvent evt) {
       int len = evt.getLength();
@@ -406,8 +406,11 @@ private class EditHandler implements IDocumentListener {
 	 NobaseMain.logD("SENDING EDIT " + xw.toString());
        }
     }
-   
+
 }	// end of inner class EditHandler
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -416,22 +419,22 @@ private class EditHandler implements IDocumentListener {
 /********************************************************************************/
 
 private class FileEditData {
-   
+
    private String front_id;
    private String edit_id;
    private NobaseElider edit_elider;
-   
+
    FileEditData(String bid,String id) {
       front_id = bid;
       edit_id = id;
       edit_elider = null;
     }
-   
+
    String getBaseId()			{ return front_id; }
    String getEditId()			{ return edit_id; }
-   
+
    void setEditId(String id)		{ edit_id = id; }
-   
+
    void clearElider()			{ edit_elider = null; }
    NobaseElider checkElider()		{ return edit_elider; }
    synchronized NobaseElider getElider() {
@@ -440,7 +443,7 @@ private class FileEditData {
        }
       return edit_elider;
     }
-   
+
 }	// end of inner class EditData
 
 
@@ -452,12 +455,12 @@ private class FileEditData {
 /********************************************************************************/
 
 private class AutoCompile implements Runnable {
-   
+
    private NobaseProject for_project;
    private NobaseFile for_file;
    private String edit_id;
    private FileEditData edit_data;
-   
+
    AutoCompile(NobaseProject pp,NobaseFile ifd,String editid,FileEditData fed) {
       for_project = pp;
       for_file = ifd;
@@ -465,17 +468,17 @@ private class AutoCompile implements Runnable {
       edit_id = editid;
       edit_data = fed;
     }
-   
+
    @Override public void run() {
       EditParameters ep = getParameters(edit_data.getBaseId());
       if (!edit_data.getEditId().equals(edit_id)) return;
       int delay = ep.getDelayTime();
       if (delay < 0) return;
       if (delay > 0) {
-         try {
-            Thread.sleep(delay);
-          }
-         catch (InterruptedException e) { }
+	 try {
+	    Thread.sleep(delay);
+	  }
+	 catch (InterruptedException e) { }
        }
       if (!edit_data.getEditId().equals(edit_id)) return;
       ISemanticData isd = for_project.reparseFile(for_file);
@@ -484,38 +487,38 @@ private class AutoCompile implements Runnable {
       if (!edit_data.getEditId().equals(edit_id)) return;
       IvyXmlWriter xw = NobaseMain.getNobaseMain().beginMessage("EDITERROR");
       if (isd.getProject() != null) {
-         xw.field("PROJECT",isd.getProject().getName());
+	 xw.field("PROJECT",isd.getProject().getName());
        }
       xw.field("FILE",for_file.getFile().getPath());
       xw.field("ID",edit_id);
       xw.begin("MESSAGES");
       if (msgs != null && msgs.size() > 0) {
-         for (NobaseMessage pm : msgs) {
-            NobaseUtil.outputProblem(pm,isd,xw);
-          }
+	 for (NobaseMessage pm : msgs) {
+	    NobaseUtil.outputProblem(pm,isd,xw);
+	  }
        }
       xw.end("MESSAGES");
-      
+
       if (!edit_data.getEditId().equals(edit_id)) return;
       NobaseMain.getNobaseMain().finishMessage(xw);
       if (ep.getAutoElide()) {
-         if (!edit_data.getEditId().equals(edit_id)) return;
-         NobaseElider pe = edit_data.checkElider();
-         if (pe != null) {
-            xw = NobaseMain.getNobaseMain().beginMessage("ELISION",edit_data.getBaseId());
-            xw.field("FILE",for_file.getFile().getPath());
-            xw.field("ID",edit_id);
-            xw.begin("ELISION");
-            if (pe.computeElision(isd,xw)) {
-               if (edit_data.getEditId().equals(edit_id)) {
-                  xw.end("ELISION");
-                  NobaseMain.getNobaseMain().finishMessage(xw);
-                }
-             }
-          }
+	 if (!edit_data.getEditId().equals(edit_id)) return;
+	 NobaseElider pe = edit_data.checkElider();
+	 if (pe != null) {
+	    xw = NobaseMain.getNobaseMain().beginMessage("ELISION",edit_data.getBaseId());
+	    xw.field("FILE",for_file.getFile().getPath());
+	    xw.field("ID",edit_id);
+	    xw.begin("ELISION");
+	    if (pe.computeElision(isd,xw)) {
+	       if (edit_data.getEditId().equals(edit_id)) {
+		  xw.end("ELISION");
+		  NobaseMain.getNobaseMain().finishMessage(xw);
+		}
+	     }
+	  }
        }
     }
-   
+
 }	// end of inner class AutoCompile
 
 
@@ -542,18 +545,18 @@ private EditParameters getParameters(String id)
 
 
 private static class EditParameters {
-   
+
    private int delay_time;
    private boolean auto_elide;
-   
+
    EditParameters() {
       delay_time = 250;
       auto_elide = false;
     }
-   
+
    int getDelayTime()		{ return delay_time; }
    boolean getAutoElide()	{ return auto_elide; }
-   
+
    void setParameter(String name,String value) {
       if (name.equals("AUTOELIDE")) {
 	 auto_elide = Boolean.parseBoolean(value);
@@ -562,13 +565,13 @@ private static class EditParameters {
 	 delay_time = Integer.parseInt(value);
        }
     }
-   
+
 }	// end of inner class EditParamters
 
 
 
 
-}       // end of class NobaseEditor
+}	// end of class NobaseEditor
 
 
 

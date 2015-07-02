@@ -29,8 +29,9 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
-import java.io.*;
 
 
 
@@ -426,37 +427,37 @@ private class NameThread extends Thread {
 
    @Override public void run() {
       NobaseMain.logD("START NAMES FOR " + name_id);
-
+   
       IvyXmlWriter xw = null;
-
+   
       for (Map.Entry<NobaseFile,NobaseProject> ent : ifile_project.entrySet()) {
-	 if (xw == null) {
-	    xw = nobase_main.beginMessage("NAMES",bump_id);
-	    xw.field("NID",name_id);
-	  }
-	 NobaseFile ifd = ent.getKey();
-	 NobaseProject pp = ent.getValue();
-	 ISemanticData sd = ifile_data.get(ifd);
-	 outputTreeNames(pp,ifd,sd,xw);
-	 if (xw.getLength() <= 0 || xw.getLength() > 1000000) {
-	    nobase_main.finishMessageWait(xw,15000);
-	    NobaseMain.logD("OUTPUT NAMES: " + xw.toString());
-	    xw = null;
-	  }
+         if (xw == null) {
+            xw = nobase_main.beginMessage("NAMES",bump_id);
+            xw.field("NID",name_id);
+          }
+         NobaseFile ifd = ent.getKey();
+         NobaseProject pp = ent.getValue();
+         ISemanticData sd = ifile_data.get(ifd);
+         outputTreeNames(pp,ifd,sd,xw);
+         if (xw.getLength() <= 0 || xw.getLength() > 1000000) {
+            nobase_main.finishMessageWait(xw,15000);
+            NobaseMain.logD("OUTPUT NAMES: " + xw.toString());
+            xw = null;
+          }
        }
-
+   
       for (NobaseProject pp : project_names) {
-	 if (xw == null) {
-	    xw = nobase_main.beginMessage("NAMES",bump_id);
-	    xw.field("NID",name_id);
-	  }
-	 NobaseUtil.outputProjectSymbol(pp,xw);
+         if (xw == null) {
+            xw = nobase_main.beginMessage("NAMES",bump_id);
+            xw.field("NID",name_id);
+          }
+         NobaseUtil.outputProjectSymbol(pp,xw);
        }
-
+   
       if (xw != null) {
-	 nobase_main.finishMessageWait(xw);
+         nobase_main.finishMessageWait(xw);
        }
-
+   
       NobaseMain.logD("FINISH NAMES FOR " + name_id);
       xw = nobase_main.beginMessage("ENDNAMES",bump_id);
       xw.field("NID",name_id);
@@ -533,6 +534,24 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
    NobaseProject rp = getProject(proj,file);
    if (rp != null) rp.getTextRegions(bid,file,cls,pfx,statics,compunit,imports,pkg,topdecls,fields,all,xw);
 }
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Handle get completions command                                          */
+/*                                                                              */
+/********************************************************************************/
+
+void getCompletions(String proj,String bid,String file,int offset,IvyXmlWriter xw)
+        throws NobaseException
+{
+   NobaseProject rp = getProject(proj,file);
+   if (rp != null) {
+      rp.getCompletions(file,offset,xw);
+    }
+}
+
 
 
 

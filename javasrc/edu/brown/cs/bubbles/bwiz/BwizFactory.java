@@ -28,9 +28,9 @@ package edu.brown.cs.bubbles.bwiz;
 import edu.brown.cs.bubbles.board.BoardProperties;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoBubbleCreator;
+import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoClassCreatorInstance;
 import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoMethodCreatorInstance;
 import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoType;
-import edu.brown.cs.bubbles.bueno.BuenoConstants.BuenoClassCreatorInstance;
 import edu.brown.cs.bubbles.bueno.*;
 
 import java.awt.Component;

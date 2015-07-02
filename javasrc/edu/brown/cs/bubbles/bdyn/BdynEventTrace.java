@@ -27,9 +27,9 @@ package edu.brown.cs.bubbles.bdyn;
 
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.io.*;
 
 
 class BdynEventTrace implements BdynConstants

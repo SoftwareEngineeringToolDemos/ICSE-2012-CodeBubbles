@@ -142,6 +142,40 @@ private void ensureRunning()
    String eclipsedir = board_properties.getProperty(BOARD_PROP_ECLIPSE_DIR);
    String ws = board_properties.getProperty(BOARD_PROP_ECLIPSE_WS);
 
+   String jvmarg = null;
+   File mac1 = new File("/Library/Java/JavaVirtualMachines");
+   if (mac1.exists() && mac1.isDirectory()) {
+      File [] macjvms = mac1.listFiles();
+      File jvm7 = null;
+      File jvm8 = null;
+      if (macjvms != null) {
+	 for (File mac2 : macjvms) {
+	    String nm = mac2.getName();
+	    if (nm.startsWith("jdk1.7")) {
+	       if (jvm7 == null) jvm7 = mac2;
+	       else if (jvm7.getName().compareTo(nm) < 0) jvm7 = mac2;
+	     }
+	    if (nm.startsWith("jdk1.8")) {
+	       if (jvm8 == null) jvm8 = mac2;
+	       else if (jvm8.getName().compareTo(nm) < 0) jvm8 = mac2;
+	     }
+	  }
+       }
+      if (jvm7 == null && jvm8 != null) jvm7 = jvm8;
+      if (jvm7 != null) {
+	 File f1 = new File(jvm7,"Contents");
+	 File f2 = new File(f1,"Home");
+	 File f3 = new File(f2,"bin");
+	 if (!f3.exists()) {
+	    f3 = new File(f2,"jre");
+	    f3 = new File(f3,"bin");
+	  }
+	 if (f3.exists()) {
+	    jvmarg = "-vm '" + f3.getPath() + "'";
+	  }
+       }
+    }
+
    File ef = new File(eclipsedir);
    File ef1 = null;
    for (String s : BOARD_ECLIPSE_START) {
@@ -151,8 +185,10 @@ private void ensureRunning()
    if (ef1 == null || !ef1.exists() || !ef1.canExecute()) ef1 = new File(ef,"eclipse");
    String efp = ef1.getPath();
    if (efp.endsWith(".app") || efp.endsWith(".exe")) efp = efp.substring(0,efp.length()-4);
-
    String cmd = "'" + efp + "'";
+
+   if (jvmarg != null) cmd += " " + jvmarg;
+
    if (!board_properties.getBoolean(BOARD_PROP_ECLIPSE_FOREGROUND,false)) {
       cmd += " -application edu.brown.cs.bubbles.bedrock.application";
     }
@@ -198,7 +234,7 @@ private void ensureRunning()
    try {
       IvyExec ex = new IvyExec(cmd);
       boolean eok = false;
-      for (int i = 0; i < 200; ++i) {
+      for (int i = 0; i < 250; ++i) {
 	 synchronized (this) {
 	    try {
 	       wait(1000);
@@ -250,7 +286,7 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
    boolean cnstr = false;
    name = name.replace('$','.');
    name = removeGenerics(name);
-   
+
    String nm0 = name;
    int idx2 = name.indexOf("(");
    String args = "";
@@ -303,6 +339,7 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
 
 @Override protected String localFixupName(String nm)
 {
+   if (nm == null) return null;
    nm = nm.replace('$','.');
    return nm;
 }
@@ -311,24 +348,24 @@ public List<BumpLocation> findMethod(String proj,String name,boolean system)
 private String removeGenerics(String name)
 {
    if (!name.contains("<")) return name;
-   
+
    StringBuffer buf = new StringBuffer();
    boolean insideargs = false;
    boolean atdot = true;
    int lvl = 0;
-   
+
    for (int i = 0; i < name.length(); ++i) {
       char c = name.charAt(i);
       if ((insideargs || !atdot) && c == '<') ++lvl;
       else if (lvl > 0 && c == '>') --lvl;
       else if (lvl == 0) {
-         buf.append(c); 
-         if (c == '(') insideargs = true;
-         else if (c == '.') atdot = true;
-         else atdot = false;
+	 buf.append(c);
+	 if (c == '(') insideargs = true;
+	 else if (c == '.') atdot = true;
+	 else atdot = false;
       }
     }
-   
+
    return buf.toString();
 }
 

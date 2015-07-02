@@ -28,8 +28,8 @@ package edu.brown.cs.bubbles.bump;
 import edu.brown.cs.bubbles.bandaid.BandaidConstants;
 import edu.brown.cs.bubbles.board.*;
 
+import edu.brown.cs.ivy.exec.IvyExec;
 import edu.brown.cs.ivy.file.IvyFormat;
-import edu.brown.cs.ivy.exec.*;
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.swing.SwingEventListenerList;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -366,9 +366,9 @@ private void startDebugServer()
 	    try {
 	       new IvyExec(args,null,0);
 	     }
-            catch (IOException e) {
-               break;
-             }
+	    catch (IOException e) {
+	       break;
+	     }
 //	    ProcessBuilder pb = new ProcessBuilder(args);
 //	    try {
 //	       pb.start();
@@ -1984,7 +1984,7 @@ private class StepUserFilter implements BumpThreadFilter {
       }
 
       File f = frm.getFile();
-      if (f != null && f.exists() && frm.getLineNumber() > 0 && !isTempFile(f)) {
+      if (f != null && f.exists() && frm.getLineNumber() > 0 && !isTempFile(f) && !isIgnore(frm)) {
 	 String mnm = frm.getMethod();
 	 int idx = mnm.lastIndexOf(".");
 	 if (idx >= 0) mnm = mnm.substring(idx+1);
@@ -1992,8 +1992,6 @@ private class StepUserFilter implements BumpThreadFilter {
 	    removeThreadFilter(bt,this);
 	    return evt;
 	 }
-	 else
-	    System.err.println("SKIPPING OVER " + mnm);
       }
       if (bt.getThreadDetails() == BumpThreadStateDetail.BREAKPOINT) {
 	 removeThreadFilter(bt,this);
@@ -2016,6 +2014,12 @@ private boolean isTempFile(File f)
    return false;
 }
 
+
+private boolean isIgnore(BumpStackFrame frm)
+{
+   if (frm.getFrameClass().startsWith("edu.brown.cs.bubbles.bandaid.")) return true;
+   return false;
+}
 
 
 

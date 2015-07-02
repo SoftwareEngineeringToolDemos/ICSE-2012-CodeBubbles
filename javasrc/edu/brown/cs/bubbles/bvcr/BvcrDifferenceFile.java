@@ -63,20 +63,6 @@ BvcrDifferenceFile(String ver)
 
 
 
-/********************************************************************************/
-/*										*/
-/*	Access methods								*/
-/*										*/
-/********************************************************************************/
-
-List<BvcrFileChange> getChanges()
-{
-   return new ArrayList<BvcrFileChange>(change_set);
-}
-
-
-
-
 
 BvcrDifferenceFile(Element e)
 {
@@ -86,6 +72,19 @@ BvcrDifferenceFile(Element e)
       FileChange fc = new FileChange(ce);
       change_set.add(fc);
     }
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Access methods								*/
+/*										*/
+/********************************************************************************/
+
+List<BvcrFileChange> getChanges()
+{
+   return new ArrayList<BvcrFileChange>(change_set);
 }
 
 
@@ -159,6 +158,8 @@ private static class FileChange implements BvcrFileChange {
    @SuppressWarnings("unused") FileChange(Element e) {
       source_line = IvyXml.getAttrInt(e,"SOURCE");
       target_line = IvyXml.getAttrInt(e,"TARGET");
+      delete_lines = null;
+      add_lines = null;
       int dct = 0;
       for (Element ce : IvyXml.children(e,"DELETE")) ++dct;
       if (dct > 0) {

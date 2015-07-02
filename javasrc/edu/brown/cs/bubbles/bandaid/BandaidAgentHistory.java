@@ -88,7 +88,7 @@ BandaidAgentHistory(BandaidController bc)
 	 xw.field("THREAD",args);
 	 if (generateHistory(xw,args)) {
 	    xw.end();
-	    the_control.sendMessage(xw.toString());
+	    the_control.sendMessage(xw.getContents());
 	  }
        }
       catch (NumberFormatException e) { }
@@ -245,7 +245,15 @@ private static class ThreadData {
 	 xw.begin("TRACE");
 	 xw.field("WHEN",stack_time[j]);
 	 xw.field("STATE",thread_state[j].getThreadState().toString());
+	 int k0 = 0;
 	 for (int k = 0; k < thread_stack[j].length; ++k) {
+	    StackTraceElement te = thread_stack[j][k];
+	    if (te.getClassName() != null &&
+		   te.getClassName().startsWith("edu.brown.cs.bubbles.bandaid")) {
+	       k0 = k+1;
+	     }
+	  }
+	 for (int k = k0; k < thread_stack[j].length; ++k) {
 	    xw.begin("STACK");
 	    xw.field("LEVEL",k);
 	    StackTraceElement te = thread_stack[j][k];

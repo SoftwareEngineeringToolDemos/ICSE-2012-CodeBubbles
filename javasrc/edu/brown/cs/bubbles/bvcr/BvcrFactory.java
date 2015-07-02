@@ -27,8 +27,7 @@ package edu.brown.cs.bubbles.bvcr;
 import edu.brown.cs.bubbles.bale.BaleConstants;
 import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.bass.*;
-import edu.brown.cs.bubbles.board.BoardLog;
-import edu.brown.cs.bubbles.board.BoardSetup;
+import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.BudaBubble;
 import edu.brown.cs.bubbles.buda.BudaRoot;
 import edu.brown.cs.bubbles.bump.BumpClient;
@@ -60,6 +59,7 @@ public class BvcrFactory implements BvcrConstants, BaleConstants, MintConstants
 /********************************************************************************/
 
 private boolean 		server_running;
+private boolean                 server_started;
 
 private static BvcrFactory	the_factory = null;
 
@@ -81,6 +81,7 @@ public synchronized static BvcrFactory getFactory()
 private BvcrFactory()
 {
    server_running = false;
+   server_started = false;
    new BvcrFileManager();
 }
 
@@ -101,7 +102,8 @@ public static void setup()
 
 public static void initialize(BudaRoot br)
 {
-   getFactory().startBvcrServer();
+   BoardThreadPool.start(new BvcrStarter()); 
+   // getFactory().startBvcrServer();
    getFactory().setupCallbacks();
 }
 
@@ -199,7 +201,7 @@ void startBvcrServer()
    IvyExec exec = null;
 
    synchronized (this) {
-      if (server_running) return;
+      if (server_running || server_started) return;
 
       long mxmem = Runtime.getRuntime().maxMemory();
       mxmem = Math.min(512*1024*1024L,mxmem);
@@ -225,6 +227,7 @@ void startBvcrServer()
 	 if (i == 0) {
 	    try {
 	       exec = new IvyExec(args,null,IvyExec.ERROR_OUTPUT);
+               server_started = true;
 	       BoardLog.logD("BVCR","Run " + exec.getCommand());
 	    }
 	    catch (IOException e) {
@@ -249,10 +252,17 @@ void startBvcrServer()
        }
       if (!server_running) {
 	 BoardLog.logE("BVCR","Unable to start bvcr server: " + args);
-	 server_running = true; 	// don't try again
        }
     }
 }
+
+private static class BvcrStarter implements Runnable {
+   
+   @Override public void run() {
+      getFactory().startBvcrServer();
+    }
+   
+}       // end of inner class BvcrStarter
 
 
 /********************************************************************************/
@@ -272,7 +282,9 @@ private class BvcrContexter implements BaleContextListener, BassConstants.BassPo
     }
 
    @Override public void addPopupMenuItems(BaleContextConfig cfg,JPopupMenu menu) {
+      // only if bvcr is running (i.e. under version management)
       menu.add(new HistoryAction(cfg));
+      menu.add(new DiffAction(cfg));
     }
 
    @Override public void addButtons(BudaBubble bb,Point where,JPopupMenu menu,String name,
@@ -305,6 +317,7 @@ private class BvcrContexter implements BaleContextListener, BassConstants.BassPo
       if (loc != null) {
 	 if (loc.getProject() != null && loc.getFile() != null) {
 	    menu.add(new HistoryAction(bb,where,loc));
+	    menu.add(new DiffAction(bb,where,loc));
 	 }
       }
     }
@@ -334,6 +347,32 @@ private class HistoryAction extends AbstractAction {
     }
 
 }	// end of inner class HistoryAction
+
+
+
+private class DiffAction extends AbstractAction {
+
+   private BvcrDiffViewer history_manager;
+
+   private static final long serialVersionUID = 1;
+
+   DiffAction(BaleContextConfig cfg) {
+      super("Show Version Differences");
+      history_manager = new BvcrDiffViewer(cfg);
+    }
+
+   DiffAction(BudaBubble bb,Point where,BumpLocation loc) {
+      super("Show Version Differences");
+      history_manager = new BvcrDiffViewer(bb,where,loc);
+    }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BudaRoot.hideSearchBubble(evt);
+      history_manager.process();
+    }
+
+}	// end of inner class HistoryAction
+
 
 
 }	// end of class BvcrFactory

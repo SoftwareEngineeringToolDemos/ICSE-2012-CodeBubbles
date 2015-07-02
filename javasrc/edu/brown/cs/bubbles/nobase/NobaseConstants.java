@@ -25,7 +25,8 @@
 package edu.brown.cs.bubbles.nobase;
 
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
 
 public interface NobaseConstants
 {
@@ -173,6 +174,7 @@ enum ScopeType {
    BLOCK,
    MEMBER,
    OBJECT,
+   LOCAL,
    WITH
 };
 
@@ -206,7 +208,8 @@ enum KnownValue {
 
 interface Evaluator {
    
-   NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> arguments);
+   NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> arguments,
+            NobaseValue thisval);
    
 }       // end of interface FunctionEvaluator
 
@@ -229,6 +232,58 @@ enum NobaseDebugAction {
    SUSPEND,
    DROP_TO_FRAME
 }
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Debugging definitions                                                   */
+/*                                                                              */
+/********************************************************************************/
+
+enum NobaseConfigAttribute {
+   NONE,
+   PROJECT,
+   ARGS,
+   VM_ARGS,
+   MODULE,
+   WD,
+   ENCODING,
+   NAME,
+   FILE
+}
+
+String CONFIG_FILE = ".launches";
+String BREAKPOINT_FILE = ".breakpoints";
+
+enum BreakType {
+   NONE,
+   LINE,
+   EXCEPTION
+}
+
+
+
+public class IdCounter {
+
+   private int counter_value;
+
+   IdCounter() {
+      counter_value = 1;
+    }
+
+   synchronized public int nextValue() {
+      return counter_value++;
+    }
+
+   synchronized public void noteValue(int v) {
+      if (counter_value <= v) counter_value = v+1;
+    }
+
+}	// end of inner class IdCounter
+
+
+public class NobaseDebugRefMap extends HashMap<Integer,NobaseDebugValue> { };
 
 
 

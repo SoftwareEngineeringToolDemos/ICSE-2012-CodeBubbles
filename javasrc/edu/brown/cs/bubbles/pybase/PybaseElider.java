@@ -30,10 +30,9 @@
 
 package edu.brown.cs.bubbles.pybase;
 
-import edu.brown.cs.ivy.xml.*;
-
 import edu.brown.cs.bubbles.pybase.symbols.*;
 
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.python.pydev.parser.jython.SimpleNode;
 import org.python.pydev.parser.jython.Visitor;

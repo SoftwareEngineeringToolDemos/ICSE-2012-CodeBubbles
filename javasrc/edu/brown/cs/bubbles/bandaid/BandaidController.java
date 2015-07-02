@@ -330,6 +330,7 @@ private void setupClassTypes()
    package_map.put("com.apple.",ClassType.SYSTEM);
    package_map.put("org.postgresql.",ClassType.SYSTEM);
    package_map.put("jrockit.",ClassType.SYSTEM);
+   package_map.put("com.jogamp.",ClassType.SYSTEM);
 
    package_map.put("edu.brown.cs.dyvise.dyper.",ClassType.SYSTEM);
    package_map.put("edu.brown.cs.bubbles.bandaid.",ClassType.SYSTEM);
@@ -347,7 +348,7 @@ private void setupClassTypes()
 
 
 
-/********************************************************************************/
+/********************************************************************************/		      ;
 /*										*/
 /*	Access methods								*/
 /*										*/
@@ -407,7 +408,7 @@ void handleRequests(boolean wait)
 
 
 
-void sendMessage(String xml)
+void sendMessage(CharSequence xml)
 {
    if (socket_client.isValid()) socket_client.sendMessage(xml);
 }
@@ -454,7 +455,7 @@ private void processRequest(String rqst)
 long sendReport(long now)
 {
    if (!socket_client.isValid()) return now;
-   
+
    // System.err.println("BANDAID: report");
 
    BandaidXmlWriter xw = new BandaidXmlWriter();
@@ -711,13 +712,11 @@ private class SocketClient {
 
    private OutputStream output_stream;
    private BufferedReader input_reader;
-   private char [] char_buf;
    private char [] char_trailer;
    private byte [] byte_buffer;
 
    SocketClient() {
       output_stream = null;
-      char_buf = new char[65536];
       String eom = BANDAID_TRAILER + "\n";
       byte_buffer = new byte[65536];
       char_trailer = new char[eom.length()];
@@ -755,31 +754,40 @@ private class SocketClient {
       return cmd;
     }
 
-   void sendMessage(String msg) {
+   void sendMessage(CharSequence msg) {
       if (output_stream == null) return;
       int slen = 0;
+      int xlen = 0;
+      
       if (msg != null) {
-	 slen = msg.length();
-	 if (char_buf.length < slen+1) char_buf = new char[slen*2+1];
-	 msg.getChars(0,slen,char_buf,0);
-	 if (!msg.endsWith("\n")) char_buf[slen++] = '\n';
+         slen = msg.length();
+         if (msg.charAt(slen-1) != '\n') xlen = 1;
+         // if (char_buf.length < slen+1) char_buf = new char[slen*2+1];
+         // msg.getChars(0,slen,char_buf,0);
+         // if (!msg.endsWith("\n")) char_buf[slen++] = '\n';
        }
-      if (slen + char_trailer.length > byte_buffer.length) {
-	 byte_buffer = new byte[slen*2 + char_trailer.length];
+      if (slen + xlen + char_trailer.length > byte_buffer.length) {
+         byte_buffer = new byte[slen*2 + char_trailer.length];
        }
-      for (int i = 0; i < slen; ++i) {
-	 byte_buffer[i] = (byte) char_buf[i];
+      if (msg != null) {
+         for (int i = 0; i < slen; ++i) {
+            // byte_buffer[i] = (byte) char_buf[i];
+            byte_buffer[i] = (byte) msg.charAt(i);
+          }
+         if (xlen > 0) {
+            byte_buffer[slen++] = '\n';
+          }
        }
       for (int i = 0; i < char_trailer.length; ++i) {
-	 byte_buffer[i+slen] = (byte) char_trailer[i];
+         byte_buffer[i+slen] = (byte) char_trailer[i];
        }
       try {
-	 output_stream.write(byte_buffer,0,slen+char_trailer.length);
-	 output_stream.flush();
+         output_stream.write(byte_buffer,0,slen+char_trailer.length);
+         output_stream.flush();
        }
       catch (IOException e) {
          System.err.println("BANDAID: problem writing output: " + e);
-	 output_stream = null;
+         output_stream = null;
        }
     }
 

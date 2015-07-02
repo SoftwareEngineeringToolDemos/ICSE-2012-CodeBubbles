@@ -117,7 +117,7 @@ String getRepositoryName()
 
 void getDifferences(BvcrDifferenceSet ds)
 {
-   String cmd = svn_command  + " diff";
+   String cmd = svn_command  + " diff -b";
    
    String v0 = ds.getStartVersion();
    if (v0 != null) {

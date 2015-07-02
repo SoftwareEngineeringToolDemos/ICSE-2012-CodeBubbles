@@ -26,7 +26,7 @@ package edu.brown.cs.bubbles.bwiz;
 
 import edu.brown.cs.bubbles.bedu.BeduConstants.Assignment;
 import edu.brown.cs.bubbles.bedu.BeduFactory;
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardSetup;
 
 import javax.swing.*;
 

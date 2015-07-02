@@ -30,18 +30,24 @@
 
 package edu.brown.cs.bubbles.bale;
 
-import edu.brown.cs.bubbles.burp.BurpConstants;
+import edu.brown.cs.bubbles.burp.BurpConstants.BurpEditDelta;
+import edu.brown.cs.bubbles.burp.BurpConstants.BurpPlayableEdit;
+import edu.brown.cs.bubbles.burp.BurpConstants.BurpRange;
+import edu.brown.cs.bubbles.burp.BurpConstants.BurpSharedEdit;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
+import java.util.List;
+
 
 
 
 class BaleDocumentEvent implements DocumentEvent, UndoableEdit, BaleConstants,
-	BurpConstants.BurpSharedEdit {
+	BurpSharedEdit, BurpPlayableEdit
+{
 
 
 
@@ -263,6 +269,62 @@ UndoableEdit getEdit()
 
 
 
+@Override public void playUndo(Document d)
+{
+   if (the_edit != null && the_edit instanceof BurpPlayableEdit) {
+      restorePosition();
+      BurpPlayableEdit ed = (BurpPlayableEdit) the_edit;
+      base_document.baleWriteLock();
+      try {
+	 base_document.markChanged();
+	 ed.playUndo(d);
+       }
+      catch (CannotUndoException e) { }
+      finally { base_document.baleWriteUnlock(); }
+    }
+}
+
+
+
+
+@Override public boolean playUndo(Document d,BurpRange rng)
+{
+   boolean fg = false;
+   if (the_edit != null && the_edit instanceof BurpPlayableEdit) {
+      restorePosition();
+      BurpPlayableEdit ed = (BurpPlayableEdit) the_edit;
+      base_document.baleWriteLock();
+      try {
+	 base_document.markChanged();
+	 fg = ed.playUndo(d,rng);
+       }
+      catch (CannotUndoException e) { }
+      finally { base_document.baleWriteUnlock(); }
+    }
+   return fg;
+}
+
+
+@Override public void updatePosition(Object edit,int pos,int len) { 
+   if (the_edit != null && the_edit instanceof BurpPlayableEdit) {
+      BurpPlayableEdit bpe = (BurpPlayableEdit) the_edit;
+      bpe.updatePosition(edit, pos, len);
+   }
+}
+
+@Override public List<BurpEditDelta> getDeltas() 
+{
+   if (the_edit != null && the_edit instanceof BurpPlayableEdit) {
+      BurpPlayableEdit bpe = (BurpPlayableEdit) the_edit;
+      return bpe.getDeltas();
+    }
+   return null;
+}
+
+
+
+
+
 /********************************************************************************/
 /*										*/
 /*	Position save methods for undo/redo					*/
@@ -272,20 +334,20 @@ UndoableEdit getEdit()
 private void savePosition()
 {
    doc_position = null;
-     try {
-	doc_position = base_document.createPosition(doc_offset);
-     }
-     catch (BadLocationException e) { }
+   // try {
+      // doc_position = base_document.createPosition(doc_offset);
+    // }
+   // catch (BadLocationException e) { }
 }
 
 private void restorePosition()
 {
    if (doc_position == null) return;
-     int off = doc_position.getOffset();
-     if (off != doc_offset) {
-	// BoardLog.logD("BALE","Document position update " + off + doc_offset);
-	doc_offset = off;
-     }
+   int off = doc_position.getOffset();
+   if (off != doc_offset) {
+      // BoardLog.logD("BALE","Document position update " + off + doc_offset);
+      doc_offset = off;
+    }
 }
 
 

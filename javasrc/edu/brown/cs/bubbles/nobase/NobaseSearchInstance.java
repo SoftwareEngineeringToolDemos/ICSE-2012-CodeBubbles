@@ -24,10 +24,10 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import java.util.*;
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
 class NobaseSearchInstance implements NobaseConstants, NobaseAst
 {
@@ -43,6 +43,7 @@ private NobaseProject   for_project;
 private Set<NobaseSymbol> match_symbols;
 private List<SearchResult> result_set;
 private NobaseFile       current_file;
+
 
 
 
@@ -142,6 +143,7 @@ NobaseAstVisitor getFindSymbolsVisitor(String pat,String kind)
       case "CLASS&INTERFACE" :
       case "METHOD" :
       case "CONSTRUCTOR" :
+         p1 = p1.replace("(...)","()");
          kindset.add(NameType.FUNCTION);
          break;
       case "FIELD" :
@@ -228,8 +230,8 @@ private static class Match implements SearchResult {
    private NobaseSymbol container_symbol;
    
    Match(NobaseFile jf,NobaseAstNode n,NobaseSymbol js,NobaseSymbol cntr) {
-      match_start = n.getStartPosition();
-      match_length = n.getEndPosition() - n.getStartPosition();
+      match_start = n.getStartPosition(jf);
+      match_length = n.getEndPosition(jf) - n.getStartPosition(jf);
       match_file = jf;
       match_symbol = js;
       container_symbol = cntr;
@@ -238,7 +240,7 @@ private static class Match implements SearchResult {
    @Override public int getOffset()			{ return match_start; }
    @Override public int getLength()			{ return match_length; }
    @Override public NobaseSymbol getSymbol()	        { return match_symbol; }
-   @Override public NobaseSymbol getContainer()	{ return container_symbol; }
+   @Override public NobaseSymbol getContainer()	        { return container_symbol; }
    @Override public NobaseFile getFile()		{ return match_file; }
    
 }	// end of inner class Match
@@ -270,8 +272,8 @@ private class FindLocationVisitor extends NobaseAstVisitor {
     }
    
    @Override public boolean preVisit2(NobaseAstNode n) {
-      int soff = n.getStartPosition();
-      int eoff = n.getEndPosition();
+      int soff = n.getStartPosition(current_file);
+      int eoff = n.getEndPosition(current_file);
       if (eoff < start_offset) return false;
       if (soff > end_offset) return false;
       return true;
@@ -283,6 +285,12 @@ private class FindLocationVisitor extends NobaseAstVisitor {
       if (js == null) {
          js = n.getParent().getDefinition();
          if (js == null) js = n.getParent().getDefinition();
+       }
+      if (js == null) {
+         NobaseAstNode par = n.getParent();
+         if (par instanceof MemberAccess) {
+            match_symbols.addAll(findAllSymbols(n.getName()));
+          }
        }
       if (js != null) {
          match_symbols.add(js);
@@ -402,11 +410,12 @@ private class LocationVisitor extends NobaseAstVisitor {
       while (n != null) {
          if (n instanceof FunctionConstructor) {
             NobaseSymbol js = n.getDefinition();
-            if (js != null) return js;
+            if (js != null && !NobaseResolver.isGeneratedName(js)) return js;
           }
          else if (n instanceof Declaration) {
             NobaseSymbol js = n.getDefinition();
-            if (js != null && js.getNameType() == NameType.FUNCTION) return js;
+            if (js != null && js.getNameType() == NameType.FUNCTION &&
+                  !NobaseResolver.isGeneratedName(js)) return js;
             else break;
           }
          n = n.getParent();
@@ -466,7 +475,7 @@ public void findTextRegions(ISemanticData isd,boolean pfx,boolean statics,boolea
       xw.begin("RANGE");
       xw.field("PATH",fnm);
       xw.field("START",0);
-      xw.field("END",root.getEndPosition());
+      xw.field("END",root.getEndPosition(isd.getFileData()));
       xw.end("RANGE");
     }
    boolean initcmmts = false;
@@ -485,6 +494,7 @@ public void findTextRegions(ISemanticData isd,boolean pfx,boolean statics,boolea
       requires = true;
     }
    if (topdecls) {
+      initcmmts = true;
       fctdecls = true;
       vardecls = true;
     }
@@ -529,7 +539,12 @@ private class RegionVisitor extends NobaseAstVisitor {
     }
    
    @Override public boolean visit(Block n) {
-      if (current_depth++ == 0) return true;
+      if (current_depth++ == 0) {
+         if (do_comments) {
+            n.getStartPosition(current_file);
+          }
+         return true;
+       }
       return false;
     }
    
@@ -624,8 +639,8 @@ private class RegionVisitor extends NobaseAstVisitor {
     }
    
    private void outputRange(NobaseAstNode n) {
-      int spos = n.getExtendedStartPosition();
-      int epos = n.getExtendedEndPosition();
+      int spos = n.getExtendedStartPosition(current_file);
+      int epos = n.getExtendedEndPosition(current_file);
       xml_writer.begin("RANGE");
       xml_writer.field("PATH",current_file.getFile().getPath());
       xml_writer.field("START",spos);
@@ -633,6 +648,31 @@ private class RegionVisitor extends NobaseAstVisitor {
       xml_writer.end("RANGE");
     }
    
+}
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Find all names matching a pattern                                       */
+/*                                                                              */
+/********************************************************************************/
+
+private Collection<NobaseSymbol> findAllSymbols(String pat)
+{
+   Collection<NobaseSymbol> rslt = new ArrayList<NobaseSymbol>();
+   
+   for (NobaseFile nf : for_project.getAllFiles()) {
+      ISemanticData isd = for_project.getParseData(nf);
+      if (isd.getRootNode() != null) {
+         NobaseScope scp = isd.getRootNode().getScope();
+         if (scp != null) {
+            Collection<NobaseSymbol> syms = scp.findAll(pat);
+            if (syms != null) rslt.addAll(syms);
+          }
+       }
+    }
+   
+   return rslt;
 }
 
 }       // end of class NobaseSearchInstance

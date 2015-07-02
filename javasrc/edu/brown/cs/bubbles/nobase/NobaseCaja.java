@@ -24,12 +24,13 @@
 
 package edu.brown.cs.bubbles.nobase;
 
-import com.google.caja.parser.js.*;
-import com.google.caja.parser.*;
 import com.google.caja.lexer.*;
+import com.google.caja.parser.AbstractParseTreeNode;
+import com.google.caja.parser.ParseTreeNode;
+import com.google.caja.parser.js.*;
 import com.google.caja.reporting.*;
 
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.IDocument;
 
 import java.util.*;
 
@@ -89,12 +90,12 @@ NobaseCaja()
       Block b = p.parse();
       rslt = new ParseData(proj,fd,smq,b,lib);
       if (do_debug) {
-         MessageContext mctx = new MessageContext();
-         try {
-            b.formatTree(mctx,System.err);
-            System.err.println();
-          }
-         catch (Exception e) { }
+	 MessageContext mctx = new MessageContext();
+	 try {
+	    b.formatTree(mctx,System.err);
+	    System.err.println();
+	  }
+	 catch (Exception e) { }
        }
     }
    catch (ParseException e) {
@@ -128,51 +129,51 @@ private static class ParseData implements ISemanticData {
       is_library = lib;
       message_list = new ArrayList<NobaseMessage>();
       for (Message m : smq.getMessages()) {
-         ErrorSeverity es = ErrorSeverity.ERROR;
-         switch (m.getMessageLevel()) {
-            case ERROR :
-            case FATAL_ERROR :
-               break;
-            case INFERENCE :
-               es = ErrorSeverity.INFO;
-               break;
-            case LINT :
-            case WARNING :
-               es = ErrorSeverity.WARNING;
-               break;
-            case SUMMARY :
-            case LOG :
-               continue;
-          }
-         FilePosition fp = null;
-         for (MessagePart mp : m.getMessageParts()) {
-            if (mp instanceof FilePosition) {
-               fp = (FilePosition) mp;
-               break;
-             }
-          }
-         int startln = 0;
-         int startcol = 0;
-         int endln = 0;
-         int endcol = 0;
-         String msg = m.toString();
-         if (fp != null) {
-            startln = fp.startLineNo();
-            startcol = fp.startCharInLine();
-            endln = fp.endLineNo();
-            endcol = fp.endCharInLine();
-            if (msg.startsWith("file:")) {
-               int idx = msg.indexOf(":");
-               idx = msg.indexOf(":",idx+1);
-               idx = msg.indexOf(":",idx+1);
-               msg = msg.substring(idx+1).trim();
-             }
-          }
-   
-         NobaseMessage nm = new NobaseMessage(es,msg,startln,startcol,endln,endcol);
-         if (!is_library) message_list.add(nm);
+	 ErrorSeverity es = ErrorSeverity.ERROR;
+	 switch (m.getMessageLevel()) {
+	    case ERROR :
+	    case FATAL_ERROR :
+	       break;
+	    case INFERENCE :
+	       es = ErrorSeverity.INFO;
+	       break;
+	    case LINT :
+	    case WARNING :
+	       es = ErrorSeverity.WARNING;
+	       break;
+	    case SUMMARY :
+	    case LOG :
+	       continue;
+	  }
+	 FilePosition fp = null;
+	 for (MessagePart mp : m.getMessageParts()) {
+	    if (mp instanceof FilePosition) {
+	       fp = (FilePosition) mp;
+	       break;
+	     }
+	  }
+	 int startln = 0;
+	 int startcol = 0;
+	 int endln = 0;
+	 int endcol = 0;
+	 String msg = m.toString();
+	 if (fp != null) {
+	    startln = fp.startLineNo();
+	    startcol = fp.startCharInLine();
+	    endln = fp.endLineNo();
+	    endcol = fp.endCharInLine();
+	    if (msg.startsWith("file:")) {
+	       int idx = msg.indexOf(":");
+	       idx = msg.indexOf(":",idx+1);
+	       idx = msg.indexOf(":",idx+1);
+	       msg = msg.substring(idx+1).trim();
+	     }
+	  }
+
+	 NobaseMessage nm = new NobaseMessage(es,msg,startln,startcol,endln,endcol);
+	 if (!is_library) message_list.add(nm);
        }
-      
+
       root_node = new CajaAstFileModule(b,null);
     }
 
@@ -180,14 +181,14 @@ private static class ParseData implements ISemanticData {
    @Override public NobaseProject getProject()		{ return for_project; }
    @Override public List<NobaseMessage> getMessages()	{ return message_list; }
    @Override public NobaseAst.NobaseAstNode getRootNode() {
-      return root_node; 
+      return root_node;
     }
-   
+
    @Override public void addMessages(List<NobaseMessage> msgs) {
       if (msgs == null || is_library) return;
       message_list.addAll(msgs);
     }
-   
+
 
 }	// end of inner class ParseData
 
@@ -205,7 +206,7 @@ private static CajaAstNode createCajaAstNode(ParseTreeNode pn,CajaAstNode par)
    if (pn == null) return null;
    CajaAstNode rslt = node_map.get(pn);
    if (rslt != null) return rslt;
-   
+
    if (pn instanceof ArrayConstructor) return new CajaAstArrayConstructor(pn,par);
    if (pn instanceof AssignOperation) return new CajaAstAssignOperation(pn,par);
    if (pn instanceof Block) return new CajaAstBlock(pn,par);
@@ -251,35 +252,35 @@ private static CajaAstNode createCajaAstNode(ParseTreeNode pn,CajaAstNode par)
    if (pn instanceof ValueProperty) return new CajaAstValueProperty(pn,par);
    if (pn instanceof WhileLoop) return new CajaAstWhileLoop(pn,par);
    if (pn instanceof WithStmt) return new CajaAstWithStatement(pn,par);
-   
-   // these need to be last since they have subclasses 
+
+   // these need to be last since they have subclasses
    if (pn instanceof Declaration) return new CajaAstDeclaration(pn,par);
    if (pn instanceof SpecialOperation) {
       SpecialOperation sop = (SpecialOperation) pn;
       switch (sop.getOperator()) {
-         case SQUARE_BRACKET :
-            return new CajaAstArrayIndex(pn,par);
-         case MEMBER_ACCESS :
-            return new CajaAstMemberAccess(pn,par);
-         case CONSTRUCTOR :
-            return new CajaAstConstructorCall(pn,par);
-         case FUNCTION_CALL :
-            return new CajaAstFunctionCall(pn,par);
-         case DELETE :
-            return new CajaAstDeleteOperation(pn,par);
-         case VOID :
-            return new CajaAstVoidOperation(pn,par);
-         case TYPEOF :
-            return new CajaAstTypeofOperation(pn,par);
-         case IN :
-            return new CajaAstInOperation(pn,par);
-         case COMMA :
-            return new CajaAstCommaOperation(pn,par);
-         default :
-            return null;
+	 case SQUARE_BRACKET :
+	    return new CajaAstArrayIndex(pn,par);
+	 case MEMBER_ACCESS :
+	    return new CajaAstMemberAccess(pn,par);
+	 case CONSTRUCTOR :
+	    return new CajaAstConstructorCall(pn,par);
+	 case FUNCTION_CALL :
+	    return new CajaAstFunctionCall(pn,par);
+	 case DELETE :
+	    return new CajaAstDeleteOperation(pn,par);
+	 case VOID :
+	    return new CajaAstVoidOperation(pn,par);
+	 case TYPEOF :
+	    return new CajaAstTypeofOperation(pn,par);
+	 case IN :
+	    return new CajaAstInOperation(pn,par);
+	 case COMMA :
+	    return new CajaAstCommaOperation(pn,par);
+	 default :
+	    return null;
        }
     }
-   
+
    return null;
 }
 
@@ -308,21 +309,21 @@ private abstract static class CajaAstNode extends NobaseAstNodeBase {
    public void accept(NobaseAstVisitor v) {
       if (v == null) return;
       if (v.preVisit2(this)) {
-         if (accept0(v)) {
-            for (ParseTreeNode ptn : caja_node.children()) {
-               if (ptn == null) continue;
-               CajaAstNode cn = createCajaAstNode(ptn,this);
-               cn.accept(v);
-             }
-          }
-         accept1(v);
+	 if (accept0(v)) {
+	    for (ParseTreeNode ptn : caja_node.children()) {
+	       if (ptn == null) continue;
+	       CajaAstNode cn = createCajaAstNode(ptn,this);
+	       cn.accept(v);
+	     }
+	  }
+	 accept1(v);
        }
       v.postVisit(this);
     }
 
    protected abstract boolean accept0(NobaseAstVisitor v);
    protected abstract void accept1(NobaseAstVisitor v);
-   
+
    @Override public NobaseAst.NobaseAstNode getParent() { return parent_node; }
    @Override public int getNumChildren() {
       return caja_node.children().size();
@@ -332,29 +333,29 @@ private abstract static class CajaAstNode extends NobaseAstNodeBase {
       if (i >= caja_node.children().size()) return null;
       return createCajaAstNode(caja_node.children().get(i),this);
     }
-   
-   @Override public int getStartLine() {
+
+   @Override public int getStartLine(NobaseFile nf) {
       return getCajaNode().getFilePosition().startLineNo();
     }
-   @Override public int getStartChar() {
+   @Override public int getStartChar(NobaseFile nf) {
       return getCajaNode().getFilePosition().startCharInLine();
     }
-   @Override public int getStartPosition() {
+   @Override public int getStartPosition(NobaseFile nf) {
       return getCajaNode().getFilePosition().startCharInFile()-1;
     }
-   @Override public int getEndLine() {
+   @Override public int getEndLine(NobaseFile nf) {
       return getCajaNode().getFilePosition().endLineNo();
     }
-   @Override public int getEndChar() {
+   @Override public int getEndChar(NobaseFile nf) {
       return getCajaNode().getFilePosition().endCharInLine();
     }
-   @Override public int getEndPosition() {
+   @Override public int getEndPosition(NobaseFile nf) {
       // bubbles wants offsets to be 0 based
       return getCajaNode().getFilePosition().endCharInFile()-1;
     }
-   
-   @Override public int getExtendedStartPosition() {
-      int spos = getStartPosition();
+
+   @Override public int getExtendedStartPosition(NobaseFile nf) {
+      int spos = getStartPosition(nf);
       if (caja_node != null) {
          for (Token<?> t : caja_node.getComments()) {
             spos = Math.min(spos,t.pos.startCharInFile());
@@ -362,9 +363,9 @@ private abstract static class CajaAstNode extends NobaseAstNodeBase {
        }
       return spos;
     }
-   
-   @Override public int getExtendedEndPosition() {
-      int epos = getEndPosition();
+
+   @Override public int getExtendedEndPosition(NobaseFile nf) {
+      int epos = getEndPosition(nf);
       if (caja_node != null) {
          for (Token<?> t : caja_node.getComments()) {
             epos = Math.max(epos,t.pos.endCharInFile());
@@ -372,70 +373,70 @@ private abstract static class CajaAstNode extends NobaseAstNodeBase {
        }
       return epos;
     }
-   
+
    @Override public String toString() {
       StringBuffer buf = new StringBuffer();
       buf.append(((AbstractParseTreeNode) getCajaNode()).toString());
-      
+
       // MessageContext ctx = new MessageContext();
       // try {
-         // getCajaNode().format(ctx,buf);
+	 // getCajaNode().format(ctx,buf);
        // }
       // catch (IOException e) {
-         // return super.toString();
+	 // return super.toString();
        // }
-      
+
       return buf.toString();
     }
-   
+
 }	// end of inner class CajaAst
 
 
 private static class CajaAstFileModule extends CajaAstNode implements NobaseAst.FileModule {
-   
+
    CajaAstBlock  block_node;
-   
+
    CajaAstFileModule(Block b,CajaAstNode par) {
       super(null,par);
       block_node = (CajaAstBlock) createCajaAstNode(b,this);
     }
-   
+
    protected ParseTreeNode getCajaNode()		{ return block_node.getCajaNode(); }
-   
+
    @Override public NobaseAst.Block getBlock() {
       return block_node;
     }
-   @Override public int getNumChildren()                 { return 1; }
+   @Override public int getNumChildren()		 { return 1; }
    @Override public NobaseAst.NobaseAstNode getChild(int i) {
       if (i == 0) return block_node;
       return null;
     }
-   
+
    public void accept(NobaseAstVisitor v) {
       if (v == null) return;
       if (v.preVisit2(this)) {
-         if (accept0(v)) {
-            block_node.accept(v);
-          }
-         accept1(v);
+	 if (accept0(v)) {
+	    block_node.accept(v);
+	  }
+	 accept1(v);
        }
       v.postVisit(this);
-    } 
-   
+    }
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }
 
 
 private abstract static class CajaAstExpression extends CajaAstNode implements NobaseAst.Expression {
-   
+
    protected CajaAstExpression(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
-   private Expression getExprNode()             { return (Expression) getCajaNode(); }
-   
+
+   private Expression getExprNode()		{ return (Expression) getCajaNode(); }
+
    @Override public boolean isLeftHandSide() {
       return getExprNode().isLeftHandSide();
     }
@@ -445,39 +446,39 @@ private abstract static class CajaAstExpression extends CajaAstNode implements N
 
 
 private abstract static class CajaAstOperation extends CajaAstExpression implements NobaseAst.Operation {
-   
+
    protected CajaAstOperation(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
-   private Operation getOpNode()                { return (Operation) getCajaNode(); }
-   
-   @Override public int getNumOperands()        { return getOpNode().children().size(); }
-   
+
+   private Operation getOpNode()		{ return (Operation) getCajaNode(); }
+
+   @Override public int getNumOperands()	{ return getOpNode().children().size(); }
+
    @Override public String getOperator() {
       return getOpNode().getOperator().getSymbol();
     }
-   
+
    @Override public NobaseAst.Expression getOperand(int i) {
       return (NobaseAst.Expression) createCajaAstNode(getOpNode().children().get(i),this);
     }
-   
+
    @Override public boolean isLeftHandSide() {
       return getOpNode().isLeftHandSide();
     }
-   
-}       // end of inner calss CajaAstOperation
+
+}	// end of inner calss CajaAstOperation
 
 private static class CajaAstArrayConstructor extends CajaAstExpression implements NobaseAst.ArrayConstructor {
 
    CajaAstArrayConstructor(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
-   private ArrayConstructor getNode() { 
-      return (ArrayConstructor) getCajaNode(); 
+
+   private ArrayConstructor getNode() {
+      return (ArrayConstructor) getCajaNode();
     }
-   
+
    @Override public int getNumElements() {
       return getNode().children().size();
     }
@@ -493,14 +494,14 @@ private static class CajaAstArrayConstructor extends CajaAstExpression implement
 
 
 private static class CajaAstArrayIndex extends CajaAstOperation implements NobaseAst.ArrayIndex {
-   
+
    CajaAstArrayIndex(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
-}       // end of inner class CajaAstArrayIndex	
+
+}	// end of inner class CajaAstArrayIndex
 
 
 
@@ -541,7 +542,7 @@ private static class CajaAstBooleanLiteral extends CajaAstExpression implements 
    @Override public Boolean getValue() {
       return ((BooleanLiteral) getCajaNode()).getValue();
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -592,27 +593,27 @@ private static class CajaAstCatchStatement extends CajaAstNode implements Nobase
 
 
 private static class CajaAstCommaOperation extends CajaAstOperation implements NobaseAst.CommaOperation {
-   
+
    CajaAstCommaOperation(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstCommaOperation
 
 
 
 private static class CajaAstConstructorCall extends CajaAstOperation implements NobaseAst.ConstructorCall {
-   
+
    CajaAstConstructorCall(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstConstructorCall
 
 
@@ -672,14 +673,14 @@ private static class CajaAstDefaultCaseStatement extends CajaAstNode implements 
 
 
 private static class CajaAstDeleteOperation extends CajaAstOperation implements NobaseAst.DeleteOperation {
-   
+
    CajaAstDeleteOperation(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstDeleteOperation
 
 
@@ -700,27 +701,27 @@ private static class CajaAstDirective extends CajaAstNode implements NobaseAst.D
 
 
 private static class CajaAstDeclaration extends CajaAstNode implements NobaseAst.Declaration {
-   
+
    CajaAstDeclaration(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
-   private com.google.caja.parser.js.Declaration getNode() { 
+
+   private com.google.caja.parser.js.Declaration getNode() {
       return (com.google.caja.parser.js.Declaration) getCajaNode();
     }
-   
+
    @Override public NobaseAst.Identifier getIdentifier() {
       return (NobaseAst.Identifier) createCajaAstNode(getNode().getIdentifier(),this);
     }
-   
+
    @Override public NobaseAst.Expression getInitializer() {
       return (NobaseAst.Expression) createCajaAstNode(getNode().getInitializer(),this);
     }
-   
-   
+
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstDeclaration
 
 
@@ -774,12 +775,12 @@ private static class CajaAstExpressionStatement extends CajaAstNode implements N
       super(pn,par);
     }
 
-   private ExpressionStmt getNode()        { return (ExpressionStmt) getCajaNode(); }
-   
+   private ExpressionStmt getNode()	   { return (ExpressionStmt) getCajaNode(); }
+
    @Override public NobaseAst.Expression getExpression() {
       return (NobaseAst.Expression) createCajaAstNode(getNode().getExpression(),this);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -835,9 +836,9 @@ private static class CajaAstFormalParameter extends CajaAstNode implements Nobas
    CajaAstFormalParameter(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
-   private FormalParam getNode()                { return (FormalParam) getCajaNode(); }
-   
+
+   private FormalParam getNode()		{ return (FormalParam) getCajaNode(); }
+
    @Override public NobaseAst.Identifier getIdentifier() {
       return (NobaseAst.Identifier) createCajaAstNode(getNode().getIdentifier(),this);
     }
@@ -850,14 +851,14 @@ private static class CajaAstFormalParameter extends CajaAstNode implements Nobas
 
 
 private static class CajaAstFunctionCall extends CajaAstOperation implements NobaseAst.FunctionCall {
-   
+
    CajaAstFunctionCall(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstFunctionCall
 
 
@@ -868,24 +869,24 @@ private static class CajaAstFunctionConstructor extends CajaAstExpression implem
       super(pn,par);
     }
 
-   private FunctionConstructor getNode()        { return (FunctionConstructor) getCajaNode(); }
-   
+   private FunctionConstructor getNode()	{ return (FunctionConstructor) getCajaNode(); }
+
    @Override public NobaseAst.Block getBody() {
       return (NobaseAst.Block) createCajaAstNode(getNode().getBody(),this);
     }
-   
+
    @Override public NobaseAst.Identifier getIdentifier() {
       return (NobaseAst.Identifier) createCajaAstNode(getNode().getIdentifier(),this);
     }
-   
+
    @Override public List<NobaseAst.FormalParameter> getParameters() {
       List<NobaseAst.FormalParameter> rslt = new ArrayList<NobaseAst.FormalParameter>();
       for (FormalParam fp : getNode().getParams()) {
-         rslt.add((NobaseAst.FormalParameter) createCajaAstNode(fp,this));
+	 rslt.add((NobaseAst.FormalParameter) createCajaAstNode(fp,this));
        }
       return rslt;
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -928,12 +929,12 @@ private static class CajaAstIdentifier extends CajaAstNode implements NobaseAst.
       super(pn,par);
     }
 
-   private Identifier getNode()         { return (Identifier) getCajaNode(); }
-   
+   private Identifier getNode() 	{ return (Identifier) getCajaNode(); }
+
    @Override public String getName() {
       return getNode().getName();
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -956,14 +957,14 @@ private static class CajaAstIfStatement extends CajaAstNode implements NobaseAst
 
 
 private static class CajaAstInOperation extends CajaAstOperation implements NobaseAst.InOperation {
-   
+
    CajaAstInOperation(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstInOperation
 
 
@@ -1001,19 +1002,19 @@ private static class CajaAstLabeledStatement extends CajaAstNode implements Noba
 
 
 private static class CajaAstMemberAccess extends CajaAstOperation implements NobaseAst.MemberAccess {
-   
+
    CajaAstMemberAccess(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    @Override public String getMemberName() {
       Reference r = (Reference) getCajaNode().children().get(1);
       return r.getIdentifierName();
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstMemberAccess
 
 
@@ -1067,33 +1068,19 @@ private static class CajaAstObjectConstructor extends CajaAstExpression implemen
       super(pn,par);
     }
 
-   private ObjectConstructor getNode()          { return (ObjectConstructor) getCajaNode(); }
-   
-   @Override public int getNumElements()        { return getNode().children().size(); }
+   private ObjectConstructor getNode()		{ return (ObjectConstructor) getCajaNode(); }
+
+   @Override public int getNumElements()	{ return getNode().children().size(); }
    @Override public NobaseAst.NobaseAstNode getElement(int i) {
       return createCajaAstNode(getNode().children().get(i),this);
     }
-      
-     
-   
+
+
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
 }	// end of inner class CajaAstObjectConstructor
-
-
-
-
-private static class CajaAstPlainModule extends CajaAstNode implements NobaseAst.PlainModule {
-
-   CajaAstPlainModule(ParseTreeNode pn,CajaAstNode par) {
-      super(pn,par);
-    }
-
-   protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
-   protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-
-}	// end of inner class CajaAstPlainModule
 
 
 
@@ -1107,7 +1094,7 @@ private static class CajaAstRealLiteral extends CajaAstExpression implements Nob
    @Override public Number getValue() {
       return ((RealLiteral) getCajaNode()).getValue();
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -1121,17 +1108,17 @@ private static class CajaAstReference extends CajaAstNode implements NobaseAst.R
    CajaAstReference(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
-   private Reference getNode()          { return (Reference) getCajaNode(); }
-   
+
+   private Reference getNode()		{ return (Reference) getCajaNode(); }
+
    @Override public NobaseAst.Identifier getIdentifier() {
       return (NobaseAst.Identifier) createCajaAstNode(getNode().getIdentifier(),this);
     }
-   
+
    @Override public boolean isLeftHandSide() {
       return getNode().isLeftHandSide();
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -1160,8 +1147,16 @@ private static class CajaAstReturnStatement extends CajaAstNode implements Nobas
       super(pn,par);
     }
 
+   private ReturnStmt getNode()                 { return (ReturnStmt) getCajaNode(); }
+   
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
+   
+   @Override public NobaseAst.Expression getExpression() {
+      ReturnStmt ret = getNode();
+      if (ret.getReturnValue() == null) return null;
+      return (NobaseAst.Expression) createCajaAstNode(ret.getReturnValue(),this);
+    }
 
 }	// end of inner class CajaAstReturnStatement
 
@@ -1205,7 +1200,7 @@ private static class CajaAstStringLiteral extends CajaAstExpression implements N
    @Override public String getValue() {
       return ((StringLiteral) getCajaNode()).getUnquotedValue();
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -1255,14 +1250,14 @@ private static class CajaAstTryStatement extends CajaAstNode implements NobaseAs
 
 
 private static class CajaAstTypeofOperation extends CajaAstOperation implements NobaseAst.TypeofOperation {
-   
+
    CajaAstTypeofOperation(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstTypeofOperation
 
 
@@ -1273,16 +1268,16 @@ private static class CajaAstValueProperty extends CajaAstNode implements NobaseA
       super(pn,par);
     }
 
-   private ValueProperty getNode()      { return (ValueProperty) getCajaNode(); }
-   
+   private ValueProperty getNode()	{ return (ValueProperty) getCajaNode(); }
+
    @Override public NobaseAst.Expression getValueExpression() {
       return (NobaseAst.Expression) createCajaAstNode(getNode().getValueExpr(),this);
     }
-   
+
    @Override public String getPropertyName() {
       return getNode().getPropertyName();
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
 
@@ -1310,13 +1305,13 @@ private static class CajaAstWithStatement extends CajaAstNode implements NobaseA
    CajaAstWithStatement(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
-   private WithStmt getNode()              { return (WithStmt) getCajaNode(); }
-   
+
+   private WithStmt getNode()		   { return (WithStmt) getCajaNode(); }
+
    @Override public NobaseAst.Statement getBody() {
       return (NobaseAst.Statement) createCajaAstNode(getNode().getBody(),this);
     }
-   
+
    @Override public NobaseAst.Expression getScopeObject() {
       return (NobaseAst.Expression) createCajaAstNode(getNode().getScopeObject(),this);
     }
@@ -1328,14 +1323,14 @@ private static class CajaAstWithStatement extends CajaAstNode implements NobaseA
 
 
 private static class CajaAstVoidOperation extends CajaAstOperation implements NobaseAst.VoidOperation {
-   
+
    CajaAstVoidOperation(ParseTreeNode pn,CajaAstNode par) {
       super(pn,par);
     }
-   
+
    protected boolean accept0(NobaseAstVisitor visitor)	{ return visitor.visit(this); }
    protected void accept1(NobaseAstVisitor visitor)	{ visitor.endVisit(this); }
-   
+
 }	// end of inner class CajaAstVoidOperation
 
 

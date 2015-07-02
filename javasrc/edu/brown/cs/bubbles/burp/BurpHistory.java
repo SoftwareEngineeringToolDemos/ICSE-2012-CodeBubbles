@@ -35,8 +35,7 @@ import edu.brown.cs.bubbles.bump.BumpConstants;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.*;
 import javax.swing.undo.UndoableEdit;
 
 import java.awt.event.ActionEvent;
@@ -75,11 +74,13 @@ private BurpChangeData			current_change;
 private BurpChangeData			first_change;
 private Map<JTextComponent,BurpEditorData>  editor_map;
 private Map<UndoableEdit,BurpChangeData>    change_map;
+private Map<Document,BurpChangeData>	    undo_command;
 
 private static BurpHistory		the_history = null;
-private static UndoRedoAction		undo_action = new UndoRedoAction(-1);
-private static UndoRedoAction		redo_action = new UndoRedoAction(1);
-
+private static UndoRedoAction		undo_action = new UndoRedoAction(-1,false);
+private static UndoRedoAction		redo_action = new UndoRedoAction(1,false);
+private static UndoRedoAction		undo_selection_action = new UndoRedoAction(-1,true);
+private static UndoRedoAction		redo_selection_action = new UndoRedoAction(1,true);
 
 
 /********************************************************************************/
@@ -119,6 +120,22 @@ public static Action getRedoAction()		{ return redo_action; }
 
 
 
+/**
+*      Return the singluar instance of an UNDO editor action that can be
+*      associated with key strokes or invoked on mouse action.
+**/
+
+public static Action getUndoSelectionAction()  { return undo_selection_action; }
+
+
+/**
+*      Return the singular instance of a REDO editor action.
+**/
+
+public static Action getRedoSelectionAction()  { return redo_selection_action; }
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -131,6 +148,7 @@ private BurpHistory()
    current_change = null;
    editor_map = new HashMap<JTextComponent,BurpEditorData>();
    change_map = new HashMap<UndoableEdit,BurpChangeData>();
+   undo_command = new HashMap<Document,BurpChangeData>();
 
    BumpClient.getBump().addChangeHandler(new ChangeHandler());
 }
@@ -279,7 +297,8 @@ public void undo(JTextComponent be)
 	  }
        }
     }
-   // deps = null;		// remove effect of above code to try new undo mechanism
+   deps = null; 	// remove effect of above code to try new undo mechanism
+   // null this out to force undo at the file level
 
    boolean havesig = false;
    while (!havesig) {
@@ -292,6 +311,140 @@ public void undo(JTextComponent be)
       if (cd.isSignificant()) havesig = true;
     }
 }
+
+
+void playUndo(JTextComponent be,boolean sel)
+{
+   BurpRange rng = null;
+
+   BoardLog.logD("BURP","Start PLAYUNDO " + sel);
+
+   if (sel) {
+      int soff = be.getSelectionStart();
+      int eoff = be.getSelectionEnd();
+      if (soff != eoff) {
+	 Document d = be.getDocument();
+	 try {
+	    rng = new UndoRedoRange(d,soff,eoff);
+	  }
+	 catch (BadLocationException ex) {
+	    System.err.println("BAD RANGE: " + ex);
+	  }
+       }
+      else return;              // do nothing if there is no region
+    }
+
+   BoardMetrics.noteCommand("BURP","undo");
+
+   BurpEditorData ed = null;
+   if (be != null) {
+      ed = editor_map.get(be);
+      if (ed == null) return;
+    }
+
+   BurpChangeData cd = (ed == null ? current_change : ed.getCurrentChange());
+   while (cd != null && cd.getChangeType() == ChangeType.END_UNDO) {
+      cd = cd.getBackLink();
+    }
+   if (cd == null || !cd.canUndo()) return;
+
+   insertPlaceholder(ed,ChangeType.START_UNDO,null);
+   int lvl = 0;
+   for ( ; ; ) {
+      if (cd == null) break;
+      if (!cd.canUndo()) break;
+      switch (cd.getChangeType()) {
+	 case EDIT :
+	    BurpChangeData pvd = undo_command.put(cd.getBaseEditDocument(),cd);
+	    cd.playUndo(rng);
+	    if (pvd == null) undo_command.remove(cd.getBaseEditDocument());
+	    else undo_command.put(cd.getBaseEditDocument(),pvd);
+	    break;
+	 case END_UNDO :
+	 case END_REDO :
+	    ++lvl;
+	    break;
+	 case START_UNDO :
+	 case START_REDO :
+	    --lvl;
+	    break;
+	 default :
+	    break;
+       }
+      if (lvl == 0 && cd.isSignificant()) break;
+      cd = cd.getPrior(ed);
+    }
+   if (cd != null) cd = cd.getPrior(ed);
+   insertPlaceholder(ed,ChangeType.END_UNDO,cd);
+}
+
+
+
+public void playRedo(JTextComponent be,boolean sel)
+{
+   BurpRange rng = null;
+
+   BoardLog.logD("BURP","Start PLAYREDO " + sel);
+
+   if (sel) {
+      int soff = be.getSelectionStart();
+      int eoff = be.getSelectionEnd();
+      if (soff != eoff) {
+	 Document d = be.getDocument();
+	 try {
+	    rng = new UndoRedoRange(d,soff,eoff);
+	  }
+	 catch (BadLocationException ex) {
+	    System.err.println("BAD RANGE: " + ex);
+	  }
+       }
+      else return;              // do nothing if there is no region
+    }
+
+   BoardMetrics.noteCommand("BURP","redo");
+
+   BurpEditorData ed = null;
+   if (be != null) {
+      ed = editor_map.get(be);
+      if (ed == null) return;
+    }
+
+   BurpChangeData cd = (ed == null ? current_change : ed.getCurrentChange());
+   while (cd != null && cd.getChangeType() == ChangeType.END_REDO) {
+      cd = cd.getBackLink();
+    }
+   if (cd != null && cd.getChangeType() != ChangeType.END_UNDO) return;
+
+   insertPlaceholder(ed,ChangeType.START_REDO,cd);
+   int lvl = 0;
+   for ( ; ; ) {
+      if (cd == null) break;
+      if (!cd.canUndo()) break;
+      switch (cd.getChangeType()) {
+	 case EDIT :
+	    BurpChangeData pvd = undo_command.put(cd.getBaseEditDocument(),cd);
+	    cd.playUndo(rng);
+	    if (pvd == null) undo_command.remove(cd.getBaseEditDocument());
+	    else undo_command.put(cd.getBaseEditDocument(),pvd);
+	    break;
+	 case START_UNDO :
+	 case START_REDO :
+	    --lvl;
+	    break;
+	 case END_UNDO :
+	 case END_REDO :
+	    ++lvl;
+	    break;
+	 default :
+	    break;
+       }
+      if (lvl == 0 && cd.isSignificant()) break;
+      cd = cd.getPrior(ed);
+    }
+   if (cd != null) cd = cd.getPrior(ed);
+   insertPlaceholder(ed,ChangeType.END_REDO,cd);
+}
+
 
 
 
@@ -356,13 +509,26 @@ synchronized void handleNewEdit(BurpEditorData ed,UndoableEdit ue,boolean evt,bo
 
    BurpChangeData cd = change_map.get(bed);
    if (cd == null) {
+      if (ue instanceof BurpPlayableEdit && ue instanceof BurpSharedEdit) {
+         List<BurpEditDelta> delta = ((BurpPlayableEdit) ue).getDeltas();
+         BurpSharedEdit bse = (BurpSharedEdit) ue;
+         Document bdoc = bse.getBaseEditDocument();
+         Object root = ue;
+         BurpChangeData undocd = undo_command.get(bdoc);
+         if (undocd != null) root = undocd.getRootEdit();
+         if (delta != null) {
+            applyDeltas(root,bdoc,delta);
+          }
+       }
       removeForward(null);
       cd = new BurpChangeData(this,ue,current_change);
       if (current_change == null) first_change = cd;
       current_change = cd;
       change_map.put(bed,cd);
+      BurpChangeData undocd = undo_command.get(cd.getBaseEditDocument());
+      if (undocd != null) cd.setBackLink(undocd);
     }
-   BoardLog.logD("BURP","Record edit " + cd + " " + ue.getUndoPresentationName() + " " + ed);
+   BoardLog.logD("BURP","Record edit " + cd + " " + ue.getUndoPresentationName() + " " + ed + " " + evt + " " + sig);
 
    if (evt) cd.setSignificant(sig);
 
@@ -370,6 +536,39 @@ synchronized void handleNewEdit(BurpEditorData ed,UndoableEdit ue,boolean evt,bo
       removeForward(ed);
       ed.addChange(cd);
     }
+}
+
+
+void applyDeltas(Object edit,Document d,List<BurpEditDelta> ed)
+{
+   if (d == null) return;
+   if (ed == null || ed.size() == 0) return;
+
+   for (BurpChangeData cd = first_change; cd != null; cd = cd.getNext(null)) {
+      if (cd.getBaseEditDocument() == d) {
+	 BurpPlayableEdit bse = cd.getPlayableEdit();
+	 if (bse != null) {
+	    for (BurpEditDelta del : ed) {
+	       bse.updatePosition(edit,del.getOffset(),del.getDelta());
+	    }
+	 }
+       }
+    }
+}
+
+
+synchronized BurpChangeData insertPlaceholder(BurpEditorData ed,ChangeType cty,BurpChangeData link)
+{
+   BurpChangeData cd = new BurpChangeData(this,cty,current_change,link);
+   if (current_change == null) first_change = cd;
+   current_change = cd;
+   BoardLog.logD("BURP","Placeholder " + cd + " " + cty + " " + ed);
+   if (ed != null) {
+      removeForward(ed);
+      ed.addChange(cd);
+    }
+
+   return cd;
 }
 
 
@@ -448,24 +647,56 @@ private String getEditCommandName(BurpEditorData be,UndoableEdit ed)
 private static class UndoRedoAction extends AbstractAction {
 
    private int history_direction;
+   private boolean use_selection;
 
    private static final long serialVersionUID = 1;
 
-   UndoRedoAction(int dir) {
-      super(dir > 0 ? "Redo" : "Undo");
+   UndoRedoAction(int dir,boolean sel) {
+      super((dir > 0 ? "Redo" : "Undo") + (sel ? "Selection" : ""));
       history_direction = dir;
+      use_selection = sel;
     }
 
    @Override public void actionPerformed(ActionEvent e) {
       BurpHistory hist = BurpHistory.getHistory();
       if (e.getSource() instanceof JTextComponent) {
 	 JTextComponent bed = (JTextComponent) e.getSource();
-	 if (history_direction < 0) hist.undo(bed);
-	 else hist.redo(bed);
+	 if (history_direction < 0) hist.playUndo(bed,use_selection);
+	 else hist.playRedo(bed,use_selection);
        }
     }
 
 }	// end of inner class UndoRedoAction
+
+
+
+private static class UndoRedoRange implements BurpRange {
+
+   private Position start_position;
+   private Position end_position;
+
+   UndoRedoRange(Document d,int spos,int epos) throws BadLocationException {
+      if (d instanceof BurpEditorDocument) {
+	 BurpEditorDocument bed = (BurpEditorDocument) d;
+	 start_position = bed.createHistoryPosition(spos);
+	 end_position = bed.createHistoryPosition(epos);
+       }
+      else {
+	 start_position = d.createPosition(spos);
+	 end_position = d.createPosition(epos);
+       }
+    }
+
+   @Override public int getStartPosition() {
+      return start_position.getOffset();
+    }
+
+   @Override public int getEndPosition() {
+      return end_position.getOffset();
+    }
+
+}	// end of inner class UndoRedoRange
+
 
 
 

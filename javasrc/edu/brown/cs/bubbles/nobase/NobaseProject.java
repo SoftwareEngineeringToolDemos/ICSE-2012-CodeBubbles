@@ -24,13 +24,12 @@
 
 package edu.brown.cs.bubbles.nobase;
 
+import edu.brown.cs.ivy.exec.IvyExec;
+import edu.brown.cs.ivy.file.IvyFile;
 import edu.brown.cs.ivy.xml.IvyXml;
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
-import edu.brown.cs.ivy.exec.*;
-import edu.brown.cs.ivy.file.*;
 
-import org.json.*;
-
+import org.json.JSONObject;
 import org.w3c.dom.Element;
 
 import java.io.*;
@@ -87,6 +86,13 @@ NobaseProject(NobaseMain pm,String name,File base)
    all_files = new HashSet<NobaseFile>();
    parse_data = new HashMap<NobaseFile,ISemanticData>();
    global_scope = new NobaseScope(ScopeType.GLOBAL,null);
+   NobaseSymbol undef = new NobaseSymbol(this,null,null,"undefined",true);
+   global_scope.define(undef);
+   NobaseSymbol ths = new NobaseSymbol(this,null,null,"this",true);
+   NobaseValue thisval = NobaseValue.createObject();
+   ths.setValue(thisval);
+   global_scope.define(ths);
+      
    base_path = null;
 
    File f = new File(base_directory,".nobase");
@@ -137,7 +143,7 @@ void setupDefaults()
       project_paths.add(ps2);
       File f3 = new File("*/html");
       NobasePathSpec ps3 = project_manager.createPathSpec(f3,false,true);
-      project_paths.add(ps3);		
+      project_paths.add(ps3);	
     }
    js_runner = findInterpreter(null);
 }
@@ -205,7 +211,7 @@ private File findInterpreter(String name)
 	    nval = NobaseValue.createArrayValue();
 	  }
 	 defineName(global_scope,null,nam,nval);
-	
+
        }
       // check versions, etc. here
       ex.waitFor();
@@ -367,9 +373,7 @@ void editProject(Element pxml)
 
    Set<NobasePathSpec> done = new HashSet<NobasePathSpec>();
    Set<NobasePathSpec> dels = new HashSet<NobasePathSpec>();
-   boolean havepath = false;
    for (Element pelt : IvyXml.children(pxml,"PATH")) {
-      havepath = true;
       File f1 = new File(IvyXml.getAttrString(pelt,"DIRECTORY"));
       try {
 	 f1 = f1.getCanonicalFile();
@@ -506,6 +510,7 @@ private void defineModuleSymbol(NobaseScope scp,String name,String val)
 {
    NobaseValue nval = NobaseValue.createString(val);
    defineModuleSymbol(scp,name,nval);
+
 }
 
 
@@ -513,6 +518,7 @@ private void defineModuleSymbol(NobaseScope scp,String name,NobaseValue nval)
 {
    NobaseSymbol nsym = new NobaseSymbol(this,null,null,name,true);
    nsym.setValue(nval);
+   nsym.setBubblesName("*." + name);
    scp.define(nsym);
 }
 
@@ -831,7 +837,7 @@ private void outputDelta(IvyXmlWriter xw,String act,NobaseFile ifd)
 
 /********************************************************************************/
 /*										*/
-/*	Search commands 							*/
+/*	Pattern search  							*/
 /*										*/
 /********************************************************************************/
 
@@ -870,6 +876,13 @@ synchronized void patternSearch(String pat,String typ,boolean defs,boolean refs,
 }
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Find all command                                                        */
+/*                                                                              */
+/********************************************************************************/
+
 void findAll(String file,int soff,int eoff,boolean defs,boolean refs,
       boolean imps,boolean typ,boolean ronly,boolean wonly,IvyXmlWriter xw)
 {
@@ -901,6 +914,7 @@ void findAll(String file,int soff,int eoff,boolean defs,boolean refs,
       xw.field("ENDOFFSET",mtch.getOffset() + mtch.getLength());
       xw.field("FILE",mtch.getFile().getFile().getPath());
       NobaseSymbol sym = mtch.getContainer();
+      if (sym == null) sym = mtch.getSymbol();
       if (sym != null) {
 	 sym.outputNameData(mtch.getFile(),xw);
        }
@@ -910,6 +924,11 @@ void findAll(String file,int soff,int eoff,boolean defs,boolean refs,
 
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Get fully qualified name command                                        */
+/*                                                                              */
+/********************************************************************************/
 
 void getFullyQualifiedName(String file,int spos,int epos,IvyXmlWriter xw)
 {
@@ -931,6 +950,12 @@ void getFullyQualifiedName(String file,int spos,int epos,IvyXmlWriter xw)
 }
 
 
+
+/********************************************************************************/
+/*                                                                              */
+/*      Find text regions command                                               */
+/*                                                                              */
+/********************************************************************************/
 
 synchronized void getTextRegions(String bid,String file,String cls,boolean pfx,boolean statics,
       boolean compunit,boolean imports,boolean pkg,
@@ -972,6 +997,30 @@ synchronized void getTextRegions(String bid,String file,String cls,boolean pfx,b
 
 
 
+/********************************************************************************/
+/*                                                                              */
+/*      Get Completions command                                                 */
+/*                                                                              */
+/********************************************************************************/
+
+void getCompletions(String file,int offset,IvyXmlWriter xw)
+{
+   for (NobaseFile ifd : all_files) {
+      if (!ifd.getFile().getPath().equals(file)) continue;
+      ISemanticData isd = getParseData(ifd);
+      NobaseCompletions nc = new NobaseCompletions(isd);
+      nc.findCompletions(offset,xw);
+      break;
+    }
+}
+
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Utility methods                                                         */
+/*                                                                              */
+/********************************************************************************/
 
 private ISemanticData parseFile(NobaseFile fd)
 {
@@ -1116,6 +1165,14 @@ private String getModuleFromPath(File f)
    if (idx > 0) mnm = mnm.substring(0,idx);
    return mnm;
 }
+
+
+/********************************************************************************/
+/*                                                                              */
+/*      Handle all names                                                        */
+/*                                                                              */
+/********************************************************************************/
+
 
 
 

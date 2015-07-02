@@ -26,9 +26,9 @@ package edu.brown.cs.bubbles.bdyn;
 
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import java.awt.Color;
 import java.util.*;

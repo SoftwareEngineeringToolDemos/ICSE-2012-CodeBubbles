@@ -24,10 +24,11 @@
 
 package edu.brown.cs.bubbles.bueno;
 
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.List;
 
 
 class BuenoClassSetup implements BuenoConstants

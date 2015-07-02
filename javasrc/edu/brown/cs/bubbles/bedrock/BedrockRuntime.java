@@ -90,6 +90,8 @@ static {
    format_map.put("org.apache.xerces.dom.DeferredElementNSImpl",xmlfmt);
    format_map.put("com.sun.apache.xerces.internal.dom.DeferredElementImpl",xmlfmt);
    format_map.put("com.sun.apache.xerces.internal.dom.DeferredElementNSImpl",xmlfmt);
+   format_map.put("com.sun.org.apache.xerces.internal.dom.DeferredElementImpl",xmlfmt);
+   format_map.put("com.sun.org.apache.xerces.internal.dom.DeferredElementNSImpl",xmlfmt);
 }
 
 

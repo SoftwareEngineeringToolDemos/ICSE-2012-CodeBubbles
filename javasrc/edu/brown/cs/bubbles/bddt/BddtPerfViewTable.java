@@ -154,8 +154,11 @@ private void setupBubble()
 
 @Override public void handlePopupMenu(MouseEvent e)
 {
-   // option of goto source
-   // reset option
+   JPopupMenu popup = new JPopupMenu();
+
+   popup.add(getFloatBubbleAction());
+
+   popup.show(this,e.getX(),e.getY());
 }
 
 

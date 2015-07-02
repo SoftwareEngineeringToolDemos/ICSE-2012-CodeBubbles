@@ -547,6 +547,8 @@ private boolean isConditional()
 	 case CONTINUE :
 	 case PASS :
 	 case RAISE :
+         case IMPORT :
+         case PACKAGE :
 	    continue;
 	 case CASE:
 	 case DEFAULT :
@@ -954,6 +956,8 @@ private int skipToStatementStart(boolean danglingelse,boolean isinblock)
 	 case CONTINUE :
 	 case PASS :
 	 case RAISE :
+         case IMPORT :
+         case PACKAGE :
 	    if (maybemethodbody == READ_PARENS) maybemethodbody= READ_IDENT;
 	    if (cur_element != null && cur_element.getName().equals("ClassDeclMemberId"))
 	       innerclass = true;

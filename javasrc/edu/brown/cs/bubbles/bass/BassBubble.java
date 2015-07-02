@@ -31,8 +31,13 @@
 package edu.brown.cs.bubbles.bass;
 
 import edu.brown.cs.bubbles.buda.BudaBubble;
+import edu.brown.cs.bubbles.buda.BudaRoot;
+
+import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 
 
@@ -93,7 +98,18 @@ BassBubble(BassRepository br,String proj,String pfx,boolean trans)
 @Override public void handlePopupMenu(MouseEvent e)
 {
    // pass e along to search box
-   my_search_box.handlePopupMenu(e);
+   if (my_search_box.handlePopupMenu(e)) return;
+
+   JPopupMenu menu = new JPopupMenu();
+
+   if (isTransient()) {
+      menu.add(new PermanentAction());
+   }
+   else {
+      menu.add(getFloatBubbleAction());
+   }
+
+   menu.show(this,e.getX(),e.getY());
 }
 
 
@@ -120,6 +136,23 @@ void resetTreeModel(BassRepository br)
 
 
 
+private class PermanentAction extends AbstractAction {
+
+   private static final long serialVersionUID = 1;
+
+   PermanentAction() {
+      super("Keep Search Box");
+      putValue(SHORT_DESCRIPTION,"Keep this search box around after selecting items");
+   }
+
+   @Override public void actionPerformed(ActionEvent evt) {
+      BudaRoot br = BudaRoot.findBudaRoot(my_search_box);
+      br.noteSearchUsed(my_search_box);
+      setTransient(false);
+      my_search_box.setStatic(true);
+   }
+
+}	// end of inner class PermanentAction
 
 }	// end of class BassBubble
 

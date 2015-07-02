@@ -34,6 +34,7 @@ import edu.brown.cs.bubbles.board.BoardLog;
 import edu.brown.cs.bubbles.buda.BudaXmlWriter;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpLocation;
+import edu.brown.cs.bubbles.burp.BurpConstants.BurpEditorDocument;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.UndoableEditEvent;
@@ -46,8 +47,9 @@ import java.util.List;
 
 
 
-abstract class BaleDocument extends AbstractDocument implements BaleConstants {
-
+abstract class BaleDocument extends AbstractDocument
+   implements BaleConstants, BurpEditorDocument
+{
 
 
 /********************************************************************************/
@@ -94,7 +96,7 @@ BaleDocument(AbstractDocument.Content data)
    split_mode = BaleSplitMode.SPLIT_NORMAL;
    if (BALE_PROPERTIES.getBoolean(BALE_EDITOR_NO_REFLOW))
       split_mode = BaleSplitMode.SPLIT_NEVER;
-   else if (data != null && data.length() > SPLIT_QUICK_SIZE)
+   else if (getLength() > SPLIT_QUICK_SIZE)
       split_mode = BaleSplitMode.SPLIT_QUICK;
 
    tab_handler = new BaleTabHandler();
@@ -453,10 +455,10 @@ void waitForAst()
 
    synchronized (this) {
       int ctr = 0;
-      while (be.getAstNode() == null && ctr < 1) {
+      while (be.getAstNode() == null && ctr < 4) {
 	 try {
-	    wait(10000);
 	    ++ctr;
+	    wait(1000*ctr);
 	  }
 	 catch (InterruptedException e) { }
        }
@@ -669,6 +671,12 @@ BaleRegion createDocumentRegion(int soff,int eoff,boolean inceol)
 void removeRegions(List<BaleRegion> rgns)		{ }
 
 
+public Position createHistoryPosition(int off) throws BadLocationException
+{
+   return getBaseEditDocument().createPosition(getDocumentOffset(off));
+}
+
+
 
 
 /********************************************************************************/
@@ -778,7 +786,7 @@ private void outputElisions(BaleElement e,BudaXmlWriter xw)
       xw.field("NAME",e.getName());
       xw.end("ELISION");
     }
-   else if (!e.isLeaf()) {
+   else if (e != null && !e.isLeaf()) {
       int ct = e.getChildCount();
       for (int i = 0; i < ct; ++i) {
 	 BaleElement e1 = e.getBaleElement(i);

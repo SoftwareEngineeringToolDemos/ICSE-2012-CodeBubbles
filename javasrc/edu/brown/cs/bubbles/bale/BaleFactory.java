@@ -389,13 +389,16 @@ BudaBubble createLocationEditorBubble(Component src,Position p,Point at,
 	  }
 	 break;
       case MODULE :
-	 // fed = createFileEditor(bl.getSymbolProject(),null,bl.getFile());
+	 // fed = createFileEditor(bl.getSymbolProject(),bl.getFile(),null);
 	 break;
       case EXPORT :
       case IMPORT :
       case PROGRAM :
-         // fed = create...
-         break;
+	 // fed = create...
+	 break;
+      case UNKNOWN :
+	 fed = createFileEditor(bl.getProject(),bl.getFile(),null);
+	 break;
       default:
 	 break;
     }
@@ -1061,6 +1064,16 @@ public void applyEdits(Element edits)
 }
 
 
+public void applyEdits(File file,Element edits)
+{
+   if (file == null || edits == null) return;
+
+   BaleDocument bd = getDocument(null,file);
+   if (bd == null) return;
+   BaleApplyEdits bae = new BaleApplyEdits(bd);
+   bae.applyEdits(edits);
+}
+
 
 
 /********************************************************************************/
@@ -1206,6 +1219,21 @@ private List<BaleRegion> getRegionsFromLocations(List<BumpLocation> locs)
       int eoffset = fdoc.mapOffsetToJava(bl.getDefinitionEndOffset())+1;
       if (soffset >= s.length()) continue;
 
+      if (lang == BoardLanguage.JS) {
+	 // handle VAR which might be missing in a declaration location context
+	 int decloff = soffset;
+	 while (decloff >= 3) {
+	    if (!Character.isWhitespace(s.charAt(decloff-1))) {
+	       if (s.charAt(decloff-1) == 'r' && s.charAt(decloff-2) == 'a' &&
+		     s.charAt(decloff-3) == 'v' &&
+		     (decloff == 3 || Character.isWhitespace(s.charAt(decloff-4)))) {
+		   soffset = decloff-3;
+		}
+	       break;
+	     }
+	    --decloff;
+	  }
+       }
       // extend the logical regions and note if it ends with a new line
       while (soffset > 0) {
 	 if (s.charAt(soffset-1) == '\n') break;

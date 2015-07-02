@@ -188,10 +188,20 @@ void xmlText(String t)
 /*										*/
 /********************************************************************************/
 
+public CharSequence getContents()
+{
+   if (base_writer instanceof StringWriter) {
+      StringWriter sw = (StringWriter) base_writer;
+      return sw.getBuffer();
+    }
+   return base_writer.toString();
+}
+
 @Override public String toString()
 {
    return base_writer.toString();
 }
+
 
 
 

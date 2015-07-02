@@ -25,8 +25,8 @@
 package edu.brown.cs.bubbles.bucs;
 
 
-import java.util.List;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 
 public interface BucsConstants

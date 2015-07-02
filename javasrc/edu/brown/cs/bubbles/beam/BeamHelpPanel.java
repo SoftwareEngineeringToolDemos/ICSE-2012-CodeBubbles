@@ -29,7 +29,8 @@ import edu.brown.cs.bubbles.buda.*;
 
 import javax.swing.*;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.net.URI;
 

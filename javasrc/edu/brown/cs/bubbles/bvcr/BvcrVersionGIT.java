@@ -139,17 +139,13 @@ String getRepositoryName()
 
 void getDifferences(BvcrDifferenceSet ds)
 {
-   String cmd = git_command  + " diff ";
+   String cmd = git_command  + " diff -b -r";
 
    String v0 = ds.getStartVersion();
+   String v1 = ds.getEndVersion();
    if (v0 != null) {
-      cmd += "-b ";
-      cmd += v0;
-      String v1 = ds.getEndVersion();
+      cmd += " " + v0;
       if (v1 != null) cmd += " " + v1;
-    }
-   else {
-      cmd += current_version + " -r";
     }
 
    List<File> diffs = ds.getFilesToCompute();

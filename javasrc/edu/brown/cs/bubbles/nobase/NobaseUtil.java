@@ -75,8 +75,10 @@ static void outputProblem(NobaseMessage m,ISemanticData isd,IvyXmlWriter xw)
        }
       
       try {
-         xw.field("START",doc.getLineOffset(sln-1) + scl - 1);
-         xw.field("END",doc.getLineOffset(eln-1) + ecl - 1);
+         if (sln != 0) {
+            xw.field("START",doc.getLineOffset(sln-1) + scl - 1);
+            xw.field("END",doc.getLineOffset(eln-1) + ecl - 1);
+          }
        }
       catch (BadLocationException e) { }
       
@@ -119,10 +121,10 @@ static void outputModuleSymbol(NobaseProject pp,IvyXmlWriter xw,NobaseFile file,
    xw.field("NAME",tnm);
    xw.field("TYPE","Module");
    if (root != null) {
-      xw.field("LINE",root.getStartLine());
-      xw.field("COL",root.getStartChar());
-      int off1 = root.getStartPosition();
-      int off2 = root.getEndPosition();
+      xw.field("LINE",root.getStartLine(file));
+      xw.field("COL",root.getStartChar(file));
+      int off1 = root.getStartPosition(file);
+      int off2 = root.getEndPosition(file);
       xw.field("STARTOFFSET",off1);
       xw.field("ENDOFFSET",off2);
       xw.field("LENGTH",off2-off1+1);
@@ -157,10 +159,10 @@ static void outputName(NobaseSymbol nm,IvyXmlWriter xw)
     }
    NobaseAst.NobaseAstNode root = nm.getDefNode();
    if (root != null) {
-      xw.field("LINE",root.getStartLine());
-      xw.field("COL",root.getStartChar());
-      int off1 = root.getStartPosition();
-      int off2 = root.getEndPosition();
+      xw.field("LINE",root.getStartLine(file));
+      xw.field("COL",root.getStartChar(file));
+      int off1 = root.getStartPosition(file);
+      int off2 = root.getEndPosition(file);
       xw.field("STARTOFFSET",off1);
       xw.field("ENDOFFSET",off2);
       xw.field("LENGTH",off2-off1+1);
@@ -224,6 +226,11 @@ static String convertWildcardToRegex(String s)
    
    return nb.toString();
 }
+
+
+
+
+
 }       // end of class NobaseUtil
 
 

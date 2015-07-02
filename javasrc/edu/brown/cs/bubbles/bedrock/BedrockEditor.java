@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jdt.core.*;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.*;
+import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.refactoring.IJavaRefactorings;
 import org.eclipse.jdt.core.refactoring.descriptors.*;
@@ -47,6 +48,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.ltk.core.refactoring.*;
 import org.eclipse.text.edits.*;
 import org.w3c.dom.Element;
+import org.eclipse.jdt.ui.PreferenceConstants;
 
 import java.io.File;
 import java.util.*;
@@ -366,7 +368,9 @@ void fileElide(byte [] bytes,IvyXmlWriter xw)
 {
    BedrockElider be = new BedrockElider();
 
-   // would really like to resolvie bindings here
+   if (bytes == null) return;
+
+   // would really like to resolvie bindings here using JCOMP
 
    ASTParser ap = ASTParser.newParser(AST.JLS4);
    String s1 = new String(bytes);
@@ -389,7 +393,7 @@ void fileElide(byte [] bytes,IvyXmlWriter xw)
 synchronized void handleCommit(String proj,String bid,boolean refresh,boolean save,
 				  Collection<Element> files,IvyXmlWriter xw)
 {
-   xw.begin("COMMIT");
+   if (xw != null) xw.begin("COMMIT");
 
    if (files == null || files.size() == 0) {
       for (FileData fd : file_map.values()) {
@@ -410,22 +414,24 @@ synchronized void handleCommit(String proj,String bid,boolean refresh,boolean sa
        }
     }
 
-   xw.end("COMMIT");
+   if (xw != null) xw.end("COMMIT");
 }
 
 
 
 private void commitFile(FileData fd,boolean refresh,boolean save,IvyXmlWriter xw)
 {
-   xw.begin("FILE");
-   xw.field("NAME",fd.getFileName());
+   if (xw != null) {
+      xw.begin("FILE");
+      xw.field("NAME",fd.getFileName());
+    }
    try {
       fd.commit(refresh,save);
     }
    catch (JavaModelException e) {
-      xw.field("ERROR",e.toString());
+      if (xw != null) xw.field("ERROR",e.toString());
     }
-   xw.end("FILE");
+   if (xw != null) xw.end("FILE");
 }
 
 
@@ -850,6 +856,88 @@ void formatCode(String proj,String bid,String file,int spos,int epos,IvyXmlWrite
 
 
 
+/********************************************************************************/
+/*										*/
+/*	Handle FIX IMPORTS command						*/
+/*										*/
+/********************************************************************************/
+
+public void fixImports(String proj,String bid,String file,int demand,int staticdemand,
+      String order,String add,IvyXmlWriter xw)
+	throws BedrockException
+{
+   FileData fd = findFile(proj,file,bid,null);
+
+   if (fd == null) throw new BedrockException("Compilation unit for file " + file +
+	 " not available for import fixup");
+
+   CompilationUnit cu = fd.getDefaultRoot(bid);
+   BedrockFixImports bfi = new BedrockFixImports();
+   Set<ITypeBinding> imports = bfi.findImports(cu);
+
+   try {
+      IJavaProject ijp = null;
+      if (proj != null) {
+         IProject ip = our_plugin.getProjectManager().findProject(proj);
+         ijp = JavaCore.create(ip);
+       }
+      if (order == null) {
+	 order = PreferenceConstants.getPreference("org.eclipse.jdt.ui.importorder",ijp);
+       }
+      if (demand <= 0) {
+	 String s = PreferenceConstants.getPreference("org.eclipse.jdt.ui.ondemandthreshold",ijp);
+	 if (s != null) {
+	    try {
+	       demand = Integer.parseInt(s);
+	     }
+	    catch (NumberFormatException e) { }
+	  }
+	 if (demand <= 0) demand = 99;
+       }
+      if (staticdemand <= 0) {
+	 String s = PreferenceConstants.getPreference("org.eclipse.jdt.ui.ondemandthreshold",ijp);
+	 if (s != null) {
+	    try {
+	       staticdemand = Integer.parseInt(s);
+	     }
+	    catch (NumberFormatException e) { }
+	  }
+	 if (staticdemand <= 0) staticdemand = demand;
+       }
+    }
+   catch (Throwable t) {
+      BedrockPlugin.logD("Problem with fix constant: " + t);
+    }
+   BedrockPlugin.logD("IMPORT prefs done: " + demand + " " + staticdemand + " " + order);
+
+   boolean keepfg = (add == null ? false : true);
+   try {
+      ImportRewrite imp = ImportRewrite.create(cu,keepfg);
+      if (demand >= 0) imp.setOnDemandImportThreshold(demand);
+      if (staticdemand >= 0) imp.setStaticOnDemandImportThreshold(demand);
+      if (order != null) {
+	 String [] ord = order.split("[;,]");
+	 imp.setImportOrder(ord);
+       }
+      if (add != null) imp.addImport(add);
+      else {
+         for (ITypeBinding tb : imports) {
+            BedrockPlugin.logD("Add type to importrewrite: " + tb.getQualifiedName());
+            imp.addImport(tb);
+          }
+       }
+      TextEdit te = imp.rewriteImports(null);
+      if (te != null) {
+	 BedrockUtil.outputTextEdit(te,xw);
+       }
+    }
+   catch (Exception e) {
+      throw new BedrockException("Problem doing imports",e);
+    }
+}
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -988,6 +1076,19 @@ void getTextRegions(String proj,String bid,String file,String cls,boolean pfx,
 	       break;
 	  }
        }
+      if (atd instanceof EnumDeclaration) {
+	 for (Object o : ((EnumDeclaration) atd).enumConstants()) {
+	    ASTNode an = (ASTNode) o;
+	    switch (an.getNodeType()) {
+	       case ASTNode.FIELD_DECLARATION :
+		  outputRange(cu,an,file,xw);
+		  break;
+	       case ASTNode.ENUM_CONSTANT_DECLARATION :
+		  outputRange(cu,an,file,xw);
+		  break;
+	    }
+	 }
+      }
     }
 
    if (all && atd != null) {
@@ -1101,7 +1202,7 @@ private String baseClassName(String s)
 /*										*/
 /********************************************************************************/
 
-void createPrivateBuffer(String proj,String bid,String pid,String file,IvyXmlWriter xw)
+String createPrivateBuffer(String proj,String bid,String pid,String file,IvyXmlWriter xw)
 	throws BedrockException
 {
    FileData fd = findFile(proj,file,bid,null);
@@ -1141,11 +1242,13 @@ void createPrivateBuffer(String proj,String bid,String pid,String file,IvyXmlWri
        }
     }
    catch (RejectedExecutionException ex) {
-      BedrockPlugin.logE("Edit task rejected " + ex + " " +
+      BedrockPlugin.logE("Open task rejected " + ex + " " +
 			    edit_queue.size() + " " + thread_pool.getActiveCount());
     }
 
    xw.text(pid);
+
+   return pid;
 }
 
 
@@ -1829,9 +1932,9 @@ private class FileData implements IBufferChangedListener {
       else if (refresh) {
 	 comp_unit.restore();
        }
-      
+
       default_buffer = null;
-      
+
       for (BufferData bd : buffer_map.values()) {
 	 if (!bd.isPrivate()) bd.commit(refresh,save);
        }
@@ -2114,7 +2217,7 @@ private class BufferData {
       try {
 	 if (!is_private) copy_owner.setId(id);
 	 copy_owner.suppressErrors(false);
-	 cu = icu.reconcile(AST.JLS4,true,true,null,null);
+	 cu = icu.reconcile(AST.JLS4,true,true,copy_owner,null);
 	 if (cu == null) cu = last_ast;
 	 else last_ast = cu;
 	 if (last_ast == null) getDefaultRoot();

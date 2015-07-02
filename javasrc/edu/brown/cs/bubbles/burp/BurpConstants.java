@@ -26,8 +26,11 @@
 package edu.brown.cs.bubbles.burp;
 
 
-import javax.swing.text.Document;
+import javax.swing.text.*;
+import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+
+import java.util.List;
 
 
 /**
@@ -59,6 +62,65 @@ interface BurpSharedEdit {
    UndoableEdit getBaseEdit();		// return the common base edit for this edit
    Document getBaseEditDocument();	// return the base document for this edit
 
+}
+
+
+interface BurpEditorDocument {
+
+   Position createHistoryPosition(int offset) throws BadLocationException;
+
+}
+
+
+
+/********************************************************************************/
+/*										*/
+/*	Provide for UNDO by adding new commands 				*/
+/*										*/
+/********************************************************************************/
+
+interface BurpPlayableEdit {
+
+   void playUndo(Document doc) throws CannotUndoException;
+
+   // returns true if edit is done in the range
+   boolean playUndo(Document doc,BurpRange range) throws CannotUndoException;
+
+   void updatePosition(Object edit,int pos,int delta);
+   
+   List<BurpEditDelta> getDeltas();
+   
+}	// end of interface BurpPlayableEdit
+
+static class BurpEditDelta {
+   
+   private int delta_offset;
+   private int delta_delta;
+   
+   public BurpEditDelta(int offset,int delta) {
+      delta_offset = offset;
+      delta_delta = delta;
+    }
+   
+   public int getOffset()                       { return delta_offset; }
+   public int getDelta()                        { return delta_delta; }
+   
+}
+
+
+
+interface BurpRange {
+   int getStartPosition();
+   int getEndPosition();
+}	// end of interface BurpRange
+
+
+enum ChangeType {
+   EDIT,
+   START_UNDO,
+   END_UNDO,
+   START_REDO,
+   END_REDO
 }
 
 

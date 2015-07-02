@@ -119,7 +119,8 @@ enum BranchNodeType {
    CLASS,
    INTERFACE,
    ENUM,
-   THROWABLE
+   THROWABLE,
+   METHOD
 }
 
 

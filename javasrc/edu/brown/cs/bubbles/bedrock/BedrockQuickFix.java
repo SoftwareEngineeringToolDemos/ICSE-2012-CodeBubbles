@@ -39,7 +39,6 @@ import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.ui.text.java.*;
-import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.TextEdit;
@@ -221,8 +220,7 @@ private void outputProposals(IJavaCompletionProposal [] props,IvyXmlWriter xw)
    for (IJavaCompletionProposal p : props) {
       try {
 	 BedrockPlugin.logD("COMPLETION: " + p.getRelevance() + " " + p.getDisplayString() + " " +
-			       p.getAdditionalProposalInfo() + " " +
-			       p + " " + p.getClass());
+			       p.getClass());
        }
       catch (Throwable t) { }
       if (isUsable(p)) {
@@ -259,13 +257,10 @@ private void outputProposal(IJavaCompletionProposal p,IvyXmlWriter xw)
 {
    TextEdit textedit = null;
 
-   // if (p.getClass().getName().contains("ChangeCorrectionProposal")) {
-      // ChangeCorrectionProposal xp = (ChangeCorrectionProposal) p;
    try {
       Class<?> ccp = p.getClass();
       Method ccm = ccp.getMethod("getChange");
       Change c = (Change) ccm.invoke(p);
-      // Change c = xp.getChange();
       if (c == null) return;
       if (c instanceof TextChange) {
 	 TextChange tc = (TextChange) c;
@@ -275,7 +270,6 @@ private void outputProposal(IJavaCompletionProposal p,IvyXmlWriter xw)
    catch (Throwable e) {
       BedrockPlugin.logE("Problem gettting completion",e);
    }
-    // }
 
    if (textedit == null) {
       BedrockPlugin.logD("COMPLETION w/o EDIT " + p.getClass() + " " + p.getClass().getSuperclass());
@@ -287,17 +281,8 @@ private void outputProposal(IJavaCompletionProposal p,IvyXmlWriter xw)
    xw.field("RELEVANCE",p.getRelevance());
    xw.field("DISPLAY",p.getDisplayString());
 
-   try {
-      xw.field("INFO",p.getAdditionalProposalInfo());
-    }
-   catch (Throwable t) { }
-
    xw.field("ID",System.identityHashCode(p));
-   IContextInformation ci = p.getContextInformation();
-   if (ci != null) {
-      xw.field("CONTEXT",ci.getContextDisplayString());
-      xw.field("CINFO",ci.getInformationDisplayString());
-    }
+
    BedrockUtil.outputTextEdit(textedit,xw);
 
    xw.end("FIX");

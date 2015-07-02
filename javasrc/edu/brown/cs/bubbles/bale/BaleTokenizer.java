@@ -193,7 +193,7 @@ BaleToken getNextToken(int start,int end,BaleTokenState st)
 /*										*/
 /********************************************************************************/
 
-private BaleToken getNextToken()
+BaleToken getNextToken()
 {
    token_start = cur_offset;
 
@@ -662,7 +662,7 @@ static {
    java_keyword_map = new HashMap<String,BaleTokenType>();
    java_keyword_map.put("abstract",BaleTokenType.KEYWORD);
    java_keyword_map.put("assert",BaleTokenType.KEYWORD);
-   java_keyword_map.put("boolean",BaleTokenType.KEYWORD);
+   java_keyword_map.put("boolean",BaleTokenType.TYPEKEY);
    java_keyword_map.put("break",BaleTokenType.BREAK);
    java_keyword_map.put("byte",BaleTokenType.TYPEKEY);
    java_keyword_map.put("case",BaleTokenType.CASE);
@@ -685,7 +685,7 @@ static {
    java_keyword_map.put("goto",BaleTokenType.GOTO);
    java_keyword_map.put("if",BaleTokenType.IF);
    java_keyword_map.put("implements",BaleTokenType.KEYWORD);
-   java_keyword_map.put("import",BaleTokenType.KEYWORD);
+   java_keyword_map.put("import",BaleTokenType.IMPORT);
    java_keyword_map.put("instanceof",BaleTokenType.KEYWORD);
    java_keyword_map.put("int",BaleTokenType.TYPEKEY);
    java_keyword_map.put("interface",BaleTokenType.INTERFACE);
@@ -693,7 +693,7 @@ static {
    java_keyword_map.put("native",BaleTokenType.KEYWORD);
    java_keyword_map.put("new",BaleTokenType.NEW);
    java_keyword_map.put("null",BaleTokenType.KEYWORD);
-   java_keyword_map.put("package",BaleTokenType.KEYWORD);
+   java_keyword_map.put("package",BaleTokenType.PACKAGE);
    java_keyword_map.put("private",BaleTokenType.KEYWORD);
    java_keyword_map.put("protected",BaleTokenType.KEYWORD);
    java_keyword_map.put("public",BaleTokenType.KEYWORD);

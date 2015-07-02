@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 public class BattFactory implements BattConstants, BudaConstants.ButtonListener,
@@ -623,8 +624,8 @@ private class ErrorStatus implements BumpConstants.BumpProblemHandler {
    private Set<File> check_files;
 
    ErrorStatus() {
-      error_files = new HashSet<File>();
-      check_files = new HashSet<File>();
+      error_files = new ConcurrentSkipListSet<File>();
+      check_files = new ConcurrentSkipListSet<File>();
       for (BumpProblem bp : BumpClient.getBump().getAllProblems()) {
 	 addProblem(bp);
        }

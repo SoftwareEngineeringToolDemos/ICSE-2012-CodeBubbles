@@ -34,12 +34,12 @@ import org.junit.runners.model.TestClass;
 import javax.xml.stream.*;
 
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.*;
 import java.security.Permission;
 import java.util.*;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
 
 
 public class BattJUnit implements BattConstants

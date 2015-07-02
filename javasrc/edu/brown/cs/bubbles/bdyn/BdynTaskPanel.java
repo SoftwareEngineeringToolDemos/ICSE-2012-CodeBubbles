@@ -25,10 +25,10 @@
 package edu.brown.cs.bubbles.bdyn;
 
 
-import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.board.*;
+import edu.brown.cs.bubbles.board.BoardLog;
+import edu.brown.cs.bubbles.buda.BudaConstants;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingGridPanel;
 
 import javax.swing.*;
 
@@ -358,6 +358,7 @@ private class CallbackLabeler extends AbstractAction {
       if (rslt.length() == 0) rslt = null;
       else if (rslt.equals(fnm)) rslt = null;
       for_callback.setLabel(rslt);
+      BdynFactory.getFactory().saveCallbacks();
     }
 
 }	// end of inner class CallbackLabeler
@@ -409,6 +410,7 @@ private class CallbackColorer extends AbstractAction {
       if (set_color != null) {
          for_callback.setUserColor(set_color);
          callback_set.put(for_callback,set_color);
+         BdynFactory.getFactory().saveCallbacks();
        }
     }
 }
@@ -592,6 +594,11 @@ private Color getColor(BdynCallback cb)
  
    Color c = callback_set.get(cb);
    if (c != null) return c;
+   c = cb.getUserColor();
+   if (c != null) {
+      callback_set.put(cb, c);
+      return c;
+    }
    
    Set<Color> known = BdynFactory.getFactory().getKnownColors();
    // known.addAll(callback_set.values());

@@ -32,7 +32,8 @@ package edu.brown.cs.bubbles.buda;
 
 import javax.swing.*;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.*;
 
 
@@ -215,7 +216,7 @@ private class Keyer extends KeyAdapter {
 
    @Override public void keyPressed(KeyEvent e) {
       if (e.getKeyCode() == KeyEvent.VK_ESCAPE || e.getKeyCode() == KeyEvent.VK_F9) {
-	 restore(false);
+         restore(false);
        }
     }
 

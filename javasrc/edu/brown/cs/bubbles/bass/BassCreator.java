@@ -30,15 +30,17 @@
 
 package edu.brown.cs.bubbles.bass;
 
-import edu.brown.cs.bubbles.bale.*;
+import edu.brown.cs.bubbles.bale.BaleConstants;
+import edu.brown.cs.bubbles.bale.BaleFactory;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bueno.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpClient;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import edu.brown.cs.ivy.swing.*;
+import edu.brown.cs.ivy.swing.SwingComboBox;
 
-import org.w3c.dom.*;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 
@@ -46,7 +48,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.*;
-import java.util.List;
 
 
 class BassCreator implements BassConstants, BuenoConstants, BassConstants.BassPopupHandler {
@@ -114,6 +115,7 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
    BuenoLocation clsloc = null;
    Action delact = null;
    Action movact = null;
+   Action importact = null;
 
    // TODO: if forname == null and it represents an inner class, create alternatives for before/after the inner class
 
@@ -170,6 +172,14 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
 	       movact = new MoveClassAction(proj,loc.getClassName(),pnm,bb);
 	     }
 	 }
+         if (importact == null && bass_properties.getBoolean("Bass.fix.imports")) {
+            if (pnm != null && inner == null) {
+               File f = loc.getFile();
+               if (f != null) {
+                  importact = new FixImportsAction(proj,f,bb);
+                }
+             }
+          }
        }
       else if (!fullname.contains("@")) {
 	 if (bass_properties.getBoolean("Bass.delete.package"))
@@ -231,6 +241,9 @@ private void addJavaButtons(BudaBubble bb,Point where,JPopupMenu menu,String ful
    }
    if (delact != null) {
       menu.add(delact);
+    }
+   if (importact != null) {
+      menu.add(importact);
     }
 }
 
@@ -646,6 +659,46 @@ private static class DeleteFileAction extends AbstractAction implements Runnable
    @Override public void run() {
       BumpClient bc = BumpClient.getBump();
       bc.delete(project_name,"FILE",file_name.getAbsolutePath(),bass_properties.getBoolean("Bass.delete.rebuild",true));
+    }
+}	// end of inner class DeleteFileAction
+
+
+
+private static class FixImportsAction extends AbstractAction implements Runnable {
+
+   private String project_name;
+   private File file_name;
+   private Element edit_result;
+
+   private static final long serialVersionUID = 1;
+
+   FixImportsAction(String proj,File fil,BudaBubble bb) {
+      super("Fix Imports for " + fil.getName());
+      project_name = proj;
+      file_name = fil;
+      edit_result = null;
+    }
+
+   @Override public void actionPerformed(ActionEvent e) {
+      // dialog with options???
+      BoardThreadPool.start(this);
+   }
+
+   @Override public void run() {
+      if (edit_result == null) {
+         String order = bass_properties.getString("Bass.import.order");
+         int demand = bass_properties.getInt("Bass.import.ondemand.threshold");
+         int sdemand = bass_properties.getInt("Bass.import.static.ondemand.threshold");
+         BumpClient bc = BumpClient.getBump();
+         Element edits = bc.fixImports(project_name,file_name,order,demand,sdemand,null);
+         if (edits != null) {
+            edit_result = edits;
+            SwingUtilities.invokeLater(this);
+          }
+       }
+      else {
+         BaleFactory.getFactory().applyEdits(file_name,edit_result);
+       }
     }
 }	// end of inner class DeletePackageAction
 

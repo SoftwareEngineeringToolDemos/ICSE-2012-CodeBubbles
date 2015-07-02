@@ -251,6 +251,8 @@ private static class EditSorter implements Comparator<Element> {
 
 private void applyEdit(Element ed)
 {
+   if (for_document == null) return;
+   
    int off = IvyXml.getAttrInt(ed,"OFFSET");
    int len = IvyXml.getAttrInt(ed,"LENGTH");
    int eoff = off+len;

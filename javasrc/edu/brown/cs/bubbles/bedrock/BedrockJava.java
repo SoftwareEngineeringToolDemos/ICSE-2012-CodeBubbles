@@ -69,7 +69,6 @@ private BedrockPlugin our_plugin;
 BedrockJava(BedrockPlugin bp)
 {
    our_plugin = bp;
-
 }
 
 

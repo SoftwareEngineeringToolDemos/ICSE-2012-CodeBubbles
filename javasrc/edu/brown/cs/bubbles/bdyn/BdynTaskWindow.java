@@ -32,9 +32,10 @@ import edu.brown.cs.ivy.swing.SwingRangeScrollBar;
 
 import javax.swing.*;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Point;
 import java.awt.event.*;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 

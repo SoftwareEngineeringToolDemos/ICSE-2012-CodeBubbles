@@ -28,15 +28,14 @@ import edu.brown.cs.bubbles.buda.*;
 import edu.brown.cs.bubbles.bump.BumpClient;
 import edu.brown.cs.bubbles.bump.BumpConstants;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXml;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
 import java.awt.Color;
 import java.awt.Point;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 public class BdynFactory implements BdynConstants, BumpConstants
@@ -51,7 +50,7 @@ public class BdynFactory implements BdynConstants, BumpConstants
 
 private Map<BumpProcess,BdynProcess>	process_map;
 private BdynCallbacks			callback_set;
-private static OptionSet                bdyn_options = new OptionSet();
+private static OptionSet		bdyn_options = new OptionSet();
 
 
 private static BdynFactory	the_factory = new BdynFactory();
@@ -128,12 +127,12 @@ BdynProcess getBdynProcess(BumpProcess bp)
 
 
 /********************************************************************************/
-/*                                                                              */
-/*      Option methods                                                          */
-/*                                                                              */
+/*										*/
+/*	Option methods								*/
+/*										*/
 /********************************************************************************/
 
-static BdynOptions getOptions()                 { return bdyn_options; }
+static BdynOptions getOptions() 		{ return bdyn_options; }
 
 
 private class ProcessHandler implements BumpRunEventHandler {
@@ -149,39 +148,39 @@ private class ProcessHandler implements BumpRunEventHandler {
       BumpProcess proc = evt.getProcess();
       if (proc == null) return;
       BdynProcess bp = process_map.get(proc);
-   
+
       switch (evt.getEventType()) {
-         case PROCESS_ADD :
-            if (bp == null) setupProcess(evt);
-            break;
-         case PROCESS_REMOVE :
-            if (bp != null) {
-               process_map.remove(proc);
-               TrieNode tn = bp.getTrieRoot();
-               if (tn != null) callback_set.updateCallbacks(tn);
-               bp.finish();
-             }
-            break;
-         case PROCESS_CHANGE :
-            break;
-         case PROCESS_PERFORMANCE :
-            break;
-         case PROCESS_SWING :
-            break;
-         case PROCESS_TRIE :
-            if (bp != null) {
-               Element xml = (Element) evt.getEventData();
-               bp.handleTrieEvent(xml);
-             }
-            break;
-         case PROCESS_TRACE :
-            if (bp != null) {
-               Element xml = (Element) evt.getEventData();
-               bp.handleTraceEvent(xml);
-             }
-            break;
-         default :
-            break;
+	 case PROCESS_ADD :
+	    if (bp == null) setupProcess(evt);
+	    break;
+	 case PROCESS_REMOVE :
+	    if (bp != null) {
+	       process_map.remove(proc);
+	       TrieNode tn = bp.getTrieRoot();
+	       if (tn != null) callback_set.updateCallbacks(tn);
+	       bp.finish();
+	     }
+	    break;
+	 case PROCESS_CHANGE :
+	    break;
+	 case PROCESS_PERFORMANCE :
+	    break;
+	 case PROCESS_SWING :
+	    break;
+	 case PROCESS_TRIE :
+	    if (bp != null) {
+	       Element xml = (Element) evt.getEventData();
+	       bp.handleTrieEvent(xml);
+	     }
+	    break;
+	 case PROCESS_TRACE :
+	    if (bp != null) {
+	       Element xml = (Element) evt.getEventData();
+	       bp.handleTraceEvent(xml);
+	     }
+	    break;
+	 default :
+	    break;
        }
     }
 
@@ -233,52 +232,59 @@ void resetCallbacks()
 {
    callback_set.clear();
 }
+	
 
 Set<Color> getKnownColors()
 {
    return callback_set.getKnownColors();
 }
 
+void saveCallbacks()
+{
+   callback_set.saveCallbacks();
+}
+
+
 
 /********************************************************************************/
-/*                                                                              */
-/*      Option implementation                                                   */
-/*                                                                              */
+/*										*/
+/*	Option implementation							*/
+/*										*/
 /********************************************************************************/
 
 private static class OptionSet implements BdynOptions {
-   
+
    private boolean use_key_callback;
    private boolean use_main_callback;
    private boolean use_main_task;
-   
+
    OptionSet() {
       use_key_callback = true;
       use_main_callback = true;
       use_main_task = false;
     }
-   
-   @Override public boolean useKeyCallback()            { return use_key_callback; }
-   @Override public boolean useMainCallback()           { return use_main_callback; }
-   @Override public boolean useMainTask()               { return use_main_task; }
-   
-   @Override public void setUseKeyCallback(boolean fg)  { use_key_callback = fg; }
+
+   @Override public boolean useKeyCallback()		{ return use_key_callback; }
+   @Override public boolean useMainCallback()		{ return use_main_callback; }
+   @Override public boolean useMainTask()		{ return use_main_task; }
+
+   @Override public void setUseKeyCallback(boolean fg)	{ use_key_callback = fg; }
    @Override public void setUseMainCallback(boolean fg) { use_main_callback = fg; }
-   @Override public void setUseMainTask(boolean fg)     { use_main_task = fg; }
-   
+   @Override public void setUseMainTask(boolean fg)	{ use_main_task = fg; }
+
    @Override public void save(IvyXmlWriter xw) {
       xw.field("KEYCB",use_key_callback);
       xw.field("MAINCB",use_main_callback);
       xw.field("MAINTK",use_main_task);
     }
-   
+
    @Override public void load(Element xml) {
       use_key_callback = IvyXml.getAttrBool(xml,"KEYCB",use_key_callback);
       use_main_callback = IvyXml.getAttrBool(xml,"MAINCB",use_main_callback);
       use_main_task = IvyXml.getAttrBool(xml,"MAINTK",use_main_task);
     }
-   
-}       // end of inner class OptionSet
+
+}	// end of inner class OptionSet
 
 
 }	// end of class BdynFactory

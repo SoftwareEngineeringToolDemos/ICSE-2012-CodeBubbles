@@ -26,8 +26,8 @@ package edu.brown.cs.bubbles.rebase.newjava;
 
 import edu.brown.cs.bubbles.rebase.RebaseConstants;
 
-import edu.brown.cs.ivy.xml.IvyXmlWriter;
 import edu.brown.cs.ivy.jcomp.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.eclipse.jdt.core.dom.*;
 

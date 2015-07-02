@@ -34,6 +34,7 @@ import java.io.File;
 import java.util.*;
 
 
+import java.text.SimpleDateFormat;
 
 class BvcrFileVersion implements BvcrConstants
 {
@@ -234,7 +235,49 @@ void outputXml(IvyXmlWriter xw)
 
 
 
-
+@Override public String toString()
+{
+   StringBuffer buf = new StringBuffer();
+   
+   String id = version_id;
+   for (String s : alternative_ids) {
+      if (id == null || s.length() < id.length() - 2) id = s;
+    }
+   if (id != null && id.length() > 10) {
+      id = id.substring(0,8) + "..";
+    }
+   if (id == null) id = "CURRENT";
+   
+   String time = null;
+   if (version_time != null) {
+      SimpleDateFormat fmt = new SimpleDateFormat("MM/dd");
+      if (System.currentTimeMillis() - version_time.getTime() < 48*60*60*1000) {
+         fmt = new SimpleDateFormat("MM/dd kk:mm");
+       }
+      time = fmt.format(version_time);
+    }
+   
+   String auth = version_author;
+   if (auth != null) {
+      int idx = auth.indexOf("(");
+      if (idx >= 0) auth = auth.substring(0,idx).trim();
+    }
+   
+   if (id != null) buf.append(id);
+   if (time != null) {
+      if (buf.length() > 0) buf.append(" ");
+      buf.append("@ ");
+      buf.append(time);
+    }
+   if (auth != null) {
+      if (buf.length() > 0) buf.append(" ");
+      buf.append("(");
+      buf.append(auth);
+      buf.append(")");
+    }
+   
+   return buf.toString();
+}
 
 }	// end of class BvcrFileVersion
 

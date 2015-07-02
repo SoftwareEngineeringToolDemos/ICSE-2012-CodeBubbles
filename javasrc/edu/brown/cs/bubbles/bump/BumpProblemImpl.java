@@ -111,7 +111,7 @@ BumpProblemImpl(Element d,String id,int eid,String proj)
 @Override public int getEditId()				{ return edit_id; }
 @Override public String getProject()				{ return for_project; }
 
-@Override synchronized public List<BumpFix> getFixes()	
+@Override synchronized public List<BumpFix> getFixes()
 {
    if (!computed_fixes) {
       Element r = BumpClient.getBump().computeQuickFix(this,-1,0);
@@ -217,7 +217,6 @@ private class EditFix implements BumpConstants.BumpFix {
       fix_attrs = new HashMap<String,String>();
       if (for_project != null) fix_attrs.put("PROJECT",for_project);
       fix_attrs.put("DISPLAY",IvyXml.getAttrString(e,"DISPLAY"));
-      fix_attrs.put("INFO",IvyXml.getAttrString(e,"INFO"));
       fix_edits = IvyXml.getChild(e,"EDIT");
       fix_relevance = IvyXml.getAttrInt(e,"RELEVANCE");
     }

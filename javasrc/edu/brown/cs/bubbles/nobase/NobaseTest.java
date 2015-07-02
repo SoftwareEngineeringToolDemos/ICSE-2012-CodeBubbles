@@ -25,8 +25,11 @@
 package edu.brown.cs.bubbles.nobase;
 
 import edu.brown.cs.ivy.mint.*;
+import edu.brown.cs.ivy.xml.IvyXml;
 
-import java.io.*;
+import org.w3c.dom.Element;
+
+import java.io.File;
 
 
 public class NobaseTest implements NobaseConstants, MintConstants
@@ -63,6 +66,7 @@ public static void main(String [] args)
 private MintControl	mint_control;
 private String		instance_id;
 private int		edit_id;
+private Element 	last_runevent;
 
 
 
@@ -133,47 +137,100 @@ private void runTest()
    sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='2389' END='2389' RONLY='T' EXACT='true' EQUIV='true'",null);
    sendCommand("GETFULLYQUALIFIEDNAME",proj,"FILE='/gpfs/main/home/spr/home/twiex/server.js' START='4217' END='4217' EXACT='true' EQUIV='true'",null);
    sendCommand("FINDREGIONS",proj,"CLASS='output' FIELDS='T' FILE='/gpfs/main/home/spr/home/twiex/output.js'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='output' PREFIX='T' FILE='/gpfs/main/home/spr/home/twiex/output.js'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='output' STATICS='T' FILE='/gpfs/main/home/spr/home/twiex/output.js'",null);
+   sendCommand("FINDREGIONS",proj,"CLASS='output' IMPORTS='T' PACKAGE='T' TOPDELCS='T' FILE='/gpfs/main/home/spr/home/twiex/output.js'",null);
+   sendCommand("PATTERNSEARCH",proj,"PATTERN='database.createSession()' DEFS='true' REFS='false' FOR='METHOD'",null);
    sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' ID='" + (edit_id++) + "'",null);
    sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' COMPUTE='true'","<REGION START='7359' END='8064' />");
+   sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/twiex/output.js' START='2437' END='2437' IMPLS='T'",null);
+   sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' START='5321' END='5321' IMPLS='T'",null);
+   sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' START='7372' END='7372' EXACT='T' EQUIV='T'",null);
+
+   sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' START='5523' END='5523' IMPLS='T'",null);
+   sendCommand("GETFULLYQUALIFIEDNAME",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' START='5523' END='5523' EXACT='true' EQUIV='true'",null);
+   sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' START='5535' END='5535' IMPLS='T'",null);
+   sendCommand("GETFULLYQUALIFIEDNAME",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' START='5535' END='5535' EXACT='true' EQUIV='true'",null);
+   sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/spr/home/twiex/output.js' START='5415' END='5415' IMPLS='T'",null);
+
+   // no item returned on this
+   sendCommand("PATTERNSEARCH",proj,"PATTERN='search.addTable()' DEFS='true' REFS='false' FOR='METHOD'",null);
 
    sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/home/twiex/bad.js' ID='" + (edit_id++) + "'",null);
-   
-   // sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' ID='" + (edit_id++) + "'",null);
-   // sendCommand("PATTERNSEARCH",proj,"PATTERN='genkml.genkml()' DEFS='true' REFS='false' FOR='METHOD'",null);
-   // sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' COMPUTE='true'","<REGION START='505' END='1722' />");
-   // sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/scanzips.py' ID='" + (edit_id++) + "'",null);
-   // sendCommand("PATTERNSEARCH",proj,"PATTERN='scanzips.output(...)' DEFS='true' REFS='false' FOR='METHOD'",null);
-   // sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/scanzips.py' COMPUTE='true'","<REGION START='318' END='655' />");
-   // sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='548' END='548' RONLY='T' EXACT='true' EQUIV='true'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='548' END='548' EXACT='true' EQUIV='true'",null);
-   // sendCommand("GETFULLYQUALIFIEDNAME",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='1076' END='1076'",null);
-   // sendCommand("PATTERNSEARCH",proj,"PATTERN='genkml.*' DEFS='true' REFS='false' FOR='FIELD'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='580' END='580' EXACT='true' EQUIV='true'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='611' END='611' EXACT='true' EQUIV='true'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='643' END='643' EXACT='true' EQUIV='true'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='287' END='287' EXACT='true' EQUIV='true'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='1076' END='1076' EXACT='true' EQUIV='true'",null);
-   // sendCommand("FINDREGIONS",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' STATICS='T' CLASS='genkml'",null);
-   // sendCommand("FINDREGIONS",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' IMPORTS='T' CLASS='genkml'",null);
-   // sendCommand("EDITFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' ID='" + (edit_id++) + "' NEWLINE='true'","<EDIT START='679' END='679'>#</EDIT>");
-   // sendCommand("EDITFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/scanzips.py' ID='" + (edit_id++) + "' NEWLINE='true'","<EDIT START='342' END='342'><![CDATA[ ]]></EDIT>");
-   // sendCommand("EDITFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/scanzips.py' ID='" + (edit_id++) + "' NEWLINE='true'","<EDIT START='358' END='361'></EDIT>");
-   // sendCommand("SEARCH",proj,"PATTERN='output' FLAGS='2' MAX='256'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='635' END='635' EXACT='true' EQUIV='true' RONLY='T'",null);
-   // sendCommand("FINDREFERENCES",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='635' END='635' EXACT='true' EQUIV='true' WONLY='T'",null);
-   // sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='635' END='635'",null);
-   // sendCommand("FINDDEFINITIONS",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/genkml.py' START='650' END='650' IMPLS='T'",null);
-   // sendCommand("PATTERNSEARCH",proj,"PATTERN='Shape.Point.__init__()' DEFS='true' REFS='false' FOR='METHOD'",null);
-   // sendCommand("PATTERNSEARCH",proj,"PATTERN='Shape.Point' DEFS='true' REFS='false' FOR='TYPE'",null);
-   // sendCommand("FINDREGIONS",proj,"CLASS='Shape.Point' FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/Shape.py' COMPUNIT='T'",null);
-   // sendCommand("FINDREGIONS",proj,"CLASS='Shape' FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/Shape.py' COMPUNIT='T'",null);
-   // sendCommand("FINDREGIONS",proj,"CLASS='Shape.Point' PREFIX='T'",null);
-   // sendCommand("PATTERNSEARCH",proj,"PATTERN='Shape.Point.distanceFromOrigin()' DEFS='true' REFS='false' FOR='METHOD'",null);
-   // sendCommand("FINDREGIONS",proj,"CLASS='Shape' PREFIX='T'",null);
-   // sendCommand("STARTFILE",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/Shape.py' ID='" + (edit_id++) + "'",null);
-   // sendCommand("ELIDESET",proj,"FILE='/gpfs/main/home/spr/Pybles/test/testproject/src/Shape.py' COMPUTE='true'","<REGION START='175' END='256' />");
-   //
+
+   ReplyHandler rh;
+   sendCommand("GETRUNCONFIG",proj,null,null);
+   rh = sendCommand("NEWRUNCONFIG",proj,"NAME='server'",null);
+   Element reply = rh.waitForXml();
+   Element config = IvyXml.getChild(reply,"CONFIGURATION");
+   String launchid = "LAUNCH='" + IvyXml.getAttrString(config,"ID") + "'";
+   sendCommand("EDITRUNCONFIG",proj,launchid+"' PROP='FILE' VALUE='/gpfs/main/home/spr/home/twiex/server.js'",null);
+   sendCommand("EDITRUNCONFIG",proj,launchid + " PROP='MODULE' VALUE='server'",null);
+   sendCommand("EDITRUNCONFIG",proj,launchid + " PROP='WD' VALUE='/gpfs/main/home/spr/home/twiex'",null);
+
+   rh = sendCommand("START",null,"NAME='LAUNCH_1'",null);
+   reply = rh.waitForXml();
+   config = IvyXml.getChild(reply,"LAUNCH");
+   String targetid = "LAUNCH='" + IvyXml.getAttrString(config,"ID") + "'";
+   waitForRunEvent(10000);
+   sendCommand("DEBUGACTION",null,targetid + " ACTION='STEP_OVER'",null);
+   waitForRunEvent(10000);
+   sendCommand("GETSTACKFRAMES",null,targetid,null);
+   sendCommand("DEBUGACTION",null,targetid + " ACTION='STEP_INTO'",null);
+   waitForRunEvent(10000);
+   sendCommand("GETSTACKFRAMES",null,targetid,null);
+   sendCommand("DEBUGACTION",null,targetid+" ACTION='STEP_OVER'",null);
+   waitForRunEvent(10000);
+   sendCommand("GETSTACKFRAMES",null,targetid,null);
+   sendCommand("DEBUGACTION",null,targetid + "' ACTION='STEP_OVER'",null);
+   waitForRunEvent(10000);
+   sendCommand("GETSTACKFRAMES",null,targetid,null);
+   sendCommand("DEBUGACTION",null,targetid+" ACTION='RESUME'",null);
+   waitForRunEvent(10000);
+   delay(10000);
+   sendCommand("DEBUGACTION",null,targetid+" ACTION='SUSPEND'",null);
+   waitForRunEvent(10000);
+   sendCommand("GETSTACKFRAMES",null,targetid,null);
+   sendCommand("DEBUGACTION",null,"LAUNCH='TARGET_1' ACTION='TERMINATE'",null);
+
    // sendCommand("COMMIT",proj,"SAVE='T'",null);
+}
+
+
+private void delay(int time)
+{
+   try {
+      Thread.sleep(time);
+    }
+   catch (InterruptedException e) { }
+}
+
+
+private void waitForRunEvent(long wait)
+{
+   long now = System.currentTimeMillis();
+   synchronized (this) {
+      for ( ; ; ) {
+	 if (wait > 0) {
+	    long delta = System.currentTimeMillis() - now;
+	    if (delta > wait) {
+	       System.err.println("NOBASETEST: Wait timed out");
+	       return;
+	     }
+	  }
+	 if (last_runevent == null) {
+	    try {
+	       wait(1000);
+	     }
+	    catch (InterruptedException e) { }
+	  }
+	 if (last_runevent != null) {
+	    String kind = IvyXml.getAttrString(last_runevent,"KIND");
+	    last_runevent = null;
+	    if (kind != null && kind.equals("SUSPEND")) break;
+	  }
+       }
+    }
 }
 
 
@@ -272,6 +329,10 @@ private ReplyHandler sendCommand(String cmd,String proj,String flds,String args)
    System.err.println("NOBASETEST: BEGIN COMMAND " + cmd);
    System.err.println("NOBASETEST: SENDING: " + msg);
 
+   synchronized (this) {
+      last_runevent = null;
+    }
+
    mint_control.send(msg,rh,MINT_MSG_FIRST_NON_NULL);
 
    rh.print();
@@ -331,6 +392,20 @@ private class MessageHandler implements MintHandler {
       System.err.println("NOBASETEST: Message from NOBASE:");
       System.err.println(msg.getText());
       System.err.println("NOBASETEST: End of Message");
+      Element xml = msg.getXml();
+      switch (IvyXml.getAttrString(xml,"TYPE")) {
+	 case "RUNEVENT" :
+	    NobaseTest test = NobaseTest.this;
+	    synchronized (test) {
+	       Element re = IvyXml.getChild(xml,"RUNEVENT");
+	       String kind = IvyXml.getAttrString(re,"KIND");
+	       if (kind.equals("RESUME") || kind.equals("SUSPEND")) {
+		  test.last_runevent = re;
+		  test.notifyAll();
+		}
+	     }
+	    break;
+       }
       msg.replyTo();
     }
 

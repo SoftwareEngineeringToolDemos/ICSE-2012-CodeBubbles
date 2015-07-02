@@ -225,7 +225,7 @@ private class ProjectCreator extends SwingGridPanel implements ActionListener, U
    
    ProjectCreator() {
       beginLayout();
-      addBannerLabel("Create PYBLES JavaScript Project");
+      addBannerLabel("Create NOBBLES JavaScript Project");
       name_field = addTextField("Name",null,this,this);
       file_field = null;
       // file_field = addFileField("Project Directory",((File) null),JFileChooser.DIRECTORIES_ONLY,this,this);

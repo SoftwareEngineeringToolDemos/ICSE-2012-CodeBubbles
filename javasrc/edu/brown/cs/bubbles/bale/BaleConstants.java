@@ -77,9 +77,9 @@ enum BaleFragmentType {
    STATICS,				// static initializers (python evaluations)
    MAIN,				// python main program
    HEADER,				// class header
-   IMPORTS,                             // set of import statements
-   EXPORTS,                             // set of export statements
-   CODE,                                // set of evaluations
+   IMPORTS,				// set of import statements
+   EXPORTS,				// set of export statements
+   CODE,				// set of evaluations
    ROFILE,				// Read-only file (not in IDE)
    ROMETHOD,				// read-only method (not in IDE)
 }
@@ -148,9 +148,11 @@ enum BaleTokenType {
    FINALLY,				// the keyword finally
    INTERFACE,				// the keyword interface
    SYNCHRONIZED,			// the keyword synchronized
-   CONTINUE,			   // the keyword continue
-   PASS,			   // the keyword pass
-   RAISE,			   // the keyword raise
+   CONTINUE,				// the keyword continue
+   PASS,				// the keyword pass
+   RAISE,				// the keyword raise
+   IMPORT,				// the keyword import
+   PACKAGE,				// the keyword package
    TYPEKEY,				// type keyword (int, void, ...)
    NUMBER,				// numeric literal
    CHARLITERAL, 			// character literal
@@ -823,7 +825,6 @@ String BALE_CHECKPOINT_EXTENSION = ".ckpt";
 String BALE_TYPEIN_DELAY = "Bale.edide.delay";
 String BALE_HIGHLIGHT_DELAY = "Bale.highlight.delay";
 String BALE_AUTOCOMPLETE_DELAY = "Bale.autocomplete.delay";
-
 
 
 

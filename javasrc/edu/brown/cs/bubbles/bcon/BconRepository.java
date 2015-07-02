@@ -29,9 +29,10 @@ import edu.brown.cs.bubbles.bass.*;
 import edu.brown.cs.bubbles.bass.BassConstants.BassUpdatableRepository;
 import edu.brown.cs.bubbles.board.*;
 import edu.brown.cs.bubbles.buda.*;
-import edu.brown.cs.bubbles.bump.*;
+import edu.brown.cs.bubbles.bump.BumpLocation;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;

@@ -24,13 +24,13 @@
 
 package edu.brown.cs.bubbles.rebase;
 
-import edu.brown.cs.bubbles.rebase.word.*;
+import edu.brown.cs.bubbles.rebase.word.RebaseWordFactory;
 
 import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
+import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-import java.io.*;
 
 
 public class RebaseProject implements RebaseConstants

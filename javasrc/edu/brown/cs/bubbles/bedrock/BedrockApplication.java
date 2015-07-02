@@ -219,13 +219,13 @@ private synchronized void noteSetup()
        }
     }
 
-   System.err.println("BEDROCK: APP START");
+   BedrockPlugin.logI("APP START");
 
    Map<?,?> argm = ctx.getArguments();
    String [] args = (String []) argm.get(IApplicationContext.APPLICATION_ARGS);
    if (args.length == 0) hide_display = true;
    for (String s : args) {
-      System.err.println("BEDROCK: APP ARG: " + s);
+      BedrockPlugin.logI("APP ARG: " + s);
       if (s.startsWith("-bdisplay")) use_display = true;
       else if (s.startsWith("-btiny")) tiny_display = true;
       else if (s.startsWith("-bhide")) hide_display = true;
@@ -238,10 +238,10 @@ private synchronized void noteSetup()
    if ((use_display || tiny_display || hide_display) &&
 	  !PlatformUI.isWorkbenchRunning()) {
       int sts = PlatformUI.RETURN_UNSTARTABLE;
-      System.err.println("BEDROCK: DISPLAY START");
+      BedrockPlugin.logI("DISPLAY START");
       try {
 	 if (base_display == null) base_display = PlatformUI.createDisplay();
-	 System.err.println("BEDROCK: DISPLAY = " + base_display);
+	 BedrockPlugin.logI("DISPLAY = " + base_display);
 	 EndChecker ec = new EndChecker();
 	 ec.start();
 	 if (org.eclipse.jface.preference.PreferenceConverter.FONTDATA_DEFAULT_DEFAULT != null);
@@ -249,7 +249,7 @@ private synchronized void noteSetup()
 	 sts = PlatformUI.createAndRunWorkbench(base_display,new WbAdvisor());
        }
       catch (Throwable t) {
-	 System.err.println("BEDROCK: Start status: " + t);
+	 BedrockPlugin.logE("Start status: " + t);
 	 BedrockPlugin.logE("Bad start",t);
 	 t.printStackTrace();
        }
@@ -266,14 +266,13 @@ private synchronized void noteSetup()
 	 catch (IOException e) { }
        }
       if (base_display == null) {
-	 System.err.println("BEDROCK: Alternative Start");
+	 BedrockPlugin.logI("Alternative Start");
 	 try {
 	    IWorkbench wb = PlatformUI.getWorkbench();
 	    base_display = wb.getDisplay();
 	  }
 	 catch (Throwable t) {
-	    System.err.println("BEDROCK: Start1 status: " + t);
-	    t.printStackTrace();
+	    BedrockPlugin.logE("Start1 status:",t);
 	  }
 	 if (base_display != null) {
 	    try {
@@ -282,14 +281,13 @@ private synchronized void noteSetup()
 	       JavaUI.getColorManager();
 	     }
 	    catch (Throwable t) {
-	       System.err.println("BEDROCK: Start1a status: " + t);
-	       t.printStackTrace();
+	       BedrockPlugin.logE("Start1a status",t);
 	     }
 	  }
 	 noteSetup();
        }
 
-      BedrockPlugin.logD("BEDROCK SETUP STATUS " + sts);
+      BedrockPlugin.logD("SETUP STATUS " + sts);
 
       // this fails with RETURN_UNSTARTABLE
       if (sts == PlatformUI.RETURN_OK) return IApplication.EXIT_OK;
@@ -318,7 +316,7 @@ private synchronized void noteSetup()
 
    for ( ; ; ) {
       int ctr = exit_ctr;
-      BedrockPlugin.logD("BEDROCK: WAIT ON " + this);
+      BedrockPlugin.logD("WAIT ON " + this);
       synchronized (this) {		   // wait until exit request
 	 while (!exit_ok) {
 	    try {
@@ -331,15 +329,15 @@ private synchronized void noteSetup()
 	       String resp = bp.finishMessageWait(xw);
 	       if (resp == null) exit_ok = true;
 	     }
-	    BedrockPlugin.logD("BEDROCK: PRECHECK " + exit_ok + " " + exit_ctr + " " + ctr);
+	    BedrockPlugin.logD("PRECHECK " + exit_ok + " " + exit_ctr + " " + ctr);
 	  }
        }
       checkActive();
-      BedrockPlugin.logD("BEDROCK: EXIT CHECK " + exit_ok + " " + exit_ctr + " " + ctr);
+      BedrockPlugin.logD("EXIT CHECK " + exit_ok + " " + exit_ctr + " " + ctr);
       if (ctr == exit_ctr && exit_ok) break;
     }
 
-   System.err.println("BEDROCK: EXITING");
+   BedrockPlugin.logI("BEDROCK: EXITING");
 
    return IApplication.EXIT_OK;
 }

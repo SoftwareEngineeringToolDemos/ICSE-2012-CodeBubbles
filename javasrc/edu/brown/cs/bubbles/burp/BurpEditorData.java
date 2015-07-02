@@ -31,6 +31,7 @@ import edu.brown.cs.bubbles.buda.BudaRoot;
 import javax.swing.event.*;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.undo.UndoableEdit;
 
 import java.awt.event.*;
 
@@ -145,14 +146,12 @@ void noteSave()
 
 @Override public void undoableEditHappened(UndoableEditEvent evt)
 {
-   // replace evt.getEdit() with our own event structure that saves positions
-   // is this necessary -- if we use IdeContent, wouldn't all internal positions
-   // be fine -- then its just a matter of updating the external positions
-   // when we need to reuse an event
+   UndoableEdit ued = evt.getEdit();
 
-   for_history.handleNewEdit(this,evt.getEdit(),in_event,next_sig);
+   for_history.handleNewEdit(this,ued,in_event,next_sig);
    next_sig = false;
 }
+
 
 
 

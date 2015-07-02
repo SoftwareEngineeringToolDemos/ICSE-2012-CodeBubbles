@@ -24,7 +24,7 @@
 
 package edu.brown.cs.bubbles.rebase;
 
-import edu.brown.cs.bubbles.rebase.word.*;
+import edu.brown.cs.bubbles.rebase.word.RebaseWordBag;
 
 import edu.brown.cs.ivy.mint.*;
 import edu.brown.cs.ivy.xml.IvyXml;
@@ -33,8 +33,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.*;
-import java.io.*;
 
 
 

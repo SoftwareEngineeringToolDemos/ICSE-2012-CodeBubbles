@@ -115,7 +115,8 @@ Evaluator getRequiresEvaluator()
 
 private class Requires implements Evaluator {
 
-   @Override public NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args) {
+   @Override public NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args,
+         NobaseValue thisval) {
       if (args.size() == 0) return null;
       if (args.get(0) == null)
          return null;

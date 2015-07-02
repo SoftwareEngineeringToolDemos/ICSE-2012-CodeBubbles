@@ -284,259 +284,248 @@ private String handleCommand(String cmd,String proj,Element xml) throws NobaseEx
    IvyXmlWriter xw = new IvyXmlWriter();
    xw.begin("RESULT");
 
-   if (cmd.equals("PING")) {
-      xw.text("PONG");
-    }
-   else if (cmd.equals("PROJECTS")) {
-      project_manager.handleListProjects(xw);
-    }
-   else if (cmd.equals("OPENPROJECT")) {
-      project_manager.handleOpenProject(proj,IvyXml.getAttrBool(xml,"FILES",false),
-	    IvyXml.getAttrBool(xml,"PATHS",false),
-	    IvyXml.getAttrBool(xml,"CLASSES",false),
-	    IvyXml.getAttrBool(xml,"OPTIONS",false),xw);
-    }
-   else if (cmd.equals("BUILDPROJECT")) {
-      project_manager.handleBuildProject(proj,IvyXml.getAttrBool(xml,"CLEAN"),
-	    IvyXml.getAttrBool(xml,"FULL"),
-	    IvyXml.getAttrBool(xml,"REFRESH"),xw);
-    }
-   else if (cmd.equals("CREATEPROJECT")) {
-      project_manager.handleCreateProject(IvyXml.getAttrString(xml,"NAME"),
-	    IvyXml.getAttrString(xml,"DIR"),xw);
-    }
-   else if (cmd.equals("EDITPROJECT")) {
-      project_manager.handleEditProject(proj,IvyXml.getChild(xml,"PROJECT"),xw);
-    }
-   else if (cmd.equals("CREATEPACKAGE")) {
-      project_manager.handleCreatePackage(proj,
-	    IvyXml.getAttrString(xml,"NAME"),
-	    IvyXml.getAttrBool(xml,"FORCE"),xw);
-    }
-   else if (cmd.equals("FINDPACKAGE")) {
-      project_manager.handleFindPackage(proj,
-	    IvyXml.getAttrString(xml,"NAME"),xw);
-    }
-   else if (cmd.equals("CREATECLASS")) {
-      project_manager.handleNewModule(proj,
-	    IvyXml.getAttrString(xml,"NAME"),
-	    IvyXml.getAttrBool(xml,"FORCE"),
-	    IvyXml.getTextElement(xml,"CONTENTS"),xw);
-    }
-   else if (cmd.equals("STARTFILE")) {
-      nobase_editor.handleStartFile(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    IvyXml.getAttrString(xml,"FILE"),
-	    IvyXml.getAttrString(xml,"ID"),
-	    IvyXml.getAttrBool(xml,"CONTENTS",false),xw);
-    }
-   else if (cmd.equals("EDITPARAM")) {
-      nobase_editor.handleParameter(IvyXml.getAttrString(xml,"BID","*"),
-	    IvyXml.getAttrString(xml,"NAME"),
-	    IvyXml.getAttrString(xml,"VALUE"));
-    }
-   else if (cmd.equals("EDITFILE")) {
-      nobase_editor.handleEdit(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    IvyXml.getAttrString(xml,"FILE"),
-	    IvyXml.getAttrString(xml,"ID"),
-	    getEditSet(xml),xw);
-    }
-   else if (cmd.equals("COMMIT")) {
-      nobase_editor.handleCommit(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    IvyXml.getAttrBool(xml,"REFRESH",false),
-	    IvyXml.getAttrBool(xml,"SAVE",false),
-	    getElements(xml,"FILE"),xw);
-    }
-   else if (cmd.equals("ELIDESET")) {
-      nobase_editor.elisionSetup(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    IvyXml.getAttrString(xml,"FILE"),
-	    IvyXml.getAttrBool(xml,"COMPUTE",true),
-	    getElements(xml,"REGION"),xw);
-    }
-   else if (cmd.equals("OPENEDITOR")) { }
-   else if (cmd.equals("PATTERNSEARCH")) {
-      project_manager.handlePatternSearch(proj,IvyXml.getAttrString(xml,"PATTERN"),
-	    IvyXml.getAttrString(xml,"FOR"),
-	    IvyXml.getAttrBool(xml,"DEFS",true),
-	    IvyXml.getAttrBool(xml,"REFS",true),
-	    IvyXml.getAttrBool(xml,"SYSTEM",false),
-	    xw);
-    }
-   else if (cmd.equals("FINDBYKEY")) {
-      project_manager.handleKeySearch(proj,
-            IvyXml.getAttrString(xml,"FILE"),
-            IvyXml.getAttrString(xml,"KEY"),
-            xw);
-    }
-   else if (cmd.equals("FINDDEFINITIONS")) {
-      project_manager.handleFindAll(proj,IvyXml.getAttrString(xml,"FILE"),
-	    IvyXml.getAttrInt(xml,"START"),IvyXml.getAttrInt(xml,"END"),
-	    IvyXml.getAttrBool(xml,"DEFS",true),
-	    IvyXml.getAttrBool(xml,"REFS",false),
-	    IvyXml.getAttrBool(xml,"IMPLS",false),
-	    IvyXml.getAttrBool(xml,"TYPE",false),
-	    false,false,
-	    xw);
-    }
-   else if (cmd.equals("FINDREFERENCES")) {
-      project_manager.handleFindAll(proj,IvyXml.getAttrString(xml,"FILE"),
-	    IvyXml.getAttrInt(xml,"START"),IvyXml.getAttrInt(xml,"END"),
-	    IvyXml.getAttrBool(xml,"DEFS",true),
-	    IvyXml.getAttrBool(xml,"REFS",true),
-	    IvyXml.getAttrBool(xml,"IMPLS",false),
-	    IvyXml.getAttrBool(xml,"TYPE",false),
-	    IvyXml.getAttrBool(xml,"RONLY",false),
-	    IvyXml.getAttrBool(xml,"WONLY",false),
-	    xw);
-    }
-   else if (cmd.equals("GETFULLYQUALIFIEDNAME")) {
-      project_manager.getFullyQualifiedName(proj,
-	    IvyXml.getAttrString(xml,"FILE"),
-	    IvyXml.getAttrInt(xml,"START"),
-	    IvyXml.getAttrInt(xml,"END"),xw);
-    }
-   else if (cmd.equals("FINDREGIONS")) {
-      project_manager.getTextRegions(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    IvyXml.getAttrString(xml,"FILE"),
-	    IvyXml.getAttrString(xml,"CLASS"),
-	    IvyXml.getAttrBool(xml,"PREFIX",false),
-	    IvyXml.getAttrBool(xml,"STATICS",false),
-	    IvyXml.getAttrBool(xml,"COMPUNIT",false),
-	    IvyXml.getAttrBool(xml,"IMPORTS",false),
-	    IvyXml.getAttrBool(xml,"PACKAGE",false),
-	    IvyXml.getAttrBool(xml,"TOPDECLS",false),
-	    IvyXml.getAttrBool(xml,"FIELDS",false),
-	    IvyXml.getAttrBool(xml,"ALL",false),xw);
-    }
-   else if (cmd.equals("SEARCH")) {
-      nobase_search.handleTextSearch(proj,IvyXml.getAttrInt(xml,"FLAGS",0),
-	    IvyXml.getTextElement(xml,"PATTERN"),
-	    IvyXml.getAttrInt(xml,"MAX",MAX_TEXT_SEARCH_RESULTS),
-	    xw);
-    }
-   else if (cmd.equals("ENTER")) {
-      if (num_clients == 0 && nobase_pinger == null) {
-	 nobase_pinger = new Pinger();
-	 nobase_timer.schedule(nobase_pinger,30000,30000);
-       }
-      ++num_clients;
-      xw.text(Integer.toString(num_clients));
-    }
-   else if (cmd.equals("EXIT")) {
-      if (--num_clients <= 0) {
-	 NobaseMain.logD("Stopping application");
-	 shutdown_mint = true;
-       }
-    }
-   else if (cmd.equals("LOGLEVEL")) {
-      log_level = IvyXml.getAttrEnum(xml,"LEVEL",NobaseLogLevel.ERROR);
-    }
-   else if (cmd.equals("GETALLNAMES")) {
-      project_manager.handleGetAllNames(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    getSet(xml,"FILE"),
-	    IvyXml.getAttrString(xml,"BACKGROUND"),xw);
-    }
-   else if (cmd.equals("GETRUNCONFIG")) {
-      // nobase_debug.getRunConfigurations(xw);
-    }
-   else if (cmd.equals("NEWRUNCONFIG")) {
-      // nobase_debug.getNewRunConfiguration(proj,
-	    // IvyXml.getAttrString(xml,"NAME"),
-	    // IvyXml.getAttrString(xml,"CLONE"),xw);
-    }
-   else if (cmd.equals("EDITRUNCONFIG")) {
-      // nobase_debug.editRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),
-	    // IvyXml.getAttrString(xml,"PROP"),
-	    // IvyXml.getAttrString(xml,"VALUE"),xw);
-    }
-   else if (cmd.equals("SAVERUNCONFIG")) {
-      // nobase_debug.saveRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
-    }
-   else if (cmd.equals("DELETERUNCONFIG")) {
-      // nobase_debug.deleteRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
-    }
-   else if (cmd.equals("GETALLBREAKPOINTS")) {
-      // nobase_debug.getAllBreakpoints(xw);
-    }
-   else if (cmd.equals("ADDLINEBREAKPOINT")) {
-      // nobase_debug.setLineBreakpoint(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    // IvyXml.getTextElement(xml,"FILE"),
-	    // IvyXml.getAttrInt(xml,"LINE"),
-	    // IvyXml.getAttrBool(xml,"SUSPENDVM",false),
-	    // IvyXml.getAttrBool(xml,"TRACE",false));
-    }
-   else if (cmd.equals("ADDEXCEPTIONBREAKPOINT")) {
-      // nobase_debug.setExceptionBreakpoint(proj,IvyXml.getAttrString(xml,"CLASS"),
-	    // IvyXml.getAttrBool(xml,"CAUGHT",false),
-	    // IvyXml.getAttrBool(xml,"UNCAUGHT",true),
-	    // IvyXml.getAttrBool(xml,"CHECKED",false),
-	    // IvyXml.getAttrBool(xml,"SUSPENDVM",false));
-    }
-   else if (cmd.equals("EDITBREAKPOINT")) {
-      // nobase_debug.editBreakpoint(IvyXml.getAttrString(xml,"ID"),
-	    // IvyXml.getAttrString(xml,"PROP"),
-	    // IvyXml.getAttrString(xml,"VALUE"),
-	    // IvyXml.getAttrString(xml,"PROP1"),
-	    // IvyXml.getAttrString(xml,"VALUE1"),
-	    // IvyXml.getAttrString(xml,"PROP2"),
-	    // IvyXml.getAttrString(xml,"VALUE2"));
-    }
-   else if (cmd.equals("CLEARALLLINEBREAKPOINTS")) {
-      // nobase_debug.clearLineBreakpoints(proj,null,0);
-    }
-   else if (cmd.equals("CLEARLINEBREAKPOINT")) {
-      // nobase_debug.clearLineBreakpoints(proj,IvyXml.getAttrString(xml,"FILE"),
-	    // IvyXml.getAttrInt(xml,"LINE"));
-    }
-   else if (cmd.equals("START")) {
-      // nobase_debug.runProject(IvyXml.getAttrString(xml,"NAME"),xw);
-    }
-   else if (cmd.equals("DEBUGACTION")) {
-      // nobase_debug.debugAction(IvyXml.getAttrString(xml,"LAUNCH"),
-	    // IvyXml.getAttrString(xml,"TARGET"),
-	    // IvyXml.getAttrString(xml,"PROCESS"),
-	    // IvyXml.getAttrString(xml,"THREAD"),
-	    // IvyXml.getAttrString(xml,"FRAME"),
-	    // IvyXml.getAttrEnum(xml,"ACTION",NobaseDebugAction.NONE),xw);
-    }
-   else if (cmd.equals("CONSOLEINPUT")) {
-      // nobase_debug.consoleInput(IvyXml.getAttrString(xml,"LAUNCH"),
-	    // IvyXml.getTextElement(xml,"INPUT"));
-    }
-   else if (cmd.equals("GETSTACKFRAMES")) {
-      // nobase_debug.getStackFrames(IvyXml.getAttrString(xml,"LAUNCH"),
-	    // IvyXml.getAttrString(xml,"THREAD"),
-	    // IvyXml.getAttrInt(xml,"COUNT",-1),
-	    // IvyXml.getAttrInt(xml,"DEPTH",0),xw);
-    }
-   else if(cmd.equals("VARVAL")) {
-      // nobase_debug.getVariableValue(IvyXml.getAttrString(xml,"THREAD"),
-	    // IvyXml.getAttrString(xml,"FRAME"),
-	    // IvyXml.getTextElement(xml,"VAR"),
-	    // IvyXml.getAttrInt(xml,"DEPTH",1),xw);
-    }
-   else if(cmd.equals("VARDETAIL")) {
-      // nobase_debug.getVariableValue(IvyXml.getAttrString(xml,"THREAD"),
-	    // IvyXml.getAttrString(xml,"FRAME"),
-	    // IvyXml.getTextElement(xml,"VAR"),-1,xw);
-    }
-   else if (cmd.equals("EVALUATE")) {
-      // nobase_debug.evaluateExpression(proj,IvyXml.getAttrString(xml,"BID","*"),
-	    // IvyXml.getTextElement(xml,"EXPR"),
-	    // IvyXml.getAttrString(xml,"THREAD"),
-	    // IvyXml.getAttrString(xml,"FRAME"),
-	    // IvyXml.getAttrBool(xml,"IMPLICIT",false),
-	    // IvyXml.getAttrBool(xml,"BREAK",true),
-	    // IvyXml.getAttrString(xml,"REPLYID"),xw);
-    }
-   else if (cmd.equals("MONITOR")) { }
-   else if (cmd.equals("PREFERENCES")) { }
-   else if (cmd.equals("FINDHIERARCHY")) { }
-   else if (cmd.equals("GETHOST")) {
-      handleGetHost(xw);
-    }
-   else {
-      xw.close();
-      throw new NobaseException("Unknown NOBASE command " + cmd);
+   switch (cmd) {
+      case "PING" :
+         xw.text("PONG");
+         break;
+      case "PROJECTS" :
+         project_manager.handleListProjects(xw);
+         break;
+      case "OPENPROJECT" :
+         project_manager.handleOpenProject(proj,IvyXml.getAttrBool(xml,"FILES",false),
+               IvyXml.getAttrBool(xml,"PATHS",false),
+               IvyXml.getAttrBool(xml,"CLASSES",false),
+               IvyXml.getAttrBool(xml,"OPTIONS",false),xw);
+         break;
+      case "BUILDPROJECT" :
+         project_manager.handleBuildProject(proj,IvyXml.getAttrBool(xml,"CLEAN"),
+               IvyXml.getAttrBool(xml,"FULL"),
+               IvyXml.getAttrBool(xml,"REFRESH"),xw);
+         break;
+      case "CREATEPROJECT" :
+         project_manager.handleCreateProject(IvyXml.getAttrString(xml,"NAME"),
+               IvyXml.getAttrString(xml,"DIR"),xw);
+         break;
+      case "EDITPROJECT" :
+         project_manager.handleEditProject(proj,IvyXml.getChild(xml,"PROJECT"),xw);
+         break;
+      case "CREATEPACKAGE" :
+         project_manager.handleCreatePackage(proj,IvyXml.getAttrString(xml,"NAME"),
+               IvyXml.getAttrBool(xml,"FORCE"),xw);
+         break;
+      case "FINDPACKAGE" :
+         project_manager.handleFindPackage(proj,IvyXml.getAttrString(xml,"NAME"),xw);
+         break;
+      case "CREATECLASS" :
+         project_manager.handleNewModule(proj,IvyXml.getAttrString(xml,"NAME"),
+               IvyXml.getAttrBool(xml,"FORCE"),
+               IvyXml.getTextElement(xml,"CONTENTS"),xw);
+         break;
+      case "STARTFILE" :
+         nobase_editor.handleStartFile(proj,IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrString(xml,"ID"),
+               IvyXml.getAttrBool(xml,"CONTENTS",false),xw);
+         break;
+      case "EDITPARAM" :
+         nobase_editor.handleParameter(IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getAttrString(xml,"NAME"),
+               IvyXml.getAttrString(xml,"VALUE"));
+         break;
+      case "EDITFILE" :
+         nobase_editor.handleEdit(proj,IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrString(xml,"ID"),
+               getEditSet(xml),xw);
+         break;
+      case "COMMIT" :
+         nobase_editor.handleCommit(proj,IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getAttrBool(xml,"REFRESH",false),
+               IvyXml.getAttrBool(xml,"SAVE",false),
+               getElements(xml,"FILE"),xw);
+         break;
+      case "ELIDESET" :
+         nobase_editor.elisionSetup(proj,IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrBool(xml,"COMPUTE",true),
+               getElements(xml,"REGION"),xw);
+         break;
+      case "PATTERNSEARCH" :
+         project_manager.handlePatternSearch(proj,IvyXml.getAttrString(xml,"PATTERN"),
+               IvyXml.getAttrString(xml,"FOR"),
+               IvyXml.getAttrBool(xml,"DEFS",true),
+               IvyXml.getAttrBool(xml,"REFS",true),
+               IvyXml.getAttrBool(xml,"SYSTEM",false),xw);
+         break;
+      case "FINDBYKEY" :
+         project_manager.handleKeySearch(proj,IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrString(xml,"KEY"),xw);
+         break;
+      case "FINDDEFINITIONS" :
+         project_manager.handleFindAll(proj,IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrInt(xml,"START"),IvyXml.getAttrInt(xml,"END"),
+               IvyXml.getAttrBool(xml,"DEFS",true),
+               IvyXml.getAttrBool(xml,"REFS",false),
+               IvyXml.getAttrBool(xml,"IMPLS",false),
+               IvyXml.getAttrBool(xml,"TYPE",false),
+               false,false,xw);
+         break;
+      case "FINDREFERENCES" :
+         project_manager.handleFindAll(proj,IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrInt(xml,"START"),IvyXml.getAttrInt(xml,"END"),
+               IvyXml.getAttrBool(xml,"DEFS",true),
+               IvyXml.getAttrBool(xml,"REFS",true),
+               IvyXml.getAttrBool(xml,"IMPLS",false),
+               IvyXml.getAttrBool(xml,"TYPE",false),
+               IvyXml.getAttrBool(xml,"RONLY",false),
+               IvyXml.getAttrBool(xml,"WONLY",false),xw);
+         break;
+      case "GETFULLYQUALIFIEDNAME" :
+         project_manager.getFullyQualifiedName(proj,IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrInt(xml,"START"),
+               IvyXml.getAttrInt(xml,"END"),xw);
+         break;
+      case "FINDREGIONS" :
+         project_manager.getTextRegions(proj,IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrString(xml,"CLASS"),
+               IvyXml.getAttrBool(xml,"PREFIX",false),
+               IvyXml.getAttrBool(xml,"STATICS",false),
+               IvyXml.getAttrBool(xml,"COMPUNIT",false),
+               IvyXml.getAttrBool(xml,"IMPORTS",false),
+               IvyXml.getAttrBool(xml,"PACKAGE",false),
+               IvyXml.getAttrBool(xml,"TOPDECLS",false),
+               IvyXml.getAttrBool(xml,"FIELDS",false),
+               IvyXml.getAttrBool(xml,"ALL",false),xw);
+         break;
+      case "GETALLNAMES" :
+         project_manager.handleGetAllNames(proj,IvyXml.getAttrString(xml,"BID","*"),
+               getSet(xml,"FILE"),
+               IvyXml.getAttrString(xml,"BACKGROUND"),xw);
+         break;
+      case "SEARCH" :
+         nobase_search.handleTextSearch(proj,IvyXml.getAttrInt(xml,"FLAGS",0),
+               IvyXml.getTextElement(xml,"PATTERN"),
+               IvyXml.getAttrInt(xml,"MAX",MAX_TEXT_SEARCH_RESULTS),xw);
+         break;
+      case "GETCOMPLETIONS" :
+         project_manager.getCompletions(proj,IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrInt(xml,"OFFSET"),xw);
+          break;
+      case "GETRUNCONFIG" :
+         nobase_debug.getRunConfigurations(xw);
+         break;
+      case "NEWRUNCONFIG" :
+         nobase_debug.getNewRunConfiguration(proj,
+               IvyXml.getAttrString(xml,"NAME"),
+               IvyXml.getAttrString(xml,"CLONE"),xw);
+         break;
+      case "EDITRUNCONFIG" :
+         nobase_debug.editRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),
+               IvyXml.getAttrEnum(xml,"PROP",NobaseConfigAttribute.NONE),
+               IvyXml.getAttrString(xml,"VALUE"),xw);
+         break;
+      case "SAVERUNCONFIG" :
+         nobase_debug.saveRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
+         break;
+      case "DELETERUNCONFIG" :
+         nobase_debug.deleteRunConfiguration(IvyXml.getAttrString(xml,"LAUNCH"),xw);
+         break;
+      case "GETALLBREAKPOINTS" :
+         nobase_debug.getAllBreakpoints(xw);
+         break;
+      case "ADDLINEBREAKPOINT" :
+         nobase_debug.setLineBreakpoint(proj,IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getTextElement(xml,"FILE"),
+               IvyXml.getAttrInt(xml,"LINE"),
+               IvyXml.getAttrBool(xml,"TRACE",false));
+         break;
+      case "ADDEXCEPTIONBREAKPOINT" :
+         nobase_debug.setExceptionBreakpoint(proj,IvyXml.getAttrBool(xml,"CAUGHT",false),
+               IvyXml.getAttrBool(xml,"UNCAUGHT",true),
+               IvyXml.getAttrBool(xml,"CHECKED",false));
+         break;
+      case "EDITBREAKPOINT" :
+         nobase_debug.editBreakpoint(IvyXml.getAttrString(xml,"ID"),
+               IvyXml.getAttrString(xml,"PROP"),
+               IvyXml.getAttrString(xml,"VALUE"),
+               IvyXml.getAttrString(xml,"PROP1"),
+               IvyXml.getAttrString(xml,"VALUE1"),
+               IvyXml.getAttrString(xml,"PROP2"),
+               IvyXml.getAttrString(xml,"VALUE2"));
+         break;
+      case "CLEARALLLINEBREAKPOINTS" :
+         nobase_debug.clearLineBreakpoints(proj,null,0);
+         break;
+      case "CLEARLINEBREAKPOINT" :
+         nobase_debug.clearLineBreakpoints(proj,IvyXml.getAttrString(xml,"FILE"),
+               IvyXml.getAttrInt(xml,"LINE"));
+         break;
+      case "START" :
+         nobase_debug.runProject(IvyXml.getAttrString(xml,"NAME"),xw);
+         break;
+      case "DEBUGACTION" :
+         nobase_debug.debugAction(IvyXml.getAttrString(xml,"LAUNCH"),
+               IvyXml.getAttrString(xml,"TARGET"),
+               IvyXml.getAttrString(xml,"FRAME"),
+               IvyXml.getAttrEnum(xml,"ACTION",NobaseDebugAction.NONE),xw);
+         break;
+      case "CONSOLEINPUT" :
+         nobase_debug.consoleInput(IvyXml.getAttrString(xml,"LAUNCH"),
+               IvyXml.getTextElement(xml,"INPUT"));
+         break;
+      case "GETSTACKFRAMES" :
+         nobase_debug.getStackFrames(IvyXml.getAttrString(xml,"LAUNCH"),
+               IvyXml.getAttrInt(xml,"COUNT",-1),
+               IvyXml.getAttrInt(xml,"DEPTH",0),xw);
+         break;
+      case "VARVAL" :
+         nobase_debug.getVariableValue(IvyXml.getAttrString(xml,"FRAME"),
+               IvyXml.getTextElement(xml,"VAR"),
+               IvyXml.getAttrInt(xml,"DEPTH",1),xw);
+         break;
+      case "VARDETAIL" :
+         nobase_debug.getVariableValue(IvyXml.getAttrString(xml,"FRAME"),
+               IvyXml.getTextElement(xml,"VAR"),-1,xw);
+         break;
+      case "EVALUATE" :
+         nobase_debug.evaluateExpression(proj,
+               IvyXml.getAttrString(xml,"BID","*"),
+               IvyXml.getTextElement(xml,"EXPR"),
+               IvyXml.getAttrString(xml,"FRAME"),
+               IvyXml.getAttrBool(xml,"IMPLICIT",false),
+               IvyXml.getAttrBool(xml,"BREAK",true),
+               IvyXml.getAttrString(xml,"REPLYID"),xw);
+         break;
+     case "ENTER" :
+         if (num_clients == 0 && nobase_pinger == null) {
+            nobase_pinger = new Pinger();
+            nobase_timer.schedule(nobase_pinger,30000,30000);
+          }
+         ++num_clients;
+         xw.text(Integer.toString(num_clients));
+         break;
+      case "EXIT" :
+         if (--num_clients <= 0) {
+            NobaseMain.logD("Stopping application");
+            shutdown_mint = true;
+          }
+         break;
+      case "LOGLEVEL" :
+         log_level = IvyXml.getAttrEnum(xml,"LEVEL",NobaseLogLevel.ERROR);
+         break;
+      case "GETHOST" :
+         handleGetHost(xw);  
+         break;
+      case "MONITOR" :
+      case "PREFERENCES" :
+      case "FINDHIERARCHY" :
+      case "OPENEDITOR" :
+         break;
+      default :
+         xw.close();
+         throw new NobaseException("Unknown NOBASE command " + cmd);
     }
 
    xw.end("RESULT");

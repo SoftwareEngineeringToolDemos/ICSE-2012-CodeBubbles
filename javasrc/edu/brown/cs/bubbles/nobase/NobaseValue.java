@@ -186,13 +186,17 @@ void setBaseValue(NobaseValue typ)			{ }
 boolean addProperty(Object prop,NobaseValue typ)		{ return false; }
 void setHasOtherProperties()				{ }
 NobaseValue getProperty(Object name)			{ return null; }
-void mergeProperties(NobaseValue nv)                    { }
+boolean mergeProperties(NobaseValue nv)                    { return false; }
 
 void addDefinition(NobaseAst.FunctionConstructor fc)	{ }
 void setEvaluator(Evaluator eval)                       { }
-NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args) {
+NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args,NobaseValue thisval) {
    return createUnknownValue();
 }
+
+void setReturnValue(NobaseValue value)          { }
+
+
 
 void setConstructor()					{ }
 
@@ -403,15 +407,17 @@ private static class ObjectValue extends NobaseValue {
       return null;
     }
 
-   @Override void mergeProperties(NobaseValue nv) {
-      if (nv == null || nv == this) return;
+   @Override boolean mergeProperties(NobaseValue nv) {
+      if (nv == null || nv == this) return false;
+      boolean chng = false;
       if (nv instanceof ObjectValue) {
          ObjectValue ov = (ObjectValue) nv;
          for (Map.Entry<Object,NobaseValue> ent : ov.known_properties.entrySet()) {
-            addProperty(ent.getKey(),ent.getValue());
+            chng |= addProperty(ent.getKey(),ent.getValue());
           }
          if (ov.has_other) setHasOtherProperties();
        }
+      return chng;
     }
    
    @Override long getHashValue() {
@@ -451,16 +457,23 @@ private static class FunctionValue extends ObjectValue {
 
    private Set<NobaseAst.FunctionConstructor> function_defs;
    private Evaluator function_evaluator;
+   private List<NobaseValue> arg_values;
+   private NobaseValue return_value;
 
    FunctionValue() {
       super(NobaseType.createFunction());
       function_defs = null;
       function_evaluator = null;
+      arg_values = null;
+      return_value = null;
     }
    
    FunctionValue(NobaseAst.FunctionConstructor fc) {
       this();
-      if (fc != null) addDefinition(fc);
+      if (fc != null) {
+         addDefinition(fc);
+         arg_values = new ArrayList<NobaseValue>();
+       }
     }
 
    boolean isFunction()                         { return true; }
@@ -474,12 +487,43 @@ private static class FunctionValue extends ObjectValue {
       function_evaluator = ev;
     }
    
-   @Override NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args) {
+   @Override NobaseValue evaluate(NobaseFile forfile,List<NobaseValue> args,NobaseValue thisval) {
       if (function_evaluator != null) {
-         NobaseValue v = function_evaluator.evaluate(forfile,args);
+         NobaseValue v = function_evaluator.evaluate(forfile,args,thisval);
          if (v != null) return v;
        }
-      return super.evaluate(forfile,args);
+      
+      boolean chng = false;
+      if (thisval != null && thisval instanceof ObjectValue) {
+         chng |= mergeProperties(thisval);
+       }
+      
+      if (arg_values != null) {
+         int i = 0;
+         for (NobaseValue arg : args) {
+            if (arg_values.size() <= i) {
+               arg_values.add(arg);
+               chng = true;
+             }
+            else {
+               NobaseValue ovalue = arg_values.get(i);
+               NobaseValue nvalue = mergeValues(arg,ovalue);
+               if (nvalue != null && !nvalue.equals(ovalue)) {
+                  arg_values.set(i,nvalue);
+                  chng = true;
+                }
+             }
+          }
+       }
+      
+      if (!chng && return_value != null) return return_value;
+      else return_value = null;
+      
+      return super.evaluate(forfile,args,thisval);
+    }
+   
+   @Override void setReturnValue(NobaseValue v) {
+      return_value = mergeValues(return_value,v);
     }
 
 }	// end of inner class CompletionValue

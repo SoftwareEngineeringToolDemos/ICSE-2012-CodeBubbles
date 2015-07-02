@@ -25,8 +25,8 @@
 package edu.brown.cs.bubbles.rebase.word;
 
 
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
-import org.eclipse.jdt.core.*;
 
 import java.util.*;
 

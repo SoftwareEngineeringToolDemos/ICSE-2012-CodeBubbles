@@ -257,6 +257,9 @@ private static void computeBranchType(BassName nm,Branch p)
       case PROJECT :
 	 p.setBranchType(BranchNodeType.PROJECT);
 	 break;
+      case METHOD :
+         p.setBranchType(BranchNodeType.METHOD);
+         break;
       default :
 	 p.setBranchType(BranchNodeType.CLASS);
 	 break;
@@ -627,6 +630,7 @@ private static class Branch extends BassTreeImpl {
       switch (branch_type) {
 	 case PROJECT :
 	 case PACKAGE :
+	 case METHOD :
 	    branch_type = type;
 	    break;
 	 case CLASS:
@@ -648,6 +652,7 @@ private static class Branch extends BassTreeImpl {
    @Override public Icon getExpandIcon() {
       switch (branch_type) {
 	 case CLASS :
+	 case METHOD :
 	    return BoardImage.getIcon("class_expand");
 	 case THROWABLE :
 	    return BoardImage.getIcon("throw_expand");
@@ -668,6 +673,7 @@ private static class Branch extends BassTreeImpl {
    @Override public Icon getCollapseIcon() {
       switch (branch_type) {
 	 case CLASS :
+	 case METHOD :
 	    return BoardImage.getIcon("class_collapse");
 	 case THROWABLE :
 	    return BoardImage.getIcon("throw_collapse");
@@ -707,6 +713,7 @@ private static class Branch extends BassTreeImpl {
 	    if (tn.getBranchType() == BranchNodeType.THROWABLE) break;
 	    if (tn.getBranchType() == BranchNodeType.INTERFACE) break;
 	    if (tn.getBranchType() == BranchNodeType.ENUM) break;
+	    if (tn.getBranchType() == BranchNodeType.METHOD) break;
 	    if (buf == null) {
 	       buf = new StringBuffer();
 	       buf.append(cn.getLocalName());
@@ -798,104 +805,104 @@ private static class Branch extends BassTreeImpl {
       String [] comps = bn.getNameComponents();
       int cidx = 0;
       Branch parent = null;
-
+   
       Branch p = this;
       while (p != null && cidx < comps.length) {
-	 parent = p;
-	 Branch np = null;
-	 for (BassTreeImpl bt : p.child_nodes) {
-	    if (bt.getLocalName().equals(comps[cidx])) {
-	       if (bt instanceof Branch) {
-		  np = (Branch) bt;
-		  cidx++;
-		  break;
-		}
-	       else {
-		  if (cidx == comps.length-1 && !force) return bt;
-		  BoardLog.logW("BALE","Search tree has leaf and parent with the same name: " +
-				   bt.getLocalName() + " in " + p.getLocalName());
-		  break;
-		}
-	     }
-	    else if (subsetName(bt.getLocalName(),comps[cidx])) {
-	       String nm = comps[cidx];
-	       int fnd = -1;
-	       for (int i = cidx+1; i < comps.length; ++i) {
-		  if (nm.endsWith(":")) nm += comps[i];
-		  else nm += "." + comps[i];
-		  if (bt.getLocalName().equals(nm)) {
-		     np = (Branch) bt;
-		     fnd = i;
-		     break;
-		   }
-		}
-	       if (fnd >= 0) {
-		  cidx = fnd+1;
-		  break;
-		}
-	       // need to split the local name
-	       nm = comps[cidx];
-	       fnd = cidx;
-	       String nm1 = nm;
-	       for (int i = cidx+1; i < comps.length; ++i) {
-		  if (nm.endsWith(":")) nm += comps[i];
-		  else nm += "." + comps[i];
-		  if (!subsetName(bt.getLocalName(),nm)) {
-		     fnd = i;
-		     break;
-		  }
-		  nm1 += "." + comps[i];
-		}
-	       splitNode((Branch) bt,nm1);
-	       np = (Branch) bt;
-	       cidx = fnd;
-	     }
-	  }
-	 if (np == null) break;
-	 p = np;
+         parent = p;
+         Branch np = null;
+         for (BassTreeImpl bt : p.child_nodes) {
+            if (bt.getLocalName().equals(comps[cidx])) {
+               if (bt instanceof Branch) {
+        	  np = (Branch) bt;
+        	  cidx++;
+        	  break;
+        	}
+               else {
+        	  if (cidx == comps.length-1 && !force) return bt;
+        	  BoardLog.logW("BALE","Search tree has leaf and parent with the same name: " +
+        			   bt.getLocalName() + " in " + p.getLocalName());
+        	  break;
+        	}
+             }
+            else if (subsetName(bt.getLocalName(),comps[cidx])) {
+               String nm = comps[cidx];
+               int fnd = -1;
+               for (int i = cidx+1; i < comps.length; ++i) {
+        	  if (nm.endsWith(":")) nm += comps[i];
+        	  else nm += "." + comps[i];
+        	  if (bt.getLocalName().equals(nm)) {
+        	     np = (Branch) bt;
+        	     fnd = i;
+        	     break;
+        	   }
+        	}
+               if (fnd >= 0) {
+        	  cidx = fnd+1;
+        	  break;
+        	}
+               // need to split the local name
+               nm = comps[cidx];
+               fnd = cidx;
+               String nm1 = nm;
+               for (int i = cidx+1; i < comps.length; ++i) {
+        	  if (nm.endsWith(":")) nm += comps[i];
+        	  else nm += "." + comps[i];
+        	  if (!subsetName(bt.getLocalName(),nm)) {
+        	     fnd = i;
+        	     break;
+        	  }
+        	  nm1 += "." + comps[i];
+        	}
+               splitNode((Branch) bt,nm1);
+               np = (Branch) bt;
+               cidx = fnd;
+             }
+          }
+         if (np == null) break;
+         p = np;
        }
       if (cidx == comps.length && bn.getNameType() == BassNameType.PROJECT && p != null) return p;
       if (cidx >= comps.length) return parent;
       if (cidx != comps.length -1 && !force) return null;
-
+   
       for (int i = cidx; parent != null && i < comps.length-1; ++i) {
-	 parent = parent.findNode(comps[i],BASS_DEFAULT_INTERIOR_PRIORITY);
+         parent = parent.findNode(comps[i],BASS_DEFAULT_INTERIOR_PRIORITY);
        }
-
+   
       if (!force && parent != null) {
-	 String txt = bn.getNameWithParameters();
-	 for (BassTreeImpl bt : parent.child_nodes) {
-	    if (txt.equals(bt.getLocalName())) return bt;
-	  }
-	 return null;
+         String txt = bn.getNameWithParameters();
+         for (BassTreeImpl bt : parent.child_nodes) {
+            if (txt.equals(bt.getLocalName())) return bt;
+          }
+         return null;
        }
       if (parent == null) return null;
-
+   
       if (bn.getNameType() == BassNameType.PROJECT) {
-	 String pat = comps[0] + ".";
-	 for (BassTreeImpl bti : parent.child_nodes) {
-	    String nm = bti.getFullName();
-	    if (nm.startsWith(pat)) return null;
-	 }
-	 Branch bb = new Branch(comps[0],parent);
-	 computeBranchType(bn,bb);
-	 parent.addChild(bb);
-	 return bb;
+         String pat = comps[0] + ".";
+         for (BassTreeImpl bti : parent.child_nodes) {
+            String nm = bti.getFullName();
+            if (nm.startsWith(pat)) return null;
+         }
+         Branch bb = new Branch(comps[0],parent);
+         computeBranchType(bn,bb);
+         parent.addChild(bb);
+         return bb;
        }
       else if ((bn.getNameType() == BassNameType.CLASS || bn.getNameType() == BassNameType.INTERFACE ||
-		  bn.getNameType() == BassNameType.ENUM)
-	       && bn.getClassName() != null &&
-	       parent.getBranchType() == BranchNodeType.PACKAGE) {
-	 // System.err.println("CHECK " + parent.getFullName() + " " + bn.getName() + " " + bn.getClassName());
-	 if (parent.getFullName().endsWith(bn.getName())) {
-	    computeBranchType(bn,parent);
-	 }
+        	  bn.getNameType() == BassNameType.ENUM)
+               && bn.getClassName() != null &&
+               parent.getBranchType() == BranchNodeType.PACKAGE) {
+         // System.err.println("CHECK " + parent.getFullName() + " " + bn.getName() + " " + bn.getClassName());
+         if (parent.getFullName().endsWith(bn.getName())) {
+            computeBranchType(bn,parent);
+         }
        }
-
-
+   
+   
       TreeLeaf tl = parent.insertChild(bn);
       ++leaf_count;
-
+   
       return tl;
     }
 

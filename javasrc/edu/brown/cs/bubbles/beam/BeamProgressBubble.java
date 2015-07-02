@@ -118,6 +118,7 @@ private synchronized void startProgress(String id,String task,long sid)
    pd.setVisible(true);
    BudaBubble bb = BudaRoot.findBudaBubble(pd);
    if (bb != null) bb.setVisible(true);
+   BoardLog.logD("BEAM","START PROGRESS " + id + " " + (bb != null) + " " + pd.hashCode());
 }
 
 
@@ -153,15 +154,18 @@ private synchronized void startProgress(String id,String task,long sid)
    else if (kind.equals("WORKED") || kind.equals("SUBTASK") || kind.equals("ENDSUBTASK")) {
       ProgressDisplay pd = all_displays.get(id);
       if (pd != null) pd.set(tnm,work,sid);
+      else BoardLog.logD("BEAM","Unexpected progress message " + id + " " + kind);
     }
    else if (kind.equals("DONE")) {
       ProgressDisplay pd = all_displays.remove(id);
       last_id.put(id,DONE_ID);
       if (pd != null) {
 	 pd.setVisible(false);
+	 BoardLog.logD("BEAM","End progress " + id + " " + pd.hashCode());
 	 Remover rm = new Remover(pd);
 	 SwingUtilities.invokeLater(rm);
        }
+      else BoardLog.logD("BEAM","Unexpected progress message " + id + " " + kind);
    }
    else {
       BoardLog.logE("BEAM","Unknown progress message " + kind);

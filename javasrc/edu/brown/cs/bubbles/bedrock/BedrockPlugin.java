@@ -456,6 +456,7 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				     IvyXml.getAttrBool(xml,"PATHS",false),
 				     IvyXml.getAttrBool(xml,"CLASSES",false),
 				     IvyXml.getAttrBool(xml,"OPTIONS",false),
+	 IvyXml.getAttrBool(xml,"IMPORTS",false),
 				     IvyXml.getAttrString(xml,"BACKGROUND"),xw);
     }
    else if (cmd.equals("EDITPROJECT")) {
@@ -762,9 +763,9 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
     }
    else if (cmd.equals("FORMATCODE")) {
       bedrock_editor.formatCode(proj,IvyXml.getAttrString(xml,"BID","*"),
-				   IvyXml.getAttrString(xml,"FILE"),
-				   IvyXml.getAttrInt(xml,"START"),
-				   IvyXml.getAttrInt(xml,"END"),xw);
+	    IvyXml.getAttrString(xml,"FILE"),
+	    IvyXml.getAttrInt(xml,"START"),
+	    IvyXml.getAttrInt(xml,"END"),xw);
     }
    else if (cmd.equals("FINDREGIONS")) {
       bedrock_editor.getTextRegions(proj,IvyXml.getAttrString(xml,"BID","*"),
@@ -790,6 +791,16 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
 				  IvyXml.getAttrString(xml,"TO"),
 				  IvyXml.getAttrBool(xml,"SHORTEST",false),
 				  IvyXml.getAttrInt(xml,"LEVELS",0),xw);
+    }
+   else if (cmd.equals("FIXIMPORTS")) {
+      bedrock_editor.fixImports(proj,
+	    IvyXml.getAttrString(xml,"BID","*"),
+	    IvyXml.getAttrString(xml,"FILE"),
+	    IvyXml.getAttrInt(xml,"DEMAND",0),
+	    IvyXml.getAttrInt(xml,"STATICDEMAND",0),
+	    IvyXml.getAttrString(xml,"ORDER"),
+            IvyXml.getAttrString(xml,"ADD"),
+            xw);;
     }
    else if (cmd.equals("PREFERENCES")) {
       bedrock_project.handlePreferences(proj,xw);
@@ -829,6 +840,8 @@ private String handleCommand(String cmd,String proj,Element xml) throws BedrockE
       getProxyForHost(h1,xw);
     }
    else if (cmd.equals("QUICKFIX")) {
+      // done in the front end for now
+      // bedrock_editor.handleCommit(proj,null,false,false,null,null);
       quick_fixer.handleQuickFix(proj,IvyXml.getAttrString(xml,"BID","*"),
 				    IvyXml.getAttrString(xml,"FILE"),
 				    IvyXml.getAttrInt(xml,"OFFSET"),

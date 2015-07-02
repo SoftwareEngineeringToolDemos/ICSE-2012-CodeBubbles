@@ -24,9 +24,9 @@
 
 package edu.brown.cs.bubbles.rebase.word;
 
-import edu.brown.cs.bubbles.rebase.*;
+import edu.brown.cs.bubbles.rebase.RebaseMain;
 
-import edu.brown.cs.ivy.xml.*;
+import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import java.io.*;
 import java.util.*;

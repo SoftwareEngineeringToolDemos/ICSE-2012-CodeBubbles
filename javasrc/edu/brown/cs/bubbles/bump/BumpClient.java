@@ -123,9 +123,9 @@ public synchronized static BumpClient getBump()
 	 case REBUS :
 	    default_client = new BumpClientRebus();
 	    break;
-         case JS :
-            default_client = new BumpClientJS();
-            break;
+	 case JS :
+	    default_client = new BumpClientJS();
+	    break;
        }
       loadProperties();
     }
@@ -439,7 +439,7 @@ public void editFile(String pname,File file,int id,int start,int end,String txt)
    if (txt != null && txt.contains("@@@]@@@]@@@>")) {
       xw.field("ENCODE",true);
       xw.text(IvyXml.byteArrayToString(txt.getBytes()));
-    }	
+    }
    else if (txt != null) {
       xw.cdata(txt);
     }
@@ -898,12 +898,12 @@ public Element openProject(String name)
 
 public Element getProjectData(String name)
 {
-   return getProjectData(name,false,true,false,true);
+   return getProjectData(name,false,true,false,true,false);
 }
 
 
 
-public Element getProjectData(String name,boolean fil,boolean path,boolean cls,boolean opt)
+public Element getProjectData(String name,boolean fil,boolean path,boolean cls,boolean opt,boolean imps)
 {
    waitForIDE();
 
@@ -912,6 +912,7 @@ public Element getProjectData(String name,boolean fil,boolean path,boolean cls,b
    if (path) q += " PATHS='true'";
    if (cls) q += " CLASSES='true'";
    if (opt) q += " OPTIONS='true'";
+   if (imps) q += " IMPORTS='true'";
 
    Element xml = getXmlReply("OPENPROJECT",name,q,null,0);
 
@@ -984,14 +985,23 @@ private class ContractData implements BumpContractType {
 
 public Element getAllProjects()
 {
+   return getAllProjects(0);
+}
+
+
+
+public Element getAllProjects(long delay)
+{
    waitForIDE();
 
-   Element e = getXmlReply("PROJECTS",null,null,null,0);
+   Element e = getXmlReply("PROJECTS",null,null,null,delay);
 
-   if (!IvyXml.isElement(e,"RESULT")) return null;
+   if (!IvyXml.isElement(e,"RESULT"))
+      return null;
 
    return e;
 }
+
 
 
 
@@ -1183,8 +1193,10 @@ public List<BumpLocation> findCompilationUnit(String proj,File fil,String clsn)
 {
    waitForIDE();
 
-   clsn = localFixupName(clsn);
-   clsn = IvyXml.xmlSanitize(clsn);
+   if (clsn != null) {
+      clsn = localFixupName(clsn);
+      clsn = IvyXml.xmlSanitize(clsn);
+    }
 
    String flds = "COMPUNIT='T'";
    if (clsn != null) flds += " CLASS='" + clsn + "'";
@@ -1464,7 +1476,7 @@ private static List<BumpLocation> getSearchResults(String proj,Element xml,boole
 
    if (mtch) {
       for (Element me : IvyXml.children(xml,"MATCH")) {
-	 String fnm = IvyXml.getAttrString(me,"FILE");
+	 String fnm = IvyXml.getTextElement(me,"FILE");
 	 int offset = IvyXml.getAttrInt(me,"STARTOFFSET");
 	 int length = IvyXml.getAttrInt(me,"LENGTH");
 	 Element mi = IvyXml.getChild(me,"ITEM");
@@ -1975,6 +1987,27 @@ public Element format(String proj,File file,int spos,int epos)
 
 
 
+public Element fixImports(String proj,File file,String order,int demand,int staticdemand,String add)
+{
+   waitForIDE();
+
+   String rq = "FILE='" + file.getPath() + "'";
+   if (order != null) rq += " ORDER='" + IvyXml.xmlSanitize(order,true) + "'";
+   if (demand >= 0) rq += " DEMAND='" + demand + "'";
+   if (staticdemand >= 0) rq += " STATICDEMAND='" + staticdemand + "'";
+   if (add != null) rq += " ADD='" + IvyXml.xmlSanitize(add) + "'";
+
+   Element xml = getXmlReply("FIXIMPORTS",proj,rq,null,0);
+
+   if (!IvyXml.isElement(xml,"RESULT")) return null;
+
+   BoardLog.logD("BALE","FIX IMPORT EDITS: " + IvyXml.convertXmlToString(xml));
+
+   return xml;	
+}
+
+
+
 
 /********************************************************************************/
 /*										*/
@@ -2188,6 +2221,14 @@ public boolean editBreakpoint(String id,String prop,String ... args)
 
 public Element computeQuickFix(BumpProblem bp,int off,int len)
 {
+   // Element e = getXmlReply("COMMIT",null,null,null,0);
+   // do we need to do a build here (i.e. call saveAll)
+   // if (!IvyXml.isElement(e,"RESULT")) {
+      // BoardLog.logE("BUMP","Problem with commit for quick fix: " + e);
+    // }
+
+   saveAll();
+
    String q = "FILE='" + bp.getFile().getPath() + "' OFFSET='" + off + "' LENGTH='" + len + "'";
    BumpProblemImpl bpi = (BumpProblemImpl) bp;
    int id = bpi.getMessageId();
@@ -2513,7 +2554,7 @@ public BumpProcess startDebug(BumpLaunchConfig cfg,String id)
       case UNKNOWN :
 	 break;
       case JS :
-         break;
+	 break;
    }
 
    String ctr = cfg.getContractArgs();
@@ -2613,6 +2654,9 @@ public void stepUser(BumpThread bt)
 {
    run_manager.stepUser(bt);
 }
+
+
+
 public boolean stepOver(BumpThread bt)
 {
    return debugAction(null,null,bt,null,"STEP_OVER");
@@ -2721,7 +2765,7 @@ boolean evaluateExpression(BumpStackFrame frm,String expr,boolean impl,boolean b
    String data = "<EXPR>" + IvyXml.xmlSanitize(expr) + "</EXPR>";
 
    eval_handlers.put(rid,new EvalData(frm,hdlr));
-   boolean sts = getStatusReply("EVALUATE",proj,q,data,0);
+   boolean sts = getStatusReply("EVALUATE",proj,q,data,60000);
 
    if (!sts) eval_handlers.remove(rid);
 

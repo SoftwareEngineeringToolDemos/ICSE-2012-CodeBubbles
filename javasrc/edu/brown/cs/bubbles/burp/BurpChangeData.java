@@ -52,7 +52,8 @@ private Map<BurpEditorData,BurpChangeData> next_editor;
 private Map<BurpEditorData,BurpChangeData> prior_editor;
 private List<BurpChangeData> depend_upons;
 private boolean is_significant;
-
+private ChangeType change_type;
+private BurpChangeData link_back;
 
 
 
@@ -74,7 +75,35 @@ BurpChangeData(BurpHistory bh,UndoableEdit ue,BurpChangeData prior)
    prior_editor = new HashMap<BurpEditorData,BurpChangeData>(2);
    depend_upons = null;
    is_significant = ue.isSignificant();
+   change_type = ChangeType.EDIT;
+   link_back = null;
 }
+
+
+BurpChangeData(BurpHistory bh,ChangeType cty,BurpChangeData prior,BurpChangeData link)
+{
+   for_history = bh;
+   base_edit = null;
+   if (prior == null) next_global = null;
+   else next_global = prior.next_global;
+   prior_global = prior;
+   if (prior_global != null) prior_global.next_global = this;
+   next_editor = new HashMap<BurpEditorData,BurpChangeData>(2);
+   prior_editor = new HashMap<BurpEditorData,BurpChangeData>(2);
+   depend_upons = null;
+   change_type = cty;
+   switch (cty) {
+      case START_UNDO :
+      case START_REDO :
+	 is_significant = true;
+	 break;
+      default :
+	 is_significant = false;
+	 break;
+    }
+   link_back = link;
+}
+
 
 
 
@@ -101,6 +130,14 @@ Document getBaseEditDocument()
    return null;
 }
 
+BurpPlayableEdit getPlayableEdit()
+{
+   if (base_edit != null && base_edit instanceof BurpPlayableEdit) {
+      return ((BurpPlayableEdit) base_edit);
+    }
+   return null;
+}
+
 
 
 /********************************************************************************/
@@ -114,6 +151,14 @@ BurpChangeData getNext(BurpEditorData ed)
    if (ed == null) return next_global;
    if (next_editor == null) return null;
    return next_editor.get(ed);
+}
+
+
+BurpChangeData getPrior(BurpEditorData ed)
+{
+   if (ed == null) return prior_global;
+   if (prior_editor == null) return null;
+   return prior_editor.get(ed);
 }
 
 
@@ -189,8 +234,8 @@ void addDependencies(List<BurpChangeData> dep0,List<BurpChangeData> done)
 	 eddeps.removeAll(rem);
 	 if (depend_upons == null) depend_upons = new ArrayList<BurpChangeData>();
 	 if (!depend_upons.contains(cd)) depend_upons.add(cd);
-         if (done == null) done = new ArrayList<BurpChangeData>();
-         done.add(cd);
+	 if (done == null) done = new ArrayList<BurpChangeData>();
+	 done.add(cd);
 	 cd.addDependencies(null,done);
        }
     }
@@ -204,7 +249,7 @@ void addDependencies(List<BurpChangeData> dep0,List<BurpChangeData> done)
 /*										*/
 /********************************************************************************/
 
-void setSignificant(boolean fg) 	     { is_significant = fg; }
+void setSignificant(boolean fg) 		{ is_significant = fg; }
 
 boolean isSignificant()
 {
@@ -217,6 +262,26 @@ boolean isSignificant()
    return false;
 }
 
+ChangeType getChangeType()			{ return change_type; }
+
+BurpChangeData getBackLink()			{ return link_back; }
+void setBackLink(BurpChangeData bcd)		{ link_back = bcd; }
+
+
+UndoableEdit getRootEdit()
+{
+   if (change_type != ChangeType.EDIT) return null;
+
+   if (link_back != null) {
+      UndoableEdit ue = link_back.getRootEdit();
+      if (ue != link_back.base_edit) 
+         System.err.println("DOuble link");
+      return ue;
+   }
+
+   return base_edit;
+}
+
 
 
 /********************************************************************************/
@@ -227,7 +292,7 @@ boolean isSignificant()
 
 boolean canUndo()
 {
-   if (base_edit == null) return false;
+   if (base_edit == null) return true;
    if (!base_edit.canUndo()) return false;
    if (depend_upons != null) {
       for (BurpChangeData cd : depend_upons) {
@@ -277,6 +342,32 @@ void undo()
       BurpChangeData cd = ent.getValue();
       ed.setCurrentChange(cd);
     }
+}
+
+
+
+void playUndo(BurpRange rng)
+{
+   if (base_edit == null) return;
+
+   BoardLog.logD("BURP","UNDO " + this + " " + base_edit.getUndoPresentationName() + " " + depend_upons);
+
+   if (depend_upons != null) {
+      for (BurpChangeData cd : depend_upons) {
+	 if (cd.canUndo()) cd.playUndo(rng);
+	 else {
+	    BoardLog.logD("BURP","Can't undo dependency " + cd + " " + cd.depend_upons);
+	  }
+       }
+    }
+
+   if (base_edit.canUndo() && base_edit instanceof BurpPlayableEdit) {
+      BurpPlayableEdit bpe = (BurpPlayableEdit) base_edit;
+      if (rng != null) bpe.playUndo(getBaseEditDocument(),rng);
+      else bpe.playUndo(getBaseEditDocument());
+      BoardLog.logD("BURP","Finished UNDO " + this);
+    }
+   else BoardLog.logD("BURP","Can't UNDO " + this);
 }
 
 

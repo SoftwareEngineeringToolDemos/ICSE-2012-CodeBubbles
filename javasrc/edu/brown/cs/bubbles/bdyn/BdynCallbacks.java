@@ -35,12 +35,11 @@ import edu.brown.cs.ivy.xml.IvyXmlWriter;
 
 import org.w3c.dom.Element;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.List;
 
 
 class BdynCallbacks implements BdynConstants, BanalConstants
@@ -357,11 +356,11 @@ private class CallbackUpdater implements Runnable {
 
    @Override public void run() {
       if (clear_flag) {
-	 clear_flag = false;
-	 callback_methods = new HashMap<String,CallbackMethod>();
-	 callback_index = new HashMap<Integer,CallbackMethod>();
-	 valid_methods = new HashMap<String,Boolean>();
-	 user_classes = new HashMap<String,Boolean>();
+         clear_flag = false;
+         callback_methods = new HashMap<String,CallbackMethod>();
+         callback_index = new HashMap<Integer,CallbackMethod>();
+         valid_methods = new HashMap<String,Boolean>();
+         user_classes = new HashMap<String,Boolean>();
        }
       package_hierarchy = BanalFactory.getFactory().computePackageHierarchy(null);
       root_node.computeTotals();
@@ -404,7 +403,7 @@ private class CallbackUpdater implements Runnable {
 	    else chld = false;
 	    if (ocm != null) {
 	       double rtot = getCount(root_node.getTotals());
-	       if (rtot > 1000) {
+	       if (rtot > 5000) {
 		  double thr = rtot * 0.05;
 		  Set<TrieNode> keys = getKeyNodes(tn,0,thr);
 		  if (keys != null) {

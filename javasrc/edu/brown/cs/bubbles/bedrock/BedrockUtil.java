@@ -1001,12 +1001,14 @@ private static void outputJavaElementImpl(IJavaElement elt,Set<String> files,boo
 	 break;
       case IJavaElement.COMPILATION_UNIT :
 	 IProject ip = elt.getJavaProject().getProject();
-	 File f = BedrockUtil.getFileForPath(elt.getPath(),ip);
+	 File f = getFileForPath(elt.getPath(),ip);
 	 if (files != null && !files.contains(f.getPath()) && !files.contains(f.getAbsolutePath())) {
 	    return;
 	  }
 	 xw.begin("FILE");
 	 xw.textElement("PATH",f.getAbsolutePath());
+	 String root = getRootForPath(elt.getPath(),ip);
+	 if (root != null) xw.textElement("PATHROOT",root);
 	 close = "FILE";
 	 break;
       case IJavaElement.TYPE :
@@ -1984,6 +1986,17 @@ static File getFileForPath(File f,IProject proj)
 
    return f;
 }
+
+
+
+static String getRootForPath(IPath p,IProject proj)
+{
+   if (p == null || p.toFile().exists() || proj == null) return null;
+   String [] segs = p.segments();
+   if (segs.length < 2) return null;
+   return segs[1];
+}
+
 
 
 

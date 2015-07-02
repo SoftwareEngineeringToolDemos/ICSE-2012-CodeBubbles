@@ -378,6 +378,7 @@ private static String getTitle(Collection<BumpLocation> locs)
 
    for (BumpLocation bl : locs) {
       nm = bl.getSymbolName();
+      if (nm == null) return "File";
       int idx0 = nm.lastIndexOf('.');
       nm = nm.substring(idx0+1);
       if (nm.equals("<clinit>")) return "Static Initializer";

@@ -1,8 +1,6 @@
 echo "Installing Java"
-sudo add-apt-repository ppa:webupd8team/java -y
 sudo apt-get update -y
-sudo apt-get install oracle-java7-installer -y
-sudo apt-get install ant -y
+sudo apt-get install -y openjdk-7-jre
 
 echo "Downloading eclipse, this might take a while ..."
 echo

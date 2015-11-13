@@ -1,5 +1,5 @@
 #How to build your own Virtual Machine?
-###The following steps shows how you can spin up a Virtual Machine for tool Evosuite :
+###The following steps shows how you can spin up a Virtual Machine for tool CodeBubbles :
 
 1. Install [vagrant] (https://www.vagrantup.com/downloads.html) and [virtualbox] (https://www.virtualbox.org/wiki/Downloads) on your host machine.
 2. Download the [Vagrantfile] (https://github.com/SoftwareEngineeringToolDemos/ICSE-2012-CodeBubbles/blob/master/build-vm/Vagrantfile) and [bootstrap] (https://github.com/SoftwareEngineeringToolDemos/ICSE-2012-CodeBubbles/blob/master/build-vm/bootstrap.sh) from [build-vm] (https://github.com/SoftwareEngineeringToolDemos/ICSE-2012-CodeBubbles/blob/master/build-vm) folder on your machine and save it in a folder where you want to install the VM.

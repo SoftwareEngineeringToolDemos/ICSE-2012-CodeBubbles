@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Exec="/home/vagrant/Executable/launch_code_bubbles.sh"
+Exec="/home/vagrant/Desktop/Executable/launch_code_bubbles.sh"
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true

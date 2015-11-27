@@ -1,1 +1,1 @@
-java -jar /home/codebubbles/Executable/bubbles.jar
+java -jar /home/vagrant/Desktop/Executable/bubbles.jar

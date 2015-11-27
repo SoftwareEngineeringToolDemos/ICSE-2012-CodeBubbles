@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec="/home/vagrant/Desktop/launch_code_bubbles.sh"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en_IN]=launch_code_bubbles.sh
+Name=LaunchBubbles
+Comment[en_IN]=Code_bubbles_launcher
+Comment=Code_bubbles_launcher

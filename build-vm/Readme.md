@@ -16,3 +16,12 @@
 ###Softwares:
 
 This VM contains Open-JDK-7 and Eclipse Mars 4.5 with Ubuntu 14.04.
+
+
+###References:
+
+1. http://askubuntu.com/questions/159008/how-to-add-startup-applications-in-lubuntu
+2. https://help.ubuntu.com/community/AutoLogin
+3. http://aruizca.com/steps-to-create-a-vagrant-base-box-with-ubuntu-14-04-desktop-gui-and-virtualbox/
+4. http://askubuntu.com/questions/230358/problems-creating-a-desktop-entry-for-a-shell-script
+

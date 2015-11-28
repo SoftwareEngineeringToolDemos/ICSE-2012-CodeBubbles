@@ -1,5 +1,5 @@
 This guide will help you to setup and install Code Bubbles. (Note that some of the windows might appear slightly different in that bubbles keep evolving). Eclipse should not be running before this process starts. Note you will need to have Eclipse 3.5 or higher for things to work correctly. (At least it hasn't been tested with prior versions of Eclipse.)
-
+    Download bubbles.jar from http://www.cs.brown.edu/people/spr/bubbles/bubbles.jar
     Double click on Bubbles.jar to start the installation process. If a "main class not found" error appears run the jar with:
 
     java -jar jarname

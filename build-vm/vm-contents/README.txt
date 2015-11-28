@@ -3,4 +3,4 @@
 
 NOTE : This task is added to startup processes, so Code Bubbles will start automatically when you launch the VM.
 
-If password is required anywhere on this machine : Testuser
+If password is required anywhere on this machine : vagrant
